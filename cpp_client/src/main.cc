@@ -831,7 +831,7 @@ int main(int argc, char **argv) {
 
     zmq::context_t context(1);
 
-#ifdef SWIGVM_LOG_CLIENT
+#ifdef LOG_CLIENT_ARGS
     for (int i = 0; i<argc; i++)
     {
         cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << endl;
@@ -849,11 +849,6 @@ int main(int argc, char **argv) {
     }
 
 
-#ifdef SWIGVM_LOG_CLIENT
-    cerr << "### SWIGVM starting " << argv[0] << " with name '" << socket_name
-         << " (" << ::getppid() << ',' << ::getpid() << "): '"
-         << argv[1] << '\'' << endl;
-#endif
     pthread_t check_thread;
     if (!remote_client)
         pthread_create(&check_thread, NULL, check_thread_routine, NULL);
