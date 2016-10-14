@@ -13,7 +13,7 @@ jsoncpp-master:
 	cd jsoncpp-master && python amalgamate.py
 
 script_client.proto:
-	wget https://github.com/EXASOL/script-languages/blob/master/script_client.proto
+	wget https://raw.githubusercontent.com/EXASOL/script-languages/master/script_client.proto
 
 script_client.pb.cc: script_client.proto
 	protoc -I. $<  --cpp_out=.

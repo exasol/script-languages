@@ -40,7 +40,9 @@ RUN apt-get update && \
     apt-get -y install python-jinja2 && \
     apt-get -y install python-martian && \
     apt-get -y install python-pip && \
+    apt-get -y install python3-pip && \
     apt-get -y install python-protobuf && \
+    pip3 install protobuf && \
     apt-get -y install python-pyasn1 && \
     apt-get -y install python-pyasn1-modules && \
     apt-get -y install python-pycparser && \
