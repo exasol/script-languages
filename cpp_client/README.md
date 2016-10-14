@@ -1,7 +1,7 @@
 # CPP Client
 
 ## Overview
-The script language client that implements C++ as a
+This script language client implements C++ as a
 language for EXASOL. Users can provide C++ code in CREATE SCRIPT
 statements. The code is compiled on the fly and then executed.
 
