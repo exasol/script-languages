@@ -1,0 +1,15 @@
+src/old/scriptDTOProtoSerializer_test.cc
+src/old/swigcontainers.h
+src/old/swigengine.cc
+src/old/zmqcontainer.cc
+src/old/zmqcontainer.h
+src/old/zmqexternal.cc
+src/old/zmqinternal.cc
+src/build_client.sh
+src/exascript_python.py
+src/exascript_python_tmp.cc
+src/make.sh
+src/wrapper.h
+src/main.cc
+src/old/exascript.i
+

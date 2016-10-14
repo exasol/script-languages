@@ -1,0 +1,246 @@
+// --- data definition ---------------------------------------------------------
+
+enum column_type {
+    PB_UNSUPPORTED = 0;  // represents following SQL types: 
+    PB_DOUBLE = 1;       // FLOAT
+    PB_INT32 = 2;        // DECIMAL(4, 0)
+    PB_INT64 = 3;        // DECIMAL(8, 0)
+    PB_NUMERIC = 4;      // all other numeric types
+    PB_TIMESTAMP = 5;    // TIMESTAMP
+    PB_DATE = 6;         // DATE
+    PB_STRING = 7;       // CHAR or VARCHAR
+    PB_BOOLEAN = 8;      // BOOL
+}
+
+// type of iteration:
+//   scalar, returns  -> PB_EXACTLY_ONCE
+//   set, emits       -> PB_MULTIPLE
+enum iter_type { PB_EXACTLY_ONCE = 1; PB_MULTIPLE = 2; };
+
+message exascript_metadata {
+    message column_definition {
+        // Name of column as UTF-8 String
+        required string name = 1;
+        // Type of column (see "enum column_type")
+        optional column_type type = 2;
+        // Type name how it is shown in EXASolution
+        required string type_name = 3;
+        // Size of Type, for CHAR and VARCHAR types
+        optional uint32 size = 4;
+        // Precision, for DECIMAL types
+        optional uint32 precision = 5;
+        // Scale, for DECIMAL types
+        optional uint32 scale = 6;
+    }
+    required iter_type input_iter_type = 1;
+    required iter_type output_iter_type = 2;
+
+    repeated column_definition input_columns = 3;
+    repeated column_definition output_columns = 4;
+
+    // If set, do not enter the run() state but instead wait for single
+    // synchronous function invokations
+    required bool single_call_mode = 5;
+}
+
+message exascript_table_data {
+    // Rows count in current message
+    required uint64 rows = 1;
+    // Rows count in current group in EXASolution
+    // Can be 0 if no group defined
+    required uint64 rows_in_group = 8;
+
+    // Storage for following types: NUMERIC, TIMESTAMP, DATE and STRING
+    repeated string data_string = 2;
+
+    repeated bool data_nulls = 3 [packed = true];
+    repeated bool data_bool = 4 [packed = true];
+    repeated int32 data_int32 = 5 [packed = true];
+    repeated int64 data_int64 = 6 [packed = true];
+    repeated double data_double = 7 [packed = true];
+    // Local row numbers
+    repeated uint64 row_number = 9 [packed = true];
+}
+
+// --- initialization process --------------------------------------------------
+
+message exascript_client {
+    // URL of the client in form: tcp://10.10.1.1:2000
+    required string client_name = 1;
+    // UTF-8 Text, which is received from redirector and send to VM
+    // This string will not be interpreted by EXASolution
+    optional string meta_info = 2;
+}
+
+/*
+enum exascript_vmtype {
+    PB_VM_UNSUPPORTED = 0;
+    PB_VM_PYTHON = 1;
+    PB_VM_SCHEME = 2;
+    PB_VM_JAVASCRIPT = 3;
+    PB_VM_R = 4;
+    PB_VM_EXTERNAL = 5;
+    PB_VM_JAVA = 6;
+    PM_VM_PLUGIN_LANGUAGE = 7;
+}
+*/
+
+message exascript_info {
+    required string database_name = 1;
+    required string database_version = 2;
+    required string script_name = 3;
+    required string source_code = 4;
+    // Session ID: long unique number of current session in EXASolution
+    required uint64 session_id = 5;
+    // Number of SQL Statement in current Session
+    required uint32 statement_id = 6;
+    // Number of nodes in EXASolution
+    required uint32 node_count = 7;
+    // Current node number, starting at 0
+    required uint32 node_id = 8;
+    // Long unique number of VM
+    required uint64 vm_id = 9;
+    // Type of the VM
+    //required exascript_vmtype vm_type = 10;
+    // A VM should not exceed this memory limit
+    // For external UDF's it doesn't matter
+    required uint64 maximal_memory_limit = 11;
+    // meta_info contains the string from meta_info in exascript_client message
+    optional string meta_info = 12;
+    required string script_schema = 13;
+}
+message exascript_ping {
+    // the string from exascript_client message
+    required string meta_info = 1;
+}
+
+// --- connection finalization -------------------------------------------------
+
+message exascript_close {
+    optional string exception_message = 1;
+}
+
+// --- script and other imports --------------------------------------------------------
+
+enum import_type {
+    PB_IMPORT_SCRIPT_CODE = 1;
+    PB_IMPORT_CONNECTION_INFORMATION = 2;
+}
+
+message exascript_import_req {
+    required string script_name = 1;                                // todo?: rename to "object_name"
+    optional import_type kind = 2 [default=PB_IMPORT_SCRIPT_CODE];
+}
+
+message connection_information_rep {
+    required string kind = 1;
+    required string address = 2;
+    required string user = 3;
+    required string password = 4;
+}
+
+message exascript_import_rep {
+    optional string source_code = 1;
+    optional string exception_message = 2;
+    optional connection_information_rep connection_information = 3;
+}
+
+// --- sending data from exasolution to process --------------------------------
+
+message exascript_next_data_rep {
+    required exascript_table_data table = 2;
+}
+
+// --- sending data from process to exasolution --------------------------------
+
+message exascript_emit_data_req {
+    required exascript_table_data table = 2;
+}
+
+// --- sending a single result from process to exasolution ---------------------
+message exascript_return_req {
+    required string result = 1;
+}
+
+message exascript_undefined_call_req {
+    required string remote_fn = 1;
+}
+
+enum single_call_function_id {
+    SC_FN_NIL = 0;
+    SC_FN_DEFAULT_OUTPUT_COLUMNS = 1;
+    SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL = 2;
+    SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC = 3;
+}
+
+
+message key_value_pair {
+    required string key = 1;
+    required string value = 2;
+}
+
+message import_specification_rep {
+    required bool is_subselect = 1;
+    optional connection_information_rep connection_information = 2;
+    optional string connection_name = 3;
+    repeated exascript_metadata.column_definition subselect_column_specification = 4;
+    repeated key_value_pair parameters = 5;
+}
+
+
+message exascript_single_call_rep {
+    required single_call_function_id fn = 1;
+    optional import_specification_rep import_specification = 2;
+    optional string json_arg = 3;   // Will be refactored in separate branch, just temporary
+}
+
+// --- general request and response messages -----------------------------------
+
+enum message_type {
+    MT_UNKNOWN = 0;
+    MT_CLIENT = 1;
+    MT_INFO = 2;
+    MT_META = 3;
+    MT_CLOSE = 4;
+    MT_IMPORT = 5;
+    MT_NEXT = 6;
+    MT_RESET = 7;
+    MT_EMIT = 8;
+    MT_RUN = 9;
+    MT_DONE = 10;
+    MT_CLEANUP = 11;
+    MT_FINISHED = 12;
+    MT_PING_PONG = 13;
+    MT_TRY_AGAIN = 14;
+    MT_CALL   = 15;          // this message request the synchronous invokation of a function in the remote container
+    MT_RETURN = 16;          // this message is used to communicate the result of a synchronous function invokation from the container to EXASolution
+    MT_UNDEFINED_CALL = 17;  // this message tells EXASolution that the requested function in not available in the container
+}
+
+;
+
+message exascript_request {
+    required message_type type = 1;
+    required uint64 connection_id = 2;
+    optional exascript_client client = 3; /* E-UDF service -> EXASolution */
+    optional exascript_info info = 4;     /* EXASolution -> Redirector    */
+    optional exascript_close close = 5;
+    optional exascript_import_req import = 6;
+    optional exascript_emit_data_req emit = 7;
+    optional exascript_ping ping = 8;
+    optional exascript_return_req call_result = 9;
+    optional exascript_undefined_call_req undefined_call = 10;
+}
+                        
+message exascript_response {
+    required message_type type = 1;
+    required uint64 connection_id = 2;
+    optional exascript_client client = 3; /* Redirector -> EXASolution    */
+    optional exascript_info info = 4;     /* EXASolution -> E-UDF service */
+    optional exascript_metadata meta = 5;
+    optional exascript_close close = 6;
+    optional exascript_import_rep import = 7;
+    optional exascript_next_data_rep next = 8;
+    optional exascript_ping ping = 9;
+    optional exascript_single_call_rep call = 10;
+}
