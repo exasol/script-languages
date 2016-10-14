@@ -1,55 +1,54 @@
 # EXASOL Script Languages
 
 ## Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [Overview](#overview)
-3. [EXASOL script language protocol](#exasol-script-language-protocol)
-4. [Linux Container for script languages](#linux-container-for-script-languages)
-5. [Script language clients](#script-language-clients)
+1. [Overview](#overview)
+2. [EXASOL script language protocol](#exasol-script-language-protocol)
+3. [Linux Container for script languages](#linux-container-for-script-languages)
+4. [Script language clients](#script-language-clients)
 
-
-## Prerequisites
-The following topics are not part of this documentation:
-* Basics of EXASOL user defined functions
-  * Iteration types: SET-EMITS
-* How to use BucketFS
-  * The HTTP perspective
-  * The UDF perspective
-* How to define a script language alias in EXASOL
-* How to use an alternative Linux container with the languages that are come pre-installed with EXASOL
-
-Before starting out, please read section `UDF scripts` and in particular the subsection `Expanding script languages using BucketFS` in the EXASOL user manual.
 
 ## Overview
-In EXASOL, user defined function scripts (UDF) usually run in parallel and
-distributed in a cluster. This means, that for a UDF in a given
-language, there are typically many instances of the script language
-implementation running at the same time.
 
-Usually each of these instances only processes a small subset of the
-data (the only exception being are UDFs with input-output behavior
-SET-RETURNS and SET-EMITS)
+EXASOL is shipped with the support for various script languages: Java, Python, R and Lua. But 
+EXASOL's script framework allows to expand its language support in two dimensions. You can upload
+additional libraries and packages for the existing languages. But if you want to run other programming
+languages directly within the EXASOL cluster, you can even install these languages by your own.
 
-Another context of using scripts is when they provide call-backs for the SQL compiler (like for instance, when used as an _adapter script_ for _virtual schemas_).
+Scripts can be used in EXASOL in two main areas. On the one hand, user-defined functions (UDFs) 
+can be used to run all kinds of scalar, aggregate and analytical logic on table data. You can even 
+create MapReduce scripts which are directly integrated in normal SQL queries. On the other hand,
+the so-called adapter scripts implement the underlying logic for virtual schemas. Virtual schemas 
+contain virtual tables which look and behave like normal, persistent tables in EXASOL. If you query 
+that data, the adapter script logic cares about how to transfer the actual data from the specified
+external data source, and what parts of the SQL query can be pushed down to that underlying system.
 
-For all script languages (except for Lua which is directly compiled
-into the SQL Engine) EXASOL starts the instances of the language
-implementation in dedicated Linux containers in order to protect the
-datbase from misbehaving scripts and language implementations.
-Script language implementation and EXASOL then communicate via the protocol which is outlined [below](#exasol-script-language-protocol).
+Before you start to integrate new languages, we highly recommend to read section `UDF scripts` and 
+in particular the subsection `Expanding script languages using BucketFS` in the EXASOL user manual.
+This will give you a good overview about the general concepts and the following technical topics:
 
-When creating new script languages for EXASOL, users therefore need to do the following:
-* provide a Linux container (or use the same as EXASOL for its pre-installed languages)
-* create the actual implementation of the script language, the __script client__
+* Basics of EXASOL UDFs
+* How to use BucketFS, EXASOL's synchronous cluster files system
+* What script clients are and how they can be built
+* How to define a script language alias in EXASOL in your session/system
+
+In this project, we provide a detailed documentation for the communication API between EXASOL and 
+script clients and implementations of these clients that you can upload and use on your system. 
+If you want to integrate further languages, we would be very happy if you give us your feedback or 
+even start contributing to that open source project so that others in the community can take advantage 
+of your development.
 
 
 ## EXASOL script language protocol
 
-When EXASOL a script language client, the first argument always is the name of a local ipc socket which is created by EXASOL using the ZeroMQ library (http://zeromq.org/).
+When scripts in EXASOL are used, the database starts virtual machines in a safe environment using a 
+Linux container and the corresponding script client. 
 
-The messages between EXASOL and an UDF script language
-implementation are encoded using Google's Protocol
-Buffers (https://github.com/google/protobuf).
+Note: Lua-scripts are different because they are compiled directly into the database engine.
+
+The communication protocol between the virtual machines and the database are based on two main technologies:
+* ZeroMQ library (http://zeromq.org/) for createing ipc sockets
+* Google's Protocol Buffers (https://github.com/google/protobuf) for encoding messages
+
 The following message types are used:
 
 * __MT_CLIENT__:  The script language implementation is alive and requests more information
@@ -68,7 +67,9 @@ The following message types are used:
 * __MT_RETURN__: Used to send the result of the Single-Call function call
 * __MT_UNDEFINED_CALL__: Sent when a script does not implement a requested single-call function
 
-The following message types are defined in the `.proto` file but are only used to communicate with eUDFs (which are not described here): _MT_PING_PONG_, _MT_TRY_AGAIN_
+The following message types are defined in the `.proto` file but are only 
+used to communicate with the deprecated eUDFs (which are not described here):
+_MT_PING_PONG_, _MT_TRY_AGAIN_
 
 
 Here is a sketch of the interaction between EXASOL and script language
