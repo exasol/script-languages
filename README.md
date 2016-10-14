@@ -106,7 +106,7 @@ source code of the example implementations.
 
 ## Linux Container for script languages
 
-In order to create the Linux container which used to isolate the
+In order to create the Linux container which is used to abstract the
 script language implementation from EXASOL, we use Docker
 (https://www.docker.com) as a _build tool_. Inside the EXASOL cluster
 We do __not__ use Docker in order to _run_ script language
@@ -114,17 +114,12 @@ implementation.
 
 In addition to the Docker file which describes how to build a first
 version of the Linux container, we also provide a small shell script
-that adds some final touches.
+in folder [linux_container](linux_container) which cares about some 
+packaging details.
+
 
 ## Script language clients
 
-Some examples of script language implementations are provided. The
-details on how to build these clients can be found in the respective
-subdirectory.
-
-* __cpp_client__: a script language client that implements C++ as a
-  language for EXASOL. Users can provide C++ code in CREATE SCRIPT
-  statements. The code is compiled on the fly and then executed.
-
-* __python_client__: an pure Python implementation of Python 2 and Python 3 as
-  language for EXASOL.
+Some examples of script language implementations are provided in the
+corresponding subfolders, including the details about how to build these
+clients.
