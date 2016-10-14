@@ -49,7 +49,9 @@ The communication protocol between the virtual machines and the database are bas
 * ZeroMQ library (http://zeromq.org/) for createing ipc sockets
 * Google's Protocol Buffers (https://github.com/google/protobuf) for encoding messages
 
-The following message types are used:
+The protocol details can be found in file [script_client.proto](script_client.proto)
+
+In general, the following message types have to be implemented by the script client:
 
 * __MT_CLIENT__:  The script language implementation is alive and requests more information
 * __MT_INFO__: Basic information about the EXASOL system and cluster configuration and the UDF script code
@@ -67,8 +69,7 @@ The following message types are used:
 * __MT_RETURN__: Used to send the result of the Single-Call function call
 * __MT_UNDEFINED_CALL__: Sent when a script does not implement a requested single-call function
 
-The following message types are defined in the `.proto` file but are only 
-used to communicate with the deprecated eUDFs (which are not described here):
+There exist two *deprecated* message types which were used for eUDFs:
 _MT_PING_PONG_, _MT_TRY_AGAIN_
 
 
