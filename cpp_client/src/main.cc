@@ -142,6 +142,7 @@ static bool send_init(zmq::socket_t &socket, const string client_name, Metadata 
     meta.dbversion = rep.database_version();
     meta.script_name = rep.script_name();
     meta.script_schema = rep.script_schema();
+    meta.current_user = rep.current_user();
     meta.script_code = rep.source_code();
     meta.session_id = rep.session_id();
     meta.statement_id = rep.statement_id();

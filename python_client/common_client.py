@@ -107,6 +107,8 @@ class Exa:
         mo.database_version = self._comm.rep.info.database_version
         mo.script_name      = self._comm.rep.info.script_name
         mo.script_code      = self._comm.rep.info.source_code
+        mo.script_schema    = self._comm.rep.info.script_schema
+        mo.current_user     = self._comm.rep.info.current_user
 
         print('SOURCE CODE: ', self._comm.rep.info.source_code)
         

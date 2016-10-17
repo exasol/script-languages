@@ -108,7 +108,7 @@ message exascript_info {
     // meta_info contains the string from meta_info in exascript_client message
     optional string meta_info = 12;
     required string script_schema = 13;
-    required string current_user = 14;
+    optional string current_user = 14;
 }
 message exascript_ping {
     // the string from exascript_client message

@@ -476,6 +476,7 @@ struct Metadata {
     std::string dbversion;
     std::string script_name;
     std::string script_schema;
+    std::string current_user;
     std::string script_code;
     unsigned long long session_id;
     unsigned long statement_id;
@@ -507,7 +508,7 @@ public:
 
     Metadata():
         connection_id(0), sock(NULL),
-        exch(NULL), dbname(), dbversion(), script_name(), script_schema(), script_code(),
+        exch(NULL), dbname(), dbversion(), script_name(), script_schema(), current_user(), script_code(),
         session_id(0), statement_id(0), node_count(0), node_id(0), vm_id(0),
         vm_type(VM_UNSUPPORTED), maximal_memory_limit(0),
         inp_iter_type(MULTIPLE),
