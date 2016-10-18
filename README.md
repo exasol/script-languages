@@ -1,5 +1,7 @@
 # EXASOL Script Languages
 
+###### Please note that this is an open source project which is officially supported by EXASOL. For any question, you can contact our support team.
+
 ## Table of Contents
 1. [Overview](#overview)
 2. [EXASOL script language protocol](#exasol-script-language-protocol)
