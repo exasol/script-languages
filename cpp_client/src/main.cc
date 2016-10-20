@@ -576,10 +576,11 @@ public:
     }
 
 
-    typedef void (*RUN_FUNC)(UDFClient::Metadata*, UDFClient::InputTable*, UDFClient::OutputTable*);
-    typedef string (*DEFAULT_OUTPUT_COLUMNS_FUNC)(UDFClient::Metadata*);
-    typedef string (*ADAPTER_CALL_FUNC)(Metadata* meta, const string input);
-    typedef string (*IMPORT_ALIAS_FUNC)(Metadata* meta, const ImportSpecification& importSpecification);
+    typedef void (*RUN_FUNC)(const UDFClient::Metadata&, UDFClient::InputTable&, UDFClient::OutputTable&);
+    typedef string (*DEFAULT_OUTPUT_COLUMNS_FUNC)(const UDFClient::Metadata&);
+    typedef string (*ADAPTER_CALL_FUNC)(const Metadata& meta, const string input);
+    typedef string (*IMPORT_ALIAS_FUNC)(const Metadata& meta, const ImportSpecification& importSpecification);
+    typedef void (*CLEANUP_FUNC)();
 
     struct exception: std::exception {
         exception(const char *reason): m_reason(reason) { }
@@ -714,7 +715,8 @@ public:
             }
         }
 
-#if 1
+// enable to retrieve function signatures from the EXASOL log file
+#if 0
         {
            if (::system("nm /tmp/libcode.so")) {}
         }
@@ -729,11 +731,20 @@ public:
 
     }
 
-protected:
 
     virtual ~CPPPlugin() { }
 public:
-    virtual void destroy() {delete this;}
+    virtual void shutdown()
+    {
+        char *error = NULL;
+        CLEANUP_FUNC cleanup = (CLEANUP_FUNC)dlsym(handle, "_Z7cleanupv");
+        if ((error = dlerror()) != NULL)  {
+            stringstream sb;
+            sb << "Error when trying to load function \"run_cpp\": " << endl << error;
+            throw LanguagePlugin::exception(sb.str().c_str());
+        }
+        (*cleanup)();
+    }
     virtual bool run()
     {
         if (meta.singleCallMode)
@@ -748,7 +759,7 @@ public:
             sb << "Error when trying to load function \"run_cpp\": " << endl << error;
             throw LanguagePlugin::exception(sb.str().c_str());
         }
-        (*run_cpp)(&meta,&iter,&res);
+        (*run_cpp)(meta,iter,res);
         res.next(); // in case next() was not called in the UDF, the database will wait forever (or a timeout occurs)
         res.flush();
         return true;
@@ -766,13 +777,13 @@ public:
         {
         case SC_FN_DEFAULT_OUTPUT_COLUMNS:
             defaultOutputColumnsFunc = (DEFAULT_OUTPUT_COLUMNS_FUNC)dlsym(handle, "_Z23getDefaultOutputColumnsB5cxx11RKN9UDFClient8MetadataE");
-            if ((error = dlerror()) != NULL)
+            if ((error = dlerror()) !exception= NULL)
             {
                 stringstream sb;
                 sb << "Error when trying to load singleCall function: " << endl << error;
                 throw LanguagePlugin::exception(sb.str().c_str());
             }
-            return (*defaultOutputColumnsFunc)(&meta);
+            return (*defaultOutputColumnsFunc)(meta);
             break;
         case SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
             adapterCallFunc = (ADAPTER_CALL_FUNC)dlsym(handle, "_Z11adapterCallRKN9UDFClient8MetadataENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE");
@@ -784,7 +795,7 @@ public:
             }
             stringDTO = (UDFClient::StringDTO*)&args;
             assert(stringDTO != NULL);
-            return (*adapterCallFunc)(&meta,stringDTO->getArg());
+            return (*adapterCallFunc)(meta,stringDTO->getArg());
             break;
         case SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
             importAliasFunc = (IMPORT_ALIAS_FUNC)dlsym(handle,"_Z24generateSqlForImportSpecB5cxx11RKN9UDFClient8MetadataERKNS_19ImportSpecificationE");
@@ -796,7 +807,7 @@ public:
             }
             importDTO = (UDFClient::ImportSpecification*)&args;
             assert(importDTO != NULL);
-            return (*importAliasFunc)(&meta,*importDTO);
+            return (*importAliasFunc)(meta,*importDTO);
             break;
         default:
         {
@@ -932,7 +943,7 @@ reinit:
                     break;
             }
         }
-        vm->destroy(); vm = NULL;
+        vm->shutdown(); delete vm; vm = NULL;
         send_finished(socket, meta);
     }
     catch (std::exception &err) {
@@ -956,7 +967,8 @@ error:
     keep_checking = false;
     if (vm != NULL)
     {
-        vm->destroy();
+        vm->shutdown();
+        delete vm;
         vm = NULL;
     }
     socket.close();
