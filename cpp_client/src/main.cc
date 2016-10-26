@@ -777,7 +777,7 @@ public:
         {
         case SC_FN_DEFAULT_OUTPUT_COLUMNS:
             defaultOutputColumnsFunc = (DEFAULT_OUTPUT_COLUMNS_FUNC)dlsym(handle, "_Z23getDefaultOutputColumnsB5cxx11RKN9UDFClient8MetadataE");
-            if ((error = dlerror()) !exception= NULL)
+            if ((error = dlerror()) != NULL)
             {
                 stringstream sb;
                 sb << "Error when trying to load singleCall function: " << endl << error;
