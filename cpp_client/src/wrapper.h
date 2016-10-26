@@ -458,9 +458,7 @@ public:
         std::string m_reason;
     };
     LanguagePlugin() { }
-protected:
     virtual ~LanguagePlugin() { }
-public:
     virtual void shutdown() {delete this;}
     virtual bool run() = 0;
     virtual std::string singleCall(single_call_function_id fn, const UDFClient::ScriptDTO& args) = 0;
