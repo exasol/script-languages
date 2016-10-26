@@ -738,12 +738,9 @@ public:
     {
         char *error = NULL;
         CLEANUP_FUNC cleanup = (CLEANUP_FUNC)dlsym(handle, "_Z7cleanupv");
-        if ((error = dlerror()) != NULL)  {
-            stringstream sb;
-            sb << "Error when trying to load function \"run_cpp\": " << endl << error;
-            throw LanguagePlugin::exception(sb.str().c_str());
+        if ((error = dlerror()) == NULL)  {
+	        (*cleanup)();
         }
-        (*cleanup)();
     }
     virtual bool run()
     {
