@@ -5,15 +5,16 @@ COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    add-apt-repository ppa:webupd8team/java -y && \
-    apt-get update && \
-    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
-    apt-get install -y oracle-java8-installer && \
-    apt-get clean && \
-    apt-get -y autoremove && \
-    rm -rf /var/cache/oracle-jdk8-installer && \
+    #add-apt-repository ppa:webupd8team/java -y && \
+    #apt-get update && \
+    #echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
+    #apt-get install -y oracle-java8-installer && \
+    #apt-get clean && \
+    #apt-get -y autoremove && \
+    #rm -rf /var/cache/oracle-jdk8-installer && \
     ## uname, etc: \
     apt-get -y install coreutils && \
+    apt-get -y install openjdk-8-jdk-headless && \
     apt-get -y install python2.7-dev  && \
     apt-get -y install r-base  && \
     apt-get -y install r-base-dev && \
@@ -88,9 +89,11 @@ RUN apt-get update && \
     locale-gen en_US.UTF-8  && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get clean && \
-    apt-get -y autoremove && \ 
-    rm -rf /var/lib/apt/lists/* && \
-    rm -f /usr/lib/jvm/java-8-oracle/src.zip
+    apt-get -y autoremove && \
+    echo /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server >> /etc/ld.so.conf && \
+    ldconfig
+    #rm -rf /var/lib/apt/lists/* && \
+    #rm -f /usr/lib/jvm/java-8-oracle/src.zip
 
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution
