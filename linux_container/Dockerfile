@@ -85,6 +85,7 @@ RUN apt-get update && \
     apt-get -y install r-cran-latticeextra && \
     apt-get -y install r-cran-randomforest && \
     Rscript -e 'install.packages("rredis",repos = "http://cran.r-project.org")' && \
+    Rscript -e 'install.packages("data.table",repos = "http://cran.r-project.org")' && \
     # Generate and set the locale \
     locale-gen en_US.UTF-8  && \
     update-locale LC_ALL=en_US.UTF-8 && \
