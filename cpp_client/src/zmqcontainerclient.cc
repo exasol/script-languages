@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 #include <sys/resource.h>
 #include <unistd.h>
-#include "wrapper.h"
+#include <swigcontainers_ext.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -10,43 +10,67 @@
 #include <zmq.hpp>
 #include <fcntl.h>
 #include <fstream>
+#include "scriptDTO.h"
 
-#include <dlfcn.h>
-#include <linux/limits.h>
-#include <memory>
-#include <stdexcept>
-#include <openssl/md5.h>
+#ifdef ENABLE_CPP_VM
+#include "cpp.h"
+#endif
 
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+// build with protegrity:
+// g++ -Wall -O3 -lzmq -lprotobuf -lpthread -lcrypto -DUNIX -I. -I/opt/protegrity/defiance_xc/include/ -Wl,-rpath=/opt/protegrity/defiance_xc/bin/ -o protegrityclient -DPROTEGRITY_PLUGIN_CLIENT -DBUILDINSWIGDIR -I. scriptDTO.cc scriptDTOWrapper.cc zmqcontainer.pb.cc zmqcontainerclient.cc protegrityclient.cc /opt/protegrity/defiance_xc/bin/xcpep.plm
+#include <protegrityclient.h>
+#endif
 
-
-using namespace UDFClient;
+using namespace SWIGVMContainers;
 using namespace std;
+using namespace google::protobuf;
 
-
+__thread SWIGVM_params_t *SWIGVMContainers::SWIGVM_params;
 
 static string socket_name;
-static char *socket_name_str;
+static const char *socket_name_str;
 static string output_buffer;
-static UDFClientExceptionHolder exchandler;
-static pid_t my_pid;
+static SWIGVMExceptionHandler exchandler;
+static pid_t my_pid; //parent_pid,
+//static exascript_vmtype vm_type;
 static exascript_request request;
 static exascript_response response;
 
+static string g_database_name;
+static string g_database_version;
+static string g_script_name;
+static string g_script_schema;
+static string g_current_user;
+static string g_current_schema;
+static string g_source_code;
+static unsigned long long g_session_id;
+static unsigned long g_statement_id;
+static unsigned int g_node_count;
+static unsigned int g_node_id;
+static unsigned long long g_vm_id;
+static bool g_singleCallMode;
 static single_call_function_id g_singleCallFunction;
-static UDFClient::ImportSpecification g_singleCall_ImportSpecificationArg;
-static UDFClient::StringDTO g_singleCall_StringArg;
-
-
-
+static ExecutionGraph::ImportSpecification g_singleCall_ImportSpecificationArg;
+static ExecutionGraph::StringDTO g_singleCall_StringArg;
 static bool remote_client;
 
+#ifndef NDEBUG
+#define SWIGVM_LOG_CLIENT
+#endif
+#define SWIGVM_LOG_CLIENT
+//#define LOG_COMMUNICATION
 
 static void external_process_check()
 {
     if (remote_client) return;
     if (::access(&(socket_name_str[6]), F_OK) != 0) {
-        ::sleep(1); // give me a chance to die with my parent process
+	::sleep(1); // give me a chance to die with my parent process
         cerr << "exaudfclient aborting ... cannot access socket file " << socket_name_str+6 << "." << endl;
+#ifdef SWIGVM_LOG_CLIENT
+        cerr << "### SWIGVM aborting with name '" << socket_name_str
+             << "' (" << ::getppid() << ',' << ::getpid() << ')' << endl;
+#endif
         ::abort();
     }
 }
@@ -64,8 +88,19 @@ void *check_thread_routine(void* data)
 
 }
 
-void UDFClient::socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
+void SWIGVMContainers::socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 {
+#ifdef LOG_COMMUNICATION
+    stringstream sb;
+    uint32_t len = zmsg.size();
+    sb << "/tmp/zmqcomm_log_" << ::getpid() << "_send.data";
+    int fd = ::open(sb.str().c_str(), O_CREAT | O_APPEND | O_WRONLY, 00644);
+    if (fd >= 0) {
+        ::write(fd, &len, sizeof(uint32_t));
+        ::write(fd, zmsg.data(), len);
+        ::close(fd);
+    }
+#endif
     for (;;) {
         try {
             if (socket.send(zmsg) == true)
@@ -80,11 +115,22 @@ void UDFClient::socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
     }
 }
 
-bool UDFClient::socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_error)
+bool SWIGVMContainers::socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_error)
 {
     for (;;) {
         try {
             if (socket.recv(&zmsg) == true) {
+#ifdef LOG_COMMUNICATION
+                stringstream sb;
+                uint32_t len = zmsg.size();
+                sb << "/tmp/zmqcomm_log_" << ::getpid() << "_recv.data";
+                int fd = ::open(sb.str().c_str(), O_CREAT | O_APPEND | O_WRONLY, 00644);
+                if (fd >= 0) {
+                    ::write(fd, &len, sizeof(uint32_t));
+                    ::write(fd, zmsg.data(), len);
+                    ::close(fd);
+                }
+#endif
                 return true;
             }
             external_process_check();
@@ -100,7 +146,7 @@ bool UDFClient::socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool re
     return false;
 }
 
-static bool send_init(zmq::socket_t &socket, const string client_name, Metadata &meta)
+static bool send_init(zmq::socket_t &socket, const string client_name)
 {
     request.Clear();
     request.set_type(MT_CLIENT);
@@ -123,7 +169,11 @@ static bool send_init(zmq::socket_t &socket, const string client_name, Metadata 
         return false;
     }
 
-    meta.connection_id = response.connection_id();
+    SWIGVM_params->connection_id = response.connection_id();
+#ifdef SWIGVM_LOG_CLIENT
+    stringstream sb; sb << std::hex << SWIGVM_params->connection_id;
+    cerr << "### SWIGVM connected with id " << sb.str() << endl;
+#endif
     if (response.type() == MT_CLOSE) {
         if (response.close().has_exception_message())
             exchandler.setException(response.close().exception_message().c_str());
@@ -134,53 +184,70 @@ static bool send_init(zmq::socket_t &socket, const string client_name, Metadata 
         exchandler.setException("Wrong message type, should be MT_INFO");
         return false;
     }
-
-
     const exascript_info &rep = response.info();
-
-    meta.dbname = rep.database_name();
-    meta.dbversion = rep.database_version();
-    meta.script_name = rep.script_name();
-    meta.script_schema = rep.script_schema();
-    meta.current_user = rep.current_user();
-    meta.script_code = rep.source_code();
-    meta.session_id = rep.session_id();
-    meta.statement_id = rep.statement_id();
-    meta.node_count = rep.node_count();
-    meta.node_id = rep.node_id();
-    meta.vm_id = rep.vm_id();
+    g_database_name = rep.database_name();
+    g_database_version = rep.database_version();
+    g_script_name = rep.script_name();
+    g_script_schema = rep.script_schema();
+    g_current_user = rep.current_user();
+    g_current_schema = rep.current_schema();
+    g_source_code = rep.source_code();
+    g_session_id = rep.session_id();
+    g_statement_id = rep.statement_id();
+    g_node_count = rep.node_count();
+    g_node_id = rep.node_id();
+    g_vm_id = rep.vm_id();
     //vm_type = rep.vm_type();
 
 
-    meta.maximal_memory_limit = rep.maximal_memory_limit();
+    SWIGVM_params->maximal_memory_limit = rep.maximal_memory_limit();
     struct rlimit d;
     d.rlim_cur = d.rlim_max = rep.maximal_memory_limit();
     if (setrlimit(RLIMIT_RSS, &d) != 0)
+#ifdef SWIGVM_LOG_CLIENT
         cerr << "WARNING: Failed to set memory limit" << endl;
+#else
+        throw SWIGVM::exception("Failed to set memory limit");
+#endif
     d.rlim_cur = d.rlim_max = 0;    // 0 for no core dumps, RLIM_INFINITY to enable coredumps of any size
     if (setrlimit(RLIMIT_CORE, &d) != 0)
+#ifdef SWIGVM_LOG_CLIENT
         cerr << "WARNING: Failed to set core limit" << endl;
+#else
+        throw SWIGVM::exception("Failed to set core limit");
+#endif
+    /* d.rlim_cur = d.rlim_max = 65536; */
     getrlimit(RLIMIT_NOFILE,&d);
     if (d.rlim_max < 32768)
     {
+//#ifdef SWIGVM_LOG_CLIENT
         cerr << "WARNING: Reducing RLIMIT_NOFILE below 32768" << endl;
+//#endif
     }
     d.rlim_cur = d.rlim_max = std::min(32768,(int)d.rlim_max);
     if (setrlimit(RLIMIT_NOFILE, &d) != 0)
+#ifdef SWIGVM_LOG_CLIENT
         cerr << "WARNING: Failed to set nofile limit" << endl;
+#else
+        throw SWIGVM::exception("Failed to set nofile limit");
+#endif
     d.rlim_cur = d.rlim_max = 32768;
     if (setrlimit(RLIMIT_NPROC, &d) != 0)
     {
         cerr << "WARNING: Failed to set nproc limit to 32k trying 8k ..." << endl;
         d.rlim_cur = d.rlim_max = 8192;
         if (setrlimit(RLIMIT_NPROC, &d) != 0)
+#ifdef SWIGVM_LOG_CLIENT
         cerr << "WARNING: Failed to set nproc limit" << endl;
+#else
+        throw SWIGVM::exception("Failed to set nproc limit");
+#endif
     }
 
     { /* send meta request */
         request.Clear();
         request.set_type(MT_META);
-        request.set_connection_id(meta.connection_id);
+        request.set_connection_id(SWIGVM_params->connection_id);
         if (!request.SerializeToString(&output_buffer)) {
             exchandler.setException("Communication error: failed to serialize data");
             return false;
@@ -206,14 +273,14 @@ static bool send_init(zmq::socket_t &socket, const string client_name, Metadata 
             return false;
         }
         const exascript_metadata &rep = response.meta();
-        meta.singleCallMode = rep.single_call_mode();
-        meta.inp_iter_type = (IteratorType)(rep.input_iter_type());
-        meta.out_iter_type = (IteratorType)(rep.output_iter_type());
+        g_singleCallMode = rep.single_call_mode();
+        SWIGVM_params->inp_iter_type = (SWIGVM_itertype_e)(rep.input_iter_type());
+        SWIGVM_params->out_iter_type = (SWIGVM_itertype_e)(rep.output_iter_type());
         for (int col = 0; col < rep.input_columns_size(); ++col) {
             const exascript_metadata_column_definition &coldef = rep.input_columns(col);
-            meta.inp_names.push_back(coldef.name());
-            meta.inp_types.push_back(ColumnType());
-            ColumnType &coltype = meta.inp_types.back();
+            SWIGVM_params->inp_names->push_back(coldef.name());
+            SWIGVM_params->inp_types->push_back(SWIGVM_columntype_t());
+            SWIGVM_columntype_t &coltype = SWIGVM_params->inp_types->back();
             coltype.len = 0; coltype.prec = 0; coltype.scale = 0;
             coltype.type_name = coldef.type_name();
             switch (coldef.type()) {
@@ -258,9 +325,9 @@ static bool send_init(zmq::socket_t &socket, const string client_name, Metadata 
         }
         for (int col = 0; col < rep.output_columns_size(); ++col) {
             const exascript_metadata_column_definition &coldef = rep.output_columns(col);
-            meta.out_names.push_back(coldef.name());
-            meta.out_types.push_back(ColumnType());
-            ColumnType &coltype = meta.out_types.back();
+            SWIGVM_params->out_names->push_back(coldef.name());
+            SWIGVM_params->out_types->push_back(SWIGVM_columntype_t());
+            SWIGVM_columntype_t &coltype = SWIGVM_params->out_types->back();
             coltype.len = 0; coltype.prec = 0; coltype.scale = 0;
             coltype.type_name = coldef.type_name();
             switch (coldef.type()) {
@@ -307,11 +374,11 @@ static bool send_init(zmq::socket_t &socket, const string client_name, Metadata 
     return true;
 }
 
-static void send_close(zmq::socket_t &socket, const string &exmsg, const Metadata& meta)
+static void send_close(zmq::socket_t &socket, const string &exmsg)
 {
     request.Clear();
     request.set_type(MT_CLOSE);
-    request.set_connection_id(meta.connection_id);
+    request.set_connection_id(SWIGVM_params->connection_id);
     exascript_close *req = request.mutable_close();
     if (exmsg != "") req->set_exception_message(exmsg);
     request.SerializeToString(&output_buffer);
@@ -324,22 +391,22 @@ static void send_close(zmq::socket_t &socket, const string &exmsg, const Metadat
         socket_recv(socket, zmsg);
         response.Clear();
         if(!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw LanguagePlugin::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("Communication error: failed to parse data");
         else if (response.type() != MT_FINISHED)
-            throw LanguagePlugin::exception("Wrong response type, should be finished");
+            throw SWIGVM::exception("Wrong response type, should be finished");
     }
 }
 
-static bool send_run(zmq::socket_t &socket, const Metadata& meta)
+static bool send_run(zmq::socket_t &socket)
 {
     {
         /* send done request */
         request.Clear();
         request.set_type(MT_RUN);
-        request.set_connection_id(meta.connection_id);
+        request.set_connection_id(SWIGVM_params->connection_id);
         if (!request.SerializeToString(&output_buffer))
         {
-            throw LanguagePlugin::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("Communication error: failed to serialize data");
         }
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
@@ -348,14 +415,15 @@ static bool send_run(zmq::socket_t &socket, const Metadata& meta)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw LanguagePlugin::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
-                throw LanguagePlugin::exception(response.close().exception_message().c_str());
-            throw LanguagePlugin::exception("Wrong response type, got empty close response");
+                throw SWIGVM::exception(response.close().exception_message().c_str());
+            throw SWIGVM::exception("Wrong response type, got empty close response");
         } else if (response.type() == MT_CLEANUP) {
             return false;
-        } else if (meta.singleCallMode && response.type() == MT_CALL) {
+        } else if (g_singleCallMode && response.type() == MT_CALL) {
+            assert(g_singleCallMode);
             exascript_single_call_rep sc = response.call();
             g_singleCallFunction = sc.fn();
 
@@ -369,14 +437,14 @@ static bool send_run(zmq::socket_t &socket, const Metadata& meta)
 
                 if (!sc.has_import_specification())
                 {
-                    throw LanguagePlugin::exception("internal error: SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC without import specification");
+                    throw SWIGVM::exception("internal error: SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC without import specification");
                 }
                 const import_specification_rep& is_proto = sc.import_specification();
-                g_singleCall_ImportSpecificationArg = UDFClient::ImportSpecification(is_proto.is_subselect());
+                g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification(is_proto.is_subselect());
                 if (is_proto.has_connection_information())
                 {
                     const connection_information_rep& ci_proto = is_proto.connection_information();
-                    UDFClient::ConnectionInformation connection_info(ci_proto.kind(), ci_proto.address(), ci_proto.user(), ci_proto.password());
+                    ExecutionGraph::ConnectionInformation connection_info(ci_proto.kind(), ci_proto.address(), ci_proto.user(), ci_proto.password());
                     g_singleCall_ImportSpecificationArg.setConnectionInformation(connection_info);
                 }
                 if (is_proto.has_connection_name())
@@ -402,23 +470,23 @@ static bool send_run(zmq::socket_t &socket, const Metadata& meta)
                 // TODO VS This will be refactored soon, just temporary
                 if (!sc.has_json_arg())
                 {
-                    throw LanguagePlugin::exception("internal error: SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL without json arg");
+                    throw SWIGVM::exception("internal error: SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL without json arg");
                 }
                 const std::string json = sc.json_arg();
-                g_singleCall_StringArg = UDFClient::StringDTO(json);
+                g_singleCall_StringArg = ExecutionGraph::StringDTO(json);
                 break;
             }
 
             return true;
         } else if (response.type() != MT_RUN) {
-            throw LanguagePlugin::exception("Wrong response type, should be done");
+            throw SWIGVM::exception("Wrong response type, should be done");
         }
     }
     return true;
 }
 
 
-static bool send_return(zmq::socket_t &socket, std::string& result, const Metadata& meta)
+static bool send_return(zmq::socket_t &socket, std::string& result)
 {
     {   /* send return request */
         request.Clear();
@@ -426,9 +494,9 @@ static bool send_return(zmq::socket_t &socket, std::string& result, const Metada
         ::exascript_return_req* rr = new ::exascript_return_req();
         rr->set_result(result.c_str());
         request.set_allocated_call_result(rr);
-        request.set_connection_id(meta.connection_id);
+        request.set_connection_id(SWIGVM_params->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw LanguagePlugin::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } { /* receive return response */
@@ -436,21 +504,21 @@ static bool send_return(zmq::socket_t &socket, std::string& result, const Metada
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw LanguagePlugin::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
-                throw LanguagePlugin::exception(response.close().exception_message().c_str());
-            throw LanguagePlugin::exception("Wrong response type, got empty close response");
+                throw SWIGVM::exception(response.close().exception_message().c_str());
+            throw SWIGVM::exception("Wrong response type, got empty close response");
         } else if (response.type() == MT_CLEANUP) {
             return false;
         } else if (response.type() != MT_RETURN) {
-            throw LanguagePlugin::exception("Wrong response type, should be MT_RETURN");
+            throw SWIGVM::exception("Wrong response type, should be MT_RETURN");
         }
     }
     return true;
 }
 
-static void send_undefined_call(zmq::socket_t &socket, const std::string& fn, const Metadata& meta)
+static void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
 {
     {   /* send return request */
         request.Clear();
@@ -458,9 +526,9 @@ static void send_undefined_call(zmq::socket_t &socket, const std::string& fn, co
         ::exascript_undefined_call_req* uc = new ::exascript_undefined_call_req();
         uc->set_remote_fn(fn);
         request.set_allocated_undefined_call(uc);
-        request.set_connection_id(meta.connection_id);
+        request.set_connection_id(SWIGVM_params->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw LanguagePlugin::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } { /* receive return response */
@@ -468,22 +536,22 @@ static void send_undefined_call(zmq::socket_t &socket, const std::string& fn, co
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw LanguagePlugin::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("Communication error: failed to parse data");
         if (response.type() != MT_UNDEFINED_CALL) {
-            throw LanguagePlugin::exception("Wrong response type, should be MT_UNDEFINED_CALL");
+            throw SWIGVM::exception("Wrong response type, should be MT_UNDEFINED_CALL");
         }
     }
 }
 
 
-static bool send_done(zmq::socket_t &socket, const Metadata& meta)
+static bool send_done(zmq::socket_t &socket)
 {
     {   /* send done request */
         request.Clear();
         request.set_type(MT_DONE);
-        request.set_connection_id(meta.connection_id);
+        request.set_connection_id(SWIGVM_params->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw LanguagePlugin::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } { /* receive done response */
@@ -491,27 +559,27 @@ static bool send_done(zmq::socket_t &socket, const Metadata& meta)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw LanguagePlugin::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
-                throw LanguagePlugin::exception(response.close().exception_message().c_str());
-            throw LanguagePlugin::exception("Wrong response type, got empty close response");
+                throw SWIGVM::exception(response.close().exception_message().c_str());
+            throw SWIGVM::exception("Wrong response type, got empty close response");
         } else if (response.type() == MT_CLEANUP) {
             return false;
         } else if (response.type() != MT_DONE)
-            throw LanguagePlugin::exception("Wrong response type, should be done");
+            throw SWIGVM::exception("Wrong response type, should be done");
     }
     return true;
 }
 
-static void send_finished(zmq::socket_t &socket, const Metadata &meta)
+static void send_finished(zmq::socket_t &socket)
 {
     {   /* send done request */
         request.Clear();
         request.set_type(MT_FINISHED);
-        request.set_connection_id(meta.connection_id);
+        request.set_connection_id(SWIGVM_params->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw LanguagePlugin::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } { /* receive done response */
@@ -519,334 +587,70 @@ static void send_finished(zmq::socket_t &socket, const Metadata &meta)
         socket_recv(socket, zmsg);
         response.Clear();
         if(!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw LanguagePlugin::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
-                throw LanguagePlugin::exception(response.close().exception_message().c_str());
-            throw LanguagePlugin::exception("Wrong response type, got empty close response");
+                throw SWIGVM::exception(response.close().exception_message().c_str());
+            throw SWIGVM::exception("Wrong response type, got empty close response");
         } else if (response.type() != MT_FINISHED)
-            throw LanguagePlugin::exception("Wrong response type, should be finished");
+            throw SWIGVM::exception("Wrong response type, should be finished");
     }
 }
-
-
-
-std::string getExecutablePath()
-{
-    char buf[PATH_MAX+1];
-    ssize_t count = readlink("/proc/self/exe", buf, PATH_MAX);
-    if (count>0)
-    {
-        buf[count] = '\0';
-        return string(buf);
-    }
-    abort();
-}
-
-
-class CPPPlugin : public LanguagePlugin {
-public:
-
-    bool mexec(const string& cmd_, string& result) {
-        char buffer[128];
-        stringstream cmd;
-        cmd << "ulimit -v 500000; ";
-        cmd << cmd_ << " 2>&1";
-
-        FILE* pipe = popen(cmd.str().c_str(), "r");
-        if (!pipe) {
-            result = "Cannot start command `" + cmd.str() + "`";
-            return false;
-        }
-        while (!feof(pipe)) {
-            if (fgets(buffer, 128, pipe) != NULL) {
-                result += buffer;
-            }
-        }
-        int s = pclose(pipe);
-        if (s == -1)
-        {
-            return false;
-        }
-        if (WEXITSTATUS(s))
-        {
-            return false;
-        }
-        return true;
-    }
-
-
-    typedef void (*RUN_FUNC)(const UDFClient::Metadata&, UDFClient::InputTable&, UDFClient::OutputTable&);
-    typedef string (*DEFAULT_OUTPUT_COLUMNS_FUNC)(const UDFClient::Metadata&);
-    typedef string (*ADAPTER_CALL_FUNC)(const Metadata& meta, const string input);
-    typedef string (*IMPORT_ALIAS_FUNC)(const Metadata& meta, const ImportSpecification& importSpecification);
-    typedef void (*CLEANUP_FUNC)();
-
-    struct exception: std::exception {
-        exception(const char *reason): m_reason(reason) { }
-        virtual ~exception() throw() { }
-        const char* what() const throw() { return m_reason.c_str(); }
-    private:
-        std::string m_reason;
-    };
-
-    set< vector<unsigned char> > m_importedScriptChecksums;
-
-    Metadata& meta;
-    InputTable iter;
-    OutputTable res;
-    void* handle;
-
-    string getOptionLine(string& scriptCode, const string option, const string whitespace, const string lineEnd, size_t& pos) {
-        string result;
-        size_t startPos = scriptCode.find(option);
-        if (startPos != string::npos) {
-            size_t firstPos = startPos + option.length();
-            firstPos = scriptCode.find_first_not_of(whitespace, firstPos);
-            if (firstPos == string::npos) {
-                stringstream ss;
-                ss << "No values found for " << option << " statement";
-                throw LanguagePlugin::exception(ss.str().c_str());
-            }
-            size_t lastPos = scriptCode.find_first_of(lineEnd + "\r\n", firstPos);
-            if (lastPos == string::npos || scriptCode.compare(lastPos, lineEnd.length(), lineEnd) != 0) {
-                stringstream ss;
-                ss << "End of " << option << " statement not found";
-                throw LanguagePlugin::exception(ss.str().c_str());
-            }
-            if (firstPos >= lastPos) {
-                stringstream ss;
-                ss << "No values found for " << option << " statement";
-                throw LanguagePlugin::exception(ss.str().c_str());
-            }
-            size_t optionsEnd = scriptCode.find_last_not_of(whitespace, lastPos - 1);
-            if (optionsEnd == string::npos || optionsEnd < firstPos) {
-                stringstream ss;
-                ss << "No values found for " << option << " statement";
-                throw LanguagePlugin::exception(ss.str().c_str());
-            }
-            result = scriptCode.substr(firstPos, optionsEnd - firstPos + 1);
-            scriptCode.erase(startPos, lastPos - startPos + 1);
-        }
-        pos = startPos;
-        return result;
-    }
-
-    vector<unsigned char> scriptToMd5(const char *script) {
-        MD5_CTX ctx;
-        unsigned char md5[MD5_DIGEST_LENGTH];
-        MD5_Init(&ctx);
-        MD5_Update(&ctx, script, strlen(script));
-        MD5_Final(md5, &ctx);
-        return vector<unsigned char>(md5, md5 + sizeof(md5));
-    }
-
-    void importScripts() {
-
-        const string whitespace = " \t\f\v";
-        const string lineEnd = ";";
-        size_t pos;
-        // Attention: We must hash the parent script before modifying it (adding the
-        // package definition). Otherwise we don't recognize if the script imports itself
-        m_importedScriptChecksums.insert(scriptToMd5(meta.script_code.c_str()));
-        while (true) {
-            string scriptName = getOptionLine(meta.script_code, "%import", whitespace, lineEnd, pos);
-            if (scriptName == "")
-                break;
-
-            const char *scriptCode = meta.moduleContent(scriptName.c_str());
-            const char *exception = meta.checkException();
-            if (exception)
-                throw LanguagePlugin::exception(exception);
-            if (m_importedScriptChecksums.insert(scriptToMd5(scriptCode)).second) {
-                // Script has not been imported yet
-                // If this imported script contains %import statements
-                // they will be resolved in this while loop.
-                meta.script_code.insert(pos, scriptCode);
-            }
-        }
-    }
-
-
-    CPPPlugin(Metadata&meta_)
-        : meta(meta_),
-          iter(meta),
-          res(meta, &iter)
-    {
-        string myPath = getExecutablePath();
-        string myFolder = myPath.substr(0,myPath.find_last_of('/'));
-        {
-            stringstream cmd;
-            cmd << "cp  " << myFolder << "/*.h /tmp/";
-
-            if (::system(cmd.str().c_str()))
-            {
-                cerr << "Some error when copying header file" << endl;
-                cerr << "current dir: " << endl;
-                if (system("pwd")) {}
-                abort();
-            }
-        }
-        importScripts();
-        const string whitespace = " \t\f\v";
-        const string lineEnd = ";";
-        size_t nextOptionPos = 0;
-
-
-        string LDFLAGS = getOptionLine(meta.script_code,"%compilerflags",whitespace,lineEnd,nextOptionPos);
-
-        std::ofstream out("/tmp/code.cc");
-        out << "#include \"wrapper.h\"" << std::endl;
-
-        out << meta.script_code << std::endl;
-        out.close();
-
-        {
-            stringstream cmd;
-            cmd << "g++ -shared -fPIC -o /tmp/libcode.so /tmp/code.cc";
-            cmd << " -I" << myFolder;
-            cmd << " " << LDFLAGS;
-
-            string msg;
-            if (!mexec(cmd.str(), msg))
-            {
-
-                throw LanguagePlugin::exception(("Error when compiling script code:\n"+cmd.str()+"\n\n"+msg).c_str());
-            }
-        }
-
-// enable to retrieve function signatures from the EXASOL log file
-#if 0
-        {
-           if (::system("nm /tmp/libcode.so")) {}
-        }
-#endif
-        handle = dlopen("/tmp/libcode.so",RTLD_NOW);
-
-        if (handle == NULL)
-        {
-            throw LanguagePlugin::exception( dlerror() );
-        };
-
-
-    }
-
-
-    virtual ~CPPPlugin() { }
-public:
-    virtual void shutdown()
-    {
-        char *error = NULL;
-        CLEANUP_FUNC cleanup = (CLEANUP_FUNC)dlsym(handle, "_Z7cleanupv");
-        if ((error = dlerror()) == NULL)  {
-	        (*cleanup)();
-        }
-    }
-    virtual bool run()
-    {
-        if (meta.singleCallMode)
-        {
-            throw LanguagePlugin::exception("calling RUN in single call mode");
-        }
-        RUN_FUNC run_cpp;
-        char *error;
-        run_cpp = (RUN_FUNC)dlsym(handle, "_Z7run_cppRKN9UDFClient8MetadataERNS_10InputTableERNS_11OutputTableE");
-        if ((error = dlerror()) != NULL)  {
-            stringstream sb;
-            sb << "Error when trying to load function \"run_cpp\": " << endl << error;
-            throw LanguagePlugin::exception(sb.str().c_str());
-        }
-        (*run_cpp)(meta,iter,res);
-        res.next(); // in case next() was not called in the UDF, the database will wait forever (or a timeout occurs)
-        res.flush();
-        return true;
-    }
-    virtual std::string singleCall(single_call_function_id fn, const UDFClient::ScriptDTO& args)
-    {
-        DEFAULT_OUTPUT_COLUMNS_FUNC defaultOutputColumnsFunc = NULL;
-        ADAPTER_CALL_FUNC adapterCallFunc = NULL;
-        IMPORT_ALIAS_FUNC importAliasFunc = NULL;
-        UDFClient::StringDTO* stringDTO = NULL;
-        UDFClient::ImportSpecification* importDTO = NULL;
-        char *error = NULL;
-
-        switch (fn)
-        {
-        case SC_FN_DEFAULT_OUTPUT_COLUMNS:
-            defaultOutputColumnsFunc = (DEFAULT_OUTPUT_COLUMNS_FUNC)dlsym(handle, "_Z23getDefaultOutputColumnsB5cxx11RKN9UDFClient8MetadataE");
-            if ((error = dlerror()) != NULL)
-            {
-                stringstream sb;
-                sb << "Error when trying to load singleCall function: " << endl << error;
-                throw LanguagePlugin::exception(sb.str().c_str());
-            }
-            return (*defaultOutputColumnsFunc)(meta);
-            break;
-        case SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
-            adapterCallFunc = (ADAPTER_CALL_FUNC)dlsym(handle, "_Z11adapterCallRKN9UDFClient8MetadataENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE");
-            if ((error = dlerror()) != NULL)
-            {
-                stringstream sb;
-                sb << "Error when trying to load singleCall function: " << endl << error;
-                throw LanguagePlugin::exception(sb.str().c_str());
-            }
-            stringDTO = (UDFClient::StringDTO*)&args;
-            assert(stringDTO != NULL);
-            return (*adapterCallFunc)(meta,stringDTO->getArg());
-            break;
-        case SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
-            importAliasFunc = (IMPORT_ALIAS_FUNC)dlsym(handle,"_Z24generateSqlForImportSpecB5cxx11RKN9UDFClient8MetadataERKNS_19ImportSpecificationE");
-            if ((error = dlerror()) != NULL)
-            {
-                stringstream sb;
-                sb << "Error when trying to load singleCall function: " << endl << error;
-                throw LanguagePlugin::exception(sb.str().c_str());
-            }
-            importDTO = (UDFClient::ImportSpecification*)&args;
-            assert(importDTO != NULL);
-            return (*importAliasFunc)(meta,*importDTO);
-            break;
-        default:
-        {
-            stringstream sb;
-            sb << "Unsupported singleCall function id: " << fn;
-            throw LanguagePlugin::exception(sb.str().c_str());
-        }
-        }
-
-        return "dummy";
-    }
-};
-
-
-
-
 
 int main(int argc, char **argv) {
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+    if (argc != 2) {
+        cerr << "Usage: " << argv[0] << " <socket>" << endl;
+        return 1;
+    }
+#else
+    if (argc != 3) {
+        cerr << "Usage: " << argv[0] << " <socket> lang=python|lang=r|lang=java" << endl;
+        return 1;
+    }
+#endif
 
     if (::setenv("HOME", "/tmp", 1) == -1)
     {
-        throw LanguagePlugin::exception("Failed to set HOME directory");
+        throw SWIGVM::exception("Failed to set HOME directory");
     }
     ::setlocale(LC_ALL, "en_US.utf8");
 
+    
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+    stringstream socket_name_ss;
+#endif
     socket_name = argv[1];
     socket_name_str = argv[1];
-    char *socket_name_file = argv[1];
+    const char *socket_name_file = argv[1];
+
     remote_client = false;
     my_pid = ::getpid();
-
-    Metadata meta;
-
+    SWIGVM_params = new SWIGVM_params_t(true);
     zmq::context_t context(1);
 
-#ifdef LOG_CLIENT_ARGS
+#ifdef SWIGVM_LOG_CLIENT
     for (int i = 0; i<argc; i++)
     {
         cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << endl;
     }
 #endif
 
+    if (socket_name.length() > 4 ) {
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+        // protegrity client has no arguments
+#else
+//        if (! ((strcmp(argv[2], "lang=python") == 0)
+//               || (strcmp(argv[2], "lang=r") == 0)
+//               || (strcmp(argv[2], "lang=java") == 0)) )
+//        {
+//            cerr << "Remote VM type '" << argv[3] << "' not supported." << endl;
+//            return 2;
+//        }
+#endif
+    } else {
+        abort();
+    }
 
     if (strncmp(socket_name_str, "tcp:", 4) == 0) {
             remote_client = true;
@@ -854,10 +658,23 @@ int main(int argc, char **argv) {
 
     if (socket_name.length() > 6 && strncmp(socket_name_str, "ipc:", 4) == 0)
     {
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+        if (strncmp(socket_name_str, "ipc:///tmp/", 11) == 0) {
+            socket_name_ss << "ipc://" << getenv("NSEXEC_TMP_PATH") << '/' << &(socket_name_file[11]);
+            socket_name = socket_name_ss.str();
+            socket_name_str = strdup(socket_name_ss.str().c_str());
+            socket_name_file = socket_name_str;
+        }
+#endif
         socket_name_file = &(socket_name_file[6]);
     }
 
-
+#ifdef SWIGVM_LOG_CLIENT
+    cerr << "### SWIGVM starting " << argv[0] << " with name '" << socket_name
+         << " (" << ::getppid() << ',' << ::getpid() << "): '"
+         << argv[1]
+         << '\'' << endl;
+#endif
     pthread_t check_thread;
     if (!remote_client)
         pthread_create(&check_thread, NULL, check_thread_routine, NULL);
@@ -881,27 +698,81 @@ reinit:
     if (remote_client) socket.bind(socket_name_str);
     else socket.connect(socket_name_str);
 
-    meta.sock = &socket;
-    meta.exch = &exchandler;
+    SWIGVM_params->sock = &socket;
+    SWIGVM_params->exch = &exchandler;
 
-    if (!send_init(socket, socket_name, meta)) {
-        if (!remote_client && exchandler.has_exception) {
-            send_close(socket, exchandler.exception_message, meta);
+    if (!send_init(socket, socket_name)) {
+        if (!remote_client && exchandler.exthrowed) {
+            send_close(socket, exchandler.exmsg);
             return 1;
         }
         goto reinit;
     }
 
-    LanguagePlugin *vm = NULL;
+    SWIGVM_params->dbname = (char*) g_database_name.c_str();
+    SWIGVM_params->dbversion = (char*) g_database_version.c_str();
+    SWIGVM_params->script_name = (char*) g_script_name.c_str();
+    SWIGVM_params->script_schema = (char*) g_script_schema.c_str();
+    SWIGVM_params->current_user = (char*) g_current_user.c_str();
+    SWIGVM_params->current_schema = (char*) g_current_schema.c_str();
+    SWIGVM_params->script_code = (char*) g_source_code.c_str();    
+    SWIGVM_params->session_id = g_session_id;
+    SWIGVM_params->statement_id = g_statement_id;
+    SWIGVM_params->node_count = g_node_count;
+    SWIGVM_params->node_id = g_node_id;
+    SWIGVM_params->vm_id = g_vm_id;
+    SWIGVM_params->singleCallMode = g_singleCallMode;
+
+    SWIGVM *vm = NULL;
     try {
-        vm = new CPPPlugin(meta);
-        if (meta.singleCallMode) {
-            UDFClient::EmptyDTO noArg; // used as dummy arg
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+        vm = new Protegrity(false);
+#else
+        if (strcmp(argv[2], "lang=python")==0)
+        {
+#ifdef ENABLE_PYTHON_VM
+                vm = new PythonVM(false);
+#else
+                send_close(socket, "Unknown or unsupported VM type");
+                return 1;
+#endif
+        } else if (strcmp(argv[2], "lang=r")==0)
+        {
+#ifdef ENABLE_R_VM
+                vm = new RVM(false);
+#else
+            send_close(socket, "Unknown or unsupported VM type");
+            return 1;
+#endif
+        } else if (strcmp(argv[2], "lang=java")==0)
+        {
+#ifdef ENABLE_JAVA_VM
+            vm = new JavaVMach(false);
+#else
+            send_close(socket, "Unknown or unsupported VM type");
+            return 1;
+#endif
+        } else if (strcmp(argv[2], "lang=cpp")==0)
+        {
+#ifdef ENABLE_CPP_VM
+            vm = new CPPVM(false);
+#else
+            send_close(socket, "Unknown or unsupported VM type: CPP");
+            return 1;
+#endif
+        } else {
+            send_close(socket, "Unknown or unsupported VM type");
+            return 1;
+        }
+#endif
+
+        if (g_singleCallMode) {
+            ExecutionGraph::EmptyDTO noArg; // used as dummy arg
             for (;;) {
                 // in single call mode, after MT_RUN from the client,
                 // EXASolution responds with a CALL message that specifies
                 // the single call function to be made
-                if (!send_run(socket, meta)) {break;}
+                if (!send_run(socket)) {break;}
                 assert(g_singleCallFunction != SC_FN_NIL);
                 try {
                     std::string result;
@@ -915,43 +786,63 @@ reinit:
                     case SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
                         assert(!g_singleCall_ImportSpecificationArg.isEmpty());
                         result = vm->singleCall(g_singleCallFunction,g_singleCall_ImportSpecificationArg);
-                        g_singleCall_ImportSpecificationArg = UDFClient::ImportSpecification();  // delete the last argument
+                        g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification();  // delete the last argument
                         break;
                     case SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
                         assert(!g_singleCall_StringArg.isEmpty());
                         result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
                         break;
                     }
-                    send_return(socket,result, meta);
-                    if (!send_done(socket, meta)) {
+                    send_return(socket,result);
+                    if (!send_done(socket)) {
                         break;
                     }
                 } catch (const swig_undefined_single_call_exception& ex) {
-                   send_undefined_call(socket,ex.fn(), meta);
+                   send_undefined_call(socket,ex.fn());
                 }
             }
         } else {
             for(;;) {
-                if (!send_run(socket, meta))
+                if (!send_run(socket))
+                {
                     break;
-                meta.inp_force_finish = false;
-                while(!vm->run());
-                if (!send_done(socket, meta))
+                }
+                SWIGVM_params->inp_force_finish = false;
+                while(!vm->run()) {
+                }
+                if (!send_done(socket))
+                {
                     break;
+                }
             }
         }
-        vm->shutdown(); delete vm; vm = NULL;
-        send_finished(socket, meta);
-    }
-    catch (std::exception &err) {
-        send_close(socket, err.what(), meta);
+        if (vm)
+        {
+            vm->shutdown();
+            delete vm;
+            vm = NULL;
+        }
+        send_finished(socket);
+        std::cerr << "stm652: sent finish" << std::endl;
+    } catch (std::exception &err) {
+        send_close(socket, err.what()); socket.close();
+#ifdef SWIGVM_LOG_CLIENT
+        cerr << "### SWIGVM crashing with name '" << socket_name
+             << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what() << endl;
+#endif
+        goto error;
+    } catch (...) {
+        send_close(socket, "Internal/Unknown error throwed"); socket.close();
+#ifdef SWIGVM_LOG_CLIENT
+        cerr << "### SWIGVM crashing with name '" << socket_name
+             << " (" << ::getppid() << ',' << ::getpid() << ')' << endl;
+#endif
         goto error;
     }
-    catch (...) {
-        send_close(socket, "Internal/Unknown error throwed", meta);
-        socket.close();
-        goto error;
-    }
+#ifdef SWIGVM_LOG_CLIENT
+    cerr << "### SWIGVM finishing with name '" << socket_name
+         << " (" << ::getppid() << ',' << ::getpid() << ')' << endl;
+#endif
     keep_checking = false;
     socket.close();
     if (!remote_client) {
@@ -968,6 +859,7 @@ error:
         delete vm;
         vm = NULL;
     }
+
     socket.close();
     if (!remote_client) {
         ::pthread_cancel(check_thread);

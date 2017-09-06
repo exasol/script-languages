@@ -21,7 +21,7 @@ For instance, if you have EXASOL in a virtual machine with a local ip addree 192
 
 
 ```
-docker import http://192.168.56.104:2580/default/EXAClusterOS/ScriptLanguages-6.0.0.tar.gz mydockname
+docker import http://192.168.56.104:2580/default/EXAClusterOS/ScriptLanguages-2017-01-30.tar.gz mydockname
 ```
 Now we start the container and share the folder `src` like this:
 
@@ -32,13 +32,14 @@ docker run -v `pwd`/src:/src --name=mydockname -it mydockname /bin/bash
 `src` is no mounted as `/src` inside the container:
 
 ```
-root@d77384db2ef8:/# cd /src/
-root@d77384db2ef8:/src# ls
-Makefile  main.cc  script_client.proto  wrapper.h
-root@d77384db2ef8:/src#
+root@d673f112aaca:~# cd /src
+root@d673f112aaca:/src# ls
+Makefile  cpp.h         scriptDTO.h          scriptDTOWrapper.h  zmqcontainer.proto
+cpp.cpp   scriptDTO.cc  scriptDTOWrapper.cc  swigcontainers.h    zmqcontainerclient.cc
 ```
 
 Typing `make` downloads some dependencies, builds the client and stores it in `cppclient.tar.gz`.
+Note: there may also be some warning regarding the use of a deprecated feature in the jsoncpp library.
 
 ## Deploying the client
 
@@ -51,10 +52,11 @@ curl -vX PUT -T src/cppclient.tar.gz http://w:writepw@192.168.56.104:2580/cpp/cp
 Finally, in order to use C++ in SQL, you need to inform the SQL compiler about the new language. To do so in your current SQL session, you need to modify the session/system parameter SCRIPT_LANGUAGES, for instance like this:
 
 ```
-alter session set script_languages = 'PYTHON=builtin_python R=builtin_r JAVA=builtin_java CPP=localzmq+protobuf:///bfsdefault/default/EXAClusterOS/ScriptLanguages-6.0.0#buckets/bfsdefault/cpp/cppclient/cppclient';
+alter session set script_languages = 'PYTHON=builtin_python R=builtin_r JAVA=builtin_java CPP=localzmq+protobuf:///bfsdefault/default/EXAClusterOS/ScriptLanguages-2017-01-30?lang=cpp#buckets/bfsdefault/cpp/cppclient/cppclient';
 ```
 
-Note:If you are using `alter session`, you need to re-issue the command above when you start a new session.
+Note: as we are using `alter session`, you need to re-issue the command above when you start a new session.
+An alternative would be to use `alter system`.
 
 ## Example
 Now C++ is available as script language:
@@ -62,11 +64,9 @@ Now C++ is available as script language:
 ```
 create or replace cpp scalar script csin(x double) returns double as
 
-using namespace UDFClient;
-
 #include <cmath>
 
-void run_cpp(const Metadata& meta, InputTable& iter, OutputTable& res)
+void run_cpp(const SWIGMetadata& meta, SWIGTableIterator& iter, SWIGResultHandler& res)
 {
         res.setDouble(0,sin(iter.getDouble(0)));
         res.next();
@@ -74,8 +74,6 @@ void run_cpp(const Metadata& meta, InputTable& iter, OutputTable& res)
 }
 
 /
-
-
 
 select csin(32);
 ```
