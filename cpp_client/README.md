@@ -66,11 +66,10 @@ create or replace cpp scalar script csin(x double) returns double as
 
 #include <cmath>
 
-void run_cpp(const SWIGMetadata& meta, SWIGTableIterator& iter, SWIGResultHandler& res)
+void run_cpp(SWIGMetadata& meta, SWIGTableIterator& iter, SWIGResultHandler& res)
 {
         res.setDouble(0,sin(iter.getDouble(0)));
         res.next();
-        res.flush();
 }
 
 /
