@@ -1,5 +1,14 @@
 # CPP Client
 
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Building the client](#building-the-client)
+3. [Deploying the client](#deploying-the-client)
+4. [Basic Example](#basic-example)
+5. [Example of an aggregating UDF](#example-of-an-aggregating-udf)
+6. [Example of an emitting UDF](#example-of-an-emitting-udf)
+
 ## Overview
 This script language client implements C++ as a
 language for EXASOL. Users can provide C++ code in CREATE SCRIPT
@@ -78,7 +87,7 @@ select csin(32);
 ```
 
 
-### Example of an aggregating UDF (set-returns)
+### Example of an aggregating UDF
 This example shows how to iterate over a incoming set of data by using
 the `next()` method of the `SWIGTableIterator`.
 Please note that C++ UDFs don't make a difference between "returning" and "emitting" values.
