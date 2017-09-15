@@ -100,8 +100,8 @@ create or replace cpp set script sum_of_squares_cpp(x float) returns float as
 void run_cpp(SWIGMetadata& meta, SWIGTableIterator& iter, SWIGResultHandler& res)
 {
     double acc = 0.0;
-	do {		
-		double current = iter.getDouble(0);
+    do {         
+        double current = iter.getDouble(0);
         acc += current*current;
     } while (iter.next());
     res.setDouble(0,acc);
@@ -157,7 +157,7 @@ create or replace cpp set script duplicate_rows_cpp(x int) emits (x int) as
 
 void run_cpp(SWIGMetadata& meta, SWIGTableIterator& iter, SWIGResultHandler& res)
 {
-	do {
+    do {
         int64_t current = iter.getInt64(0);
         res.setInt64(0,current);
         res.next();  // first emit per input row
