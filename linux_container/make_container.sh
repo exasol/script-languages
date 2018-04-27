@@ -1,15 +1,17 @@
 #!/bin/bash
+DOCKER="docker"
 VERSION_NAME="ScriptLanguages-"$(date --iso-860)
 echo Building image
-docker build --rm=true --tag exasol/script_lang_base_container .
+$DOCKER build --rm=true --tag exasol/script_lang_base_container .
 echo Creating image
-docker run --dns=172.17.0.1 --name exasol_script_lang_base_container exasol/script_lang_base_container 
-docker stop exasol_script_lang_base_container
 echo Exporting container
-docker export exasol_script_lang_base_container > $VERSION_NAME.tar
+$DOCKER run --name exasol_script_lang_base_container exasol/script_lang_base_container 
+$DOCKER stop exasol_script_lang_base_container
+echo Exporting container
+$DOCKER export exasol_script_lang_base_container > $VERSION_NAME.tar
 echo Cleanup Docker
-docker rm exasol_script_lang_base_container
-docker rmi exasol/script_lang_base_container
+$DOCKER rm exasol_script_lang_base_container
+$DOCKER rmi exasol/script_lang_base_container
 echo Preparing Container:
 echo 1. Unpack
 mkdir $VERSION_NAME

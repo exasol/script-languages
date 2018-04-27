@@ -119,7 +119,7 @@ version of the Linux container, we also provide a small shell script
 in folder [linux_container](linux_container) which cares about some 
 packaging details.
 
-###### Please note that all files in the Linux container are owned by the same operating system user that is used to run the UDF. This means that files in the Linux container like /etc/shadow are readable by any database user that can execute UDF scripts. As a consequence, when creating a new Linux container, you have to make sure that it does not contain any sensitiv data. If you need to access these kind of data in UDFs, please use a __private__ bucket to store them.
+###### Please note that all files in the Linux container are owned by the same operating system user that is used to run the UDF. This means that files in the Linux container like /etc/shadow are readable by any database user that can execute UDF scripts. As a consequence, when creating a new Linux container, you have to make sure that it does not contain any sensitive data. If you need to access these kind of data in UDFs, please use a __private__ bucket to store them.
 
 ## Script language clients
 
