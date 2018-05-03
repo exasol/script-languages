@@ -20,6 +20,7 @@ RUN apt-get -y update && \
         scons \
         libssl-dev \
         wget \
+        unzip \
         libpcre3-dev \
         python-cffi \
         python-cryptography \
@@ -71,7 +72,34 @@ RUN apt-get -y update && \
         r-cran-gridextra \
         r-cran-gtable \
         r-cran-latticeextra \
-        r-cran-randomforest && \
+        r-cran-randomforest \
+	r-cran-bradleyterry2 \
+	r-cran-brglm \
+	r-cran-car \
+	r-cran-caret \
+	r-cran-colorspace \
+	r-cran-dichromat \
+	r-cran-digest \
+	r-cran-foreach \
+	r-cran-ggplot2 \
+	r-cran-gtools \
+	r-cran-iterators \
+	r-cran-labeling \
+	r-cran-lme4 \
+	r-cran-magrittr \
+	r-cran-minqa \
+	r-cran-munsell \
+	r-cran-nloptr \
+	r-cran-plyr \
+	r-cran-profilemodel \
+	r-cran-proto \
+	r-cran-rcpp \
+	r-cran-rcppeigen \
+	r-cran-reshape2 \
+	r-cran-scales \
+	r-cran-stringr \
+        maven \
+        git && \
     pip3 install protobuf && \
     easy_install pytz && \
     wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
@@ -80,6 +108,8 @@ RUN apt-get -y update && \
     rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
     Rscript -e 'install.packages("rredis",repos = "http://cran.r-project.org")' && \
     Rscript -e 'install.packages("data.table",repos = "http://cran.r-project.org")' && \
+    Rscript -e 'install.packages("htmltools",repos = "http://cran.r-project.org")' && \
+    Rscript -e 'install.packages("flashClust",repos = "http://cran.r-project.org")' && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
