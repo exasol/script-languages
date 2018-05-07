@@ -109,6 +109,8 @@ message exascript_info {
     optional string meta_info = 12;
     required string script_schema = 13;
     optional string current_user = 14;
+    optional string current_schema = 15;
+    optional string scope_user = 16;
 }
 message exascript_ping {
     // the string from exascript_client message
@@ -172,6 +174,7 @@ enum single_call_function_id {
     SC_FN_DEFAULT_OUTPUT_COLUMNS = 1;
     SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL = 2;
     SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC = 3;
+    SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC = 4;
 }
 
 
@@ -188,11 +191,21 @@ message import_specification_rep {
     repeated key_value_pair parameters = 5;
 }
 
+message export_specification_rep {
+    required bool has_truncate = 1;
+    required bool has_replace = 2;
+    optional string created_by = 3;
+    repeated string source_column_names = 4;
+    optional connection_information_rep connection_information = 5;
+    optional string connection_name = 6;
+    repeated key_value_pair parameters = 7;
+}
 
 message exascript_single_call_rep {
     required single_call_function_id fn = 1;
     optional import_specification_rep import_specification = 2;
     optional string json_arg = 3;   // Will be refactored in separate branch, just temporary
+    optional export_specification_rep export_specification = 4;
 }
 
 // --- general request and response messages -----------------------------------
