@@ -1,6 +1,5 @@
 FROM ubuntu:16.04
 
-
 COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc 
 
 RUN apt-get -y update && \
@@ -59,6 +58,7 @@ RUN apt-get -y update && \
         python-pandas \
         python-redis \
         python-scipy \
+        python-boto \
         r-cran-rcurl \
         r-cran-xml \
         r-cran-formula \
@@ -101,6 +101,7 @@ RUN apt-get -y update && \
         maven \
         git && \
     pip3 install protobuf && \
+    pip install azure-storage && \
     easy_install pytz && \
     wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
