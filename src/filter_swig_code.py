@@ -1,34 +1,10 @@
 import os
 import tarfile
 import re
+import sys
 
 JAVA_SRC_PATH = 'java_src'
 
-def build_integrated(target, source):
-    assert(len(target) == 1 and len(source) > 0)
-    builddir = '.'
-    RE='/usr'
-
-    output = []
-    for fname in source:
-        fname_short = str(fname)
-        if fname_short.startswith(builddir):
-            fname_short = fname_short[len(builddir):]
-        fvar = 'integrated_' + fname_short.lower().replace('.', '_').replace('/', '_')
-        flines = []
-        for line in open(str(fname)):
-            line = line.replace(", PACKAGE='exascript_r'", '')
-            line = line.replace('\\', '\\\\')
-            line = line.replace(r'"', r'\"')
-            line = line.replace('\r', r'\r')
-            line = line.replace('\n', r'\n')
-            line = line.replace('RUNTIME_PATH', RE)
-            flines.append(line)
-        output.append('static const char *' + fvar + ' = "' + ''.join(flines) + '";\n');
-    fd = open(str(target[0]), 'w')
-    fd.write(''.join(output))
-    fd.close()
-    return 0
 
 
 def filter_swig_code(target, source):
@@ -44,6 +20,7 @@ def filter_swig_code(target, source):
     #     RE = env['CURRENTTOOLCHAIN']
 
     target = str(target[0]); source = str(source[0])
+    print "filter_swig_code: reading file ", str(source)
     output = []
     rofile = open(source)
     for line in rofile:
@@ -110,6 +87,7 @@ def filter_swig_code(target, source):
     fd.write('\n'.join(output))
     fd.write('\n')
     fd.close();
+    print "filter_swig_code: wrote file ", str(target)
     # piggyback on exascript_java.cc target to patch *.java files (avoids error from multiple ways to build target)
     if source.endswith('_java_tmp.cc'):
         filter_java_swig_code(builddir)
@@ -145,13 +123,9 @@ def filter_java_swig_code( builddir='' ):
 
 
 
-
-build_integrated(["exascript_r_int.h"], ["exascript_r.R", "exascript_r_wrap.R", "exascript_r_preset.R"])
-filter_swig_code(["exascript_r.cc"], ["exascript_r_tmp.cc"])
-filter_swig_code(["exascript_java.cc"], ["exascript_java_tmp.cc"])
-build_integrated(["exascript_java_int.h"], ["java_src/com/exasol/swig/exascript_java.java", "java_src/com/exasol/swig/exascript_javaJNI.java", "java_src/com/exasol/swig/SWIGVM_datatype_e.java", "java_src/com/exasol/swig/SWIGVM_itertype_e.java", "java_src/com/exasol/swig/Metadata.java", "java_src/com/exasol/swig/TableIterator.java", "java_src/com/exasol/swig/ResultHandler.java", "java_src/com/exasol/swig/ConnectionInformationWrapper.java", "java_src/com/exasol/swig/ImportSpecificationWrapper.java", "java_src/com/exasol/swig/SWIGTYPE_p_ExecutionGraph__ImportSpecification.java", "java_src/com/exasol/swig/ExportSpecificationWrapper.java", "java_src/com/exasol/swig/SWIGTYPE_p_ExecutionGraph__ExportSpecification.java"])
-build_integrated(["exascript_python_int.h"], ["exascript_python.py", "exascript_python_wrap.py", "exascript_python_preset.py"])
-filter_swig_code(["exascript_python.cc"], ["exascript_python_tmp.cc"])
-filter_swig_code(["exascript_java.h"], ["exascript_java_tmp.h"])
-filter_swig_code(["exascript_r.h"], ["exascript_r_tmp.h"])
-filter_swig_code(["exascript_python.h"], ["exascript_python_tmp.h"])
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print 'Usage: filter_swig_code.py target source'
+        sys.exit(1)
+    print "filtering swig code ", str([sys.argv[1]]), str([sys.argv[2]])
+    filter_swig_code([sys.argv[1]], [sys.argv[2]])
