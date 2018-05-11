@@ -52,7 +52,7 @@ echo done exporting
 echo ----------------------------
 echo "curl template: (for a bucketfs that is running on port 2580 at 192.168.122.158):"
 echo 
-echo "curl -v -X PUT -T $PREP.tar.gz http://w:w@192.168.122.158:2580/bucketname/$TARGET.tar.gz"
+echo "curl -v -X PUT -T exports/$TARGET.tar.gz http://w:w@192.168.122.158:2580/bucketname/$TARGET.tar.gz"
 echo
 echo SQL-template:
 echo 
