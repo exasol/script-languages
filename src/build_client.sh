@@ -4,7 +4,7 @@
 PYTHON_PREFIX="/usr"
 
 
-optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,python-prefix:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,python-prefix:,python-syspath:' -- "$@")
 
 eval set -- "$optarr"
 
@@ -15,6 +15,7 @@ while true; do
         --output-dir) OUTPUTDIR="$2"; shift 2;;
         --enable-python) ENABLE_PYTHON_IMPL="yes"; shift 1;;
         --python-prefix) PYTHON_PREFIX="$2"; shift 2;;
+        --python-syspath) PYTHON_SYSPATH="$2"; shift 2;;
         --enable-r) ENABLE_R_IMPL="yes"; shift 1;;
         --enable-java) ENABLE_JAVA_IMPL="yes"; shift 1;;
         -h|--help) echo "Usage: $0 --src-dir=<dir> --build-dir=<dir> --output-dir=<>"
@@ -112,6 +113,21 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     swig -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
     swig -DEXTERNAL_PROCESS -c++ -python -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
 
+    mv exascript_python_preset.py exascript_python_preset.py_orig
+    echo "import sys, os" > exascript_python_preset.py
+    echo "sys.path.append('$PYTHON_PREFIX/lib/python2.7')" >> exascript_python_preset.py
+    echo "sys.path.append('$PYTHON_PREFIX/lib/python2.7/site-packages')" >> exascript_python_preset.py
+    echo "sys.path.append('$PYTHON_PREFIX/lib/python2.7/dist-packages')" >> exascript_python_preset.py
+    if [ ! "X$PYTHON_SYSPATH" = "X" ]; then
+        echo "sys.path.extend($PYTHON_SYSPATH)" >> exascript_python_preset.py
+    fi
+    
+    echo "************************************"
+    cat exascript_python_preset.py
+    echo "************************************"
+
+    cat exascript_python_preset.py_orig >> exascript_python_preset.py
+    
     python ./build_integrated.py exascript_python_int.h exascript_python.py exascript_python_wrap.py exascript_python_preset.py || die "Failed build_integrated"
     python ./filter_swig_code.py exascript_python.h exascript_python_tmp.h || die "Failed: filter_swig_code.py exascript_python.h exascript_python_tmp.h"
     python ./filter_swig_code.py exascript_python.cc exascript_python_tmp.cc || die "exascript_python.cc exascript_python_tmp.cc"
