@@ -3,12 +3,61 @@
 ###### Please note that this is an open source project which is officially supported by EXASOL. For any question, you can contact our support team.
 
 ## Table of Contents
-1. [Overview](#overview)
-2. [EXASOL script language protocol](#exasol-script-language-protocol)
-3. [Linux Container for script languages](#linux-container-for-script-languages)
-4. [Script language clients](#script-language-clients)
+1. [About](#about)
+2. [Prerequisites](#prerequisites)
+3. [Quickstart](#quickstart)
+
+<!--
+4. [Overview](#overview)
+5. [EXASOL script language protocol](#exasol-script-language-protocol)
+6. [Linux Container for script languages](#linux-container-for-script-languages)
+7. [Script language clients](#script-language-clients)
+-->
+
+## About
+This project contains implementations for user defined functions that can be used in the EXASOL database (version 6.0.0 or later)
+
+## Prerequisites
+In order to build this project, you need
+* Linux or MacOS X (not really test yet)
+* Docker
+
+In order to follow the quickstart guide, you additionally need
+* Write-access to a bucket in a bucketfs in an EXASOL installation
+* curl
+* A SQL client connecting to the same EXASOL installation
+
+## Quickstart
+0. Choose a flavor. Currently we have the following available: `mini`, `standard`, `conda`.
+This project support different versions of script language environments with different sets of libraries and languages.
+We call these versions _flavors_ for no particular reason.
+Each flavor has its own set of build-files in a corresponding subfolder of [dockerfiles](dockerfiles).
+1. create the language container (we choose to use the `mini` flavor which is the smallest of the currently available flavors and only support the Python language)
+```bash
+$ ./build --flavor=mini
+```
+2. export it into a standalone archive
+```bash
+$ ./export --flavor=mini --target=myminiudfs
+```
+This creates the file `exports/myminiudfs.tar.gz`
+3. Upload the file into bucketfs (we assume the password `w` and the bucketname `funwithudfs` in a bucketfs that is running on port `2580` on machine `192.168.122.158`)
+```bash
+curl -v -X PUT -T exports/myminiudfs.tar.gz w:w@192.168.122.158:2580/funwithudfs/myminiudfs.tar.gz
+```
+4. In SQL you activate the language implementation by using a statement like this
+```sql
+ALTER SESSION SET SCRIPT_LANGUAGES='MYPYTHON=localzmq+protobuf:///bucketfsname/funwithudfs/myminiudfs?lang=python#buckets/bucketfsname/funwithudfs/myminiudfs/exaudf/exaudfclient';
+```
+5. Afterwards you may choose to remove the docker images for this flavor
+```bash
+./clean --flavor=mini
+```
+
+(Please note, at the moment we do not delete the Linux image that is used as basis)
 
 
+<!--
 ## Overview
 
 EXASOL is shipped with the support for various script languages: Java, Python, R and Lua. But 
@@ -126,3 +175,4 @@ packaging details.
 Some examples of script language implementations are provided in the
 corresponding subfolders, including the details about how to build these
 clients.
+-->
