@@ -1,0 +1,13 @@
+#!/bin/sh
+die() { echo "ERROR:" "$@" >&2; exit 1; }
+
+docker build . --tag exaudf/test_mini -f emulator/Dockerfile.emulator
+
+docker run --detach --name test_mini_container exaudf/test_mini sleep 1000000
+
+docker exec test_mini_container mkfifo /tmp/fff
+
+docker exec --detach test_mini_container python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input.csv exasol_emulator/output.csv exasol_emulator/script.py
+docker exec test_mini_container /exaudf/exaudfclient ipc:///tmp/fff lang=python
+docker exec test_mini_container cat exasol_emulator/output.csv
+docker rm -f test_mini_container
