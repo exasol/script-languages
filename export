@@ -12,7 +12,7 @@ while true; do
         --target) TARGET="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
-		   echo "  [--target]     result file: exports/<target-name>.tar.gz"
+		   echo "  [--target]     result file: <target-name>.tar.gz"
 		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
 		   echo "  [-h|--help]    Print this help."; exit 0;;
         --) shift; break;;
@@ -24,10 +24,21 @@ done
 [ "X$TARGET" = "X" ] && die "Missing mandatory argument --target"
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
+
+if [ -e "$TARGET.tar.gz" ]; then
+echo "Warning: $TARGET.tar.gz exists"
+while true; do
+    read -p "Do you want to overwrite $TARGET.tar.gz? (please answer \"yes\" or \"no\"): " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+fi
+
 docker run --name releasecontainer exaudf/release_$FLAVOR
-echo "Exporting into target exports/$TARGET"
 mkdir -p tmp
-mkdir -p exports
 PREP="./tmp/$TARGET"
 docker export releasecontainer -o "$PREP.tar"
 echo Cleanup Docker
@@ -45,14 +56,14 @@ ln -s /conf/resolv.conf $PREP/etc/resolv.conf
 ln -s /conf/hosts $PREP/etc/hosts
 echo 4. Package
 tar -C $PREP -zcf $PREP.tar.gz $(ls $PREP)
-mv $PREP.tar.gz exports 
+mv $PREP.tar.gz . 
 echo 5. Cleanup temp files
 rm -rf $PREP.tar $PREP
 echo done exporting
 echo ----------------------------
 echo "curl template: (for a bucketfs that is running on port 2580 at 192.168.122.158):"
 echo 
-echo "curl -v -X PUT -T exports/$TARGET.tar.gz http://w:w@192.168.122.158:2580/bucketname/$TARGET.tar.gz"
+echo "curl -v -X PUT -T $TARGET.tar.gz http://w:w@192.168.122.158:2580/bucketname/$TARGET.tar.gz"
 echo
 echo SQL-template:
 echo 
