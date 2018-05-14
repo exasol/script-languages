@@ -38,8 +38,9 @@ done
 fi
 
 docker run --name releasecontainer exaudf/release_$FLAVOR
-mkdir -p tmp
-PREP="./tmp/$TARGET"
+
+TMPDIR=$(mktemp -d --tmpdir=.)
+PREP="./$TMPDIR/$TARGET"
 docker export releasecontainer -o "$PREP.tar"
 echo Cleanup Docker
 docker stop releasecontainer
@@ -57,6 +58,7 @@ ln -s /conf/hosts $PREP/etc/hosts
 echo 4. Package
 tar -C $PREP -zcf $PREP.tar.gz $(ls $PREP)
 mv $PREP.tar.gz . 
+rmdir $TMPDIR
 echo 5. Cleanup temp files
 rm -rf $PREP.tar $PREP
 echo done exporting
