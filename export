@@ -17,7 +17,7 @@ while true; do
 		   echo "  [--target]     result file: <target-name>.tar.gz"
 		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
 		   echo "  [--rm]         Remove the exported file (tar.gz)"
-		   echo "  [--deploy]     Deploy the export into specified bucket (i.e. --deploy=http://w:w@192.168.122.158:2580/myudfs/)
+		   echo "  [--deploy]     Deploy the export into specified bucket (i.e. --deploy=http://w:w@192.168.122.158:2580/myudfs/)"
 		   echo "  [-h|--help]    Print this help."; exit 0;;
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
