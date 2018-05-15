@@ -7,102 +7,27 @@ RUN apt-get -y update && \
                        software-properties-common \
                        coreutils \
                        locales \
-                       openjdk-8-jdk-headless \
-                       r-base \
-                       r-base-dev \
                        libzmq-dev \
                        protobuf-compiler \
                        libprotobuf-dev \
-                       scons \
-                       libssl-dev \
                        wget \
-                       unzip \
-                       libpcre3-dev \
-                       r-cran-rcurl \
-                       r-cran-xml \
-                       r-cran-formula \
-                       r-cran-rcolorbrewer \
-                       r-cran-rodbc \
-                       r-cran-acepack \
-                       r-cran-chron \
-                       r-cran-e1071 \
-                       r-cran-fastcluster \
-                       r-cran-gbm \
-                       r-cran-gridextra \
-                       r-cran-gtable \
-                       r-cran-latticeextra \
-                       r-cran-randomforest \
-                       r-cran-bradleyterry2 \
-                       r-cran-brglm \
-                       r-cran-car \
-                       r-cran-caret \
-                       r-cran-colorspace \
-                       r-cran-dichromat \
-                       r-cran-digest \
-                       r-cran-foreach \
-                       r-cran-ggplot2 \
-                       r-cran-gtools \
-                       r-cran-iterators \
-                       r-cran-labeling \
-                       r-cran-lme4 \
-                       r-cran-magrittr \
-                       r-cran-minqa \
-                       r-cran-munsell \
-                       r-cran-nloptr \
-                       r-cran-plyr \
-                       r-cran-profilemodel \
-                       r-cran-proto \
-                       r-cran-rcpp \
-                       r-cran-rcppeigen \
-                       r-cran-reshape2 \
-                       r-cran-scales \
-                       r-cran-stringr \
-                       maven \
-                       git && \
+                       python \
+                       unzip build-essential \
+                       libpcre3-dev && \
     wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
     (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
     rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
-    Rscript -e 'install.packages("rredis",repos = "http://cran.r-project.org")' && \
-    Rscript -e 'install.packages("data.table",repos = "http://cran.r-project.org")' && \
-    Rscript -e 'install.packages("htmltools",repos = "http://cran.r-project.org")' && \
-    Rscript -e 'install.packages("flashClust",repos = "http://cran.r-project.org")' && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
     apt-get -y autoremove && \
-    echo /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server >> /etc/ld.so.conf && \
     ldconfig
 
 RUN wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
 RUN /bin/bash miniconda.sh -b p /opt/conda && rm miniconda.sh
 
-RUN /opt/conda/bin/conda install -y \
-  cryptography \
-  cffi \
-  enum34 \
-  docutils \
-  idna \
-  ipaddress \
-  ipython \
-  pip \
-  pyasn1 \
-  pyasn1-modules \
-  pycparser \
-  pyflakes \
-  pygments \
-  pyodbc \
-  openssl \
-  cython \
-  scikit-learn \
-  json-c \
-  lxml \
-  numpy \
-  setuptools \
-  pandas \
-  redis \
-  scipy \
-  boto
+#RUN /opt/conda/bin/conda install -y \
 
 RUN /opt/conda/bin/conda clean -ystp
 
