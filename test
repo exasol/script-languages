@@ -1,13 +1,33 @@
 #!/bin/sh
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-docker build . --tag exaudf/test_mini -f emulator/Dockerfile.emulator
+set -x
 
-docker run --detach --name test_mini_container exaudf/test_mini sleep 1000000
+optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
 
-docker exec test_mini_container mkfifo /tmp/fff
+eval set -- "$optarr"
 
-docker exec --detach test_mini_container python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input.csv exasol_emulator/output.csv exasol_emulator/script.py
-docker exec test_mini_container /exaudf/exaudfclient ipc:///tmp/fff lang=python
-docker exec test_mini_container cat exasol_emulator/output.csv
-docker rm -f test_mini_container
+while true; do
+    case "$1" in
+        --flavor) FLAVOR="$2"; shift 2;;
+        -h|--help) echo "Usage: $0"
+		   echo "Options:"
+		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+		   echo "  [-h|--help]    Print this help."; exit 0;;
+        --) shift; break;;
+        *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
+    esac
+done
+
+[ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
+
+docker build . --tag exaudf/test_$FLAVOR -f dockerfiles/$FLAVOR/Dockerfile.test_$FLAVOR
+
+docker run --detach --name test_container_$FLAVOR exaudf/test_$FLAVOR sleep 1000000
+
+docker exec test_container_$FLAVOR mkfifo /tmp/fff
+
+docker exec --detach test_container_$FLAVOR python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input.csv exasol_emulator/output.csv exasol_emulator/script.py
+docker exec test_container_$FLAVOR /exaudf/exaudfclient ipc:///tmp/fff lang=python
+docker exec test_container_$FLAVOR cat exasol_emulator/output.csv
+docker rm -f test_container_$FLAVOR

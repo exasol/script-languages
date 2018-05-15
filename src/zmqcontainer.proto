@@ -1,3 +1,4 @@
+syntax = "proto2";
 // --- data definition ---------------------------------------------------------
 
 enum column_type {

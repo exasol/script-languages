@@ -2,7 +2,7 @@
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 
-optarr=$(getopt -o 'h' --long 'help,flavor:,target:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,flavor:,target:,rm,deploy:' -- "$@")
 
 eval set -- "$optarr"
 
@@ -10,10 +10,14 @@ while true; do
     case "$1" in
         --flavor) FLAVOR="$2"; shift 2;;
         --target) TARGET="$2"; shift 2;;
+        --deploy) DEPLOY="$2"; shift 2;;
+        --rm) DELETE_EXPORT="yes"; shift 1;;
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
 		   echo "  [--target]     result file: <target-name>.tar.gz"
 		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+		   echo "  [--rm]         Remove the exported file (tar.gz)"
+		   echo "  [--deploy]     Deploy the export into specified bucket (i.e. --deploy=http://w:w@192.168.122.158:2580/myudfs/)
 		   echo "  [-h|--help]    Print this help."; exit 0;;
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
@@ -58,15 +62,25 @@ ln -s /conf/hosts $PREP/etc/hosts
 echo 4. Package
 tar -C $PREP -zcf $PREP.tar.gz $(ls $PREP)
 mv $PREP.tar.gz . 
-rmdir $TMPDIR
 echo 5. Cleanup temp files
 rm -rf $PREP.tar $PREP
 echo done exporting
+if [ ! X"$DEPLOY" = "X" ]; then
+echo "Trying to deploy $TARGET.tar.gz using this command:"
+echo "curl -v -X PUT -T $TARGET.tar.gz $DEPLOY/$TARGET.tar.gz"
+curl -v -X PUT -T $TARGET.tar.gz $DEPLOY/$TARGET.tar.gz
+fi
+if [ X"$DELETE_EXPORT" = "Xyes" ]; then
+    rm $TARGET.tar.gz
+fi
 echo ----------------------------
-echo "curl template: (for a bucketfs that is running on port 2580 at 192.168.122.158):"
-echo 
-echo "curl -v -X PUT -T $TARGET.tar.gz http://w:w@192.168.122.158:2580/bucketname/$TARGET.tar.gz"
-echo
+if [ X"$DEPLOY" = "X" ]; then
+    echo "curl template: (for a bucketfs that is running on port 2580 at 192.168.122.158):"
+    echo 
+    echo "curl -v -X PUT -T $TARGET.tar.gz http://w:w@192.168.122.158:2580/bucketname/$TARGET.tar.gz"
+    echo
+fi
 echo SQL-template:
 echo 
 echo "ALTER SESSION SET SCRIPT_LANGUAGES='MYPYTHON=localzmq+protobuf:///bucketfsname/bucketname/$TARGET?lang=python#buckets/bucketfsname/bucketname/$TARGET/exaudf/exaudfclient';"
+rm -r $TMPDIR

@@ -102,7 +102,7 @@ protoc -I. zmqcontainer.proto --cpp_out=. || die "Failed to create C++ proto fil
 protoc zmqcontainer.proto --python_out=. || die "Failed to create Python proto files."
 
 
-export CXXFLAGS="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O3"
+export CXXFLAGS="-I. -I/usr -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O3"
 export CXXFLAGS_UNOPT="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14"
 export LIBS="-lzmq -lprotobuf -lpthread -lcrypto"
 export LDFLAGS=""
@@ -118,14 +118,12 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     echo "sys.path.append('$PYTHON_PREFIX/lib/python2.7')" >> exascript_python_preset.py
     echo "sys.path.append('$PYTHON_PREFIX/lib/python2.7/site-packages')" >> exascript_python_preset.py
     echo "sys.path.append('$PYTHON_PREFIX/lib/python2.7/dist-packages')" >> exascript_python_preset.py
+    echo "sys.path.append('$PYTHON_PREFIX/local/lib/python2.7/site-packages')" >> exascript_python_preset.py
+    echo "sys.path.append('$PYTHON_PREFIX/local/lib/python2.7/dist-packages')" >> exascript_python_preset.py
     if [ ! "X$PYTHON_SYSPATH" = "X" ]; then
         echo "sys.path.extend($PYTHON_SYSPATH)" >> exascript_python_preset.py
     fi
     
-    echo "************************************"
-    cat exascript_python_preset.py
-    echo "************************************"
-
     cat exascript_python_preset.py_orig >> exascript_python_preset.py
     
     python ./build_integrated.py exascript_python_int.h exascript_python.py exascript_python_wrap.py exascript_python_preset.py || die "Failed build_integrated"
