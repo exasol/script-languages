@@ -4,7 +4,7 @@
 #include <openssl/md5.h>
 #include <set>
 #include <jni.h>
-#include <swigcontainers_ext.h>
+#include <exaudflib.h>
 #include <exascript_java_jni_decl.h>
 #include <unistd.h>
 
@@ -70,7 +70,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""
 
     stringstream ss;
 
-    m_exaJavaPath = "/exasol";
+    m_exaJavaPath = "/exaudf";
 
     setClasspath();
     getScriptClassName();  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used

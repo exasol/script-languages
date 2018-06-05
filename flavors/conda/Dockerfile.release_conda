@@ -1,0 +1,3 @@
+FROM exaudf/baseimage_conda
+COPY exasol_extract/exaudf /exaudf
+

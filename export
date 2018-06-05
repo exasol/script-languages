@@ -44,7 +44,7 @@ fi
 docker run --name releasecontainer exaudf/release_$FLAVOR
 
 TMPDIR=$(mktemp -d --tmpdir=.)
-PREP="./$TMPDIR/$TARGET"
+PREP="$TMPDIR/$TARGET"
 docker export releasecontainer -o "$PREP.tar"
 echo Cleanup Docker
 docker stop releasecontainer

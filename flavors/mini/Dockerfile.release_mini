@@ -1,0 +1,3 @@
+FROM exaudf/baseimage_mini
+COPY exasol_extract/exaudf /exaudf
+

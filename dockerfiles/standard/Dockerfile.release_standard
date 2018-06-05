@@ -1,3 +1,0 @@
-FROM exaudf/baseimage_standard
-COPY exasol_extract/exaudf /exaudf
-

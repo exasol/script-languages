@@ -1,0 +1,43 @@
+FROM ubuntu:16.04
+
+COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc 
+
+RUN apt-get -y update && \
+    apt-get -y install \
+                       software-properties-common \
+                       coreutils \
+                       locales \
+                       libzmq-dev \
+                       protobuf-compiler \
+                       libprotobuf-dev \
+                       wget \
+                       python \
+                       unzip build-essential \
+                       libpcre3-dev && \
+    wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
+    tar zxf swig-2.0.4.tar.gz && \
+    (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
+    rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 && \
+    apt-get -y clean && \
+    apt-get -y autoremove && \
+    ldconfig
+
+RUN wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
+RUN /bin/bash miniconda.sh -b p /opt/conda 
+RUN rm /miniconda.sh
+
+RUN /opt/conda/bin/conda install -y scikit-learn
+
+RUN /opt/conda/bin/conda clean -ystp
+
+RUN addgroup --gid 1000 exasolution
+RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution
+
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8  
+
+
+
