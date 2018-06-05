@@ -1,4 +1,4 @@
-#include <swigcontainers_ext.h>
+#include <exaudflib.h>
 #include <R.h>
 #include <Rdefines.h>
 #include <Rembedded.h>

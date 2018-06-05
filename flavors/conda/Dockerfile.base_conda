@@ -25,9 +25,10 @@ RUN apt-get -y update && \
     ldconfig
 
 RUN wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
-RUN /bin/bash miniconda.sh -b p /opt/conda && rm miniconda.sh
+RUN /bin/bash miniconda.sh -b p /opt/conda 
+RUN rm /miniconda.sh
 
-#RUN /opt/conda/bin/conda install -y \
+RUN /opt/conda/bin/conda install -y scikit-learn
 
 RUN /opt/conda/bin/conda clean -ystp
 

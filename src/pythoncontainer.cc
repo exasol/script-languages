@@ -1,4 +1,4 @@
-#include <swigcontainers_ext.h>
+#include <exaudflib.h>
 #include <iostream>
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -9,6 +9,7 @@
 #include <Python.h>
 #include <exascript_python.h>
 #include <exascript_python_int.h>
+#include "scriptoptionlines.h"
 
 #include "script_data_transfer_objects.h"
 
@@ -44,7 +45,7 @@ class SWIGVMContainers::PythonVMImpl {
         PythonVMImpl(bool checkOnly);
         ~PythonVMImpl() {}
         bool run();
-        std::string singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args);
+        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
         void shutdown();
     private:
         string script_code;
@@ -68,12 +69,37 @@ class PythonThreadBlock {
 };
 #endif
 
-PythonVM::PythonVM(bool checkOnly): m_impl(new PythonVMImpl(checkOnly)) { }
+PythonVM::PythonVM(bool checkOnly) {
+    try {
+        m_impl = new PythonVMImpl(checkOnly);
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+
+}
 
 void PythonVM::shutdown() {m_impl->shutdown();}
 
-bool PythonVM::run() { return m_impl->run(); }
-std::string PythonVM::singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args) { return m_impl->singleCall(fn, args); }
+bool PythonVM::run() {
+    try {
+        return m_impl->run();
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+    return false;
+}
+std::string PythonVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+    try {
+        return m_impl->singleCall(fn, args);
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+    return "<this is an error>";
+}
+
 
 #ifndef DISABLE_PYTHON_SUBINTERP
 PyThreadState *PythonVMImpl::main_thread = NULL;
@@ -81,7 +107,30 @@ PyThreadState *PythonVMImpl::main_thread = NULL;
 
 PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 {
+//    script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);
     script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);
+
+//    const string nositeKeyword = "%nosite";
+//    const string whitespace = " \t\f\v";
+//    const string lineEnd = ";";
+//    size_t pos;
+//    string nosite = ExecutionGraph::extractOptionLine(script_code, nositeKeyword, whitespace, lineEnd, pos, [&](const char* msg){throw PythonVM::exception(msg);});
+
+//    cerr << "VALUE of nosite: |" << nosite << "|" << endl;
+
+
+    int noSiteFlag = 0;
+//    if (nosite == "yes") {noSiteFlag=1;}
+//    else if (nosite == "" || nosite == "no") {noSiteFlag=0;}
+//    else throw PythonVM::exception("Invalid value for %nosite option, must be yes or no");
+
+//    cerr << "Value of noSiteFlag: |" << noSiteFlag << "|" << endl;
+
+//    script_code = string("\xEF\xBB\xBF") + script_code;
+
+//    cerr << "Script code after extract option line: " << endl << script_code << endl;
+
+
     script = exatable = globals = retvalue = NULL;
 #ifndef DISABLE_PYTHON_SUBINTERP
     pythread = NULL;
@@ -89,13 +138,27 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 
     if (!Py_IsInitialized()) {
         ::setlocale(LC_ALL, "en_US.utf8");
-        Py_NoSiteFlag = 1;
+        Py_NoSiteFlag = noSiteFlag;
         Py_Initialize();
         PyEval_InitThreads();
 #ifndef DISABLE_PYTHON_SUBINTERP
         main_thread = PyEval_SaveThread();
 #endif
     }
+
+    globals = PyDict_New();
+
+//    PyObject *main_module = PyImport_AddModule("__main__");
+//    if (main_module == nullptr) {
+//        throw PythonVM::exception("Failed to get Python main module");
+//    }
+    //globals = PyModule_GetDict(main_module);
+
+    //PyRun_String("import sys, types, os", Py_single_input,globals, globals);
+    //PyRun_String("sys.modules.setdefault('google', types.ModuleType('google'))", Py_single_input, globals, globals);
+    //PyRun_String("site.main()", Py_single_input, globals, globals);
+
+    //PyRun_String("import sys, types, os;has_mfs = sys.version_info > (3, 5);p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('google',));importlib = has_mfs and __import__('importlib.util');has_mfs and __import__('importlib.machinery');m = has_mfs and sys.modules.setdefault('google', importlib.util.module_from_spec(importlib.machinery.PathFinder.find_spec('google', [os.path.dirname(p)])));m = m or sys.modules.setdefault('google', types.ModuleType('google'));mp = (m or []) and m.__dict__.setdefault('__path__',[]);(p not in mp) and mp.append(p)", Py_single_input,globals, globals);
 
     {   
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -118,7 +181,6 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         PyThreadState_Swap(pythread);
 #endif
 
-        globals = PyDict_New();
         PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
         init_exascript_python();
 
@@ -165,6 +227,8 @@ void PythonVMImpl::shutdown() {
 }
 
 bool PythonVMImpl::run() {
+
+
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode");
 
     {   
@@ -179,7 +243,7 @@ bool PythonVMImpl::run() {
     return true;
 }
 
-std::string PythonVMImpl::singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args) {
+std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode (singleCall)"); // @@@@ TODO: better exception text
     //{
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -199,7 +263,6 @@ std::string PythonVMImpl::singleCall(single_call_function_id fn, const Execution
         {
             abort();
         }
-        // NONONO!!! Simply create and pass the wrapper object!!
         PyObject* argObject = NULL;
 
         if (fn==SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC)

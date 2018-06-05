@@ -1,4 +1,6 @@
 syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
 // --- data definition ---------------------------------------------------------
 
 enum column_type {

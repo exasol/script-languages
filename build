@@ -20,12 +20,12 @@ done
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
 echo Using base docker file: Dockerfile.base_$FLAVOR
-docker build . --tag exaudf/baseimage_$FLAVOR -f dockerfiles/$FLAVOR/Dockerfile.base_$FLAVOR || die "Could not create exaudf/baseimage"
+docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR || die "Could not create exaudf/baseimage"
 echo Using build docker file: Dockerfile.build_$FLAVOR
-docker build . --tag exaudf/build_$FLAVOR -f dockerfiles/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
+docker build . --tag exaudf/build_$FLAVOR -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
 docker container create --name extract exaudf/build_$FLAVOR
 mkdir -p exasol_extract
 docker container cp extract:/exaudf ./exasol_extract
 docker container rm -f extract
-docker build . --no-cache -t exaudf/release_$FLAVOR -f dockerfiles/$FLAVOR/Dockerfile.release_$FLAVOR || die "Could not create exaudf/release"
+docker build . --no-cache -t exaudf/release_$FLAVOR -f flavors/$FLAVOR/Dockerfile.release_$FLAVOR || die "Could not create exaudf/release"
 

@@ -1,0 +1,10 @@
+#FROM exaudf/build_tensorflow
+FROM exaudf/baseimage_tensorflow
+COPY exasol_extract/exaudf /exaudf
+COPY ext/models /models
+#RUN apt install -y ipython
+
+
+# download: https://github.com/adeshpande3/LSTM-Sentiment-Analysis/blob/master/training_data.tar.gz
+# download: https://github.com/adeshpande3/LSTM-Sentiment-Analysis/raw/master/models.tar.gz
+
