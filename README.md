@@ -1,4 +1,5 @@
 # EXASOL Script Languages
+[![Build Status](https://travis-ci.org/EXASOL/script-languages.svg?branch=port-exaudfclient)](https://travis-ci.org/EXASOL/script-languages)
 
 ###### Please note that this is an open source project which is officially supported by EXASOL. For any question, you can contact our support team.
 
