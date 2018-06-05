@@ -3,5 +3,9 @@ language: python
 # Setting sudo to false will cause Travis to use Containers (default in the meantime)
 sudo: false
 
+services:
+    - docker
+
+
 # build a jar with all dependencies. Will also run tests.
 script: "./build --flavor=mini"
