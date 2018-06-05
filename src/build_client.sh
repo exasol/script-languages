@@ -345,7 +345,7 @@ g++ -o zmqcontainerclient zmqcontainerclient.o $CONTAINER_CLIENT_OBJECT_FILES sc
 # Create output files
 cp -a "$BUILDDIR/zmqcontainerclient" "$OUTPUTDIR/exaudfclient" || die "Failed to create $OUTPUTDIR/exaudfclient"
 cp -a "$BUILDDIR/libexaudflib.so" "$OUTPUTDIR/libexaudflib.so" || die "Failed to create $OUTPUTDIR/libexaudflib.so"
-cp -a "$SRCDIR/pylone.cc" "$OUTPUTDIR/" || die "Failed to create $OUTPUTDIR/pylone.cc"
+#cp -a "$SRCDIR/pylone.cc" "$OUTPUTDIR/" || die "Failed to create $OUTPUTDIR/pylone.cc"
 chmod +x "$OUTPUTDIR/exaudfclient" || die "Failed chmod of $OUTPUTDIR/exaudfclient"
 
 
