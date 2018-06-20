@@ -31,6 +31,8 @@ while true; do
     esac
 done
 
+PYTHON_EXECUTABLE=${PYTHON_PREFIX}/bin/python
+
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 [ X"$SRCDIR" = X"" ] && die "Missing mandatory argument --src-dir"
@@ -138,8 +140,8 @@ fi
 if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     echo "Generating Python SWIG code"
     # create python wrapper from swig files
-    swig -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
-    swig -DEXTERNAL_PROCESS -c++ -python -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
+    swig -I${PYTHON_PREFIX}/include/python2.7 -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
+    swig -I${PYTHON_PREFIX}/include/python2.7 -DEXTERNAL_PROCESS -c++ -python -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
 
     mv exascript_python_preset.py exascript_python_preset.py_orig
     echo "import sys, os" > exascript_python_preset.py
@@ -170,7 +172,7 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     python ./filter_swig_code.py exascript_python.cc exascript_python_tmp.cc || die "exascript_python.cc exascript_python_tmp.cc"
 
     CXXFLAGS="-DENABLE_PYTHON_VM -I$PYTHON_PREFIX/include/python2.7 $CXXFLAGS"
-    LIBS="-lpython2.7 $LIBS"
+    LIBS="${PYTHON_PREFIX}/lib/libpython2.7 $LIBS"
     LDFLAGS="-L$PYTHON_PREFIX/lib -Wl,-rpath,$PYTHON_PREFIX/lib $LDFLAGS" 
 
     echo "Compiling Python specific code"

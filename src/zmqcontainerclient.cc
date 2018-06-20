@@ -110,6 +110,18 @@ int main(int argc, char **argv) {
     if (strcmp(argv[2], "lang=python")==0)
     {
 #ifdef ENABLE_PYTHON_VM
+        char *path_var = getenv("PATH");
+        if (path_var == NULL) {
+            throw SWIGVM::exception("PATH env var not set");
+        }
+
+        std::string path_var_str = std::string(path_var);
+        path_var_str.insert(0, "/opt/conda/bin:");
+
+        if (::setenv("PATH", path_var_str.c_str(), 1) == -1) {
+            throw SWIGVM::exception("Failed to set PATH env var");
+        }
+
         vmMaker = [](){return new PythonVM(false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Python support");
