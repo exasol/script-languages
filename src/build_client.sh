@@ -31,8 +31,6 @@ while true; do
     esac
 done
 
-PYTHON_EXECUTABLE=${PYTHON_PREFIX}/bin/python
-
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 [ X"$SRCDIR" = X"" ] && die "Missing mandatory argument --src-dir"
