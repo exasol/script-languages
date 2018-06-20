@@ -172,7 +172,7 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     python ./filter_swig_code.py exascript_python.cc exascript_python_tmp.cc || die "exascript_python.cc exascript_python_tmp.cc"
 
     CXXFLAGS="-DENABLE_PYTHON_VM -I$PYTHON_PREFIX/include/python2.7 $CXXFLAGS"
-    LIBS="${PYTHON_PREFIX}/lib/libpython2.7 $LIBS"
+    LIBS="${PYTHON_PREFIX}/lib/libpython2.7.so $LIBS"
     LDFLAGS="-L$PYTHON_PREFIX/lib -Wl,-rpath,$PYTHON_PREFIX/lib $LDFLAGS" 
 
     echo "Compiling Python specific code"
