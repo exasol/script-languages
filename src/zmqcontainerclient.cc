@@ -111,15 +111,12 @@ int main(int argc, char **argv) {
     {
 #ifdef ENABLE_PYTHON_VM
         char *path_var = getenv("PATH");
-        if (path_var == NULL) {
-            throw SWIGVM::exception("PATH env var not set");
-        }
-
-        std::string path_var_str = std::string(path_var);
-        path_var_str.insert(0, "/opt/conda/bin:");
-
-        if (::setenv("PATH", path_var_str.c_str(), 1) == -1) {
-            throw SWIGVM::exception("Failed to set PATH env var");
+        if (path_var != NULL) {
+            std::string path_var_str = std::string(path_var);
+            path_var_str.insert(0, "/opt/conda/bin:");
+            if (::setenv("PATH", path_var_str.c_str(), 1) == -1) {
+                cerr << "Unable to prefix PATH env variable with /opt/conda/bin";
+            }
         }
 
         vmMaker = [](){return new PythonVM(false);};
