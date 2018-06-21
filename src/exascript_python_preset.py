@@ -1,6 +1,6 @@
 import sys, os
 
-sys.path.append("/opt/conda/lib/python2.7/dist-packages")
+sys.path.append("/usr/lib/python2.7/dist-packages")
 
 from exascript_python import *
 import decimal
