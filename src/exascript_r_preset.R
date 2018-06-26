@@ -5,8 +5,8 @@ options(error = function() traceback(2))
 options(encoding = "UTF-8")
 
 INTERNAL_META_OBJECT__ <- Metadata()
-INTERNAL_INP_OBJECT__ <- NA
-INTERNAL_OUT_OBJECT__ <- NA
+INTERNAL_INP_OBJECT__ <- NULL
+INTERNAL_OUT_OBJECT__ <- NULL
 
 exa <- {
     meta <- INTERNAL_META_OBJECT__

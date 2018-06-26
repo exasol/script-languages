@@ -291,7 +291,7 @@ public:
 
 
 
-class SWIGTableIterator : public AbstractSWIGTableIterator {
+class SWIGTableIterator { //: public AbstractSWIGTableIterator {
     typedef SWIGVMContainers::AbstractSWIGTableIterator* (*CREATE_TABLEITERATOR_FUN)();
 
     AbstractSWIGTableIterator* impl=nullptr;
@@ -349,7 +349,7 @@ public:
 };
 
 
-class SWIGResultHandler: public SWIGRAbstractResultHandler {
+class SWIGResultHandler { //: public SWIGRAbstractResultHandler {
     SWIGRAbstractResultHandler* impl=nullptr;
     typedef SWIGVMContainers::SWIGRAbstractResultHandler* (*CREATE_RESULTHANDLER_FUN)(SWIGVMContainers::SWIGTableIterator*);
 public:
@@ -431,10 +431,10 @@ class PythonVMImpl;
 
 class PythonVM: public SWIGVM {
     public:
-        struct exception: SWIGVM::exception {
-            exception(const char *reason): SWIGVM::exception(reason) { }
-            virtual ~exception() throw() { }
-        };
+//        struct exception: SWIGVM::exception {
+//            exception(const char *reason): SWIGVM::exception(reason) { }
+//            virtual ~exception() throw() { }
+//        };
         PythonVM(bool checkOnly);
         virtual ~PythonVM() {};
         virtual void shutdown();
@@ -451,10 +451,10 @@ class RVMImpl;
 
 class RVM: public SWIGVM {
     public:
-        struct exception: SWIGVM::exception {
-            exception(const char *reason): SWIGVM::exception(reason) { }
-            virtual ~exception() throw() { }
-        };
+//        struct exception: SWIGVM::exception {
+//            exception(const char *reason): SWIGVM::exception(reason) { }
+//            virtual ~exception() throw() { }
+//        };
         RVM(bool checkOnly);
         virtual ~RVM() {};
         virtual bool run();
@@ -471,10 +471,10 @@ class JavaVMImpl;
 
 class JavaVMach: public SWIGVM {
     public:
-        struct exception: SWIGVM::exception {
-            exception(const char *reason): SWIGVM::exception(reason) { }
-            virtual ~exception() throw() { }
-        };
+//        struct exception: SWIGVM::exception {
+//            exception(const char *reason): SWIGVM::exception(reason) { }
+//            virtual ~exception() throw() { }
+//        };
         JavaVMach(bool checkOnly);
         virtual ~JavaVMach() {}
         virtual void shutdown();
