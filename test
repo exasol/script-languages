@@ -21,17 +21,18 @@ done
 
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
-docker build . --tag exaudf/test_$FLAVOR -f dockerfiles/$FLAVOR/Dockerfile.test_$FLAVOR
+docker build . --tag exaudf/test_$FLAVOR -f flavors/$FLAVOR/Dockerfile.test_$FLAVOR
 
 docker run --detach --security-opt seccomp=unconfined --name test_container_$FLAVOR exaudf/test_$FLAVOR sleep 1000000
 
 docker exec test_container_$FLAVOR mkfifo /tmp/fff
 
+#docker exec --detach test_container_$FLAVOR bash -c 'python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script_fr.py'
 #docker exec --detach test_container_$FLAVOR python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script2.py
 #docker exec test_container_$FLAVOR /exaudf/exaudfclient ipc:///tmp/fff lang=streaming
 
 #docker exec --detach test_container_$FLAVOR python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input.csv exasol_emulator/output.csv exasol_emulator/script.py
-#docker exec test_container_$FLAVOR /exaudf/exaudfclient ipc:///tmp/fff lang=python
+#docker exec test_container_$FLAVOR /exaudf/exaudfclient ipc:///tmp/fff lang=r
 #docker exec -it test_container_$FLAVOR gdb /exaudf/exaudfclient
 docker exec -it test_container_$FLAVOR /bin/bash
 

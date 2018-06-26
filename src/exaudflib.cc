@@ -1632,7 +1632,10 @@ reinit:
                 SWIGVM_params_ref->inp_force_finish = false;
                 while(!vm->run_())
                 {
-                    ;
+                    if (vm->exception_msg.size()>0) {
+                        send_close(socket, vm->exception_msg); socket.close();
+                        goto error;
+                    }
                 }
                 if (!send_done(socket))
                     break;
@@ -1641,9 +1644,10 @@ reinit:
         if (vm)
         {
             if (vm->exception_msg.size()>0) {
-                throw SWIGVM::exception(vm->exception_msg.c_str());
-//                send_close(socket, vm->exception_msg); socket.close();
-//                goto error;
+//                throw SWIGVM::exception(vm->exception_msg.c_str());
+                send_close(socket, vm->exception_msg); socket.close();
+                keep_checking = false;
+                goto error;
             }
             vm->shutdown();
             delete vm;
@@ -1652,7 +1656,6 @@ reinit:
 
         send_finished(socket);
     }  catch (SWIGVM::exception &err) {
-        std::cerr << "stm652:: catch--1\n";
         keep_checking = false;
         send_close(socket, err.what()); socket.close();
 

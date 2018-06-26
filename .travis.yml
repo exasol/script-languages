@@ -7,5 +7,11 @@ services:
     - docker
 
 
-# build a jar with all dependencies. Will also run tests.
-script: "./build --flavor=mini"
+# build all flavors
+script: 
+   - ./build --flavor=standard
+   - ./build --flavor=mini
+   - ./build --flavor=conda
+   - ./build --flavor=tensorflow
+   - ./build --flavor=streaming
+

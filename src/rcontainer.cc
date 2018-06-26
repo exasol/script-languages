@@ -20,16 +20,47 @@ public:
     ~RVMImpl() {}
     void shutdown();
     bool run();
-    std::string singleCall(single_call_function_id fn,  const ExecutionGraph::ScriptDTO& args);
+    std::string singleCall(single_call_function_id_e fn,  const ExecutionGraph::ScriptDTO& args);
 private:
     bool m_checkOnly;
 };
 
-RVM::RVM(bool checkOnly): m_impl(new RVMImpl(checkOnly)) { }
-bool RVM::run() { return m_impl->run(); }
-std::string RVM::singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args) { return m_impl->singleCall(fn,args); }
+RVM::RVM(bool checkOnly) {
+    try {
+        m_impl = new RVMImpl(checkOnly);
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+}
+bool RVM::run() {
+    try {
+        return m_impl->run();
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+    return false;
+}
 
-void RVM::shutdown() {m_impl->shutdown();}
+std::string RVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+    try {
+        return m_impl->singleCall(fn,args);
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+    return "<this is an error>";
+}
+
+void RVM::shutdown() {
+    try {
+        m_impl->shutdown();
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+}
 
 static void evaluate_code(const char *code) {
     SEXP cmdSexp, cmdexpr;
@@ -126,7 +157,7 @@ static void RVM_emit_block_set_String(SWIGResultHandler *data, SEXP &col, long c
 
 extern "C" {
     SEXP RVM_next_block(SEXP dataexp, SEXP rowstofetch, SEXP buffer, SEXP buffersize) {
-        SWIGTableIterator *data = static_cast<SWIGTableIterator*>(R_ExternalPtrAddr(dataexp));
+        SWIGTableIterator *data = reinterpret_cast<SWIGTableIterator*>(R_ExternalPtrAddr(dataexp));
         std::vector<std::string> &colnames = *(SWIGVM_params->inp_names);
         std::vector<SWIGVM_columntype_t> &coltypes = *(SWIGVM_params->inp_types);
         long cols_count = colnames.size();
@@ -587,7 +618,7 @@ static SEXP export_spec_to_R(ExecutionGraph::ExportSpecification* exp_spec, size
     return argsexp;
 }
 
-string RVMImpl::singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args) {
+string RVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     SEXP fun, expr, ret;
     int errorOccurred;
 

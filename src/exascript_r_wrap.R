@@ -140,7 +140,7 @@ INTERNAL_RUN_WRAPPER_BODY__ <- function(meta, inp, out) {
 }
 
 INTERNAL_RUN_WRAPPER__ <- function() {
-    if (is.na(INTERNAL_INP_OBJECT__)) {
+    if (is.null(INTERNAL_INP_OBJECT__)) {
         INTERNAL_INP_OBJECT__ <<- TableIterator()
         INTERNAL_OUT_OBJECT__ <<- ResultHandler(INTERNAL_INP_OBJECT__)
     } else {            

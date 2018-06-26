@@ -19,7 +19,7 @@ class SWIGVMContainers::JavaVMImpl {
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
-        std::string singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args);
+        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
     private:
         void createJvm();
         void addPackageToScript();
@@ -51,18 +51,43 @@ class SWIGVMContainers::JavaVMImpl {
         JNIEnv *m_env;
 };
 
-JavaVMach::JavaVMach(bool checkOnly): m_impl(new JavaVMImpl(checkOnly)) {
+JavaVMach::JavaVMach(bool checkOnly) {
+    try {
+        m_impl = new JavaVMImpl(checkOnly);
+    }  catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
 }
 
 
 bool JavaVMach::run() {
-    return m_impl->run();
+    try {
+        return m_impl->run();
+    }  catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+    return false;
 }
 
-void JavaVMach::shutdown() {m_impl->shutdown();}
+void JavaVMach::shutdown() {
+    try {
+        m_impl->shutdown();
+    }  catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+}
 
-std::string JavaVMach::singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args) {
-    return m_impl->singleCall(fn, args);
+std::string JavaVMach::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+    try {
+        return m_impl->singleCall(fn, args);
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+    return "<this is an error>";
 }
 
 JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"),
@@ -106,7 +131,7 @@ bool JavaVMImpl::run() {
     return true;
 }
 
-std::string JavaVMImpl::singleCall(single_call_function_id fn, const ExecutionGraph::ScriptDTO& args) {
+std::string JavaVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     if (m_checkOnly)
         throwException("Java VM in check only mode");
 

@@ -329,6 +329,14 @@ if [ ! -z "$CUSTOM_PROTOBUF_PREFIX" ]; then
     CXXFLAGS="-DCUSTOM_PROTOBUF_PREFIX=\"$CUSTOM_PROTOBUF_PREFIX\" $CXXFLAGS"
 fi
 
+echo "================================================"
+echo "================================================"
+echo "= compiling zmqcontainerclient.cc with"
+echo "= CXXFLAGS=$CXXFLAGS"
+echo "================================================"
+echo "================================================"
+echo "================================================"
+
 g++ -o zmqcontainerclient.o -c zmqcontainerclient.cc $CXXFLAGS || die "Failed to compile zmqcontainerclient.o"
 g++ -o zmqcontainer.pb.o -c zmqcontainer.pb.cc $CXXFLAGS || die "Failed to compile zmqcontainer.pb.o"
 
@@ -345,7 +353,6 @@ g++ -o zmqcontainerclient zmqcontainerclient.o $CONTAINER_CLIENT_OBJECT_FILES sc
 # Create output files
 cp -a "$BUILDDIR/zmqcontainerclient" "$OUTPUTDIR/exaudfclient" || die "Failed to create $OUTPUTDIR/exaudfclient"
 cp -a "$BUILDDIR/libexaudflib.so" "$OUTPUTDIR/libexaudflib.so" || die "Failed to create $OUTPUTDIR/libexaudflib.so"
-#cp -a "$SRCDIR/pylone.cc" "$OUTPUTDIR/" || die "Failed to create $OUTPUTDIR/pylone.cc"
 chmod +x "$OUTPUTDIR/exaudfclient" || die "Failed chmod of $OUTPUTDIR/exaudfclient"
 
 

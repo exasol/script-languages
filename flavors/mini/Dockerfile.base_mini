@@ -20,11 +20,7 @@ RUN apt-get -y update && \
         swig \
         python-pip \
         libpcre3-dev && \
-    #wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
-    #tar zxf swig-2.0.4.tar.gz && \
-    #(cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
-    #rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
-    pip install faker numpy scipy sklearn && \
+    pip install zxcvbn faker numpy scipy sklearn && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
