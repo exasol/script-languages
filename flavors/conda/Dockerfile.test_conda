@@ -1,0 +1,12 @@
+FROM exaudf/release_conda
+
+RUN mkdir /exasol_emulator
+
+COPY emulator/ /exasol_emulator
+COPY src/zmqcontainer.proto /exasol_emulator
+
+RUN /opt/conda/bin/conda install -y pyzmq protobuf
+#RUN apt-get -y install vim
+
+RUN cd /exasol_emulator && protoc zmqcontainer.proto --python_out=.
+RUN ls /exasol_emulator

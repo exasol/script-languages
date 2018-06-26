@@ -1,0 +1,3 @@
+FROM exaudf/build_fancyr
+COPY exasol_extract/exaudf /exaudf
+
