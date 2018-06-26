@@ -34,6 +34,11 @@ docker exec test_container_$FLAVOR mkfifo /tmp/fff
 #docker exec --detach test_container_$FLAVOR python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input.csv exasol_emulator/output.csv exasol_emulator/script.py
 #docker exec test_container_$FLAVOR /exaudf/exaudfclient ipc:///tmp/fff lang=r
 #docker exec -it test_container_$FLAVOR gdb /exaudf/exaudfclient
+
+# /opt/conda/bin/python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py &
+# /exaudf/exaudfclient ipc:///tmp/fff lang=python
+
+
 docker exec -it test_container_$FLAVOR /bin/bash
 
 docker exec test_container_$FLAVOR cat exasol_emulator/output.csv

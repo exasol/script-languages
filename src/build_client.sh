@@ -44,6 +44,7 @@ cd $SRCDIR || die "Cannot change the current directory to $SRCDIR"
 
 mkdir -p  "$BUILDDIR"  "$BUILDDIR/java_src/com/exasol" || die "Failed to create directories in $BUILDDIR"
 
+export PATH=$PYTHON_PREFIX/bin:$PATH
 
 # Copy source code to the build dir
 echo "Copying common source files to the build dir"
@@ -118,7 +119,7 @@ fi
 #/usr/local/protoc zmqcontainer.proto --python_out=. || die "Failed to create Python proto files."
 
 
-export CXXFLAGS="-I. -I/usr -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O0 -g"
+export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O0 -g"
 export CXXFLAGS_UNOPT="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14"
 LIBS="-lpthread -lcrypto -ldl -lzmq"
 LDFLAGS=""
