@@ -31,6 +31,8 @@ while true; do
     esac
 done
 
+LD_LIBRARY_PATH=${PYTHON_PREFIX}/lib:${LD_LIBRARY_PATH}
+
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 [ X"$SRCDIR" = X"" ] && die "Missing mandatory argument --src-dir"
@@ -139,8 +141,8 @@ fi
 if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     echo "Generating Python SWIG code"
     # create python wrapper from swig files
-    swig -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
-    swig -DEXTERNAL_PROCESS -c++ -python -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
+    swig -I${PYTHON_PREFIX}/include/python2.7 -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
+    swig -I${PYTHON_PREFIX}/include/python2.7 -DEXTERNAL_PROCESS -c++ -python -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
 
     mv exascript_python_preset.py exascript_python_preset.py_orig
     echo "import sys, os" > exascript_python_preset.py
