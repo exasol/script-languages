@@ -41,7 +41,8 @@ $ ./build --flavor=mini
 ```bash
 $ ./export --flavor=mini --target=myminiudfs
 ```
-This creates the file `myminiudfs.tar.gz`
+This creates the file `myminiudfs.tar.gz`.
+
 3. Upload the file into bucketfs (we assume the password `w` and the bucketname `funwithudfs` in a bucketfs that is running on port `2580` on machine `192.168.122.158`)
 ```bash
 curl -v -X PUT -T myminiudfs.tar.gz w:w@192.168.122.158:2580/funwithudfs/myminiudfs.tar.gz
