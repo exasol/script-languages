@@ -51,7 +51,7 @@ export PATH=$PYTHON_PREFIX/bin:$PATH
 # Copy source code to the build dir
 echo "Copying common source files to the build dir"
 for SRC in \
-        zmqcontainer.proto exascript.i filter_swig_code.py build_integrated.py zmqcontainerclient.cc exaudflib* \
+        zmqcontainer.proto exascript.i filter_swig_code.py build_integrated.py exaudfclient.cc exaudflib* \
         script_data_transfer_objects* LICENSE-exasol-script-api.txt scriptoptionlines.h scriptoptionlines.cc
 do
     cp "$SRC" "$BUILDDIR/" || die "Failed to copy file $SRC to build dir: $BUILDDIR."
@@ -323,7 +323,7 @@ jar -cf udf/exaudf.jar \
 fi
 
 
-# compile zmqcontainerclient
+# compile exaudfclient
 CXXFLAGS="-fPIC $CXXFLAGS"
 
 g++ -o scriptoptionlines.o -c scriptoptionlines.cc $CXXFLAGS || die "Failed to compile scriptoptionlines.o"
@@ -334,13 +334,13 @@ fi
 
 echo "================================================"
 echo "================================================"
-echo "= compiling zmqcontainerclient.cc with"
+echo "= compiling exaudfclient.cc with"
 echo "= CXXFLAGS=$CXXFLAGS"
 echo "================================================"
 echo "================================================"
 echo "================================================"
 
-g++ -o zmqcontainerclient.o -c zmqcontainerclient.cc $CXXFLAGS || die "Failed to compile zmqcontainerclient.o"
+g++ -o exaudfclient.o -c exaudfclient.cc $CXXFLAGS || die "Failed to compile exaudfclient.o"
 g++ -o zmqcontainer.pb.o -c zmqcontainer.pb.cc $CXXFLAGS || die "Failed to compile zmqcontainer.pb.o"
 
 g++ -o scriptDTOWrapper.o -c script_data_transfer_objects_wrapper.cc $CXXFLAGS || die "Failed to compile scriptDTOWrapper.o"
@@ -350,11 +350,11 @@ g++ -o exaudflib.o -c exaudflib.cc $CXXFLAGS || die "Failed to compile exaudflib
 
 g++ -shared -o libexaudflib.so exaudflib.o zmqcontainer.pb.o scriptDTOWrapper.o scriptDTO.o -Wl,--no-as-needed -l zmq
 
-g++ -o zmqcontainerclient zmqcontainerclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS || die "Failed to compile zmqcontainerclient"
+g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS || die "Failed to compile exaudfclient"
 
 
 # Create output files
-cp -a "$BUILDDIR/zmqcontainerclient" "$OUTPUTDIR/exaudfclient" || die "Failed to create $OUTPUTDIR/exaudfclient"
+cp -a "$BUILDDIR/exaudfclient" "$OUTPUTDIR/exaudfclient" || die "Failed to create $OUTPUTDIR/exaudfclient"
 cp -a "$BUILDDIR/libexaudflib.so" "$OUTPUTDIR/libexaudflib.so" || die "Failed to create $OUTPUTDIR/libexaudflib.so"
 chmod +x "$OUTPUTDIR/exaudfclient" || die "Failed chmod of $OUTPUTDIR/exaudfclient"
 
