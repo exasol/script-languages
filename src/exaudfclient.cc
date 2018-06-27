@@ -76,13 +76,6 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-
-//    handle = dlmopen(LM_ID_NEWLM, "/exaudf/libexaudflib.so",RTLD_NOW);
-//    if (!handle) {
-//        fprintf(stderr, "dmlopen: %s\n", dlerror());
-//        exit(EXIT_FAILURE);
-//    }
-
     MAIN_FUN exudfclient_main = (MAIN_FUN)load_dynamic("exaudfclient_main");
     VOID_FUN_WITH_SWIGVM_PARAMS_P set_SWIGVM_params = (VOID_FUN_WITH_SWIGVM_PARAMS_P)load_dynamic("set_SWIGVM_params");
 
