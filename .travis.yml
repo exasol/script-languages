@@ -1,0 +1,18 @@
+language: python
+
+# Setting sudo to false will cause Travis to use Containers (default in the meantime)
+sudo: false
+
+services:
+    - docker
+
+
+# build all flavors
+script: 
+   - ./build --flavor=standard
+   - ./build --flavor=mini
+   - ./build --flavor=conda
+   - ./build --flavor=tensorflow
+   - ./build --flavor=streaming
+   - ./build --flavor=fancyr
+

@@ -1,0 +1,3 @@
+FROM exaudf/baseimage_streaming
+COPY exasol_extract/exaudf /exaudf
+

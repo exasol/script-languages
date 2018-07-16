@@ -117,6 +117,7 @@ RUN apt-get -y update && \
     apt-get -y autoremove && \
     echo /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server >> /etc/ld.so.conf && \
     ldconfig
+
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution
 

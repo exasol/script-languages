@@ -1,0 +1,31 @@
+#!/bin/sh
+die() { echo "ERROR:" "$@" >&2; exit 1; }
+
+optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
+
+eval set -- "$optarr"
+
+while true; do
+    case "$1" in
+        --flavor) FLAVOR="$2"; shift 2;;
+        -h|--help) echo "Usage: $0"
+		   echo "Options:"
+		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+		   echo "  [-h|--help]    Print this help."; exit 0;;
+        --) shift; break;;
+        *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
+    esac
+done
+
+[ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
+
+echo Using base docker file: Dockerfile.base_$FLAVOR
+docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR || die "Could not create exaudf/baseimage"
+echo Using build docker file: Dockerfile.build_$FLAVOR
+docker build . --tag exaudf/build_$FLAVOR -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
+docker container create --name extract exaudf/build_$FLAVOR
+mkdir -p exasol_extract
+docker container cp extract:/exaudf ./exasol_extract
+docker container rm -f extract
+docker build . --no-cache -t exaudf/release_$FLAVOR -f flavors/$FLAVOR/Dockerfile.release_$FLAVOR || die "Could not create exaudf/release"
+

@@ -1,0 +1,51 @@
+#!/bin/sh
+die() { echo "ERROR:" "$@" >&2; exit 1; }
+
+
+optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
+
+eval set -- "$optarr"
+
+while true; do
+    case "$1" in
+        --flavor) FLAVOR="$2"; shift 2;;
+        -h|--help) echo "Usage: $0"
+           echo "This command will remove all exited containers and all dangling docker images. In addition, it will remove all images of a certain flavor if specified via --flavor."
+		   echo "Options:"
+		   echo "  [--flavor]     Choose the flavor of the images to be removed"
+		   echo "  [-h|--help]    Print this help."; exit 0;;
+        --) shift; break;;
+        *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
+    esac
+done
+
+
+CONTAINERS=$(docker ps -a -f status=exited -q)
+echo Removing all exited containers: $CONTAINERS
+if [ ! X"$CONTAINERS" = X"" ]; then  
+    docker rm $CONTAINERS
+fi
+
+CONTAINERS=$(docker ps -a -f status=created -q)
+echo Removing all created containers: $CONTAINERS
+if [ ! X"$CONTAINERS" = X"" ]; then  
+    docker rm $CONTAINERS
+fi
+
+CONTAINERS=$(docker ps -a -f status=running -q)
+echo Removing all running containers: $CONTAINERS
+if [ ! X"$CONTAINERS" = X"" ]; then 
+    docker rm -f $CONTAINERS
+fi
+
+
+DANGLING=$(docker images -qf dangling=true) 
+echo Removing dangling images: $DANGLING
+if [ ! X"$DANGLING" = X"" ]; then
+    docker rmi $DANGLING
+fi
+
+if [ ! "X$FLAVOR" = "X" ]; then
+    echo "Removing all images for the flavor: $FLAVOR"
+    docker images --filter "reference=exaudf/*_$FLAVOR" -q | xargs docker rmi
+fi
