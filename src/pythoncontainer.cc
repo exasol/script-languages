@@ -107,8 +107,7 @@ PyThreadState *PythonVMImpl::main_thread = NULL;
 
 PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 {
-//    script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);
-    script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);
+    script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);    // Magic-Number of UTF-8 files
 
 //    const string nositeKeyword = "%nosite";
 //    const string whitespace = " \t\f\v";
@@ -147,18 +146,6 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
     }
 
     globals = PyDict_New();
-
-//    PyObject *main_module = PyImport_AddModule("__main__");
-//    if (main_module == nullptr) {
-//        throw PythonVM::exception("Failed to get Python main module");
-//    }
-    //globals = PyModule_GetDict(main_module);
-
-    //PyRun_String("import sys, types, os", Py_single_input,globals, globals);
-    //PyRun_String("sys.modules.setdefault('google', types.ModuleType('google'))", Py_single_input, globals, globals);
-    //PyRun_String("site.main()", Py_single_input, globals, globals);
-
-    //PyRun_String("import sys, types, os;has_mfs = sys.version_info > (3, 5);p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('google',));importlib = has_mfs and __import__('importlib.util');has_mfs and __import__('importlib.machinery');m = has_mfs and sys.modules.setdefault('google', importlib.util.module_from_spec(importlib.machinery.PathFinder.find_spec('google', [os.path.dirname(p)])));m = m or sys.modules.setdefault('google', types.ModuleType('google'));mp = (m or []) and m.__dict__.setdefault('__path__',[]);(p not in mp) and mp.append(p)", Py_single_input,globals, globals);
 
     {   
 #ifndef DISABLE_PYTHON_SUBINTERP
