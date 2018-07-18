@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
     }
 
     handle = dlmopen(my_namespace_id, "/exaudf/libexaudflib.so",RTLD_NOW);
+    //handle = dlopen("/exaudf/libexaudflib.so",RTLD_NOW);   
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);

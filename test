@@ -36,6 +36,7 @@ docker exec test_container_$FLAVOR mkfifo /tmp/fff
 #docker exec -it test_container_$FLAVOR gdb /exaudf/exaudfclient
 
 # /opt/conda/bin/python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py &
+# python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py&
 # /exaudf/exaudfclient ipc:///tmp/fff lang=python
 
 
