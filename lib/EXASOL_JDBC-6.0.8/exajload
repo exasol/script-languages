@@ -1,0 +1,70 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use FindBin;
+use POSIX ();
+
+my $REQUIRED_VERSION = "1.5.0";
+
+my $prg = $FindBin::Script;
+
+sub uname {
+	my @uname = POSIX::uname();
+	return $uname[0];
+}
+
+sub expand_path {
+	if (uname() eq "AIX") {
+		$ENV{PATH} = "$ENV{PATH}:/usr/java6/bin:/usr/java5/bin";
+	} elsif (uname() eq "HP-UX") {
+		$ENV{PATH} = "$ENV{PATH}:/opt/java6/bin/IA64N:/opt/java1.5/bin/IA64N";
+	} elsif (uname() eq "Darwin") {
+		$ENV{PATH} = "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin:$ENV{PATH}";
+	}
+} 
+
+sub check_java_version {
+	my $expected = $REQUIRED_VERSION;
+	my $version_txt = `java -version 2>&1`;
+	if (!defined $version_txt) {
+		print STDERR "$prg: ERROR: Can not execute java\n";
+		print STDERR "$prg:        No java in PATH?\n";
+		exit 1;
+	}
+	$version_txt =~ /.*^(java|openjdk) version *"(.*)".*/m;
+	my $version = $2;
+	if (numeric($version) < numeric($expected)) {
+		print STDERR "$prg: ERROR: $prg needs Java $REQUIRED_VERSION or newer\n";
+		print STDERR "$prg:        The currently used Java is:\n";
+		my $path = `which java`;
+		chomp $path;
+		print STDERR "$prg:        $path, version: $version\n";
+		exit 1;
+	}
+}
+
+sub numeric {
+	$_ = shift;
+	my $micro = 0;
+	/(\d+)\.(\d+)\.(\d+)(?:[_.](\d+))?/;
+	if (defined $4) {
+		$micro = $4;
+	}
+	return $1 * 1000000 + $2 * 10000 + $3 * 100 + $micro;
+}
+
+sub get_command {
+	my @cmd = ("java");
+	push @cmd, ("-jar", "$FindBin::RealBin/exajload.jar");
+	push @cmd, @ARGV;
+	return @cmd;
+}
+
+
+
+expand_path();
+check_java_version();
+exec get_command() or die;
+
+# vim: ts=2:sw=2
