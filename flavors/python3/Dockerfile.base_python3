@@ -1,14 +1,15 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc 
 
 RUN apt-get -y update && \
-    apt-get -y install \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install \
         software-properties-common \
         coreutils \
         locales \
         python3-dev  \
-        libzmq-dev \
+        libnss-db \
+        libzmq3-dev \
         python3-zmq \
         protobuf-compiler \
         libprotobuf-dev \
@@ -19,8 +20,12 @@ RUN apt-get -y update && \
         unzip \
  	swig \
         python3-pip \
+        python3-tk \
         libpcre3-dev && \
-    pip3 install zxcvbn faker numpy scipy sklearn && \
+    wget https://files.pythonhosted.org/packages/85/d1/69ee7e757f657e7f527cbf500ec2d295396e5bcec873cf4eb68962c41024/statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
+    pip3 install statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
+    rm -f statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
+    pip3 install keras tensorflow kmodes seaborn matplotlib imbalanced-learn && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
