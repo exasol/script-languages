@@ -1,4 +1,4 @@
-FROM exaudf/release_fancyr_16
+FROM exaudf/release_python3_16
 
 RUN mkdir /exasol_emulator
 

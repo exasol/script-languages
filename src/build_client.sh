@@ -187,10 +187,13 @@ fi
 
 
 if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
-    echo "Generating Python SWIG code"
+    PYTHON3_CONFIG="python3-config"
+    hash python3.6-config && PYTHON3_CONFIG="python3.6-config"
+
+    echo "Generating Python3 SWIG code using python3-config: $PYTHON3_CONFIG"
     # create python wrapper from swig files
-    swig $(python3-config --includes) -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
-    swig $(python3-config --includes) -DEXTERNAL_PROCESS -c++ -python -py3 -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
+    swig $($PYTHON3_CONFIG --includes) -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
+    swig $($PYTHON3_CONFIG --includes) -DEXTERNAL_PROCESS -c++ -python -py3 -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
 
     mv exascript_python_preset.py exascript_python_preset.py_orig
     echo "import sys, os" > exascript_python_preset.py
@@ -207,9 +210,9 @@ if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
     cp exascript_python_tmp.h exascript_python.h || die "Failed: filter_swig_code.py exascript_python.h exascript_python_tmp.h"
     cp exascript_python_tmp.cc exascript_python.cc || die "exascript_python.cc exascript_python_tmp.cc"
 
-    CXXFLAGS="-DENABLE_PYTHON_VM -DENABLE_PYTHON3 $(python3-config --includes) $CXXFLAGS"
-    LIBS="$(python3-config --libs) $LIBS"
-    LDFLAGS="-L$(python3-config --prefix)/lib -Wl,-rpath,$(python3-config --prefix)/lib $LDFLAGS" 
+    CXXFLAGS="-DENABLE_PYTHON_VM -DENABLE_PYTHON3 $($PYTHON3_CONFIG --includes) $CXXFLAGS"
+    LIBS="$($PYTHON3_CONFIG --libs) $LIBS"
+    LDFLAGS="-L$($PYTHON3_CONFIG --prefix)/lib -Wl,-rpath,$($PYTHON3_CONFIG --prefix)/lib $LDFLAGS" 
 
     echo "Compiling Python3 specific code with these CXXFLAGS:$CXXFLAGS"
     g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
