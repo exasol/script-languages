@@ -1,3 +1,2 @@
-FROM exaudf/build_fancyr_16
+FROM exaudf/baseimage_python3_16
 COPY exasol_extract/exaudf /exaudf
-

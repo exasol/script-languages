@@ -4,6 +4,7 @@ COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
 RUN apt-get -y update && \
     apt-get -y install software-properties-common && \
+    add-apt-repository ppa:marutter/rrutter3.5 && \
     apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y --allow-unauthenticated install \
         coreutils \
@@ -22,7 +23,7 @@ RUN apt-get -y update && \
         unzip \
         curl \
         libcurl4-openssl-dev  \
-        r-cran-rcpparmadillo \
+        #r-cran-rcpparmadillo \
         libnss-db  && \
     wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
@@ -36,7 +37,7 @@ RUN apt-get -y update && \
     addgroup --gid 1000 exasolution && \
     adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
 
-RUN Rscript -e 'install.packages(c("rredis", "data.table", "htmltools", "flashClust", "forecast"), repos = "http://cran.r-project.org")' 
+RUN Rscript -e 'install.packages(c("RcppArmadillo","rredis", "data.table", "htmltools", "flashClust", "forecast", "np"), repos = "http://cran.r-project.org")' 
 
 ENV LANG en_US.UTF-8  
 ENV LANGUAGE en_US:en  
