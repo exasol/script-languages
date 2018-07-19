@@ -1,2 +1,2 @@
-FROM exaudf/release_python3
+FROM exaudf/baseimage_python3
 COPY exasol_extract/exaudf /exaudf
