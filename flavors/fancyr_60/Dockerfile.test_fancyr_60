@@ -1,4 +1,4 @@
-FROM exaudf/release_fancyr_16
+FROM exaudf/release_fancyr_60
 
 RUN mkdir /exasol_emulator
 
