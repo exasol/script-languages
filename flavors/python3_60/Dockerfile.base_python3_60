@@ -31,7 +31,7 @@ RUN apt-get update && \
     (cd protobuf-3.5.1 ; ./configure ; make -j 4 ; make install ) && \
     rm protobuf-cpp-3.5.1.zip  && rm -r protobuf-3.5.1
 
-RUN pip install keras tensorflow kmodes seaborn matplotlib imbalanced-learn
+RUN pip install keras tensorflow kmodes seaborn matplotlib imbalanced-learn lifelines nltk gensim
 RUN git clone git://github.com/statsmodels/statsmodels.git
 RUN apt-get -y install cython3
 RUN (cd statsmodels ; python3.6 setup.py install )
