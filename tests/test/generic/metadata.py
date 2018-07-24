@@ -10,6 +10,7 @@ from udf import requires
 
 class MetaDataTest(udf.TestCase):
 
+   
     @requires('GET_DATABASE_NAME')
     def test_database_name(self):
         rows = self.query('''SELECT fn1.get_database_name() FROM DUAL''')
@@ -40,6 +41,12 @@ class MetaDataTest(udf.TestCase):
     def test_script_user(self):
         if (udf.opts.is_compat_mode != "true"):
             rows = self.query('''select fn1.get_current_user() from dual''')
+            self.assertRowEqual(('SYS',), rows[0])
+
+    @requires('GET_SCOPE_USER')
+    def test_scope_user(self):
+        if (udf.opts.is_compat_mode != "true"):
+            rows = self.query('''select fn1.get_scope_user() from dual''')
             self.assertRowEqual(('SYS',), rows[0])
 
     @requires('GET_CURRENT_SCHEMA')

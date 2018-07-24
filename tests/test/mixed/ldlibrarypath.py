@@ -74,8 +74,12 @@ class LDLibraryPathPython(udf.TestCase):
     # So this test should raise an exception (while it is fine in production) systems.
 
     def test_pythonSimpleLdlibraryPath(self):
-        with self.assertRaisesRegexp(Exception, r"KeyError"):
-            rows = self.query('''select fn2.python_simple()''')
+        if os.path.isfile("/usr/opt/environ/bin/nsexec_chroot"):
+            with self.assertRaisesRegexp(Exception, r"KeyError"):
+                rows = self.query('''select fn2.python_simple()''')
+        else:
+            rows = self.query('''select fn2.python_simple2()''')
+            self.assertRowsEqual([("/buckets/to/heaven",)],rows)
 
     # Variables other than LD_LIBRARY_PATH should work:
     def test_pythonSimpleLdlibraryPath2(self):
