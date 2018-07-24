@@ -2,12 +2,12 @@
 
 import os
 import sys
-import exatest
 
 sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 
 import udf
 from udf import requires
+import exatest
 
 
 class Test(udf.TestCase):
