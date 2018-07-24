@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/opt/bs-python-2.7/bin/python
 
 import os
 import sys

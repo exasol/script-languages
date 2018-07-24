@@ -129,11 +129,12 @@ class HTTPServer(BaseSimpleServer):
 class FTPServer(BaseSimpleServer):
     def __init__(self, documentroot='.', authorizer=None):
         global ftpserver
-        from . import ftpserver
+        from . import servers
+        from . import authorizers
         super(FTPServer, self).__init__()
         self.documentroot = documentroot
         if authorizer is None:
-            self.authorizer = ftpserver.DummyAuthorizer()
+            self.authorizer = authorizers.DummyAuthorizer()
             self.authorizer.add_anonymous(self.documentroot)
         else:
             self.authorizer = authorizer
@@ -142,9 +143,10 @@ class FTPServer(BaseSimpleServer):
         self._server.serve_forever()
 
     def start(self):
-        ftp_handler = ftpserver.FTPHandler
+        from . import handlers
+        ftp_handler = handlers.FTPHandler
         ftp_handler.authorizer = self.authorizer
-        self._server = ftpserver.FTPServer(('', 0), ftp_handler)
+        self._server = servers.FTPServer(('', 0), ftp_handler)
         
         self._thread = Thread(target=self._ftpserver, args=())
         self._thread.start()
@@ -247,3 +249,6 @@ class SMTPServer(BaseSimpleServer):
         return self._server.__messages
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
+__ver__ = '1.5.4'
+__author__ = "Giampaolo Rodola' <g.rodola@gmail.com>"
+__web__ = 'https://github.com/giampaolo/pyftpdlib/'

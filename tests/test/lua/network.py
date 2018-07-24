@@ -12,7 +12,7 @@ import udf
 
 from exatest.servers import MessageBox, HTTPServer, FTPServer, EchoServer, UDPEchoServer, SMTPServer
 from exatest.utils import tempdir
-from exatest.servers.ftpserver import DummyAuthorizer
+from exatest.servers.authorizers import DummyAuthorizer
 
 class ExternalResourceTest(udf.TestCase):
     def setUp(self):

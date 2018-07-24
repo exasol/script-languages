@@ -35,6 +35,12 @@ def run(ctx):
         return exa.meta.current_user
 /
 create external scalar script
+get_scope_user() returns varchar(200) AS
+# redirector @@redirector_url@@
+def run(ctx):
+        return exa.meta.scope_user
+/
+create external scalar script
 get_current_schema() returns varchar(200) AS
 # redirector @@redirector_url@@
 def run(ctx):

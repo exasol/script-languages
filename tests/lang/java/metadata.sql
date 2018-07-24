@@ -47,6 +47,14 @@ class GET_CURRENT_USER {
 }
 /
 create java scalar script
+get_scope_user() returns varchar(200) as
+class GET_SCOPE_USER {
+    static String run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        return exa.getScopeUser();
+    }
+}
+/
+create java scalar script
 get_current_schema() returns varchar(200) as
 class GET_CURRENT_SCHEMA {
     static String run(ExaMetadata exa, ExaIterator ctx) throws Exception {

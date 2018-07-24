@@ -29,6 +29,11 @@ def run(ctx):
         return exa.meta.current_user
 /
 create python scalar script
+get_scope_user() returns varchar(200) as
+def run(ctx):
+        return exa.meta.scope_user
+/
+create python scalar script
 get_current_schema() returns varchar(200) as
 def run(ctx):
         return exa.meta.current_schema
