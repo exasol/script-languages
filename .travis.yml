@@ -10,5 +10,5 @@ services:
 # build all flavors
 script: 
    - ./build --flavor=mini
-   - ./export --flavor=mini --target=mini
+   - ./export --flavor=mini
    - ./test --flavor mini
