@@ -1,20 +1,13 @@
 #!/usr/bin/env bash
 
-# This script executes integration tests as defined in
-# integration-test-travis.yaml (currently only Exasol integration tests).
-
 # An Exasol instance is run using the exasol/docker-db image. Therefore, a
 # working installation of Docker and sudo privileges are required.
 
 set -eux
 
-
 cd "$(dirname "$0")"
 
-
 die() { echo "ERROR:" "$@" >&2; exit 1; }
-
-set -x
 
 optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:' -- "$@")
 
@@ -36,9 +29,12 @@ while true; do
     esac
 done
 
-[ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
+[ "X${FLAVOR-}" = "X" ] && die "Missing mandatory argument --flavor"
 
 [ ! -e "$FLAVOR.tar.gz" ] && die "Flavor not exported here: `pwd`/$FLAVOR.tar.gz"
+
+test_config="$(pwd)/flavors/$FLAVOR/testconfig"
+[ ! -f "$test_config" ] && die "Testconfig of $flavor not found here: $test_config"
 
 if [ ! -z ${EXASOLO+x} ]; then
     OIFS=$IFS
@@ -158,7 +154,4 @@ fi
 
 echo "Starting tests against $DB_HOST:$DB_PORT"
 
-( cd tests/test ; ./run_locally.sh --server="$DB_HOST:$DB_PORT" ...)
-
-
-
+( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)

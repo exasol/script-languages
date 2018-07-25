@@ -1,3 +1,4 @@
-script_languages=PYTHON=builtin_python
-generic_test_languages=python
-
+language_definition=PYTHON=builtin_python
+generic_language_tests=python java
+test_folders=python
+# ending new line required!
