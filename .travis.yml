@@ -9,13 +9,5 @@ services:
 
 # build all flavors
 script: 
-   - ./build --flavor=standard
    - ./build --flavor=mini
-   - ./build --flavor=conda
-   - ./build --flavor=tensorflow
-   - ./build --flavor=streaming
-   - ./build --flavor=fancyr
-   - ./build --flavor=fancyr_16
-   - ./build --flavor=python3
-   - ./build --flavor=python3_16
-
+   - ./test --flavor mini
