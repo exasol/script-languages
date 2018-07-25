@@ -38,8 +38,8 @@ class LocalGroupByWhenIProc(udf.TestCase):
         return x[0][0] > 1
 
     def setUp(self):
-        self.query('CREATE SCHEMA LOCAL_GROUPBY_WHEN_IPROC', ignore_errors=True)
-        self.query('OPEN SCHEMA LOCAL_GROUPBY_WHEN_IPROC', ignore_errors=True)
+        self.query('CREATE SCHEMA LOCAL_GROUPBY_WHEN_IPROC', ignore_errors=False)
+        self.query('OPEN SCHEMA LOCAL_GROUPBY_WHEN_IPROC', ignore_errors=False)
         self.query('create or replace table t(x int, y int)')
         self.query('insert into t values (1,2), (1,2), (2,3), (2,3)')
         self.query("alter session set QUERY_CACHE='OFF'")
@@ -134,7 +134,7 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
         udf.TestCase.assertRowsEqual(self,sorted([tuple(x) for x in left]), sorted([tuple(x) for x in right]))
 
     def setUp(self):
-        self.query('CREATE SCHEMA TARGET_PREDEFINITION_FOR_INSERTS_WITH_UDFs', ignore_errors=True)
+        self.query('CREATE SCHEMA TARGET_PREDEFINITION_FOR_INSERTS_WITH_UDFs', ignore_errors=False)
         self.query('OPEN SCHEMA TARGET_PREDEFINITION_FOR_INSERTS_WITH_UDFs', ignore_errors=False)
         self.query('create or replace table t1(s int)')
         self.query('create or replace table t2(s int, t int)')
@@ -349,6 +349,10 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
                  end
                  /
                 '''))
+
+    def tearDown(self):
+        self.query('DROP SCHEMA IF EXISTS TARGET_PREDEFINITION_FOR_INSERTS_WITH_UDFs CASCADE', ignore_errors=False)
+        self.query('DROP SCHEMA IF EXISTS LOCAL_GROUPBY_WHEN_IPROC CASCADE', ignore_errors=False)
 
     def run_query(self,q,isDirect,profile_len=False,part_num=False):
        #print '*************'
