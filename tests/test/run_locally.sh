@@ -50,7 +50,7 @@ if [ ! -z "${1-}" ]; then
 fi
 
 # ext-python
-languages=(java lua mixed python r)
+languages=(java lua python r)
 for lang in ${languages[@]}; do
     run_tests_for_lang "$lang" 2>&1 | tee "run_locally-$lang.out"
 done
