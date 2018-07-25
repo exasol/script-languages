@@ -4,7 +4,7 @@
 PYTHON_PREFIX="/usr"
 
 
-optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,python-prefix:,python-syspath:,enable-streaming,custom-protobuf-prefix:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,enable-python3,python-prefix:,python-syspath:,enable-streaming,custom-protobuf-prefix:' -- "$@")
 
 eval set -- "$optarr"
 
@@ -14,6 +14,7 @@ while true; do
         --build-dir) BUILDDIR="$2"; shift 2;;
         --output-dir) OUTPUTDIR="$2"; shift 2;;
         --enable-python) ENABLE_PYTHON_IMPL="yes"; shift 1;;
+	--enable-python3) ENABLE_PYTHON3_IMPL="yes"; shift 1;;
         --python-prefix) PYTHON_PREFIX="$2"; shift 2;;
         --python-syspath) PYTHON_SYSPATH="$2"; shift 2;;
         --enable-r) ENABLE_R_IMPL="yes"; shift 1;;        
@@ -69,7 +70,7 @@ if [ "$ENABLE_STREAMING_IMPL" = "yes" ]; then
 fi
 
 
-if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
+if [ "$ENABLE_PYTHON_IMPL" = "yes" ] || [ "$ENABLE_PYTHON3_IMPL" = "yes" ] ; then
     # Python
     echo "Copying Python related files to the build dir"
     for SRC in \
@@ -123,6 +124,7 @@ fi
 
 export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O0 -g"
 export CXXFLAGS_UNOPT="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14"
+#LIBS="-lpthread -lcrypto -ldl -lzmq -lprotobuf"
 LIBS="-lpthread -lcrypto -ldl -lzmq"
 LDFLAGS=""
 
@@ -182,6 +184,43 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
 
     CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"
 fi
+
+
+if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
+    PYTHON3_CONFIG="python3-config"
+    hash python3.6-config && PYTHON3_CONFIG="python3.6-config"
+
+    echo "Generating Python3 SWIG code using python3-config: $PYTHON3_CONFIG"
+    # create python wrapper from swig files
+    swig $($PYTHON3_CONFIG --includes) -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o exascript_python_tmp.cc exascript.i || die "SWIG compilation failed."
+    swig $($PYTHON3_CONFIG --includes) -DEXTERNAL_PROCESS -c++ -python -py3 -external-runtime exascript_python_tmp.h || die "SWIG compilation failed."
+
+    mv exascript_python_preset.py exascript_python_preset.py_orig
+    echo "import sys, os" > exascript_python_preset.py
+    
+    echo "sys.path.extend($($PYTHON_PREFIX/bin/python3 -c 'import sys; import site; print(sys.path)'))" >> exascript_python_preset.py
+
+    if [ ! "X$PYTHON_SYSPATH" = "X" ]; then
+        echo "sys.path.extend($PYTHON_SYSPATH)" >> exascript_python_preset.py
+    fi
+    
+    cat exascript_python_preset.py_orig >> exascript_python_preset.py
+    
+    python ./build_integrated.py exascript_python_int.h exascript_python.py exascript_python_wrap.py exascript_python_preset.py || die "Failed build_integrated"
+    cp exascript_python_tmp.h exascript_python.h || die "Failed: filter_swig_code.py exascript_python.h exascript_python_tmp.h"
+    cp exascript_python_tmp.cc exascript_python.cc || die "exascript_python.cc exascript_python_tmp.cc"
+
+    CXXFLAGS="-DENABLE_PYTHON_VM -DENABLE_PYTHON3 $($PYTHON3_CONFIG --includes) $CXXFLAGS"
+    LIBS="$($PYTHON3_CONFIG --libs) $LIBS"
+    LDFLAGS="-L$($PYTHON3_CONFIG --prefix)/lib -Wl,-rpath,$($PYTHON3_CONFIG --prefix)/lib $LDFLAGS" 
+
+    echo "Compiling Python3 specific code with these CXXFLAGS:$CXXFLAGS"
+    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
+    g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
+
+    CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"
+fi
+
 
 if [ "$ENABLE_R_IMPL" = "yes" ]; then
     # create R wrapper from swig files

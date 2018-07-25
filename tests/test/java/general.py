@@ -11,7 +11,6 @@ from udf import useData, expectedFailure
 class JavaInterpreter(udf.TestCase):
     def setUp(self):
         self.query('CREATE SCHEMA FN2', ignore_errors=True)
-        self.query('OPEN SCHEMA FN2')
 
     def test_main_is_not_executed_at_creation_time(self):
         self.query(udf.fixindent('''

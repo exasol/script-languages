@@ -5,11 +5,10 @@ set -ux
 # $2...: additional arguments
 function run_test() {
     EXAPLUS=/opt/EXAplus-6.0.10/exaplus \
-    python -tt "$1" \
-           --driver /home/hece/nosync/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
-           --server 192.168.122.241:8563 \
-           --jdbc-path /home/hece/nosync/EXASOL_JDBC-5.0.8/exajdbc.jar \
-           "${@:2}"
+	   python -tt "$1" \
+            --driver=`pwd`/../../lib/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
+            --server=192.168.122.75:8563 \
+            --jdbc-path `pwd`/../../lib/EXASOL_JDBC-6.0.8/exajdbc.jar
 }
 export -f run_test
 

@@ -1665,7 +1665,6 @@ reinit:
 #endif
         goto error;
     } catch (std::exception &err) {
-        std::cerr << "stm652:: catch--2\n";
         send_close(socket, err.what()); socket.close();
 #ifdef SWIGVM_LOG_CLIENT
         cerr << "### SWIGVM crashing with name '" << socket_name
@@ -1673,7 +1672,6 @@ reinit:
 #endif
         goto error;
     } catch (...) {
-        std::cerr << "stm652:: catch--3\n";
         send_close(socket, "Internal/Unknown error"); socket.close();
 #ifdef SWIGVM_LOG_CLIENT
         cerr << "### SWIGVM crashing with name '" << socket_name

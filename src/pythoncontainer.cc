@@ -18,7 +18,12 @@
 using namespace SWIGVMContainers;
 using namespace std;
 
+#ifdef ENABLE_PYTHON3
+extern "C" PyObject* PyInit__exascript_python(void);
+#else
 extern "C" void init_exascript_python(void);
+#endif
+
 
 static void check() {
     PyObject *pt, *pv, *tb, *s = NULL, *pvc, *pvcn;
@@ -29,12 +34,28 @@ static void check() {
     s = PyObject_Str(pv);
     if (NULL != (pvc = PyObject_GetAttrString(pv, "__class__"))) {
         if (NULL != (pvcn = PyObject_GetAttrString(pvc, "__name__"))) {
-            pvcns = string(PyString_AS_STRING(pvcn)) + string(": ");
-            Py_XDECREF(pvcn);
+#ifdef ENABLE_PYTHON3
+	  PyObject* repr = PyObject_Repr(pvcn);
+	  PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+	  const char *bytes = PyBytes_AS_STRING(p3str);
+	  pvcns = string(bytes) + string(": ");
+#else
+	  pvcns = string(PyString_AS_STRING(pvcn)) + string(": ");
+#endif
+	  Py_XDECREF(pvcn);
         }
         Py_XDECREF(pvc);
     }
-    PythonVM::exception x((pvcns + PyString_AS_STRING(s)).c_str());
+    string exception_string("");
+#ifdef ENABLE_PYTHON3
+    PyObject* repr = PyObject_Repr(s);
+    PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    const char *bytes = PyBytes_AS_STRING(p3str);
+    exception_string = string(bytes) + string(": ");
+#else
+    exception_string = pvcns + PyString_AS_STRING(s);
+#endif
+    PythonVM::exception x(exception_string.c_str());
     Py_XDECREF(s);
     PyErr_Clear();
     throw x;
@@ -107,8 +128,7 @@ PyThreadState *PythonVMImpl::main_thread = NULL;
 
 PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 {
-//    script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);
-    script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);
+    script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);    // Magic-Number of UTF-8 files
 
 //    const string nositeKeyword = "%nosite";
 //    const string whitespace = " \t\f\v";
@@ -139,6 +159,9 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
     if (!Py_IsInitialized()) {
         ::setlocale(LC_ALL, "en_US.utf8");
         Py_NoSiteFlag = noSiteFlag;
+#ifdef ENABLE_PYTHON3
+        PyImport_AppendInittab("_exascript_python",PyInit__exascript_python);
+#endif
         Py_Initialize();
         PyEval_InitThreads();
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -146,20 +169,7 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 #endif
     }
 
-    globals = PyDict_New();
-
-//    PyObject *main_module = PyImport_AddModule("__main__");
-//    if (main_module == nullptr) {
-//        throw PythonVM::exception("Failed to get Python main module");
-//    }
-    //globals = PyModule_GetDict(main_module);
-
-    //PyRun_String("import sys, types, os", Py_single_input,globals, globals);
-    //PyRun_String("sys.modules.setdefault('google', types.ModuleType('google'))", Py_single_input, globals, globals);
-    //PyRun_String("site.main()", Py_single_input, globals, globals);
-
-    //PyRun_String("import sys, types, os;has_mfs = sys.version_info > (3, 5);p = os.path.join(sys._getframe(1).f_locals['sitedir'], *('google',));importlib = has_mfs and __import__('importlib.util');has_mfs and __import__('importlib.machinery');m = has_mfs and sys.modules.setdefault('google', importlib.util.module_from_spec(importlib.machinery.PathFinder.find_spec('google', [os.path.dirname(p)])));m = m or sys.modules.setdefault('google', types.ModuleType('google'));mp = (m or []) and m.__dict__.setdefault('__path__',[]);(p not in mp) and mp.append(p)", Py_single_input,globals, globals);
-
+    
     {   
 #ifndef DISABLE_PYTHON_SUBINTERP
         PythonThreadBlock block;
@@ -181,26 +191,42 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         PyThreadState_Swap(pythread);
 #endif
 
-        PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
-        init_exascript_python();
+	globals = PyDict_New();
+	PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
 
+
+#ifndef ENABLE_PYTHON3
+         init_exascript_python();
+#endif
         code = Py_CompileString(integrated_exascript_python_py, "exascript_python.py", Py_file_input); check();
         if (code == NULL) throw PythonVM::exception("Failed to compile internal module");
-        exatable = PyImport_ExecCodeModule((char*)"exascript_python", code); check();
-
+        exatable = PyImport_ExecCodeModule((char*)"exascript_python", code);
+	check();
+	if (exatable == NULL) throw PythonVM::exception("Failed to import code module");
         code = Py_CompileString(integrated_exascript_python_preset_py, "<EXASCRIPTPP>", Py_file_input); check();
-        if (code == NULL) throw PythonVM::exception("Failed to compile preset script");
+        if (code == NULL) {check();}
+#ifdef ENABLE_PYTHON3
+	PyEval_EvalCode(code, globals, globals); check();
+#else
         PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
+#endif
         Py_DECREF(code);
-
-        //PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(script), globals, globals); check();
+#ifdef ENABLE_PYTHON3
+	PyEval_EvalCode(script, globals, globals); check();
+#else
+        PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(script), globals, globals); check();
+#endif
         PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check();
         PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
         Py_XDECREF(retvalue); retvalue = NULL;
 
         code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check();
         if (code == NULL) throw PythonVM::exception("Failed to compile wrapping script");
+#ifdef ENABLE_PYTHON3
+	PyEval_EvalCode(code, globals, globals); check();
+#else
         PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
+#endif
         Py_XDECREF(code);
     }
 }
@@ -231,7 +257,7 @@ bool PythonVMImpl::run() {
 
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode");
 
-    {   
+    {
 #ifndef DISABLE_PYTHON_SUBINTERP
         PythonThreadBlock block;
         PyThreadState_Swap(pythread);

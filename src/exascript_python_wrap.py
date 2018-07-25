@@ -1,3 +1,13 @@
+import sys
+isPython3 = False
+if sys.version_info[0] == 3:
+    unicode = str
+    decodeUTF8 = lambda x: x
+    long = int
+    isPython3 = True
+else:
+    decodeUTF8 = lambda x: x.decode('utf-8')
+
 class exaiter(object):
     def __init__(self, meta, inp, out):
         self.__meta = meta
@@ -28,11 +38,11 @@ class exaiter(object):
         def convert_timestamp(x):
             return datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f")
         for col in range(incount):
-            colname = self.__meta.inputColumnName(col).decode('utf-8')
+            colname = decodeUTF8(self.__meta.inputColumnName(col))
             if self.__meta.inputColumnType(col) == DOUBLE:
                 data[colname] = rd(inp.getDouble, inp.wasNull, col)
             elif self.__meta.inputColumnType(col) == STRING:
-                data[colname] = rd(inp.getString, inp.wasNull, col, lambda x: x.decode('utf-8'))
+                data[colname] = rd(inp.getString, inp.wasNull, col, lambda x: decodeUTF8(x))
             elif self.__meta.inputColumnType(col) == INT32:
                 data[colname] = rd(inp.getInt32, inp.wasNull, col)
             elif self.__meta.inputColumnType(col) == INT64:
@@ -100,7 +110,7 @@ class exaiter(object):
                 elif self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 else:
                     raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
-                            % (self.__meta.outputColumnName(k).decode('utf-8'), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
             elif type(v) == float:
                 if self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 elif self.__outcoltypes[k] == INT32: self.__out.setInt32(k, int(v))
@@ -108,18 +118,18 @@ class exaiter(object):
                 elif self.__outcoltypes[k] == NUMERIC: self.__out.setInt64(k, str(v))
                 else:
                     raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
-                            % (self.__meta.outputColumnName(k).decode('utf-8'), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
             elif type(v) == bool:
                 if self.__outcoltypes[k] != BOOLEAN:
                     raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
-                            % (self.__meta.outputColumnName(k).decode('utf-8'), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setBoolean(k, bool(v))
             elif type(v) in (str, unicode):
                 vl = len(v)
-                if type(v) == unicode: v = v.encode('utf-8')
+                if not isPython3 and type(v) == unicode: v = v.encode('utf-8')
                 if self.__outcoltypes[k] != STRING:
                     raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
-                            % (self.__meta.outputColumnName(k).decode('utf-8'), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setString(k, v, vl)
             elif type(v) == decimal.Decimal:
                 if self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, str(v))
@@ -128,16 +138,16 @@ class exaiter(object):
                 elif self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 else:
                     raise RuntimeError("emit column '%s' is of type %s but data given have type %s" \
-                            % (self.__meta.outputColumnName(k).decode('utf-8'), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
             elif type(v) == datetime.date:
                 if self.__outcoltypes[k] != DATE:
                     raise RuntimeError("emit column '%s' is of type %s but data given have type %s" \
-                            % (self.__meta.outputColumnName(k).decode('utf-8'), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setDate(k, v.isoformat())
             elif type(v) == datetime.datetime:
                 if self.__outcoltypes[k] != TIMESTAMP:
                     raise RuntimeError("emit column '%s' is of type %s but data given have type %s" \
-                            % (self.__meta.outputColumnName(k).decode('utf-8'), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setTimestamp(k, v.isoformat(' '))
             else: raise RuntimeError("data type %s is not supported" % str(type(v)))
             msg = self.__out.checkException()
@@ -197,7 +207,7 @@ def __pythonvm_wrapped_run():
                     runfunc(iter)
                     if not iter_next(): break
         out.flush()
-    except Exception, err:
+    except Exception as err:
         errtypel, errobj, backtrace = sys.exc_info()
         if backtrace.tb_next: backtrace = backtrace.tb_next
         err.args = ("".join(traceback.format_exception(errtypel, errobj, backtrace)),)

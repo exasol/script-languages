@@ -1,12 +1,20 @@
-import sys, os
+#import sys, os
 
-sys.path.append("/usr/lib/python2.7/dist-packages")
+#sys.path.append("/usr/lib/python2.7/dist-packages")
 
+import sys
+if sys.version_info[0] == 3:
+    unicode = str
+    decodeUTF8 = lambda x: x
+else:
+    decodeUTF8 = lambda x: x.decode('utf-8')
+    
 from exascript_python import *
 import decimal
 import datetime
 import traceback
 import imp
+
 
 class exa:
     def __init__(self):
@@ -16,13 +24,13 @@ class exa:
         mo = exameta()
         mo.database_name = meta.databaseName()
         mo.database_version = meta.databaseVersion()
-        mo.script_name = meta.scriptName().decode('utf-8')
-        mo.script_schema = meta.scriptSchema().decode('utf-8')
-        mo.current_user = meta.currentUser().decode('utf-8')
-        mo.scope_user = meta.scopeUser().decode('utf-8')
-        mo.current_schema = meta.currentSchema().decode('utf-8')
-        mo.scope_user = meta.scopeUser().decode('utf-8')
-        mo.script_code = meta.scriptCode().decode('utf-8')
+        mo.script_name = decodeUTF8(meta.scriptName())
+        mo.script_schema = decodeUTF8(meta.scriptSchema())
+        mo.current_user = decodeUTF8(meta.currentUser())
+        mo.scope_user = decodeUTF8(meta.scopeUser())
+        mo.current_schema = decodeUTF8(meta.currentSchema())
+        mo.scope_user = decodeUTF8(meta.scopeUser())
+        mo.script_code = decodeUTF8(meta.scriptCode())
         if type(sys.version_info) == tuple:
             mo.script_language = "Python %d.%d.%d" % (sys.version_info[0], sys.version_info[1], sys.version_info[2])
         else: mo.script_language = "Python %d.%d.%d" % (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
@@ -33,7 +41,7 @@ class exa:
         mo.memory_limit = meta.memoryLimit()
         mo.vm_id = meta.vmID_S()
         mo.input_column_count = meta.inputColumnCount()
-        mo.input_column_name = [meta.inputColumnName(x).decode('utf-8') for x in range(mo.input_column_count)]
+        mo.input_column_name = [decodeUTF8(meta.inputColumnName(x)) for x in range(mo.input_column_count)]
         if meta.inputType() == EXACTLY_ONCE: mo.input_type = "SCALAR"
         else: mo.input_type = "SET"
         mo.output_column_count = meta.outputColumnCount()
@@ -41,14 +49,14 @@ class exa:
         else: mo.output_type = "EMIT"
         def ci(x, tbl):
             if tbl == 'input':
-                colname = self.__meta.inputColumnName(x).decode('utf-8')
+                colname = decodeUTF8(self.__meta.inputColumnName(x))
                 coltype = self.__meta.inputColumnType(x)
                 colprec = self.__meta.inputColumnPrecision(x)
                 colscale = self.__meta.inputColumnScale(x)
                 colsize = self.__meta.inputColumnSize(x)
                 coltn = self.__meta.inputColumnTypeName(x)
             elif tbl == 'output':
-                colname = self.__meta.outputColumnName(x).decode('utf-8')
+                colname = decodeUTF8(self.__meta.outputColumnName(x))
                 coltype = self.__meta.outputColumnType(x)
                 colprec = self.__meta.outputColumnPrecision(x)
                 colscale = self.__meta.outputColumnScale(x)
@@ -77,22 +85,23 @@ class exa:
         self.meta = mo
 
     def import_script(self, script):
+        modobj = None
         modname = unicode(script)
         code = self.__meta.moduleContent(modname.encode('utf-8'))
         msg = self.__meta.checkException()
         if msg: raise ImportError(u"Importing module %s failed: %s" % (modname, msg))
-        code = code.decode('utf-8')
+        code = decodeUTF8(code)
         if self.__modules.has_key(code):
-            print "%%% found code", modname, repr(code)
+            print("%%% found code", modname, repr(code))
             modobj = self.__modules[code]
         else:
-            print "%%% new code", modname, repr(code), code in self.__modules
+            print("%%% new code", modname, repr(code), code in self.__modules)
             modobj = imp.new_module(modname)
             modobj.__file__ = "<%s>" % modname
             modobj.__dict__['exa'] = self
             self.__modules[code] = modobj
-            try: exec compile(code, script, 'exec') in modobj.__dict__
-            except Exception, err:
+            try: exec(compile(code, script, 'exec')) in modobj.__dict__
+            except Exception as err:
                 raise ImportError(u"Importing module %s failed: %s" % (modname, str(err)))
         return modobj
 
@@ -113,7 +122,7 @@ class exa:
         connectionInfo = self.__meta.connectionInformation(connection_name.encode('utf-8'))
         msg = self.__meta.checkException()
         if msg: raise ImportError(u"get_connection for connection name %s failed: %s" % (name, msg))
-        return exa.ConnectionInformation(connectionInfo.copyKind().decode('utf-8'), connectionInfo.copyAddress().decode('utf-8'), connectionInfo.copyUser().decode('utf-8'), connectionInfo.copyPassword().decode('utf-8'))
+        return exa.ConnectionInformation(decodeUTF8(connectionInfo.copyKind()), decodeUTF8(connectionInfo.copyAddress()), decodeUTF8(connectionInfo.copyUser()), decodeUTF8(connectionInfo.copyPassword()))
 
 
     def redirect_output(self, target = ('192.168.1.1', 5000)):
@@ -130,8 +139,8 @@ class exa:
 exa = exa()
 
 def __pythonvm_wrapped_parse():
-    try: exec compile(exa.meta.script_code, exa.meta.script_name, 'exec') in globals()
-    except Exception, err:
+    try: exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
+    except Exception as err:
         errtypel, errobj, backtrace = sys.exc_info()
         if backtrace.tb_next: backtrace = backtrace.tb_next
         err.args = ("".join(traceback.format_exception(errtypel, errobj, backtrace)),)

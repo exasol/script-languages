@@ -15,4 +15,7 @@ script:
    - ./build --flavor=tensorflow
    - ./build --flavor=streaming
    - ./build --flavor=fancyr
+   - ./build --flavor=fancyr_16
+   - ./build --flavor=python3
+   - ./build --flavor=python3_16
 
