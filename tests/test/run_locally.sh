@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -u
 
 die() { echo "ERROR:" "$@" >&2; exit 1; }
@@ -28,6 +29,7 @@ function run_generic_tests() {
         run_test "$test" "$2" --script-languages "$3" --lang "$1"
     done
 }
+
 
 # $1: run specific and generic tests for $1, e.g., "java"
 # $2: exasol server address
