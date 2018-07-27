@@ -41,10 +41,13 @@ function run_tests_in_folder() {
     echo "--- END TEST ${folder} ---"
 }
 
+optarr=$(getopt -o 'h' --long 'help,server:,test-config:' -- "$@")
+
+eval set -- "$optarr"
 
 # ./run-locally.sh --server 192... --test-config /home/...mini/../testconfig
 while true; do
-    case "${1-}" in
+    case "$1" in
         --server) server="$2"; shift 2;;
         --test-config) test_config="$2"; shift 2;;
         --) shift; break;;

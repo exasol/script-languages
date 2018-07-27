@@ -145,7 +145,7 @@ if [ -z ${EXASOLO+x} ]; then
     echo "Extracted"
 
     DB_HOST=172.17.0.2
-    DB_PORT=8563
+    DB_PORT=8888
     
 else
     DB_HOST=$EXASOLO_HOST
@@ -154,4 +154,4 @@ fi
 
 echo "Starting tests against $DB_HOST:$DB_PORT"
 
-( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)
+( cd tests/test ; ./run_locally.sh --server="$DB_HOST:$DB_PORT" --test-config="$test_config" --)
