@@ -1,4 +1,4 @@
 language_definition=PYTHON=builtin_python
-generic_language_tests=python java
+generic_language_tests=python
 test_folders=python
 # ending new line required!
