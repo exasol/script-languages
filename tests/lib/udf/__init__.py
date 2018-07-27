@@ -190,6 +190,7 @@ def _rewrite_redirector(sql, redirector):
 def _split_file_on_slash(path):
     sql = ''
     for line in open(path):
+        line = line.decode('utf8')
         if line == '/\n':
             if sql:
                 yield sql
