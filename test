@@ -65,6 +65,8 @@ if [ ! -d "./downloads" ]; then
     rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.10.tar.gz
 fi
 
+echo "$(pwd)"
+find "./downloads"
 
 if [ ! -f "./tests/bin/activate" ]; then
     virtualenv --python "$(which python2)" "./tests"
