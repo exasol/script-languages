@@ -10,11 +10,11 @@ die() { echo "ERROR:" "$@" >&2; exit 1; }
 function run_test() {
     # echo "execute $@"
     export EXAPLUS=/opt/EXAplus-6.0.10/exaplus
-    cmd=$(echo python -tt "$1" \
-                      --driver=$(pwd)/../../downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
-                      --server "$2" \
-                      --jdbc-path $(pwd)/../../EXASOL_JDBC-6.0.8/exajdbc.jar \
-                      "${@:3}" # for, e.g., --lang
+    cmd=$(echo python2 -tt "$1" \
+                       --driver=$(pwd)/../../downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
+                       --server "$2" \
+                       --jdbc-path $(pwd)/../../EXASOL_JDBC-6.0.8/exajdbc.jar \
+                       "${@:3}" # for, e.g., --lang
          )
     echo "$cmd"
     $cmd

@@ -66,6 +66,15 @@ if [ ! -d "./downloads" ]; then
 fi
 
 
+if [ ! -f "./tests/bin/activate" ]; then
+    virtualenv --python "$(which python2)" "./tests"
+fi
+set +u
+source "./tests/bin/activate"
+set -u
+pip install -r "./tests/requirements.txt"
+
+
 config_file="$(pwd)/flavors/$FLAVOR/testconfig"
 
 if [ ! -e "$config_file" ]; then
