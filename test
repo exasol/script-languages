@@ -163,6 +163,8 @@ fi
 
 echo "Starting tests against $DB_HOST:$DB_PORT"
 
+set +e
+
 ( cd tests/test ; ./run_locally.sh --server="$DB_HOST:$DB_PORT" --test-config="$test_config" --)
 RETURN_CODE=$?
 exit $RETURN_CODE
