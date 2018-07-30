@@ -103,6 +103,7 @@ function cleanup {
     docker rm -f exasoldb || true
     echo "Cleanup: removing config files"
     sudo rm -rf $TEST_TMP_DIR/ || true
+    exit $RETURN_CODE
 }
 
 
@@ -163,3 +164,5 @@ fi
 echo "Starting tests against $DB_HOST:$DB_PORT"
 
 ( cd tests/test ; ./run_locally.sh --server="$DB_HOST:$DB_PORT" --test-config="$test_config" --)
+RETURN_CODE=$?
+exit $RETURN_CODE
