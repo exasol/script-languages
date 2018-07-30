@@ -1,4 +1,4 @@
-#!/usr/opt/bs-python-2.7/bin/python
+#!/usr/bin/env python2.7
 # coding: UTF-8
 '''
 This is an annotated test file of the UDF testing framework. You can
