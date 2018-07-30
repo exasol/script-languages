@@ -19,11 +19,11 @@ while true; do
         --use-dockerdb) shift;;
         --use-exasolo) EXASOLO="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
-		   echo "Options:"
-		   echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
-		   echo "  [--use-dockerdb]                      Run test on Exasol running in Docker"
-		   echo "  [--use-exasolo=<connection-string>]   Run test on Exasol running in existing EXASolo"
-		   echo "  [-h|--help]                           Print this help."; exit 0;;
+       echo "Options:"
+       echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+       echo "  [--use-dockerdb]                      Run test on Exasol running in Docker"
+       echo "  [--use-exasolo=<connection-string>]   Run test on Exasol running in existing EXASolo"
+       echo "  [-h|--help]                           Print this help."; exit 0;;
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
     esac
@@ -39,16 +39,15 @@ test_config="$(pwd)/flavors/$FLAVOR/testconfig"
 if [ ! -z ${EXASOLO+x} ]; then
     OIFS=$IFS
     IFS=':'
-    PARTS=()   
-    for x in $EXASOLO    
-    do
-	PARTS+=($x)
+    PARTS=()
+    for x in $EXASOLO; do
+        PARTS+=($x)
     done
     IFS=$OIFS
     echo "PARTS: ${PARTS[*]}"
     if [ ! ${#PARTS[@]} = "2" ]; then
-	echo "argument for --use-exasolo is not of the form <host>:<port>"
-	exit 1
+        echo "argument for --use-exasolo is not of the form <host>:<port>"
+        exit 1
     fi
     EXASOLO_HOST=${PARTS[0]}
     EXASOLO_PORT=${PARTS[1]}
@@ -77,12 +76,10 @@ fi
 typeset -A config
 config=( )
 
-while read line
-do
-if echo $line | grep -F = &>/dev/null
-    then
+while read line; do
+    if echo $line | grep -F = &>/dev/null; then
         varname=$(echo "$line" | cut -d '=' -f 1)
-	if [[ $varname == "#*" ]]; then continue; fi
+        if [[ $varname == "#*" ]]; then continue; fi
         config[$varname]=$(echo "$line" | cut -d '=' -f 2-)
     fi
 done < $config_file
@@ -93,7 +90,7 @@ for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
 
 function cleanup {
-    echo "Cleanup: removing exaldb"
+    echo "Cleanup: removing exasoldb"
     docker rm -f exasoldb || true
     echo "Cleanup: removing config files"
     sudo rm -rf $TEST_TMP_DIR/ || true
@@ -103,18 +100,20 @@ function cleanup {
 
 
 function waitForLine {
-FILE=$1
-PATTERN=$2
-tail -f "$FILE" | while read LOGLINE
-do
-   [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail
-done
+    FILE=$1
+    PATTERN=$2
+    tail -f "$FILE" | while read LOGLINE
+    do
+        # TODO pkill does not return 0, apparently no proces is matched
+        # `|| true` is only a workaround
+        [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail || true
+    done
 }
 
 
 
 if [ -z ${EXASOLO+x} ]; then
-    
+
     trap cleanup EXIT
     TEST_TMP_DIR="$(pwd)/udf-test-tmp"
 
@@ -123,21 +122,21 @@ if [ -z ${EXASOLO+x} ]; then
     cp ext/EXAConf $TEST_TMP_DIR/exa/etc/EXAConf
     dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
     touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
-    
+
     docker pull exasol/docker-db:latest
     docker run \
-	--name exasoldb \
-	-p 8899:8888 \
-	-p 6594:6583 \
-	--detach \
-	--privileged \
-	-v "$TEST_TMP_DIR/exa:/exa" \
-	exasol/docker-db:latest \
-	init-sc --node-id 11
-    
+        --name exasoldb \
+        -p 8899:8888 \
+        -p 6594:6583 \
+        --detach \
+        --privileged \
+        -v "$TEST_TMP_DIR/exa:/exa" \
+        exasol/docker-db:latest \
+        init-sc --node-id 11
+
     # Wait until database is ready
     (docker logs -f --tail 0 exasoldb &) 2>&1 | grep -q -i 'stage4: All stages finished'
-    
+
     waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* ScriptLanguages
     echo "BucketFS is ready ... uploading Container"
     curl -v -X PUT -T $FLAVOR.tar.gz http://w:write@172.17.0.2:6583/myudfs/$FLAVOR.tar.gz
@@ -146,7 +145,7 @@ if [ -z ${EXASOLO+x} ]; then
 
     DB_HOST=172.17.0.2
     DB_PORT=8888
-    
+
 else
     DB_HOST=$EXASOLO_HOST
     DB_PORT=$EXASOLO_PORT
