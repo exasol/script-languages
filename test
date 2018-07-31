@@ -156,9 +156,7 @@ if [ -z ${EXASOLO+x} ]; then
 
     # need to import from within the container to avoid port conflicts
     docker cp tests/test/enginedb_small exasoldb:/tmp
-    docker exec exasoldb /usr/opt/EXASuite-6/EXASolution-6.0.10/bin/Console/exaplus \
-        -c 127.0.0.1:8888 -u sys -p exasol \
-        -f /tmp/enginedb_small/import.sql
+    docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.10/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
 
 else
     DB_HOST$EXASOLO_HOST
