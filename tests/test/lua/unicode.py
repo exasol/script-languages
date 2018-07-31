@@ -13,6 +13,7 @@ from udf import skip
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
+@skip('csv data for table fn2.unicodedata is currently not available')
 class LuaUnicode(udf.TestCase):
 
     @classmethod
