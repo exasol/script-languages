@@ -95,9 +95,7 @@ def setUpModule():
                 env=env,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                shell=True)
-
+                stderr=subprocess.STDOUT)
         out, _err = exaplus.communicate(sql)
     if exaplus.returncode != 0:
         log.critical('EXAplus error: %d', exaplus.returncode)
