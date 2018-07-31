@@ -24,7 +24,7 @@ class PythonUnicode(udf.TestCase):
         env = os.environ.copy()
         env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
         exaplus = subprocess.Popen(cmd.split(), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, 
-                                   stderr=subprocess.STDOUT, shell=True)
+                                stderr=subprocess.STDOUT)
 
         u = u'äöüß' + unichr(382) + unichr(65279) + unichr(63882) + unichr(64432)
 

@@ -246,7 +246,6 @@ class FrequencyAnalysis(udf.TestCase):
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                shell=True,
                 )
         out, _err = exaplus.communicate(sql)
         if exaplus.returncode != 0:
