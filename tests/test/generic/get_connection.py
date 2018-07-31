@@ -8,6 +8,7 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 import udf
 from udf import requires
 import exatest
+from exatest.testcase import skip
 
 
 class AccessConnectionSysPriv(udf.TestCase):
@@ -55,6 +56,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('CREATE USER {username} IDENTIFIED BY "{password}"'.format(username = username, password = password))
         self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
 
+    @skip("Not all required script languages necessarily available")
     def testUseConnectionWithoutRights(self):
         self.createUser("foo", "foo")
         self.query('grant create schema to foo')
@@ -127,6 +129,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('drop user foo cascade')
         self.commit()
 
+    @skip("Not all required script languages necessarily available")
     def testUseConnectionWithOldRight(self):
         self.createUser("foo", "foo")
         self.query('grant create schema to foo')
@@ -200,7 +203,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('drop user foo cascade')
         self.commit()
 
-
+    @skip("Not all required script languages necessarily available")
     def testUseConnectionWithNewRight(self):
         self.createUser("foo", "foo")
         self.query('grant create schema to foo')
@@ -418,6 +421,7 @@ class GetConnectionAccessControlWithViewsTest(udf.TestCase):
         self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
 
 
+    @skip("Not all required script languages necessarily available")
     def testUseConnectionUDFsInView(self):
         self.createUser("foo", "foo")
         self.commit()
