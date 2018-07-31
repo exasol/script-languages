@@ -9,7 +9,6 @@ die() { echo "ERROR:" "$@" >&2; exit 1; }
 # $3...: additional arguments passed to tests
 function run_test() {
     # echo "execute $@"
-    export EXAPLUS=/opt/EXAplus-6.0.10/exaplus
     cmd=$(echo python2 -tt "$1" \
                        --driver=$(pwd)/../../downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
                        --server "$2" \
@@ -63,7 +62,8 @@ while true; do
 		       echo "Options:"
 		       echo "  [--server=<host:port>]                Address of Exasol database instance"
 		       echo "  [--test-config=<path>]                Path to flavor test config file"
-		       echo "  [-h|--help]                           Print this help."; exit 0;;
+		       echo "  [-h|--help]                           Print this help."
+           echo "Environment variable EXAPLUS must point to exaplus executable."; exit 0;;
     esac
 done
 
@@ -71,6 +71,11 @@ if [ -z "$server" ]; then die "--server is required"; fi
 
 if [ ! -f "$test_config" ]; then
     echo "testconfig for flavor $FLAVOR does not exist here: $config_file"
+    exit 1
+fi
+
+if [ ! -z "$EXAPLUS" ]; then
+    echo "Environment variable EXAPLUS must point to exaplus executable."
     exit 1
 fi
 

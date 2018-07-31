@@ -65,6 +65,11 @@ if [ ! -d "./downloads" ]; then
     rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.10.tar.gz
 fi
 
+if [ -z "$EXAPLUS" ]; then
+    export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.10/exaplus"
+fi
+
+
 echo "$(pwd)"
 find "./downloads"
 
