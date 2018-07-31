@@ -65,9 +65,7 @@ if [ ! -d "./downloads" ]; then
     rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.10.tar.gz
 fi
 
-if [ -z "$EXAPLUS" ]; then
-    export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.10/exaplus"
-fi
+[ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.10/exaplus"
 
 
 echo "$(pwd)"
@@ -82,23 +80,15 @@ set -u
 pip install -r "./tests/requirements.txt"
 
 
-config_file="$(pwd)/flavors/$FLAVOR/testconfig"
-
-if [ ! -e "$config_file" ]; then
-    echo "testconfig for flavor $FLAVOR does not exist here: $config_file"
-    exit 1
-fi
-
 typeset -A config
 config=( )
-
 while read line; do
     if echo $line | grep -F = &>/dev/null; then
         varname=$(echo "$line" | cut -d '=' -f 1)
         if [[ $varname == "#*" ]]; then continue; fi
         config[$varname]=$(echo "$line" | cut -d '=' -f 2-)
     fi
-done < $config_file
+done < $test_config
 
 for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
@@ -132,6 +122,7 @@ function waitForLine {
 if [ -z ${EXASOLO+x} ]; then
 
     trap cleanup EXIT
+    RETURN_CODE=1
     TEST_TMP_DIR="$(pwd)/udf-test-tmp"
 
     # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
@@ -163,15 +154,29 @@ if [ -z ${EXASOLO+x} ]; then
     DB_HOST=172.17.0.2
     DB_PORT=8888
 
+    # need to import from within the container to avoid port conflicts
+    docker cp tests/test/enginedb_small exasoldb:/tmp
+    docker exec exasoldb /usr/opt/EXASuite-6/EXASolution-6.0.10/bin/Console/exaplus \
+        -c 127.0.0.1:8888 -u sys -p exasol \
+        -f /tmp/enginedb_small/import.sql
+
 else
-    DB_HOST=$EXASOLO_HOST
-    DB_PORT=$EXASOLO_PORT
+    DB_HOST$EXASOLO_HOST
+    DB_PORT$EXASOLO_PORT
+
+    # import tables for tests
+    downloads/EXAplus-6.0.10/exaplus \
+        -c "$DB_HOST:$DB_PORT" \
+        -u sys \
+        -p exasol \
+        -f tests/test/enginedb_small/import.sql
 fi
+
 
 echo "Starting tests against $DB_HOST:$DB_PORT"
 
 set +e
 
-( cd tests/test ; ./run_locally.sh --server="$DB_HOST:$DB_PORT" --test-config="$test_config" --)
+( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)
 RETURN_CODE=$?
 exit $RETURN_CODE
