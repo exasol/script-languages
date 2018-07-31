@@ -74,7 +74,7 @@ if [ ! -f "$test_config" ]; then
     exit 1
 fi
 
-if [ ! -z "$EXAPLUS" ]; then
+if [ -z "$EXAPLUS" ]; then
     echo "Environment variable EXAPLUS must point to exaplus executable."
     exit 1
 fi
