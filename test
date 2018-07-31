@@ -67,8 +67,9 @@ fi
 
 [ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.10/exaplus"
 
+# Add ODBC lib to load path
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64
 ldd downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so
-
 
 echo "$(pwd)"
 find "./downloads"
