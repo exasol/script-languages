@@ -6,8 +6,12 @@ sudo: false
 services:
     - docker
 
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq -y unixodbc unixodbc-dev
+
 # build all flavors
 script: 
-   - ./build --flavor=mini
-   - ./export --flavor=mini
-   - ./test --flavor mini
+  - ./build --flavor=mini
+  - ./export --flavor=mini
+  - ./test --flavor mini
