@@ -8,6 +8,7 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 
 import udf
 from udf import useData
+from exatest.testcase import skip
 
 class ScriptImport(udf.TestCase):
 
@@ -114,7 +115,7 @@ class ScriptImport(udf.TestCase):
             '''))
         with self.assertRaisesRegexp(Exception, 'ImportError:.* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
-        
+
     def test_import_fails_for_r_script(self):
         self.query(udf.fixindent('''
             CREATE python SCALAR SCRIPT
@@ -137,7 +138,7 @@ class ScriptImport(udf.TestCase):
             }
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'ImportError:.* wrong language R'):
+        with self.assertRaisesRegexp(Exception, 'SCRIPT_LANGUAGES - no definition found for language: R'):
             self.query('SELECT foo() FROM DUAL')
         
 
