@@ -116,6 +116,7 @@ class ScriptImport(udf.TestCase):
         with self.assertRaisesRegexp(Exception, 'ImportError:.* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
 
+    @skip("R is not necessarily available in python container")
     def test_import_fails_for_r_script(self):
         self.query(udf.fixindent('''
             CREATE python SCALAR SCRIPT
@@ -138,7 +139,7 @@ class ScriptImport(udf.TestCase):
             }
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'SCRIPT_LANGUAGES - no definition found for language: R'):
+        with self.assertRaisesRegexp(Exception, 'ImportError:.* wrong language R'):
             self.query('SELECT foo() FROM DUAL')
         
 
