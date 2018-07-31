@@ -131,7 +131,7 @@ if [ -z ${EXASOLO+x} ]; then
     dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
     touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
 
-    docker pull exasol/docker-db:latest
+    docker pull exasol/docker-db:6.0.10-d1
     docker run \
         --name exasoldb \
         -p 8899:8888 \
@@ -139,7 +139,7 @@ if [ -z ${EXASOLO+x} ]; then
         --detach \
         --privileged \
         -v "$TEST_TMP_DIR/exa:/exa" \
-        exasol/docker-db:latest \
+        exasol/docker-db:6.0.10-d1 \
         init-sc --node-id 11
 
     # Wait until database is ready
