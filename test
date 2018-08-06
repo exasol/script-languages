@@ -70,15 +70,6 @@ fi
 # Add ODBC lib to load path. Necessary on Travis to prevent "Can't open lib
 # '[...]/x86_64/libexaodbc-uo2214lv2.so' : file not found (0)" errors.
 set +u
-
-find /lib64/ -iname "*odbc*" 2> /dev/null || true
-find / -iname "*odbc*" 2> /dev/null || true
-ldd downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64
-ldd downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so
-sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
-ldd downloads/EXASOL_ODBC-6.0.8/lib/linux/x86_64/libexaodbc-uo2214lv2.so
-
 if [ ! -f "./tests/bin/activate" ]; then
     virtualenv --python "$(which python2)" "./tests"
 fi
@@ -86,8 +77,8 @@ source "./tests/bin/activate"
 set -u
 pip install -r "./tests/requirements.txt"
 
-
 typeset -A config
+
 config=( )
 while read line; do
     if echo $line | grep -F = &>/dev/null; then
