@@ -1,4 +1,4 @@
-language_definition=PYTHON=builtin_python
+language_definition=PYTHON=localzmq+protobuf:///bucketfs1/myudfs/mini?lang=python#buckets/bucketfs1/myudfs/mini/exaudf/exaudfclient
 generic_language_tests=python
 test_folders=python
 # ending new line required!
