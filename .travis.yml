@@ -18,7 +18,8 @@ matrix:
     env: MATRIX_FLAVOR=mini
   - name: fancyr_60
     env: MATRIX_FLAVOR=fancyr_60
-  script:
-    - ./build --flavor=$MATRIX_FLAVOR
-    - ./export --flavor=$MATRIX_FLAVOR
-    - ./test --flavor $MATRIX_FLAVOR
+
+script:
+  - ./build --flavor=$MATRIX_FLAVOR
+  - ./export --flavor=$MATRIX_FLAVOR
+  - ./test --flavor $MATRIX_FLAVOR
