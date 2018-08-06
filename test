@@ -139,7 +139,7 @@ else
     DB_PORT$EXASOLO_PORT
 
     # import tables for tests
-    downloads/EXAplus-6.0.11/exaplus \
+    downloads/EXAplus/exaplus \
         -c "$DB_HOST:$DB_PORT" \
         -u sys \
         -p exasol \
