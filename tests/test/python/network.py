@@ -187,6 +187,8 @@ class CleanupTest(udf.TestCase):
         with MessageBox() as mb:
             host, port = mb.address
 
+            print('test: host {}, port {}'.format(host, port))
+
             self.query(udf.fixindent('''
                 CREATE python SCALAR SCRIPT
                 sendmail(dummy DOUBLE)
