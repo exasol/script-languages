@@ -26,8 +26,12 @@ function run_generic_tests() {
     echo "Run generic language test for $1"
     all_tests_passed=0
     for test in generic/*.py; do
-        run_test "$test" "$2" --script-languages "$3" --lang "$1"
-        if [ $? != 0 ]; then all_tests_passed=1; fi
+        cmd=$(run_test "$test" "$2" --script-languages "$3" --lang "$1")
+        rc=$?
+        if [ $rc != 0 ]; then
+            echo "$cmd: failed with $rc" >> /tmp/failed-tests.txt
+            all_tests_passed=1;
+        fi
     done
     return $all_tests_passed
 }
@@ -41,8 +45,12 @@ function run_tests_in_folder() {
     echo "--- START TEST ${folder} ---"
     all_tests_passed=0
     for test in $folder/*.py; do
-        run_test "$test" "$2" --script-languages "$3"
-        if [ $? != 0 ]; then all_tests_passed=1; fi
+        cmd=$(run_test "$test" "$2" --script-languages "$3")
+        rc=$?
+        if [ $rc != 0 ]; then
+            echo "$cmd: failed with $rc" >> /tmp/failed-tests.txt
+            all_tests_passed=1;
+        fi
     done
     return $all_tests_passed
     echo "--- END TEST ${folder} ---"
@@ -94,6 +102,7 @@ done < $test_config
 
 for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
+
 all_tests_passed=0
 
 if [ ! -z "${config[generic_language_tests]-}" ]; then
@@ -109,6 +118,11 @@ if [ ! -z "${config[test_folders]-}" ]; then
         run_tests_in_folder "$folder" "$server" "${config[language_definition]}"
         if [ $? != 0 ]; then all_tests_passed=1; fi
     done
+fi
+
+if [ -f '/tmp/failed-tests.txt' ]; then
+    cat /tmp/failed-tests.txt
+    mv /tmp/failed-tests.txt /tmp/failed-tests.txt.bak
 fi
 
 exit $all_tests_passed
