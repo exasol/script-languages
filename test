@@ -10,7 +10,6 @@ cd "$(dirname "$0")"
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:' -- "$@")
-
 eval set -- "$optarr"
 
 while true; do
@@ -55,22 +54,17 @@ fi
 
 
 if [ ! -d "./downloads" ]; then
-    mkdir -p downloads
-    curl https://www.exasol.com/support/secure/attachment/60973/EXASOL_ODBC-6.0.8.tar.gz --output downloads/EXASOL_ODBC-6.0.8.tar.gz
-    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz --output downloads/EXASOL_JDBC-6.0.8.tar.gz
-    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.11.tar.gz --output downloads/EXAplus-6.0.11.tar.gz
-    tar zxf downloads/EXASOL_ODBC-6.0.8.tar.gz -C downloads
-    tar zxf downloads/EXASOL_JDBC-6.0.8.tar.gz -C downloads
-    tar zxf downloads/EXAplus-6.0.11.tar.gz -C downloads
-    rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.11.tar.gz
+    mkdir -p downloads/{ODBC,JDBC,EXAplus}
+    curl https://www.exasol.com/support/secure/attachment/65437/EXASOL_ODBC-6.0.11.tar.gz | tar -C downloads/ODBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz | tar -C downloads/JDBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
 fi
 
-[ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.11/exaplus"
+[ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus/exaplus"
 
 pip install -r "./tests/requirements.txt"
 
 typeset -A config
-
 config=( )
 while read line; do
     if echo $line | grep -F = &>/dev/null; then
@@ -83,8 +77,6 @@ done < $test_config
 for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
 
-
-
 function cleanup {
     echo "Cleanup: removing exasoldb"
     docker rm -f exasoldb || true
@@ -93,25 +85,19 @@ function cleanup {
     exit $RETURN_CODE
 }
 
-
-
-
 function waitForLine {
     FILE=$1
     PATTERN=$2
     tail -f "$FILE" | while read LOGLINE
     do
-        # TODO pkill does not return 0, apparently no proces is matched
+        # TODO pkill does not return 0, apparently no process is matched
         # `|| true` is only a workaround
         [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail || true
     done
 }
 
-
-
+RETURN_CODE=0
 if [ -z ${EXASOLO+x} ]; then
-
-    RETURN_CODE=1
     echo 'skipping cleanup'
     # trap cleanup EXIT
     TEST_TMP_DIR="$(pwd)/udf-test-tmp"
@@ -144,7 +130,6 @@ if [ -z ${EXASOLO+x} ]; then
     DB_HOST=172.17.0.2
     DB_PORT=8888
 
-    # $(find / -iname exaplus 2> /dev/null | head -n 1) \
     # need to import from within the container to avoid port conflicts
     docker cp tests/test/enginedb_small exasoldb:/tmp
     docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
@@ -167,6 +152,7 @@ echo "Starting tests against $DB_HOST:$DB_PORT"
 set +e
 
 ( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)
+
 RETURN_CODE=$?
 exit $RETURN_CODE
 
