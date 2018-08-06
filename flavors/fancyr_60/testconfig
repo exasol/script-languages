@@ -1,3 +1,4 @@
 script_languages=ALTER SYSTEM SET SCRIPT_LANGUAGES='R=localzmq+protobuf:///bucketfs1/myudfs/fancyr_60?lang=r#buckets/bucketfs1/myudfs/fancyr_60/exaudf/exaudfclient';
 generic_test_languages=r
-
+test_folders=r
+# ending new line required!
