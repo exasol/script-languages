@@ -67,12 +67,6 @@ fi
 
 [ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.11/exaplus"
 
-set +u
-if [ ! -f "./tests/bin/activate" ]; then
-    virtualenv --python "$(which python2)" "./tests"
-fi
-source "./tests/bin/activate"
-set -u
 pip install -r "./tests/requirements.txt"
 
 typeset -A config
