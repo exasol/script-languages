@@ -58,17 +58,15 @@ if [ ! -d "./downloads" ]; then
     mkdir -p downloads
     curl https://www.exasol.com/support/secure/attachment/60973/EXASOL_ODBC-6.0.8.tar.gz --output downloads/EXASOL_ODBC-6.0.8.tar.gz
     curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz --output downloads/EXASOL_JDBC-6.0.8.tar.gz
-    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz --output downloads/EXAplus-6.0.10.tar.gz
+    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.11.tar.gz --output downloads/EXAplus-6.0.11.tar.gz
     tar zxf downloads/EXASOL_ODBC-6.0.8.tar.gz -C downloads
     tar zxf downloads/EXASOL_JDBC-6.0.8.tar.gz -C downloads
-    tar zxf downloads/EXAplus-6.0.10.tar.gz -C downloads
-    rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.10.tar.gz
+    tar zxf downloads/EXAplus-6.0.11.tar.gz -C downloads
+    rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.11.tar.gz
 fi
 
-[ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.10/exaplus"
+[ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus-6.0.11/exaplus"
 
-# Add ODBC lib to load path. Necessary on Travis to prevent "Can't open lib
-# '[...]/x86_64/libexaodbc-uo2214lv2.so' : file not found (0)" errors.
 set +u
 if [ ! -f "./tests/bin/activate" ]; then
     virtualenv --python "$(which python2)" "./tests"
@@ -130,7 +128,6 @@ if [ -z ${EXASOLO+x} ]; then
     dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
     touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
 
-    docker pull exasol/docker-db:6.0.10-d1
     docker run \
         --name exasoldb \
         -p 8899:8888 \
@@ -138,7 +135,7 @@ if [ -z ${EXASOLO+x} ]; then
         --detach \
         --privileged \
         -v "$TEST_TMP_DIR/exa:/exa" \
-        exasol/docker-db:6.0.10-d1 \
+        exasol/docker-db:6.0.11-d1 \
         init-sc --node-id 11
 
     # Wait until database is ready
@@ -156,14 +153,14 @@ if [ -z ${EXASOLO+x} ]; then
     # $(find / -iname exaplus 2> /dev/null | head -n 1) \
     # need to import from within the container to avoid port conflicts
     docker cp tests/test/enginedb_small exasoldb:/tmp
-    docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.10/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
+    docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
 
 else
     DB_HOST$EXASOLO_HOST
     DB_PORT$EXASOLO_PORT
 
     # import tables for tests
-    downloads/EXAplus-6.0.10/exaplus \
+    downloads/EXAplus-6.0.11/exaplus \
         -c "$DB_HOST:$DB_PORT" \
         -u sys \
         -p exasol \
