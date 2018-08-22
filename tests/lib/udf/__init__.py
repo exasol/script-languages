@@ -106,12 +106,15 @@ class TestProgram(exatest.TestProgram):
             help='path to the EXASOL JDBC Driver jar file (default: %(default)s)')
         new_opts.add_argument('--is-compat-mode',
             help='Compatibility mode (default: %(default)s)')
+        new_opts.add_argument('--script-languages',
+            help=' language definition, (default: %(default)s)')
         parser.set_defaults(
                 lang=None,
                 redirector_url=None,
                 param=None,
                 jdbc_path=None,
-                is_compat_mode=None
+                is_compat_mode=None,
+                script_languages=None,
                 )
 
     def prepare_hook(self):
@@ -187,6 +190,7 @@ def _rewrite_redirector(sql, redirector):
 def _split_file_on_slash(path):
     sql = ''
     for line in open(path):
+        line = line.decode('utf8')
         if line == '/\n':
             if sql:
                 yield sql

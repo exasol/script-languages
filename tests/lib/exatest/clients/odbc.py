@@ -1,4 +1,4 @@
-
+import sys
 import pyodbc
 
 class ClientError(Exception):
@@ -18,6 +18,15 @@ class ODBCClient(object):
         params.update(kwargs)
         self.conn = pyodbc.connect(**params)
         self.cursor = self.conn.cursor()
+        self._setScriptLanguagesFromArgs()
+
+    def _setScriptLanguagesFromArgs(self):
+        for i, arg in enumerate(sys.argv):
+            if arg == '--script-languages':
+                if len(sys.argv) == i + 1:
+                    raise ClientError('Value for --script-languages missing')
+                self.query("ALTER SESSION SET SCRIPT_LANGUAGES='%s'" % sys.argv[i + 1])
+                break
 
     def query(self, qtext, *args):
         if self.cursor is None:
