@@ -10,7 +10,10 @@ from udf import useData, expectedFailure
 
 class PythonInterpreter(udf.TestCase):
     def setUp(self):
-        self.query('CREATE SCHEMA FN2', ignore_errors=True)
+        self.query('CREATE SCHEMA FN2', ignore_errors=False)
+
+    def tearDown(self):
+        self.query('DROP SCHEMA IF EXISTS FN2 CASCADE', ignore_errors=False)
 
     def test_body_is_not_executed_at_creation_time(self):
         self.query(udf.fixindent('''

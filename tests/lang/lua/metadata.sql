@@ -35,6 +35,12 @@ function run(ctx)
 end
 /
 create lua scalar script
+get_scope_user() returns varchar(200) as
+function run(ctx)
+        return exa.meta.scope_user
+end
+/
+create lua scalar script
 get_current_schema() returns varchar(200) as
 function run(ctx)
         return exa.meta.current_schema

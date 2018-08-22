@@ -29,6 +29,11 @@ run <- function(ctx)
         exa$meta$current_user
 /
 create R scalar script
+get_scope_user() returns varchar(200) as
+run <- function(ctx)
+        exa$meta$scope_user
+/
+create R scalar script
 get_current_schema() returns varchar(200) as
 run <- function(ctx)
         exa$meta$current_schema

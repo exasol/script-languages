@@ -1,46 +1,157 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+# An Exasol instance is run using the exasol/docker-db image. Therefore, a
+# working installation of Docker and sudo privileges are required.
+
+set -eux
+
+cd "$(dirname "$0")"
+
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-set -x
-
-optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:' -- "$@")
 
 eval set -- "$optarr"
 
 while true; do
     case "$1" in
         --flavor) FLAVOR="$2"; shift 2;;
+        --use-dockerdb) shift;;
+        --use-exasolo) EXASOLO="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
-		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
-		   echo "  [-h|--help]    Print this help."; exit 0;;
+		   echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+		   echo "  [--use-dockerdb]                      Run test on Exasol running in Docker"
+		   echo "  [--use-exasolo=<connection-string>]   Run test on Exasol running in existing EXASolo"
+		   echo "  [-h|--help]                           Print this help."; exit 0;;
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
     esac
 done
 
-[ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
+[ "X${FLAVOR-}" = "X" ] && die "Missing mandatory argument --flavor"
 
-docker build . --tag exaudf/test_$FLAVOR -f flavors/$FLAVOR/Dockerfile.test_$FLAVOR
+[ ! -e "$FLAVOR.tar.gz" ] && die "Flavor not exported here: `pwd`/$FLAVOR.tar.gz"
 
-docker run --detach --security-opt seccomp=unconfined --name test_container_$FLAVOR exaudf/test_$FLAVOR sleep 1000000
+test_config="$(pwd)/flavors/$FLAVOR/testconfig"
+[ ! -f "$test_config" ] && die "Testconfig of $flavor not found here: $test_config"
 
-docker exec test_container_$FLAVOR mkfifo /tmp/fff
+if [ ! -z ${EXASOLO+x} ]; then
+    OIFS=$IFS
+    IFS=':'
+    PARTS=()   
+    for x in $EXASOLO    
+    do
+	PARTS+=($x)
+    done
+    IFS=$OIFS
+    echo "PARTS: ${PARTS[*]}"
+    if [ ! ${#PARTS[@]} = "2" ]; then
+	echo "argument for --use-exasolo is not of the form <host>:<port>"
+	exit 1
+    fi
+    EXASOLO_HOST=${PARTS[0]}
+    EXASOLO_PORT=${PARTS[1]}
+fi
 
-#docker exec --detach test_container_$FLAVOR bash -c 'python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script_fr.py'
-#docker exec --detach test_container_$FLAVOR python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script2.py
-#docker exec test_container_$FLAVOR /exaudf/exaudfclient ipc:///tmp/fff lang=streaming
 
-#docker exec --detach test_container_$FLAVOR python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input.csv exasol_emulator/output.csv exasol_emulator/script.py
-#docker exec test_container_$FLAVOR /exaudf/exaudfclient ipc:///tmp/fff lang=r
-#docker exec -it test_container_$FLAVOR gdb /exaudf/exaudfclient
+if [ ! -d "./downloads" ]; then
+    mkdir -p downloads
+    curl https://www.exasol.com/support/secure/attachment/60973/EXASOL_ODBC-6.0.8.tar.gz --output downloads/EXASOL_ODBC-6.0.8.tar.gz
+    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz --output downloads/EXASOL_JDBC-6.0.8.tar.gz
+    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz --output downloads/EXAplus-6.0.10.tar.gz
+    tar zxf downloads/EXASOL_ODBC-6.0.8.tar.gz -C downloads
+    tar zxf downloads/EXASOL_JDBC-6.0.8.tar.gz -C downloads
+    tar zxf downloads/EXAplus-6.0.10.tar.gz -C downloads
+    rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.10.tar.gz
+fi
 
-# /opt/conda/bin/python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py &
-# python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py&
-# /exaudf/exaudfclient ipc:///tmp/fff lang=python
+
+config_file="$(pwd)/flavors/$FLAVOR/testconfig"
+
+if [ ! -e "$config_file" ]; then
+    echo "testconfig for flavor $FLAVOR does not exist here: $config_file"
+    exit 1
+fi
+
+typeset -A config
+config=( )
+
+while read line
+do
+if echo $line | grep -F = &>/dev/null
+    then
+        varname=$(echo "$line" | cut -d '=' -f 1)
+	if [[ $varname == "#*" ]]; then continue; fi
+        config[$varname]=$(echo "$line" | cut -d '=' -f 2-)
+    fi
+done < $config_file
+
+for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
 
-docker exec -it test_container_$FLAVOR /bin/bash
 
-docker exec test_container_$FLAVOR cat exasol_emulator/output.csv
-docker rm -f test_container_$FLAVOR
+
+function cleanup {
+    echo "Cleanup: removing exaldb"
+    docker rm -f exasoldb || true
+    echo "Cleanup: removing config files"
+    sudo rm -rf $TEST_TMP_DIR/ || true
+}
+
+
+
+
+function waitForLine {
+FILE=$1
+PATTERN=$2
+tail -f "$FILE" | while read LOGLINE
+do
+   [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail
+done
+}
+
+
+
+if [ -z ${EXASOLO+x} ]; then
+    
+    trap cleanup EXIT
+    TEST_TMP_DIR="$(pwd)/udf-test-tmp"
+
+    # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
+    mkdir -p $TEST_TMP_DIR/exa/{etc,data/storage}
+    cp ext/EXAConf $TEST_TMP_DIR/exa/etc/EXAConf
+    dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
+    touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
+    
+    docker pull exasol/docker-db:latest
+    docker run \
+	--name exasoldb \
+	-p 8899:8888 \
+	-p 6594:6583 \
+	--detach \
+	--privileged \
+	-v "$TEST_TMP_DIR/exa:/exa" \
+	exasol/docker-db:latest \
+	init-sc --node-id 11
+    
+    # Wait until database is ready
+    (docker logs -f --tail 0 exasoldb &) 2>&1 | grep -q -i 'stage4: All stages finished'
+    
+    waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* ScriptLanguages
+    echo "BucketFS is ready ... uploading Container"
+    curl -v -X PUT -T $FLAVOR.tar.gz http://w:write@172.17.0.2:6583/myudfs/$FLAVOR.tar.gz
+    waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* $FLAVOR.*extracted
+    echo "Extracted"
+
+    DB_HOST=172.17.0.2
+    DB_PORT=8888
+    
+else
+    DB_HOST=$EXASOLO_HOST
+    DB_PORT=$EXASOLO_PORT
+fi
+
+echo "Starting tests against $DB_HOST:$DB_PORT"
+
+( cd tests/test ; ./run_locally.sh --server="$DB_HOST:$DB_PORT" --test-config="$test_config" --)
