@@ -1,4 +1,5 @@
-language_definition=PYTHON=localzmq+protobuf:///bfsdefault/myudfs/mini?lang=python#buckets/bfsdefault/myudfs/mini/exaudf/exaudfclient
+language_definition=PYTHON=localzmq+protobuf:///bfsdefault/myudfs/mini?lang=python#buckets/bfsdefault/myudfs/mini/exaudf/exaudfclient JAVA=builtin_java R=builtin_r
+#language_definition=PYTHON=builtin_python JAVA=builtin_java R=builtin_r
 generic_language_tests=python
 test_folders=python
 # ending new line required!

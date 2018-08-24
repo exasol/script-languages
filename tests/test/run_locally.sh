@@ -9,14 +9,18 @@ die() { echo "ERROR:" "$@" >&2; exit 1; }
 # $3...: additional arguments passed to tests
 function run_test() {
     # echo "execute $@"
-    cmd=$(echo python2 -tt "$1" \
-                       --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
-                       --server "$2" \
-                       --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar \
-                       "${@:3}" # for, e.g., --lang
-         )
-    echo "$cmd"
-    $cmd
+#    cmd=$(echo python -tt "$1" \
+#                       --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
+#                       --server "$2" \
+#                       --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar \
+#                       --script-languages \""$3"\" \
+#                       "${@:4}" # for, e.g., --lang
+#         )
+#    echo "$cmd"
+#    $cmd
+set +eux
+  python -tt "$1" --loglevel=critical --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so --server "$2" --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar --script-languages "$3" "${@:4}"
+         
 }
 
 # $1: run generic tests for lang $1, e.g., "java"
@@ -26,7 +30,7 @@ function run_generic_tests() {
     echo "Run generic language test for $1"
     all_tests_passed=0
     for test in generic/*.py; do
-        cmd=$(run_test "$test" "$2" --script-languages "$3" --lang "$1")
+        cmd=$(run_test "$test" "$2" "$3" --lang "$1")
         rc=$?
         if [ $rc != 0 ]; then
             echo "$cmd: failed with $rc" >> /tmp/failed-tests.txt
@@ -42,10 +46,10 @@ function run_generic_tests() {
 # $3: language definition
 function run_tests_in_folder() {
     folder="$1"
-    echo "--- START TEST ${folder} ---"
+    echo "--- Starting all tests in folder: ${folder} ---"
     all_tests_passed=0
     for test in $folder/*.py; do
-        cmd=$(run_test "$test" "$2" --script-languages "$3")
+        cmd=$(run_test "$test" "$2" "$3")
         rc=$?
         if [ $rc != 0 ]; then
             echo "$cmd: failed with $rc" >> /tmp/failed-tests.txt
@@ -53,10 +57,12 @@ function run_tests_in_folder() {
         fi
     done
     return $all_tests_passed
-    echo "--- END TEST ${folder} ---"
+    echo "--- finished all tests in folder: ${folder} ---"
 }
 
-optarr=$(getopt -o 'h' --long 'help,server:,test-config:' -- "$@")
+single_test=""
+
+optarr=$(getopt -o 'h' --long 'help,server:,test-config:,single-test:' -- "$@")
 
 eval set -- "$optarr"
 
@@ -65,11 +71,13 @@ while true; do
     case "$1" in
         --server) server="$2"; shift 2;;
         --test-config) test_config="$2"; shift 2;;
+        --single-test) single_test="$2"; shift 2;;
         --) shift; break;;
         *) echo "Usage: $0"
 		       echo "Options:"
 		       echo "  [--server=<host:port>]                Address of Exasol database instance"
 		       echo "  [--test-config=<path>]                Path to flavor test config file"
+                       echo "  [--single-test=<path>]                Path to a test file to run"
 		       echo "  [-h|--help]                           Print this help."
            echo "Environment variable EXAPLUS must point to exaplus executable."; exit 0;;
     esac
@@ -77,18 +85,21 @@ done
 
 if [ -z "$server" ]; then die "--server is required"; fi
 
-if [ ! -f "$test_config" ]; then
-    echo "testconfig for flavor $FLAVOR does not exist here: $config_file"
-    exit 1
-fi
-
 if [ -z "$EXAPLUS" ]; then
     echo "Environment variable EXAPLUS must point to exaplus executable."
     exit 1
 fi
 
+
+
+if [ ! -f "$test_config" ]; then
+    echo "testconfig for flavor $FLAVOR does not exist here: $config_file"
+    exit 1
+fi
+
 typeset -A config
 config=( )
+
 
 while read line
 do
@@ -101,6 +112,12 @@ do
 done < $test_config
 
 for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
+
+if [ ! -z "$single_test" ]; then
+    echo "Running single test: $single_test"
+    run_test "$single_test" "$server" "${config[language_definition]}" ${@}
+    exit
+fi
 
 
 all_tests_passed=0

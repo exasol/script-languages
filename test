@@ -62,7 +62,7 @@ fi
 
 [ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus/exaplus"
 
-pip install -r "./tests/requirements.txt"
+pip install --user -r "./tests/requirements.txt" 
 
 typeset -A config
 config=( )
@@ -99,7 +99,7 @@ function waitForLine {
 RETURN_CODE=0
 if [ -z ${EXASOLO+x} ]; then
     echo 'skipping cleanup'
-    # trap cleanup EXIT
+    #trap cleanup EXIT
     TEST_TMP_DIR="$(pwd)/udf-test-tmp"
 
     # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
@@ -147,7 +147,7 @@ else
 fi
 
 
-echo "Starting tests against $DB_HOST:$DB_PORT"
+echo "Starting tests against $DB_HOST:$DB_PORT using test_config: $test_config"
 
 set +e
 

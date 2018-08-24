@@ -141,7 +141,8 @@ class DynamicOutputWrongUsage(Test):
 
     @requires('VAREMIT_GENERIC_EMIT')
     def test_error_emit_missing(self):
-        with self.assertRaisesRegexp(Exception, 'The script has dynamic return arguments. Either specify the return arguments in the query via EMITS or implement the method (default_output_columns|getDefaultOutputColumns|defaultOutputColumns) in the UDF'):
+        #with self.assertRaisesRegexp(Exception, 'The script has dynamic return arguments. Either specify the return arguments in the query via EMITS or implement the method (default_output_columns|getDefaultOutputColumns|defaultOutputColumns) in the UDF'):
+        with self.assertRaisesRegexp(Exception, 'The script has dynamic return arguments. Either specify the return arguments in the query via EMITS or implement the method'):
             self.query('''SELECT fn1.VAREMIT_GENERIC_EMIT(1)''')
 
     @requires('VAREMIT_GENERIC_EMIT')
