@@ -66,7 +66,7 @@ class SWIGVMContainers::PythonVMImpl {
         PythonVMImpl(bool checkOnly);
         ~PythonVMImpl() {}
         bool run();
-        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
+        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
         void shutdown();
     private:
         string script_code;
@@ -100,7 +100,14 @@ PythonVM::PythonVM(bool checkOnly) {
 
 }
 
-void PythonVM::shutdown() {m_impl->shutdown();}
+void PythonVM::shutdown() {
+    try {
+        m_impl->shutdown();
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+}
 
 bool PythonVM::run() {
     try {
@@ -113,7 +120,7 @@ bool PythonVM::run() {
 }
 std::string PythonVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     try {
-        return m_impl->singleCall(fn, args);
+        return m_impl->singleCall(fn, args,calledUndefinedSingleCall);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
@@ -211,11 +218,11 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
 #endif
         Py_DECREF(code);
-#ifdef ENABLE_PYTHON3
-	PyEval_EvalCode(script, globals, globals); check();
-#else
-        PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(script), globals, globals); check();
-#endif
+//#ifdef ENABLE_PYTHON3
+//	PyEval_EvalCode(script, globals, globals); check();
+//#else
+//       PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(script), globals, globals); check();
+//#endif
         PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check();
         PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
         Py_XDECREF(retvalue); retvalue = NULL;
@@ -244,7 +251,7 @@ void PythonVMImpl::shutdown() {
             if (cleanobj) {
                 retvalue = PyObject_CallObject(cleanobj, NULL);
                 check();
-            }
+            }  
         }
         Py_XDECREF(script);
         Py_XDECREF(exatable);
@@ -269,7 +276,7 @@ bool PythonVMImpl::run() {
     return true;
 }
 
-std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args , string& calledUndefinedSingleCall) {
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode (singleCall)"); // @@@@ TODO: better exception text
     //{
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -456,7 +463,9 @@ std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
 
         PyObject* funcToCall = PyDict_GetItemString(globals, func); check();
         if (funcToCall == NULL) {
-            throw swig_undefined_single_call_exception(func);  // no such call is defined.
+            calledUndefinedSingleCall = func;
+            return "<error>";
+            //throw swig_undefined_single_call_exception(func);  // no such call is defined.
         }
         if (fn==SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL) {
             // Call directly

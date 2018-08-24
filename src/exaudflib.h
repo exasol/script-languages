@@ -411,21 +411,22 @@ class SWIGVM {
         virtual std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) = 0;
         string exception_msg;
         mutex exception_msg_mtx;
+        string calledUndefinedSingleCall;
 
 };
-struct swig_undefined_single_call_exception: public std::exception
-{
-    swig_undefined_single_call_exception(const std::string& fn): m_fn(fn) { }
-    virtual ~swig_undefined_single_call_exception() throw() { }
-    const std::string fn() const {return m_fn;}
-    const char* what() const throw() {
-        std::stringstream sb;
-        sb << "Undefined in UDF: " << m_fn;
-        return sb.str().c_str();
-    }
- private:
-    const std::string m_fn;
-};
+//struct swig_undefined_single_call_exception: public std::exception
+//{
+//    swig_undefined_single_call_exception(const std::string& fn): m_fn(fn) { }
+//    virtual ~swig_undefined_single_call_exception() throw() { }
+//    const std::string fn() const {return m_fn;}
+//    const char* what() const throw() {
+//        std::stringstream sb;
+//        sb << "Undefined in UDF: " << m_fn;
+//        return sb.str().c_str();
+//    }
+// private:
+//    const std::string m_fn;
+//};
 #ifdef ENABLE_PYTHON_VM
 class PythonVMImpl;
 

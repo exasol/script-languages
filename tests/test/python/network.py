@@ -213,12 +213,14 @@ class CleanupTest(udf.TestCase):
                     sock.send('cleanup:' + msg)
                     sock.close()
                 ''' % (host, port, host, port)))
+            self.query('''create or replace table ten as values 0,1,2,3,4,5,6,7,8,9 as p(x)''')
             self.query('''
                 SELECT max(sendmail(float1))
-                FROM test.enginetablebig1''') 
+                FROM test.enginetablebig1, ten, ten, ten, ten, ten''') 
 
         data = mb.data
         self.assertGreater(len(data), 0)
+        #for x in sorted(data): print('received: '+str(x))
         init = sorted([x.split(':')[1] for x in data if x.startswith('init')])
         cleanup = sorted([x.split(':')[1] for x in data if x.startswith('cleanup')])
         self.assertEquals(init, cleanup)
