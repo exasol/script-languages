@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# An Exasol instance is run using the exasol/docker-db image. Therefore, a
-# working installation of Docker and sudo privileges are required.
 
 set -eux
 
@@ -9,7 +7,7 @@ cd "$(dirname "$0")"
 
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:,no-test,no-cleanup,no-import' -- "$@")
 eval set -- "$optarr"
 
 while true; do
@@ -17,11 +15,17 @@ while true; do
         --flavor) FLAVOR="$2"; shift 2;;
         --use-dockerdb) shift;;
         --use-exasolo) EXASOLO="$2"; shift 2;;
+        --no-test) NOTESTS="yes"; shift;;
+        --no-cleanup) NOCLEANUP="yes"; shift;;
+        --no-import) NOIMPORT="yes"; shift;;
         -h|--help) echo "Usage: $0"
        echo "Options:"
        echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
        echo "  [--use-dockerdb]                      Run test on Exasol running in Docker"
        echo "  [--use-exasolo=<connection-string>]   Run test on Exasol running in existing EXASolo"
+       echo "  [--no-test]                           Don't run any tests"
+       echo "  [--no-cleanup]                        Don't clean up and don't shutdown dockerdb"
+       echo "  [--no-import]                         Do not import the standard test data called enginedb"
        echo "  [-h|--help]                           Print this help."; exit 0;;
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
@@ -62,7 +66,11 @@ fi
 
 [ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus/exaplus"
 
-pip install --user -r "./tests/requirements.txt" 
+if [[ "x$VIRTUAL_ENVx" != "xx" ]]; then
+    pip install -r "./tests/requirements.txt" 
+else
+    pip install --user -r "./tests/requirements.txt" 
+fi
 
 typeset -A config
 config=( )
@@ -78,11 +86,13 @@ for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
 
 function cleanup {
-    echo "Cleanup: removing exasoldb"
-    docker rm -f exasoldb || true
-    echo "Cleanup: removing config files"
-    sudo rm -rf $TEST_TMP_DIR/ || true
-    exit $RETURN_CODE
+    if [ -z ${NOCLEANUP+x} ]; then
+	echo "Cleanup: removing exasoldb"
+	docker rm -f exasoldb || true
+	echo "Cleanup: removing config files"
+	sudo rm -rf $TEST_TMP_DIR/ || true
+    fi
+	exit $RETURN_CODE
 }
 
 function waitForLine {
@@ -130,28 +140,34 @@ if [ -z ${EXASOLO+x} ]; then
     DB_HOST=172.17.0.2
     DB_PORT=8888
 
-    # need to import from within the container to avoid port conflicts
-    docker cp tests/test/enginedb_small exasoldb:/tmp
-    docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
-
+    if [ -z ${NOIMPORT+x} ]; then
+	# need to import from within the container to avoid port conflicts
+	docker cp tests/test/enginedb_small exasoldb:/tmp
+	docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
+    fi
+    echo "Started dockerdb@$DB_HOST:$DB_PORT"
 else
-    DB_HOST$EXASOLO_HOST
-    DB_PORT$EXASOLO_PORT
+    DB_HOST=$EXASOLO_HOST
+    DB_PORT=$EXASOLO_PORT
 
     # import tables for tests
-    downloads/EXAplus/exaplus \
-        -c "$DB_HOST:$DB_PORT" \
-        -u sys \
-        -p exasol \
-        -f tests/test/enginedb_small/import.sql
+    if [ -z ${NOIMPORT+x} ]; then
+	downloads/EXAplus/exaplus \
+            -c "$DB_HOST:$DB_PORT" \
+            -u sys \
+            -p exasol \
+            -f tests/test/enginedb_small/import.sql
+    fi
 fi
 
 
-echo "Starting tests against $DB_HOST:$DB_PORT using test_config: $test_config"
 
 set +e
 
-( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)
+if [ -z ${NOTESTS+x} ]; then
+    echo "Starting tests with connection $DB_HOST:$DB_PORT using test_config: $test_config"
+    ( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)
+fi
 
 RETURN_CODE=$?
 exit $RETURN_CODE
