@@ -69,68 +69,6 @@ class GetConnectionAccessControlTest(udf.TestCase):
             foo_conn.query('''
                 SELECT fn1.print_connection('AC_FOOCONN')
             ''')
-        # foo_conn.query('create schema foos')
-        # #lua
-        # foo_conn.query('''
-        #     create or replace lua scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     function run(ctx)
-        #       local c = exa.get_connection(ctx.conn)
-        #       ctx.emit( c.type,  c.address,  c.user,  c.password )
-        #     end
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
-        # foo_conn.commit()
-        # #python
-        # foo_conn.query('''
-        #     create or replace python scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     def run(ctx):
-        #             c = exa.get_connection(ctx.conn)
-        #             ctx.emit( c.type,  c.address,  c.user,  c.password )
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
-        # foo_conn.commit()
-        # #r
-        # foo_conn.query('''
-        #     create or replace r scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     run <- function(ctx) {
-        #         c = exa$get_connection(ctx$conn)
-        #         ctx$emit( c$type,  c$address,  c$user,  c$password )
-        # }
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
-        # foo_conn.commit()
-        # #java
-        # foo_conn.query('''
-        #     CREATE or replace java SCALAR SCRIPT print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #         %jvmoption -Xms64m -Xmx128m -Xss512k;
-        #         class PRINT_CONNECTION {
-        #             static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-        #                 ExaConnectionInformation c = exa.getConnection(ctx.getString("conn"));
-        #                 ctx.emit(c.getType().toString().toLowerCase(),c.getAddress(),c.getUser(), c.getPassword());
-        #             }
-        #         }
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
         foo_conn.commit()
         self.query('drop user foo cascade')
         self.commit()
@@ -149,68 +87,6 @@ class GetConnectionAccessControlTest(udf.TestCase):
             foo_conn.query('''
                  select fn1.print_connection('AC_FOOCONN')
             ''')
-        # foo_conn.query('create schema foos')
-        # #lua
-        # foo_conn.query('''
-        #     create or replace lua scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     function run(ctx)
-        #       local c = exa.get_connection(ctx.conn)
-        #       ctx.emit( c.type,  c.address,  c.user,  c.password )
-        #     end
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
-        # foo_conn.commit()
-        # #python
-        # foo_conn.query('''
-        #     create or replace python scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     def run(ctx):
-        #             c = exa.get_connection(ctx.conn)
-        #             ctx.emit( c.type,  c.address,  c.user,  c.password )
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
-        # foo_conn.commit()
-        # #r
-        # foo_conn.query('''
-        #     create or replace r scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     run <- function(ctx) {
-        #         c = exa$get_connection(ctx$conn)
-        #         ctx$emit( c$type,  c$address,  c$user,  c$password )
-        # }
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
-        # foo_conn.commit()
-        # #java
-        # foo_conn.query('''
-        #     CREATE or replace java SCALAR SCRIPT print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #         %jvmoption -Xms64m -Xmx128m -Xss512k;
-        #         class PRINT_CONNECTION {
-        #             static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-        #                 ExaConnectionInformation c = exa.getConnection(ctx.getString("conn"));
-        #                 ctx.emit(c.getType().toString().toLowerCase(),c.getAddress(),c.getUser(), c.getPassword());
-        #             }
-        #         }
-        #  ''')
-        # with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-        #     foo_conn.query('''
-        #         select print_connection('AC_FOOCONN')
-        #     ''')
         foo_conn.commit()
         self.query('drop user foo cascade')
         self.commit()
@@ -229,69 +105,6 @@ class GetConnectionAccessControlTest(udf.TestCase):
              select fn1.print_connection('AC_FOOCONN')
         ''')
         self.assertRowsEqual([('password','a','b','c')], rows)
-
-        # foo_conn.query('create schema foos')
-        # #lua
-        # foo_conn.query('''
-        #     create or replace lua scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     function run(ctx)
-        #       local c = exa.get_connection(ctx.conn)
-        #       ctx.emit( c.type,  c.address,  c.user,  c.password )
-        #     end
-        #  ''')
-        # rows = foo_conn.query('''
-        #    select print_connection('AC_FOOCONN')
-        # ''')
-        # self.assertRowsEqual([('password','a','b','c')], rows)
-        # foo_conn.commit()
-        # #python
-        # foo_conn.query('''
-        #     create or replace python scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     def run(ctx):
-        #             c = exa.get_connection(ctx.conn)
-        #             ctx.emit( c.type,  c.address,  c.user,  c.password )
-        #  ''')
-        # rows = foo_conn.query('''
-        #     select print_connection('AC_FOOCONN')
-        # ''')
-        # self.assertRowsEqual([('password','a','b','c')], rows)
-        # foo_conn.commit()
-        # #r
-        # foo_conn.query('''
-        #     create or replace r scalar script print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #     run <- function(ctx) {
-        #         c = exa$get_connection(ctx$conn)
-        #         ctx$emit( c$type,  c$address,  c$user,  c$password )
-        # }
-        #  ''')
-        # rows = foo_conn.query('''
-        #      select print_connection('AC_FOOCONN')
-        # ''')
-        # self.assertRowsEqual([('password','a','b','c')], rows)
-        # foo_conn.commit()
-        # #java
-        # foo_conn.query('''
-        #     CREATE or replace java SCALAR SCRIPT print_connection(conn varchar (1000))
-        #     emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-        #     as
-        #         %jvmoption -Xms64m -Xmx128m -Xss512k;
-        #         class PRINT_CONNECTION {
-        #             static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-        #                 ExaConnectionInformation c = exa.getConnection(ctx.getString("conn"));
-        #                 ctx.emit(c.getType().toString().toLowerCase(),c.getAddress(),c.getUser(), c.getPassword());
-        #             }
-        #         }
-        #  ''')
-        # rows = foo_conn.query('''
-        #      select print_connection('AC_FOOCONN')
-        # ''')
-        # self.assertRowsEqual([('password','a','b','c')], rows)
         foo_conn.commit()
         self.query('drop user foo cascade')
         self.commit()
@@ -440,96 +253,20 @@ class GetConnectionAccessControlWithViewsTest(udf.TestCase):
         self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
 
 
-    @skip("Not all required script languages necessarily available")
+    #@skip("Not all required script languages necessarily available")
+    @requires('PRINT_CONNECTION')
     def testUseConnectionUDFsInView(self):
         self.createUser("foo", "foo")
+        self.query('create schema if not exists spot42542')
+        self.query("create or replace view spot42542.print_connection_wrapper as select fn1.print_connection('AC_FOOCONN')")
+        self.query("grant select on spot42542.print_connection_wrapper to foo")
         self.commit()
         foo_conn = self.getConnection('foo', 'foo')
-
-        #lua
-        self.query('create schema if not exists spot42542_lua')
-        self.query(udf.fixindent('''
-            create or replace lua scalar script spot42542_lua.print_connection(conn varchar (1000))
-            emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-            as
-            function run(ctx)
-              local c = exa.get_connection(ctx.conn)
-              ctx.emit( c.type,  c.address,  c.user,  c.password )
-            end
-         '''))
-        self.commit()
-        self.query("create or replace view spot42542_lua.print_connection_wrapper as select spot42542_lua.print_connection('AC_FOOCONN')")
-        self.query("grant select on spot42542_lua.print_connection_wrapper to foo")
-        self.commit()
-        rows = foo_conn.query('''select * from spot42542_lua.print_connection_wrapper''')
+        rows = foo_conn.query('''select * from spot42542.print_connection_wrapper''')
         foo_conn.commit()
         self.assertRowsEqual([('password','a','b','c')], rows)
-        self.query('drop schema spot42542_lua cascade')
-        self.commit()
-
-        #python
-        self.query('create schema if not exists spot42542_python')
-        self.query(udf.fixindent('''
-            create or replace python scalar script spot42542_python.print_connection(conn varchar (1000))
-            emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-            as
-            def run(ctx):
-                    c = exa.get_connection(ctx.conn)
-                    ctx.emit( c.type,  c.address,  c.user,  c.password )
-         '''))
-        self.commit()
-        self.query("create or replace view spot42542_python.print_connection_wrapper as select spot42542_python.print_connection('AC_FOOCONN')")
-        self.query("grant select on spot42542_python.print_connection_wrapper to foo")
-        self.commit()
-        rows = foo_conn.query('''select * from spot42542_python.print_connection_wrapper''')
         foo_conn.commit()
-        self.assertRowsEqual([('password','a','b','c')], rows)
-        self.query('drop schema spot42542_python cascade')
-        self.commit()
-
-        #r
-        self.query('create schema if not exists spot42542_r')
-        self.query(udf.fixindent('''
-            create or replace r scalar script spot42542_r.print_connection(conn varchar (1000))
-            emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-            as
-            run <- function(ctx) {
-                c = exa$get_connection(ctx$conn)
-                ctx$emit( c$type,  c$address,  c$user,  c$password )
-        }
-        '''))
-        self.commit()
-        self.query("create or replace view spot42542_r.print_connection_wrapper as select spot42542_r.print_connection('AC_FOOCONN')")
-        self.query("grant select on spot42542_r.print_connection_wrapper to foo")
-        self.commit()
-        rows = foo_conn.query('''select * from spot42542_r.print_connection_wrapper''')
-        foo_conn.commit()
-        self.assertRowsEqual([('password','a','b','c')], rows)
-        self.query('drop schema spot42542_r cascade')
-        self.commit()
-
-        #java
-        self.query('create schema if not exists spot42542_java')
-        self.query(udf.fixindent('''
-            CREATE or replace java SCALAR SCRIPT spot42542_java.print_connection(conn varchar (1000))
-            emits(type varchar(200), host varchar(200), conn varchar(200), pwd varchar(200))
-            as
-                %jvmoption -Xms64m -Xmx128m -Xss512k;
-                class PRINT_CONNECTION {
-                    static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                        ExaConnectionInformation c = exa.getConnection(ctx.getString("conn"));
-                        ctx.emit(c.getType().toString().toLowerCase(),c.getAddress(),c.getUser(), c.getPassword());
-                    }
-                }
-        '''))
-        self.commit()
-        self.query("create or replace view spot42542_java.print_connection_wrapper as select spot42542_java.print_connection('AC_FOOCONN')")
-        self.query("grant select on spot42542_java.print_connection_wrapper to foo")
-        self.commit()
-        rows = foo_conn.query('''select * from spot42542_java.print_connection_wrapper''')
-        foo_conn.commit()
-        self.assertRowsEqual([('password','a','b','c')], rows)
-        self.query('drop schema spot42542_java cascade')
+        self.query('drop schema spot42542 cascade')
         self.commit()
 
 
