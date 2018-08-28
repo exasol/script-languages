@@ -1,7 +1,7 @@
 language: python
 
 # Setting sudo to false will cause Travis to use Containers (default in the meantime)
-sudo: false
+sudo: true
 
 services:
     - docker
@@ -16,10 +16,10 @@ matrix:
   include:
   - name: mini
     env: MATRIX_FLAVOR=mini
-  - name: fancyr_60
-    env: MATRIX_FLAVOR=fancyr_60
-  - name: standard
-    env: MATRIX_FLAVOR=standard
+#  - name: fancyr_60
+#    env: MATRIX_FLAVOR=fancyr_60
+#  - name: standard
+#    env: MATRIX_FLAVOR=standard
 
 script:
   - ./build --flavor=$MATRIX_FLAVOR
