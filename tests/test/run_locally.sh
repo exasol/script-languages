@@ -18,7 +18,7 @@ function run_test() {
 #         )
 #    echo "$cmd"
 #    $cmd
-  echo "Starting tests in $1"
+  echo "Starting tests in $1" 1>&2
 set +eux
   python -tt "$1" --loglevel=critical --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so --server "$2" --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar --script-languages "$3" "${@:4}"
          
