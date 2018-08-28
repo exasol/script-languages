@@ -66,10 +66,10 @@ fi
 
 [ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus/exaplus"
 
-if [[ "$VIRTUAL_ENV" != "" ]]; then
-    pip install -r "./tests/requirements.txt" 
-else
+if [ -z ${VIRTUAL_ENV+x} ]; then
     pip install --user -r "./tests/requirements.txt" 
+else
+    pip install -r "./tests/requirements.txt" 
 fi
 
 typeset -A config
@@ -87,8 +87,8 @@ for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
 function cleanup {
     if [ -z ${NOCLEANUP+x} ]; then
-	echo "Cleanup: removing exasoldb"
-	docker rm -f exasoldb || true
+	echo "Cleanup: removing exasoldb_${FLAVOR}"
+	docker rm -f "exasoldb_${FLAVOR}" || true
 	echo "Cleanup: removing config files"
 	sudo rm -rf $TEST_TMP_DIR/ || true
     fi
@@ -110,7 +110,7 @@ RETURN_CODE=0
 if [ -z ${EXASOLO+x} ]; then
     echo 'skipping cleanup'
     #trap cleanup EXIT
-    TEST_TMP_DIR="$(pwd)/udf-test-tmp"
+    TEST_TMP_DIR="$(pwd)/udf-test-tmp_${FLAVOR}"
 
     # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
     mkdir -p $TEST_TMP_DIR/exa/{etc,data/storage}
@@ -118,9 +118,12 @@ if [ -z ${EXASOLO+x} ]; then
     dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
     touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
 
+    DB_HOST=localhost
+    DB_PORT=$(ls flavors | grep --color=never -n standard | awk -F ':' '{ print $1+8898 }')
+
     docker run \
-        --name exasoldb \
-        -p 8899:8888 \
+        --name "exasoldb_${FLAVOR}" \
+        -p ${DB_PORT}:8888 \
         -p 6594:6583 \
         --detach \
         --privileged \
@@ -129,7 +132,7 @@ if [ -z ${EXASOLO+x} ]; then
         init-sc --node-id 11
 
     # Wait until database is ready
-    (docker logs -f --tail 0 exasoldb &) 2>&1 | grep -q -i 'stage4: All stages finished'
+    (docker logs -f --tail 0 "exasoldb_${FLAVOR}" &) 2>&1 | grep -q -i 'stage4: All stages finished'
 
     waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* ScriptLanguages
     echo "BucketFS is ready ... uploading Container"
@@ -137,13 +140,11 @@ if [ -z ${EXASOLO+x} ]; then
     waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* $FLAVOR.*extracted
     echo "Extracted"
 
-    DB_HOST=172.17.0.2
-    DB_PORT=8888
 
     if [ -z ${NOIMPORT+x} ]; then
 	# need to import from within the container to avoid port conflicts
-	docker cp tests/test/enginedb_small exasoldb:/tmp
-	docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
+	docker cp tests/test/enginedb_small "exasoldb_${FLAVOR}":/tmp
+	docker exec "exasoldb_${FLAVOR}" bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:$DB_PORT -u sys -p exasol -f /tmp/enginedb_small/import.sql'
     fi
     echo "Started dockerdb@$DB_HOST:$DB_PORT"
 else

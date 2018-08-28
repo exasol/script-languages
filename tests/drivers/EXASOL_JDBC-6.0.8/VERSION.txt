@@ -1,3 +1,0 @@
-EXASolution JDBC
-Version : 6.0.8
-Revision: gbc/exasol/R6.0.8:8365
