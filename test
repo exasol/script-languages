@@ -92,7 +92,7 @@ function cleanup {
 	echo "Cleanup: removing config files"
 	sudo rm -rf $TEST_TMP_DIR/ || true
     fi
-	exit $RETURN_CODE
+    exit $RETURN_CODE
 }
 
 function waitForLine {
@@ -109,7 +109,7 @@ function waitForLine {
 RETURN_CODE=0
 if [ -z ${EXASOLO+x} ]; then
     echo 'skipping cleanup'
-    #trap cleanup EXIT
+    trap cleanup EXIT
     TEST_TMP_DIR="$(pwd)/udf-test-tmp_${FLAVOR}"
 
     # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
@@ -143,25 +143,26 @@ if [ -z ${EXASOLO+x} ]; then
     echo "Extracted"
 
 
-    if [ -z ${NOIMPORT+x} ]; then
+#    if [ -z ${NOIMPORT+x} ]; then
 	# need to import from within the container to avoid port conflicts
-	docker cp tests/test/enginedb_small "exasoldb_${FLAVOR}":/tmp
-	docker exec "exasoldb_${FLAVOR}" bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:'"${DB_PORT}"' -u sys -p exasol -f /tmp/enginedb_small/import.sql'
-    fi
+	#docker cp tests/test/enginedb_small "exasoldb_${FLAVOR}":/tmp
+	#docker exec "exasoldb_${FLAVOR}" bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
+#    fi
     echo "Started dockerdb@$DB_HOST:$DB_PORT"
 else
     DB_HOST=$EXASOLO_HOST
     DB_PORT=$EXASOLO_PORT
+fi
 
     # import tables for tests
     if [ -z ${NOIMPORT+x} ]; then
-	downloads/EXAplus/exaplus \
+	(cd tests/test/enginedb_small ; ../../../downloads/EXAplus/exaplus \
             -c "$DB_HOST:$DB_PORT" \
             -u sys \
             -p exasol \
-            -f tests/test/enginedb_small/import.sql
+            -f import.sql)
     fi
-fi
+#fi
 
 
 
