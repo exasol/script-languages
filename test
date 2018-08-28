@@ -121,10 +121,12 @@ if [ -z ${EXASOLO+x} ]; then
     DB_HOST=localhost
     DB_PORT=$(ls flavors | grep --color=never -n standard | awk -F ':' '{ print $1+8898 }')
 
+    BUCKETFS_PORT=$(ls flavors | grep --color=never -n standard | awk -F ':' '{ print $1+6593 }')
+
     docker run \
         --name "exasoldb_${FLAVOR}" \
         -p ${DB_PORT}:8888 \
-        -p 6594:6583 \
+        -p ${BUCKETFS_PORT}:6583 \
         --detach \
         --privileged \
         -v "$TEST_TMP_DIR/exa:/exa" \
@@ -136,7 +138,7 @@ if [ -z ${EXASOLO+x} ]; then
 
     waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* ScriptLanguages
     echo "BucketFS is ready ... uploading Container"
-    curl -v -X PUT -T $FLAVOR.tar.gz http://w:write@172.17.0.2:6583/myudfs/$FLAVOR.tar.gz
+    curl -v -X PUT -T $FLAVOR.tar.gz http://w:write@${DB_HOST}:${BUCKETFS_PORT}/myudfs/$FLAVOR.tar.gz
     waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* $FLAVOR.*extracted
     echo "Extracted"
 
@@ -144,7 +146,7 @@ if [ -z ${EXASOLO+x} ]; then
     if [ -z ${NOIMPORT+x} ]; then
 	# need to import from within the container to avoid port conflicts
 	docker cp tests/test/enginedb_small "exasoldb_${FLAVOR}":/tmp
-	docker exec "exasoldb_${FLAVOR}" bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:$DB_PORT -u sys -p exasol -f /tmp/enginedb_small/import.sql'
+	docker exec "exasoldb_${FLAVOR}" bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:'"${DB_PORT}"' -u sys -p exasol -f /tmp/enginedb_small/import.sql'
     fi
     echo "Started dockerdb@$DB_HOST:$DB_PORT"
 else
