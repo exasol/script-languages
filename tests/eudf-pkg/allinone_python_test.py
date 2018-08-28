@@ -1,4 +1,4 @@
-#!/usr/opt/bs-python-2.7/bin/python
+#!/usr/bin/env python2.7
 
 import os
 import getpass
@@ -35,7 +35,7 @@ def tempdir():
 class AllInOneTest(unittest.TestCase):
 
     def allinone(self, script=None, spec='', indata='', outdata=''): 
-        python = '/usr/opt/bs-python-2.7/bin/python'
+        python = '/usr/bin/env python2.7'
         allinone = os.path.join(ROOTDIR,
                 'tests/EngineTest/udf/bin/allinone_python.py')
         with tempdir() as tmp:

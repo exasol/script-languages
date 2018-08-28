@@ -20,7 +20,7 @@ public:
     ~RVMImpl() {}
     void shutdown();
     bool run();
-    std::string singleCall(single_call_function_id_e fn,  const ExecutionGraph::ScriptDTO& args);
+    std::string singleCall(single_call_function_id_e fn,  const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
 private:
     bool m_checkOnly;
 };
@@ -45,7 +45,7 @@ bool RVM::run() {
 
 std::string RVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     try {
-        return m_impl->singleCall(fn,args);
+        return m_impl->singleCall(fn,args,calledUndefinedSingleCall);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
@@ -618,7 +618,7 @@ static SEXP export_spec_to_R(ExecutionGraph::ExportSpecification* exp_spec, size
     return argsexp;
 }
 
-string RVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+string RVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string &calledUndefinedSingleCall) {
     SEXP fun, expr, ret;
     int errorOccurred;
 
@@ -646,7 +646,10 @@ string RVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::S
     userFun = myFindFun(install(func), R_GlobalEnv);
     if (userFun == R_UnboundValue) {
         UNPROTECT(num_protects);
-        throw swig_undefined_single_call_exception(func); 
+        calledUndefinedSingleCall = func;
+        return "<error>";
+
+        //throw swig_undefined_single_call_exception(func); 
     }
 
     PROTECT(fun = myFindFun(install("INTERNAL_SINGLE_CALL_WRAPPER__"), R_GlobalEnv));

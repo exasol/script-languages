@@ -1,4 +1,4 @@
-#!/usr/opt/bs-python-2.7/bin/python
+#!/usr/bin/env python2.7
 
 import locale
 import os
@@ -14,6 +14,7 @@ from udf import (
         requires,
         SkipTest,
         timer,
+        skip,
         )
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
@@ -185,6 +186,7 @@ class WordCount(udf.TestCase):
             self.query(sql)
         self.assertLessEqual(t.duration, 11)
 
+@skip('csv data for tables wiki_freq and wiki_names is currently not available')
 class FrequencyAnalysis(udf.TestCase):
 
     maxDiff = 1024 * 20

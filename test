@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# An Exasol instance is run using the exasol/docker-db image. Therefore, a
-# working installation of Docker and sudo privileges are required.
 
 set -eux
 
@@ -9,8 +7,7 @@ cd "$(dirname "$0")"
 
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:' -- "$@")
-
+optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:,no-test,no-cleanup,no-import' -- "$@")
 eval set -- "$optarr"
 
 while true; do
@@ -18,12 +15,18 @@ while true; do
         --flavor) FLAVOR="$2"; shift 2;;
         --use-dockerdb) shift;;
         --use-exasolo) EXASOLO="$2"; shift 2;;
+        --no-test) NOTESTS="yes"; shift;;
+        --no-cleanup) NOCLEANUP="yes"; shift;;
+        --no-import) NOIMPORT="yes"; shift;;
         -h|--help) echo "Usage: $0"
-		   echo "Options:"
-		   echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
-		   echo "  [--use-dockerdb]                      Run test on Exasol running in Docker"
-		   echo "  [--use-exasolo=<connection-string>]   Run test on Exasol running in existing EXASolo"
-		   echo "  [-h|--help]                           Print this help."; exit 0;;
+       echo "Options:"
+       echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+       echo "  [--use-dockerdb]                      Run test on Exasol running in Docker"
+       echo "  [--use-exasolo=<connection-string>]   Run test on Exasol running in existing EXASolo"
+       echo "  [--no-test]                           Don't run any tests"
+       echo "  [--no-cleanup]                        Don't clean up and don't shutdown dockerdb"
+       echo "  [--no-import]                         Do not import the standard test data called enginedb"
+       echo "  [-h|--help]                           Print this help."; exit 0;;
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
     esac
@@ -39,16 +42,15 @@ test_config="$(pwd)/flavors/$FLAVOR/testconfig"
 if [ ! -z ${EXASOLO+x} ]; then
     OIFS=$IFS
     IFS=':'
-    PARTS=()   
-    for x in $EXASOLO    
-    do
-	PARTS+=($x)
+    PARTS=()
+    for x in $EXASOLO; do
+        PARTS+=($x)
     done
     IFS=$OIFS
     echo "PARTS: ${PARTS[*]}"
     if [ ! ${#PARTS[@]} = "2" ]; then
-	echo "argument for --use-exasolo is not of the form <host>:<port>"
-	exit 1
+        echo "argument for --use-exasolo is not of the form <host>:<port>"
+        exit 1
     fi
     EXASOLO_HOST=${PARTS[0]}
     EXASOLO_PORT=${PARTS[1]}
@@ -56,66 +58,58 @@ fi
 
 
 if [ ! -d "./downloads" ]; then
-    mkdir -p downloads
-    curl https://www.exasol.com/support/secure/attachment/60973/EXASOL_ODBC-6.0.8.tar.gz --output downloads/EXASOL_ODBC-6.0.8.tar.gz
-    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz --output downloads/EXASOL_JDBC-6.0.8.tar.gz
-    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz --output downloads/EXAplus-6.0.10.tar.gz
-    tar zxf downloads/EXASOL_ODBC-6.0.8.tar.gz -C downloads
-    tar zxf downloads/EXASOL_JDBC-6.0.8.tar.gz -C downloads
-    tar zxf downloads/EXAplus-6.0.10.tar.gz -C downloads
-    rm downloads/EXASOL_ODBC-6.0.8.tar.gz downloads/EXASOL_JDBC-6.0.8.tar.gz downloads/EXAplus-6.0.10.tar.gz
+    mkdir -p downloads/{ODBC,JDBC,EXAplus}
+    curl https://www.exasol.com/support/secure/attachment/65437/EXASOL_ODBC-6.0.11.tar.gz | tar -C downloads/ODBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz | tar -C downloads/JDBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
 fi
 
+[ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus/exaplus"
 
-config_file="$(pwd)/flavors/$FLAVOR/testconfig"
-
-if [ ! -e "$config_file" ]; then
-    echo "testconfig for flavor $FLAVOR does not exist here: $config_file"
-    exit 1
+if [[ "$VIRTUAL_ENV" != "" ]]; then
+    pip install -r "./tests/requirements.txt" 
+else
+    pip install --user -r "./tests/requirements.txt" 
 fi
 
 typeset -A config
 config=( )
-
-while read line
-do
-if echo $line | grep -F = &>/dev/null
-    then
+while read line; do
+    if echo $line | grep -F = &>/dev/null; then
         varname=$(echo "$line" | cut -d '=' -f 1)
-	if [[ $varname == "#*" ]]; then continue; fi
+        if [[ $varname == "#*" ]]; then continue; fi
         config[$varname]=$(echo "$line" | cut -d '=' -f 2-)
     fi
-done < $config_file
+done < $test_config
 
 for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
 
 
-
-
 function cleanup {
-    echo "Cleanup: removing exaldb"
-    docker rm -f exasoldb || true
-    echo "Cleanup: removing config files"
-    sudo rm -rf $TEST_TMP_DIR/ || true
+    if [ -z ${NOCLEANUP+x} ]; then
+	echo "Cleanup: removing exasoldb"
+	docker rm -f exasoldb || true
+	echo "Cleanup: removing config files"
+	sudo rm -rf $TEST_TMP_DIR/ || true
+    fi
+	exit $RETURN_CODE
 }
-
-
-
 
 function waitForLine {
-FILE=$1
-PATTERN=$2
-tail -f "$FILE" | while read LOGLINE
-do
-   [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail
-done
+    FILE=$1
+    PATTERN=$2
+    tail -f "$FILE" | while read LOGLINE
+    do
+        # TODO pkill does not return 0, apparently no process is matched
+        # `|| true` is only a workaround
+        [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail || true
+    done
 }
 
-
-
+RETURN_CODE=0
 if [ -z ${EXASOLO+x} ]; then
-    
-    trap cleanup EXIT
+    echo 'skipping cleanup'
+    #trap cleanup EXIT
     TEST_TMP_DIR="$(pwd)/udf-test-tmp"
 
     # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
@@ -123,21 +117,20 @@ if [ -z ${EXASOLO+x} ]; then
     cp ext/EXAConf $TEST_TMP_DIR/exa/etc/EXAConf
     dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
     touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
-    
-    docker pull exasol/docker-db:latest
+
     docker run \
-	--name exasoldb \
-	-p 8899:8888 \
-	-p 6594:6583 \
-	--detach \
-	--privileged \
-	-v "$TEST_TMP_DIR/exa:/exa" \
-	exasol/docker-db:latest \
-	init-sc --node-id 11
-    
+        --name exasoldb \
+        -p 8899:8888 \
+        -p 6594:6583 \
+        --detach \
+        --privileged \
+        -v "$TEST_TMP_DIR/exa:/exa" \
+        exasol/docker-db:6.0.11-d1 \
+        init-sc --node-id 11
+
     # Wait until database is ready
     (docker logs -f --tail 0 exasoldb &) 2>&1 | grep -q -i 'stage4: All stages finished'
-    
+
     waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* ScriptLanguages
     echo "BucketFS is ready ... uploading Container"
     curl -v -X PUT -T $FLAVOR.tar.gz http://w:write@172.17.0.2:6583/myudfs/$FLAVOR.tar.gz
@@ -146,12 +139,38 @@ if [ -z ${EXASOLO+x} ]; then
 
     DB_HOST=172.17.0.2
     DB_PORT=8888
-    
+
+    if [ -z ${NOIMPORT+x} ]; then
+	# need to import from within the container to avoid port conflicts
+	docker cp tests/test/enginedb_small exasoldb:/tmp
+	docker exec exasoldb bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
+    fi
+    echo "Started dockerdb@$DB_HOST:$DB_PORT"
 else
     DB_HOST=$EXASOLO_HOST
     DB_PORT=$EXASOLO_PORT
+
+    # import tables for tests
+    if [ -z ${NOIMPORT+x} ]; then
+	downloads/EXAplus/exaplus \
+            -c "$DB_HOST:$DB_PORT" \
+            -u sys \
+            -p exasol \
+            -f tests/test/enginedb_small/import.sql
+    fi
 fi
 
-echo "Starting tests against $DB_HOST:$DB_PORT"
 
-( cd tests/test ; ./run_locally.sh --server="$DB_HOST:$DB_PORT" --test-config="$test_config" --)
+
+set +e
+
+if [ -z ${NOTESTS+x} ]; then
+    echo "Starting tests with connection $DB_HOST:$DB_PORT using test_config: $test_config"
+    ( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)
+fi
+
+RETURN_CODE=$?
+exit $RETURN_CODE
+
+# Extract failed tests:
+# sed -n '/=\{70\}/,/^FAILED */{p}' setup_ec2.sh.out > setup_ec2.sh.out.failed

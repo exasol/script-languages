@@ -1593,7 +1593,7 @@ reinit:
                 // the single call function to be made
                 if (!send_run(socket)) {break;}
                 assert(g_singleCallFunction != SC_FN_NIL);
-                try {
+                //try {
                     std::string result;
                     switch (g_singleCallFunction)
                     {
@@ -1617,13 +1617,22 @@ reinit:
                         result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
                         break;
                     }
-                    send_return(socket,result);
+                    if (vm->exception_msg.size()>0) {
+                        send_close(socket, vm->exception_msg); socket.close();
+                        goto error;
+                    }
+                    if (vm->calledUndefinedSingleCall.size()>0) {
+                        send_undefined_call(socket, vm->calledUndefinedSingleCall);
+                    } else {
+                        send_return(socket,result);
+                    }
                     if (!send_done(socket)) {
                         break;
                     }
-                } catch (const swig_undefined_single_call_exception& ex) {
-                    send_undefined_call(socket,ex.fn());
-                }
+                //} 
+                //catch (const swig_undefined_single_call_exception& ex) {
+                //    send_undefined_call(socket,ex.fn());
+                //}
             }
         } else {
             for(;;) {
@@ -1641,19 +1650,17 @@ reinit:
                     break;
             }
         }
-        if (vm)
+
+        if (vm != nullptr)
         {
+            vm->shutdown();
             if (vm->exception_msg.size()>0) {
-//                throw SWIGVM::exception(vm->exception_msg.c_str());
                 send_close(socket, vm->exception_msg); socket.close();
-                keep_checking = false;
                 goto error;
             }
-            vm->shutdown();
             delete vm;
             vm = NULL;
         }
-
         send_finished(socket);
     }  catch (SWIGVM::exception &err) {
         keep_checking = false;
