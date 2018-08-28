@@ -1,4 +1,4 @@
-#!/usr/opt/bs-python-2.7/bin/python
+#!/usr/bin/env python2.7
 
 import os
 import string
@@ -8,6 +8,7 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 
 import udf
 from udf import useData
+from exatest.testcase import skip
 
 class ScriptImport(udf.TestCase):
 
@@ -114,7 +115,8 @@ class ScriptImport(udf.TestCase):
             '''))
         with self.assertRaisesRegexp(Exception, 'ImportError:.* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
-        
+
+    @skip("R is not necessarily available in python container")
     def test_import_fails_for_r_script(self):
         self.query(udf.fixindent('''
             CREATE python SCALAR SCRIPT

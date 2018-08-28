@@ -20,7 +20,7 @@ This project contains implementations for user defined functions that can be use
 
 ## Prerequisites
 In order to build this project, you need
-* Linux or MacOS X (not really test yet)
+* Linux 
 * Docker
 
 In order to follow the quickstart guide, you additionally need
