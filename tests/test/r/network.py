@@ -4,11 +4,14 @@ import os
 import sys
 
 sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+running_in_travis = 'TRAVIS' in os.environ
+
 
 import udf
 
 from exatest.servers import MessageBox, HTTPServer, FTPServer
 from exatest.utils import tempdir
+from exatest.testcase import skipIf
 
 class ExternalResourceTest(udf.TestCase):
     def setUp(self):
@@ -37,6 +40,7 @@ class ExternalResourceTest(udf.TestCase):
 #for (i in 1:length(tree$doc$children$users)) {if (tree$doc$children$users[i]$user$attributes['active']==1) {firstname <- tree$doc$children$users[i]$user$children$first_name$children$text; familyname <- tree$doc$children$users[i]$user$children$family_name$children$text; print(firstname); print(familyname);}}
 
 class XMLProcessingTest(ExternalResourceTest):
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xml_processing(self):
         '''DWA-13842'''
         self.query(udf.fixindent('''
@@ -75,6 +79,7 @@ class XMLProcessingTest(ExternalResourceTest):
 
 
 class FTPServerTest(ExternalResourceTest):
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xml_processing(self):
         '''DWA-13842'''
         self.query(udf.fixindent('''
@@ -117,7 +122,8 @@ class CleanupTest(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA t1')
-    
+
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")    
     def test_cleanup_is_called_at_least_once(self):
         with MessageBox() as mb:
             self.query(udf.fixindent('''
@@ -147,7 +153,7 @@ class CleanupTest(udf.TestCase):
 
         self.assertIn('foobar', mb.data)
 
-
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_cleanup_is_called_exactly_once_for_each_vm(self):
         with MessageBox() as mb:
             host, port = mb.address
