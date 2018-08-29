@@ -56,7 +56,6 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('CREATE USER {username} IDENTIFIED BY "{password}"'.format(username = username, password = password))
         self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
 
-    #@skip("Not all required script languages necessarily available")
     @requires('PRINT_CONNECTION')
     def testUseConnectionWithoutRights(self):
         self.createUser("foo", "foo")
@@ -73,7 +72,6 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('drop user foo cascade')
         self.commit()
 
-    #@skip("Not all required script languages necessarily available")
     @requires('PRINT_CONNECTION')
     def testUseConnectionWithOldRight(self):
         self.createUser("foo", "foo")
@@ -91,7 +89,6 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('drop user foo cascade')
         self.commit()
 
-    #@skip("Not all required script languages necessarily available")
     @requires('PRINT_CONNECTION')
     def testUseConnectionWithNewRight(self):
         self.createUser("foo", "foo")
@@ -253,7 +250,6 @@ class GetConnectionAccessControlWithViewsTest(udf.TestCase):
         self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
 
 
-    #@skip("Not all required script languages necessarily available")
     @requires('PRINT_CONNECTION')
     def testUseConnectionUDFsInView(self):
         self.createUser("foo", "foo")

@@ -6,12 +6,15 @@ import urllib
 
 import lxml.etree as etree
 
+running_in_travis = 'TRAVIS' in os.environ
+
 sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 
 import udf
 
 from exatest.servers import HTTPServer, MessageBox
 from exatest.utils import tempdir
+from exatest.testcase import skipIf
 
 class HTTPTest(udf.TestCase):
     def test_selftest(self):
@@ -74,7 +77,7 @@ class XMLProcessingTest(udf.TestCase):
         self.assertEqual(expected, sorted(result))
         
 
-
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xml_processing(self):
         self.query(udf.fixindent('''
                 CREATE python SCALAR SCRIPT
@@ -110,6 +113,7 @@ class XMLProcessingTest(udf.TestCase):
         expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
         self.assertRowsEqual(expected, rows)
 
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xmlns_processing(self):
         self.query(udf.fixindent('''
                 CREATE python SCALAR SCRIPT
@@ -149,7 +153,8 @@ class CleanupTest(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA t1')
-    
+
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")    
     def test_cleanup_is_called_at_least_once(self):
         with MessageBox() as mb:
             host, port = mb.address
@@ -183,6 +188,7 @@ class CleanupTest(udf.TestCase):
 
         self.assertIn('foobar', mb.data)
 
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_cleanup_is_called_exactly_once_for_each_vm(self):
         with MessageBox() as mb:
             host, port = mb.address
@@ -226,6 +232,7 @@ class CleanupTest(udf.TestCase):
         self.assertEquals(init, cleanup)
         self.assertEquals(sorted(set(init)), init)
 
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_cleanup_is_called_exactly_once_for_each_vm_with_crash_in_run(self):
         with MessageBox() as mb:
             host, port = mb.address
