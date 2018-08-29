@@ -123,7 +123,7 @@ fi
 
 
 export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O3"
-#export CXXFLAGS_UNOPT="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14"
+export CXXFLAGS_UNOPT="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14"
 #LIBS="-lpthread -lcrypto -ldl -lzmq -lprotobuf"
 LIBS="-lpthread -lcrypto -ldl -lzmq"
 LDFLAGS=""
@@ -257,10 +257,9 @@ if [ "$ENABLE_JAVA_IMPL" = "yes" ]; then
 
 
     CXXFLAGS="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux $CXXFLAGS"
-    #CXXFLAGS_UNOPT="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux $CXXFLAGS_UNOPT"
+    CXXFLAGS_UNOPT="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux $CXXFLAGS_UNOPT"
 
-    #g++ -o exascript_java.o -c exascript_java.cc $CXXFLAGS_UNOPT  || die "Failed to compile exascript_java.o"
-    g++ -o exascript_java.o -c exascript_java.cc $CXXFLAGS  || die "Failed to compile exascript_java.o"
+    g++ -o exascript_java.o -c exascript_java.cc $CXXFLAGS_UNOPT  || die "Failed to compile exascript_java.o"
     g++ -o javacontainer.o -c javacontainer.cc $CXXFLAGS || die "Failed to compile javacontainer.o"
     
     CONTAINER_CLIENT_OBJECT_FILES="exascript_java.o javacontainer.o $CONTAINER_CLIENT_OBJECT_FILES"

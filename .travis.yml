@@ -16,8 +16,6 @@ matrix:
   include:
   - name: mini
     env: MATRIX_FLAVOR=mini
-  - name: fancyr_60
-    env: MATRIX_FLAVOR=fancyr_60
   - name: standard
     env: MATRIX_FLAVOR=standard
 
