@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
