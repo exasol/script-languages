@@ -1,0 +1,100 @@
+1,B," ",c,b,"  aC"," 1  ",2C2,22,"1B32c  b  ","B2b3      ",C,"  "
+2,C,3,2,c,"c1A ","BA  ",ABC," C","2a2       ","cbc       "," ",ABC
+3,a,C,C," "," aB ","B   ",Cc," A31","  2 2AC cB","  A1a 3   "," 2 2 C1aA",
+4,3,c,2,1,"3B  ","22c ","3c ",a2,"bC2cCbc   ","CB1C b    ",aB3Bc1,"B  1a  "
+5,2,b,3," ","    ","    ",1c," ","cBcCbca   "," ac221aB  ","ABC ","B 3"
+6,C,a,c,A,"A3  "," C  ",ca,"  c1","1a  3CCaA ","   B ccA3 ","   "," B"
+7,a,a,b," ",c2aB,,C," ","c cBCc    ","Cac       ","Ac C"," "
+8,C," ",2,3,"bBc ","A   "," cCa","C1a ","ABC       ","ab3       ","1c ",b
+9,1,1,A,a,"b 33","1aC "," a",2AC,"ABC       ","ba2       ","Aa  3 b"," c3bb1"
+10,b,A,A,1,"21a ",b21C,A,"b 1b","1BA1CBA   ","2 1       ",ba1,
+11,c,2,2,2,"33c "," 1C ",1,ABC,"3         "," C 3      ",,ABbBb
+12,2,C,B,b,"b2  ","ac  ","B ",2CBa,"3         ","BCba      "," A a3 2","C1a  B"
+13,1,C,B,b,bb1c,"a   ",aa1,Cc,"          ","bC1b CccC ",bA,"A   c2BC1"
+14,c,c,2,C,"ABC ","    ","A  ","c aB","E         ","          ","123 ","b bB1B B"
+15,C,1,3,c,"C   ",," ",31c,"bBC       "," 1C       ","A1B31Ab c"," 3"
+16,A,A," ",C,"BA 3","a   ",1c3,"b ","31a2b     ","1C3Aa 1   ","a2bc    c",2A
+17,2,C,1,B," 1  "," 1  ",bA1A,E,"          ","ABC       "," cB"," a1c "
+18,3,2,B,1,"ABC ","3   ",AC3,b,"c A2      ","Ccac      ",3,"3 b1C"
+19,2,a,B,A,"B2  ","c b "," c3B"," A","ABC       ","   A3C2A  "," A 2C1a3 c","3 c ac c1C"
+20,b,2,c,C,"    ","A1  ","aC b","A ","ABC       ","cC        ",3C," 2 "
+21," ",,3,B,"b   ","21b ",cCc,11,"b a  1BcA ","aA  b3ac  "," ",BA
+22,A,2,B,C,"a 2c","2B  ","31 ",bb2C,"C         ","c         ","c "," B3Ac3a"
+23,,C,b,1,"1   ","33  ",c," B","1c3a3     ","ABB1B B3  ",ABC,"b2B  "
+24,C," ",C," ","32a ","ABC ",E,3B,"12 2 C    ","aB1B      ",1cCb," C b"
+25,C," ",c,c,"c   ","ca  ",C1AB,3,"BA        ","1C AC32aC ","2 ","c "
+26,3,b,2,1," 21 ","b   ",a2B1,Bb2,"B3Ba2 B   ","AB        "," ",CB
+27,2,3,C,a,"3 1 ","2 Bb",c,"ABC ","AcC       ","2C        ","    "," 3"
+28,C,2,1,C,"a   ","B   ",bc,CbbC," c        ","CB11 3Ab3 ",2A," "
+29,2,a,1,2,"    ","  aC"," ","1a "," CB 1 31b ","AaA3      ","32b BB12 ","BBC A1"
+30," ",3,3,b,"c   ","1A  ",,ABC,"1b        ","33bB Ab33 ","1Ab C",b
+31,B,A,B,C,"  C2","2   "," aC"," AC","ABC       "," B        ",3b,
+32,C," ",1,C,"ABC ","C   ","3 "," b a","1ba 3bA   ","3 C3a2  3 "," 1",A1
+33,2,2,b,C,"1   ","aaa ","1   ",CC,"bb1BA     ",2BC2b2CBc1,"   2","2aB CBB"
+34,B,c,B,1,,"    ",3Ab,1b,"2 C  b    ","B31A 3    ",ABC,"222 BC2b"
+35,3,1,C,a,b3BB,"c   ",2,"a  "," ab BA C  ","c         ","ABC ","  B"
+36,a,c,3," ","ABC ","A   ","Ca  ","ABC "," C        ","a2        ","ABC  ",11b
+37,A,,1,3,"c   ","C   ",1,C,"1c        ","cB        ","3 2AC ","1aC A1BA"
+38,C,A,a,,"a   ","ccc ","A ","12 ","  b       ","2         ",3aBBB,"B 2A23"
+39,a,2,1,A,"B   ",2A23,2,"2 2c","ba1       ","3         ",,"12  a3"
+40,A,A,3,b,"C CB","3ca ",31A1,3C3C,"c c       ","aA  1     ","BbB 3 a ",31b
+41,A,c,2," ","B   "," 31 ",CAc," ","a2        ","bC 3 A    ","bC2a1 Ba3"," a3 31cC"
+42,2,3,c,A,"C2  ","    ",," ","1c        ","  b       "," ab c cbb ",ac3A
+43," ",1,C,2,C1aa,cB21,c,aAA,"BAB31a AC ","a2        ","ABC  "," "
+44,A,2,2,c,"B   ","A   ","B 13",bBCC,"a 3CbA    ","abbbC     "," 1B 1a  C",ABC
+45,1,C,2,c," B A"," abb",B22,C11,"          ","AC AC33   "," bbCBACa"," c"
+46,A,3,B,," b C","2   ",C," ","A         ","B 2 2BbcB ",2BAC1," B1"
+47,c,3,3,1,"3 C ","1   ","1a ","1  ","3         ","  13      "," 1BcCcCa","c2aB B"
+48,2,C,1,A,"1c  ",2c2b,"ABC "," ","1CA231A3  ","b1        ","21a1 22 ",cc
+49,B," ",3,1,"3   ","2a  ","b13 ","Cb 2"," CC3cAA   ","3ab B BbbC",BC,"Aa 12  1"
+50,C,c,2,a,"bb1 ","B   ","a C"," 3","ABC       ","BaB21C    ","2 ","BAa 3CaAa "
+51,3,2,1," ","1c2 ","    ","a 3 ",B,"1 32a B   "," c3ab     ","32baC b","C b"
+52,,3,3,c,"3C  ","1   ",12,1b1,"1c ABcC3  ","cac3a23   "," B C1 3aC",
+53,a,b,3,A,"ABC ","C   "," "," ","ABC       ","cC        ",232c,2Ba1
+54,1,B,2,b,"B2  ","cC  ",ca," aC ","AA32b     ","ba2323    ","ABC  "," 1"
+55," ",2,2,B,"ABC ","b   ","   ","aB "," 2aB CA   "," CAc      ",3,"AC 1 3cb3"
+56,3,1,1,a,"CA3 ",B22B,2C2,"  1","3cB b2 a33","ABC       ","   3","1C "
+57,b,A,2,3,"2c  ",bBC1,c,aCAc,"CC        ","1         ","ABC  ",BA
+58,2,B,1,a,"caA ","13  ","ABC ",c,"acb       "," C a cC   ","Ab "," B b2BA2cB"
+59,a,C,3," ","A   "," 2c2",AAbb,"A  ","11 aA2A2 B","C3bAB     ",bB2bB,"1  13 b"
+60,2,A,c,c,"Cbb "," BA ",ABC,aC,"C         "," 1        ",,"ABC "
+61,c,1,c,a,"B1  ","B 12"," ",cb," a        ","CcB       "," 2B1C ","3 b2 CC2"
+62,3,2," ",1,"ABC ","B1  ",B2B,B11,"b C1 3    ","C b       "," BaC"," "
+63,3,a,3,2,"ABC ","ABC ",1B,b2C,"a a       ","1ab       ","21BB   ",BCBa
+64," ",b,B,2,"c3A ",32cB,"31 "," ","113 b  13 ","1         ","ABC  "," A"
+65,C,c,A,a,"ABC ","ABC "," "," 3","3 A       ","1   2c2aC ",a,
+66,B,,1,C,"aC  ","1 3C",BBBB,23,"          ","ca  a 3CaA","caa 3  c A","A  "
+67,c,,B,a," Ac ","3a  ","  3c"," ","b 2cCaa   ","B3ca1  C  ","ABC  "," ab"
+68,a,3,1," ","    ","AaC ","3 C"," a","b BBBACBcB","CBa2Ac    ","c 3","  3b"
+69," "," ",1,a,"A   ",BAA3,a1A3,C,"a 1C      ","3baC      ","A a"," bc2c  1B"
+70,A,a,1,C,"    ","A   ",,E," 2        ","BC b      ",,BCaA
+71,1,c,A,A,"1   ","Bc  ","1  ","1  A","ABC       ","1B        ",b1BB,"a c31BA  "
+72,C,c,2,B," 2  ","211 ",2BC,A23,"aBb3      ","C aB      ","13 c1","c a 3b11"
+73,C,B,2,a,"3A1 ","B 2C","3 a",AC3,"CC        ","aB        "," 3A  a","1A  B"
+74,B,c,1,c,"   c","ABC "," ",31,"  2a1     "," 1b Bb    ","ABC ","2 C"
+75,C,a," ",B,"Bb  ","2 B ",ABC,"2 2 ","bAB bba   "," 2 1a  2  ",aC3A,"ac 3bA232b"
+76,c,c,B,C,"A2C ","    ","  ",3Ba2,"cbAB      "," 1        ","b 2","Cac3c    1"
+77,a,b,c,C,"c1  ","ABC ",A," 3cA","3Ab CC2   ","A1        ","ABC  ","ABC  "
+78,2,2,C,B,"3   ","b B ",C1a,"A 3a","Bc2 2 BaB "," 3 b      ","ABC ",2a3
+79,3,A,2,a,"1b  ","C1  ",23A,aB32,"A         ","22b2Ccc   ",BB,2AC
+80,c,2,1,1,"b   ","B   "," 1a","B2 1","ABC       ","2a1 b     "," c ca 11","1B31c A33A"
+81,B,2,c,2,22Cb," 2  ","Cab ","Cab ","c         "," b        ","1B3Caa CB ","B 1"
+82,a,2,a,1,"b2  ","A c3",Bc,C3,"aC3bc1bc  ","3b        ",23cbaC,a
+83,b,1," ",C,"ABC ","A   ","  Ca",2B,"3ba1      ","ABC       ","3c ",
+84," "," "," ",2,"2 a "," a  ",1BAB," a1 "," Bca  A   ","b3Cbb2    ",32ca,"aB CBC22"
+85,3,C,a,C," 31 ","B 32","c ","ABC "," a        ","C  cCccA  ","1b 23 A1",E
+86,3,3," ",c,"    ","  33",A1,ABC," b3B      "," 2bC1A    "," 2AC 3 cA","C3AA a33 "
+87,3,a,a,2,"1   ","3   ",Cbb,13,"AacAa3A   ","B1B C 3bb1","2  ","ABC "
+88,1,c,C,3,"13  ","3   "," ",Ca," 2  bb11  ","BB1C Ab   ",3BcCC,"  3"
+89,A,2,,B,C3Aa,"b   ",3Ba," bcC","a3        ","A         "," A   2 2 2"," 112 2CC"
+90,1,a,B,c,"3   ","b   ",23," "," B1 3     ","3aa3  3 A1"," AC11AAC","b 2B11 cc3"
+91,2,C,1,,"B   "," B 1"," 2B2",1C1,"Ac 12 B   ","ACb2a     "," aC3c",bb1
+92,2,1,3,2,BaC2," b  ",3BC," b13","ABC       ","          ",ABC," 2A13 AC "
+93,3,C,B,2,"A   ","3 1 ",2bb1," ","2c1Aa     ","331b11 Bc ","B B bbC","   "
+94," ",B,2,b,"ABC ","A3  ","  ","A   ","Bb1b3b    ","3aa  c    ",31AC,ABC
+95,3,1,c,B,"B   ","AC  ",1,B," cCca23   ","CCaA3 c   ","123 ",21CC
+96,b,B," ",A,"Bb  ","AB  ","a1 ","A1  ","AaC3cAb   ","ABC       ",3," A"
+97,C," ",1,b,"ba3 "," A  "," 21 ","Ac ","          ",,A," c22CaAc"
+98,2,a,a," ","Cba ","ABC ",3," ","3 aA   B  ","ccac bb1  ","b1A ","ABC "
+99," ",A,,C,"33a ",B2A1,Bb2B," ",," bb BB    "," 21B"," cab "
+100," ",a,3,b," 2C2","C2  ","B  ",ABC,"aC a      ","2         ","cAa 1 C",a

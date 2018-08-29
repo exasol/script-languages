@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/bin/sh
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
@@ -5,20 +6,50 @@ set -x
 
 optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
 
+=======
+#!/usr/bin/env bash
+
+
+set -eux
+
+cd "$(dirname "$0")"
+
+die() { echo "ERROR:" "$@" >&2; exit 1; }
+
+optarr=$(getopt -o 'h' --long 'help,flavor:,use-dockerdb,use-exasolo:,no-test,no-cleanup,no-import' -- "$@")
+>>>>>>> 0583169453d9d34bcb6177f07a3b4ce3d88d0b16
 eval set -- "$optarr"
 
 while true; do
     case "$1" in
         --flavor) FLAVOR="$2"; shift 2;;
+<<<<<<< HEAD
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
 		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
 		   echo "  [-h|--help]    Print this help."; exit 0;;
+=======
+        --use-dockerdb) shift;;
+        --use-exasolo) EXASOLO="$2"; shift 2;;
+        --no-test) NOTESTS="yes"; shift;;
+        --no-cleanup) NOCLEANUP="yes"; shift;;
+        --no-import) NOIMPORT="yes"; shift;;
+        -h|--help) echo "Usage: $0"
+       echo "Options:"
+       echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+       echo "  [--use-dockerdb]                      Run test on Exasol running in Docker"
+       echo "  [--use-exasolo=<connection-string>]   Run test on Exasol running in existing EXASolo"
+       echo "  [--no-test]                           Don't run any tests"
+       echo "  [--no-cleanup]                        Don't clean up and don't shutdown dockerdb"
+       echo "  [--no-import]                         Do not import the standard test data called enginedb"
+       echo "  [-h|--help]                           Print this help."; exit 0;;
+>>>>>>> 0583169453d9d34bcb6177f07a3b4ce3d88d0b16
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
     esac
 done
 
+<<<<<<< HEAD
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
 docker build . --tag exaudf/test_$FLAVOR -f flavors/$FLAVOR/Dockerfile.test_$FLAVOR
@@ -43,3 +74,151 @@ docker exec -it test_container_$FLAVOR /bin/bash
 
 docker exec test_container_$FLAVOR cat exasol_emulator/output.csv
 docker rm -f test_container_$FLAVOR
+=======
+[ "X${FLAVOR-}" = "X" ] && die "Missing mandatory argument --flavor"
+
+[ ! -e "$FLAVOR.tar.gz" ] && die "Flavor not exported here: `pwd`/$FLAVOR.tar.gz"
+
+test_config="$(pwd)/flavors/$FLAVOR/testconfig"
+[ ! -f "$test_config" ] && die "Testconfig of $flavor not found here: $test_config"
+
+if [ ! -z ${EXASOLO+x} ]; then
+    OIFS=$IFS
+    IFS=':'
+    PARTS=()
+    for x in $EXASOLO; do
+        PARTS+=($x)
+    done
+    IFS=$OIFS
+    echo "PARTS: ${PARTS[*]}"
+    if [ ! ${#PARTS[@]} = "2" ]; then
+        echo "argument for --use-exasolo is not of the form <host>:<port>"
+        exit 1
+    fi
+    EXASOLO_HOST=${PARTS[0]}
+    EXASOLO_PORT=${PARTS[1]}
+fi
+
+
+if [ ! -d "./downloads" ]; then
+    mkdir -p downloads/{ODBC,JDBC,EXAplus}
+    curl https://www.exasol.com/support/secure/attachment/65437/EXASOL_ODBC-6.0.11.tar.gz | tar -C downloads/ODBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz | tar -C downloads/JDBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
+fi
+
+[ -z "${EXAPLUS-}" ] && export EXAPLUS="$(pwd)/downloads/EXAplus/exaplus"
+
+if [ -z ${VIRTUAL_ENV+x} ]; then
+    pip install --user -r "./tests/requirements.txt" 
+else
+    pip install -r "./tests/requirements.txt" 
+fi
+
+typeset -A config
+config=( )
+while read line; do
+    if echo $line | grep -F = &>/dev/null; then
+        varname=$(echo "$line" | cut -d '=' -f 1)
+        if [[ $varname == "#*" ]]; then continue; fi
+        config[$varname]=$(echo "$line" | cut -d '=' -f 2-)
+    fi
+done < $test_config
+
+for x in "${!config[@]}"; do printf "[%s]=%s\n" "$x" "${config[$x]}" ; done
+
+
+function cleanup {
+    if [ -z ${NOCLEANUP+x} ]; then
+	echo "Cleanup: removing exasoldb_${FLAVOR}"
+	docker rm -f "exasoldb_${FLAVOR}" || true
+	echo "Cleanup: removing config files"
+	sudo rm -rf $TEST_TMP_DIR/ || true
+    fi
+    exit $RETURN_CODE
+}
+
+function waitForLine {
+    FILE=$1
+    PATTERN=$2
+    tail -f "$FILE" | while read LOGLINE
+    do
+        # TODO pkill does not return 0, apparently no process is matched
+        # `|| true` is only a workaround
+        [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail || true
+    done
+}
+
+RETURN_CODE=0
+if [ -z ${EXASOLO+x} ]; then
+    echo 'skipping cleanup'
+    trap cleanup EXIT
+    TEST_TMP_DIR=$(mktemp -d -t "udftestdb_${FLAVOR}_XXXXXXXX")
+    echo "config files dir for exadb: ${TEST_TMP_DIR}"
+
+    # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
+    mkdir -p $TEST_TMP_DIR/exa/{etc,data/storage}
+    cp ext/EXAConf $TEST_TMP_DIR/exa/etc/EXAConf
+    dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
+    touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
+
+    DB_HOST=localhost
+    DB_PORT=$(ls flavors | grep --color=never -n ${FLAVOR} | awk -F ':' '{ print $1+8898 }')
+    BUCKETFS_PORT=$(ls flavors | grep --color=never -n ${FLAVOR} | awk -F ':' '{ print $1+6593 }')
+
+    docker run \
+        --name "exasoldb_${FLAVOR}" \
+        -p ${DB_PORT}:8888 \
+        -p ${BUCKETFS_PORT}:6583 \
+        --detach \
+        --privileged \
+        -v "$TEST_TMP_DIR/exa:/exa" \
+        exasol/docker-db:6.0.11-d1 \
+        init-sc --node-id 11
+
+    # Wait until database is ready
+    (docker logs -f --tail 0 "exasoldb_${FLAVOR}" &) 2>&1 | grep -q -i 'stage4: All stages finished'
+
+    waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* ScriptLanguages
+    echo "BucketFS is ready ... uploading Container"
+    curl -v -X PUT -T $FLAVOR.tar.gz http://w:write@${DB_HOST}:${BUCKETFS_PORT}/myudfs/$FLAVOR.tar.gz
+    waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* $FLAVOR.*extracted
+    echo "Extracted"
+
+
+#    if [ -z ${NOIMPORT+x} ]; then
+	# need to import from within the container to avoid port conflicts
+	#docker cp tests/test/enginedb_small "exasoldb_${FLAVOR}":/tmp
+	#docker exec "exasoldb_${FLAVOR}" bash -c 'cd /tmp/enginedb_small && /usr/opt/EXASuite-6/EXASolution-6.0.11/bin/Console/exaplus -c 127.0.0.1:8888 -u sys -p exasol -f /tmp/enginedb_small/import.sql'
+#    fi
+    echo "Started dockerdb@$DB_HOST:$DB_PORT"
+else
+    DB_HOST=$EXASOLO_HOST
+    DB_PORT=$EXASOLO_PORT
+fi
+
+    # import tables for tests
+    if [ -z ${NOIMPORT+x} ]; then
+	(cd tests/test/enginedb_small ; ../../../downloads/EXAplus/exaplus \
+            -c "$DB_HOST:$DB_PORT" \
+            -u sys \
+            -p exasol \
+            -f import.sql)
+    fi
+#fi
+
+
+
+set +e
+
+if [ -z ${NOTESTS+x} ]; then
+    echo "Starting tests with connection $DB_HOST:$DB_PORT using test_config: $test_config"
+    ( cd tests/test ; ./run_locally.sh --server "$DB_HOST:$DB_PORT" --test-config "$test_config" --)
+fi
+
+RETURN_CODE=$?
+exit $RETURN_CODE
+
+# Extract failed tests:
+# sed -n '/=\{70\}/,/^FAILED */{p}' setup_ec2.sh.out > setup_ec2.sh.out.failed
+>>>>>>> 0583169453d9d34bcb6177f07a3b4ce3d88d0b16

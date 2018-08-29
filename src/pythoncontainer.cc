@@ -18,7 +18,12 @@
 using namespace SWIGVMContainers;
 using namespace std;
 
+#ifdef ENABLE_PYTHON3
+extern "C" PyObject* PyInit__exascript_python(void);
+#else
 extern "C" void init_exascript_python(void);
+#endif
+
 
 static void check() {
     PyObject *pt, *pv, *tb, *s = NULL, *pvc, *pvcn;
@@ -29,12 +34,28 @@ static void check() {
     s = PyObject_Str(pv);
     if (NULL != (pvc = PyObject_GetAttrString(pv, "__class__"))) {
         if (NULL != (pvcn = PyObject_GetAttrString(pvc, "__name__"))) {
-            pvcns = string(PyString_AS_STRING(pvcn)) + string(": ");
-            Py_XDECREF(pvcn);
+#ifdef ENABLE_PYTHON3
+	  PyObject* repr = PyObject_Repr(pvcn);
+	  PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+	  const char *bytes = PyBytes_AS_STRING(p3str);
+	  pvcns = string(bytes) + string(": ");
+#else
+	  pvcns = string(PyString_AS_STRING(pvcn)) + string(": ");
+#endif
+	  Py_XDECREF(pvcn);
         }
         Py_XDECREF(pvc);
     }
-    PythonVM::exception x((pvcns + PyString_AS_STRING(s)).c_str());
+    string exception_string("");
+#ifdef ENABLE_PYTHON3
+    PyObject* repr = PyObject_Repr(s);
+    PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    const char *bytes = PyBytes_AS_STRING(p3str);
+    exception_string = string(bytes) + string(": ");
+#else
+    exception_string = pvcns + PyString_AS_STRING(s);
+#endif
+    PythonVM::exception x(exception_string.c_str());
     Py_XDECREF(s);
     PyErr_Clear();
     throw x;
@@ -45,7 +66,7 @@ class SWIGVMContainers::PythonVMImpl {
         PythonVMImpl(bool checkOnly);
         ~PythonVMImpl() {}
         bool run();
-        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
+        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
         void shutdown();
     private:
         string script_code;
@@ -79,7 +100,14 @@ PythonVM::PythonVM(bool checkOnly) {
 
 }
 
-void PythonVM::shutdown() {m_impl->shutdown();}
+void PythonVM::shutdown() {
+    try {
+        m_impl->shutdown();
+    } catch (std::exception& err) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = err.what();
+    }
+}
 
 bool PythonVM::run() {
     try {
@@ -92,7 +120,7 @@ bool PythonVM::run() {
 }
 std::string PythonVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     try {
-        return m_impl->singleCall(fn, args);
+        return m_impl->singleCall(fn, args,calledUndefinedSingleCall);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
@@ -138,6 +166,9 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
     if (!Py_IsInitialized()) {
         ::setlocale(LC_ALL, "en_US.utf8");
         Py_NoSiteFlag = noSiteFlag;
+#ifdef ENABLE_PYTHON3
+        PyImport_AppendInittab("_exascript_python",PyInit__exascript_python);
+#endif
         Py_Initialize();
         PyEval_InitThreads();
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -145,8 +176,7 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 #endif
     }
 
-    globals = PyDict_New();
-
+    
     {   
 #ifndef DISABLE_PYTHON_SUBINTERP
         PythonThreadBlock block;
@@ -168,26 +198,42 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         PyThreadState_Swap(pythread);
 #endif
 
-        PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
-        init_exascript_python();
+	globals = PyDict_New();
+	PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
 
+
+#ifndef ENABLE_PYTHON3
+         init_exascript_python();
+#endif
         code = Py_CompileString(integrated_exascript_python_py, "exascript_python.py", Py_file_input); check();
         if (code == NULL) throw PythonVM::exception("Failed to compile internal module");
-        exatable = PyImport_ExecCodeModule((char*)"exascript_python", code); check();
-
+        exatable = PyImport_ExecCodeModule((char*)"exascript_python", code);
+	check();
+	if (exatable == NULL) throw PythonVM::exception("Failed to import code module");
         code = Py_CompileString(integrated_exascript_python_preset_py, "<EXASCRIPTPP>", Py_file_input); check();
-        if (code == NULL) throw PythonVM::exception("Failed to compile preset script");
+        if (code == NULL) {check();}
+#ifdef ENABLE_PYTHON3
+	PyEval_EvalCode(code, globals, globals); check();
+#else
         PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
+#endif
         Py_DECREF(code);
-
-        //PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(script), globals, globals); check();
+//#ifdef ENABLE_PYTHON3
+//	PyEval_EvalCode(script, globals, globals); check();
+//#else
+//       PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(script), globals, globals); check();
+//#endif
         PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check();
         PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
         Py_XDECREF(retvalue); retvalue = NULL;
 
         code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check();
         if (code == NULL) throw PythonVM::exception("Failed to compile wrapping script");
+#ifdef ENABLE_PYTHON3
+	PyEval_EvalCode(code, globals, globals); check();
+#else
         PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
+#endif
         Py_XDECREF(code);
     }
 }
@@ -205,7 +251,7 @@ void PythonVMImpl::shutdown() {
             if (cleanobj) {
                 retvalue = PyObject_CallObject(cleanobj, NULL);
                 check();
-            }
+            }  
         }
         Py_XDECREF(script);
         Py_XDECREF(exatable);
@@ -218,7 +264,7 @@ bool PythonVMImpl::run() {
 
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode");
 
-    {   
+    {
 #ifndef DISABLE_PYTHON_SUBINTERP
         PythonThreadBlock block;
         PyThreadState_Swap(pythread);
@@ -230,7 +276,7 @@ bool PythonVMImpl::run() {
     return true;
 }
 
-std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args , string& calledUndefinedSingleCall) {
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode (singleCall)"); // @@@@ TODO: better exception text
     //{
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -417,7 +463,9 @@ std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
 
         PyObject* funcToCall = PyDict_GetItemString(globals, func); check();
         if (funcToCall == NULL) {
-            throw swig_undefined_single_call_exception(func);  // no such call is defined.
+            calledUndefinedSingleCall = func;
+            return "<error>";
+            //throw swig_undefined_single_call_exception(func);  // no such call is defined.
         }
         if (fn==SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL) {
             // Call directly

@@ -20,7 +20,7 @@ This project contains implementations for user defined functions that can be use
 
 ## Prerequisites
 In order to build this project, you need
-* Linux or MacOS X (not really test yet)
+* Linux 
 * Docker
 
 In order to follow the quickstart guide, you additionally need
@@ -42,7 +42,10 @@ $ ./build --flavor=mini
 $ ./export --flavor=mini --target=myminiudfs
 ```
 This creates the file `myminiudfs.tar.gz`.
-
+2b. you can optionally run some automated tests for your flavor by using
+```bash
+$ ./test --flavor=mini
+```
 3. Upload the file into bucketfs (we assume the password `w` and the bucketname `funwithudfs` in a bucketfs that is running on port `2580` on machine `192.168.122.158`)
 ```bash
 curl -v -X PUT -T myminiudfs.tar.gz w:w@192.168.122.158:2580/funwithudfs/myminiudfs.tar.gz

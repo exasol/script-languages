@@ -1,0 +1,11 @@
+FROM exaudf/release_fancyr_60
+
+RUN mkdir /exasol_emulator
+
+COPY emulator/ /exasol_emulator
+COPY src/zmqcontainer.proto /exasol_emulator
+
+RUN     apt-get -y install python-protobuf python-zmq gdb
+
+RUN cd /exasol_emulator && protoc zmqcontainer.proto --python_out=.
+RUN ls /exasol_emulator

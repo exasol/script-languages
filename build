@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
@@ -19,13 +19,22 @@ done
 
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
+
+function cleanup {
+    if [ ! -z "$TMPDIR" ]; then
+	rm -rf $TMPDIR
+    fi
+}
+
+
 echo Using base docker file: Dockerfile.base_$FLAVOR
 docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR || die "Could not create exaudf/baseimage"
 echo Using build docker file: Dockerfile.build_$FLAVOR
 docker build . --tag exaudf/build_$FLAVOR -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
-docker container create --name extract exaudf/build_$FLAVOR
-mkdir -p exasol_extract
-docker container cp extract:/exaudf ./exasol_extract
-docker container rm -f extract
-docker build . --no-cache -t exaudf/release_$FLAVOR -f flavors/$FLAVOR/Dockerfile.release_$FLAVOR || die "Could not create exaudf/release"
-
+TMPDIR=$(mktemp -d -p .)
+trap cleanup EXIT
+docker container create --name extract_$FLAVOR exaudf/build_$FLAVOR
+docker container cp extract_$FLAVOR:/exaudf $TMPDIR
+docker container rm -f extract_$FLAVOR
+docker build . --no-cache -t exaudf/release_$FLAVOR -f flavors/$FLAVOR/Dockerfile.release_$FLAVOR --build-arg extract_dir=$TMPDIR || die "Could not create exaudf/release"
+rm -rf $TMPDIR

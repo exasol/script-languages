@@ -1,3 +1,5 @@
 FROM exaudf/baseimage_conda
-COPY exasol_extract/exaudf /exaudf
+ARG extract_dir
+COPY $extract_dir/exaudf /exaudf
+
 

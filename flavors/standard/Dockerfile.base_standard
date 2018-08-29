@@ -59,6 +59,7 @@ RUN apt-get -y update && \
         python-redis \
         python-scipy \
         python-boto \
+	python-pycurl \
         r-cran-rcurl \
         r-cran-xml \
         r-cran-formula \

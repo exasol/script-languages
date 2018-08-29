@@ -1,0 +1,5 @@
+*tar.gz
+*.pyc
+*log
+downloads/*
+odbc.ini
