@@ -110,7 +110,8 @@ RETURN_CODE=0
 if [ -z ${EXASOLO+x} ]; then
     echo 'skipping cleanup'
     trap cleanup EXIT
-    TEST_TMP_DIR="$(pwd)/udf-test-tmp_${FLAVOR}"
+    TEST_TMP_DIR=$(mktemp -d -t "udftestdb_${FLAVOR}_XXXXXXXX")
+    echo "config files dir for exadb: ${TEST_TMP_DIR}"
 
     # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
     mkdir -p $TEST_TMP_DIR/exa/{etc,data/storage}
@@ -119,9 +120,8 @@ if [ -z ${EXASOLO+x} ]; then
     touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
 
     DB_HOST=localhost
-    DB_PORT=$(ls flavors | grep --color=never -n standard | awk -F ':' '{ print $1+8898 }')
-
-    BUCKETFS_PORT=$(ls flavors | grep --color=never -n standard | awk -F ':' '{ print $1+6593 }')
+    DB_PORT=$(ls flavors | grep --color=never -n ${FLAVOR} | awk -F ':' '{ print $1+8898 }')
+    BUCKETFS_PORT=$(ls flavors | grep --color=never -n ${FLAVOR} | awk -F ':' '{ print $1+6593 }')
 
     docker run \
         --name "exasoldb_${FLAVOR}" \
