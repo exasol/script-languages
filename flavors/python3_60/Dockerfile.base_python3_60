@@ -33,9 +33,9 @@ RUN  curl -OL https://github.com/google/protobuf/releases/download/v3.5.1/protob
     (cd protobuf-3.5.1 ; ./configure ; make -j 4 ; make install ) && \
     rm protobuf-cpp-3.5.1.zip  && rm -r protobuf-3.5.1
 
-RUN pip install keras tensorflow kmodes seaborn matplotlib imbalanced-learn lifelines nltk gensim lxml ujson numpy scipy scikit-learn statsmodels joblib
+RUN pip install keras tensorflow kmodes seaborn matplotlib imbalanced-learn lifelines nltk gensim lxml ujson numpy scipy scikit-learn statsmodels joblib pandas pyexasol
 RUN apt-get --yes  remove python3-pycurl
-RUN python3.6 -m pip install pycurl
+RUN python3.6 -m pip install --ignore-installed pycurl
 RUN locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
