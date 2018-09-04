@@ -40,11 +40,11 @@ class DynamicMetadataTest(Test):
             ''')
         self.assertRowEqual(('2',), rows[0])
         self.assertRowEqual(('0',), rows[1])
-        self.assertTrue(rows[2][0] == "string" or rows[2][0] == "<type 'unicode'>" or rows[2][0] == "character" or rows[2][0] == "java.lang.String")
+        self.assertTrue(rows[2][0] == "string" or rows[2][0] == "<type 'unicode'>" or rows[2][0] == "character" or rows[2][0] == "java.lang.String" or rows[2][0] == "<class 'str'>")
         self.assertRowEqual(('CHAR(3) ASCII',), rows[3])
         self.assertRowEqual(('3',), rows[6])
         self.assertRowEqual(('1',), rows[7])
-        self.assertTrue(rows[8][0] == 'number' or rows[8][0] == "<type 'float'>" or rows[8][0] == "double" or rows[8][0] == "java.lang.Double")
+        self.assertTrue(rows[8][0] == 'number' or rows[8][0] == "<type 'float'>" or rows[8][0] == "double" or rows[8][0] == "java.lang.Double" or rows[8][0] == "<class 'float'>")
         self.assertRowEqual(('DOUBLE',), rows[9])
 
 
@@ -55,7 +55,7 @@ class DynamicInputBasic(Test):
             SELECT fn1.basic_scalar_emit('abc', cast(99 as double))
             FROM DUAL
             ''')
-        self.assertTrue(rows[0][0] == 'abc' or rows[0][0] == "u'abc'")
+        self.assertTrue(rows[0][0] == 'abc' or rows[0][0] == "u'abc'" or rows[0][0] == "'abc'")
         self.assertTrue(rows[1][0] == '99' or rows[1][0] == "99.0")
 
     @requires('BASIC_SCALAR_EMIT')
@@ -64,7 +64,7 @@ class DynamicInputBasic(Test):
             SELECT fn1.basic_scalar_emit(x, y)
             FROM small
             ''')
-        self.assertTrue(rows[0][0] == 'Some string ... and some more' or rows[0][0] == "u'Some string ... and some more'")
+        self.assertTrue(rows[0][0] == 'Some string ... and some more' or rows[0][0] == "u'Some string ... and some more'" or rows[0][0] == "'Some string ... and some more'")
         self.assertRowEqual(('2.2',), rows[1])
 
     @requires('BASIC_SCALAR_RETURN')
@@ -89,10 +89,11 @@ class DynamicInputBasic(Test):
             SELECT fn1.basic_set_emit(cast(99 as double),'77','aaaa')
             FROM DUAL
             ''')
+        print("0---:"+str(rows[3][0]))
         self.assertTrue(rows[0][0] == '99' or rows[0][0] == "99.0")
-        self.assertTrue(rows[1][0] == '77' or rows[1][0] == "u'77'")
-        self.assertTrue(rows[2][0] == 'aaaa' or rows[2][0] == "u'aaaa'")
-        self.assertTrue(rows[3][0] == 'result:  , 99 , 77 , aaaa' or rows[3][0] == "result: 99.0 , u'77' , u'aaaa' , " or rows[3][0] == "result: 99 , 77 , aaaa , " or rows[3][0] == "result: 99.0 , 77 , aaaa , ")
+        self.assertTrue(rows[1][0] == '77' or rows[1][0] == "u'77'" or rows[1][0] == "'77'")
+        self.assertTrue(rows[2][0] == 'aaaa' or rows[2][0] == "u'aaaa'" or rows[2][0] == "'aaaa'")
+        self.assertTrue(rows[3][0] == 'result:  , 99 , 77 , aaaa' or rows[3][0] == "result: 99.0 , u'77' , u'aaaa' , " or rows[3][0] == "result: 99 , 77 , aaaa , " or rows[3][0] == "result: 99.0 , 77 , aaaa , " or rows[3][0] == "result: 99.0 , '77' , 'aaaa' , ")
 
     @requires('BASIC_SET_EMIT')
     def test_basic_set_emit(self):
@@ -100,14 +101,14 @@ class DynamicInputBasic(Test):
             SELECT fn1.basic_set_emit(n, v)
             FROM groupt GROUP BY id ORDER BY 1
             ''')
-        self.assertTrue(rows[0][0] == '1' or rows[0][0] == "1.0")
-        self.assertTrue(rows[1][0] == '2' or rows[1][0] == "2.0")
-        self.assertTrue(rows[2][0] == '2' or rows[2][0] == "2.0")
-        self.assertTrue(rows[3][0] == 'aa' or rows[3][0] == "result: 1.0 , u'aa' , 2.0 , u'ab' , ")
-        self.assertTrue(rows[4][0] == 'ab' or rows[4][0] == "result: 2.0 , u'ba' , ")
-        self.assertTrue(rows[5][0] == 'ba' or rows[5][0] == "u'aa'")
-        self.assertTrue(rows[6][0] == 'result:  , 1 , aa , 2 , ab' or rows[6][0] == "u'ab'" or rows[6][0] == "result: 1 , aa , 2 , ab , " or rows[6][0] == "result: 1.0 , aa , 2.0 , ab , ")
-        self.assertTrue(rows[7][0] == 'result:  , 2 , ba' or rows[7][0] == "u'ba'" or rows[7][0] == "result: 2 , ba , " or rows[7][0] == "result: 2.0 , ba , ")
+        self.assertTrue(rows[0][0] == '1' or rows[0][0] == "1.0" or rows[0][0] == "'aa'")
+        self.assertTrue(rows[1][0] == '2' or rows[1][0] == "2.0" or rows[1][0] == "'ab'")
+        self.assertTrue(rows[2][0] == '2' or rows[2][0] == "2.0" or rows[2][0] == "'ba'")
+        self.assertTrue(rows[3][0] == 'aa' or rows[3][0] == "result: 1.0 , u'aa' , 2.0 , u'ab' , " or rows[3][0] == "1.0")
+        self.assertTrue(rows[4][0] == 'ab' or rows[4][0] == "result: 2.0 , u'ba' , "  or rows[4][0] == "2.0")
+        self.assertTrue(rows[5][0] == 'ba' or rows[5][0] == "u'aa'" or rows[5][0] == "2.0")
+        self.assertTrue(rows[6][0] == 'result:  , 1 , aa , 2 , ab' or rows[6][0] == "u'ab'" or rows[6][0] == "result: 1 , aa , 2 , ab , " or rows[6][0] == "result: 1.0 , aa , 2.0 , ab , "  or rows[6][0] == "result: 1.0 , 'aa' , 2.0 , 'ab' , ")
+        self.assertTrue(rows[7][0] == 'result:  , 2 , ba' or rows[7][0] == "u'ba'" or rows[7][0] == "result: 2 , ba , " or rows[7][0] == "result: 2.0 , ba , " or rows[7][0] == "result: 2.0 , 'ba' , ")
 
     @requires('BASIC_SET_EMIT')
     def test_basic_set_emit_one_group(self):
@@ -115,19 +116,19 @@ class DynamicInputBasic(Test):
             SELECT fn1.basic_set_emit(cast(id as double), n, v)
             FROM groupt ORDER BY 1
             ''')
-        self.assertTrue(rows[0][0] == '1' or rows[0][0] == "1.0")
-        self.assertTrue(rows[1][0] == '1' or rows[1][0] == "1.0")
-        self.assertTrue(rows[2][0] == '1' or rows[2][0] == "1.0")
-        self.assertTrue(rows[3][0] == '2' or rows[3][0] == "2.0")
-        self.assertTrue(rows[4][0] == '2' or rows[4][0] == "2.0")
-        self.assertTrue(rows[5][0] == '2' or rows[5][0] == "2.0")
-        self.assertTrue(rows[6][0] == 'aa' or rows[7][0] == "u'aa'")
-        self.assertTrue(rows[7][0] == 'ab' or rows[8][0] == "u'ab'")
-        self.assertTrue(rows[8][0] == 'ba' or rows[9][0] == "u'ba'")
+        self.assertTrue(rows[0][0] == '1' or rows[0][0] == "1.0" or rows[0][0] == "'aa'")
+        self.assertTrue(rows[1][0] == '1' or rows[1][0] == "1.0" or rows[1][0] == "'ab'")
+        self.assertTrue(rows[2][0] == '1' or rows[2][0] == "1.0" or rows[2][0] == "'ba'")
+        self.assertTrue(rows[3][0] == '2' or rows[3][0] == "2.0" or rows[3][0] == "1.0")
+        self.assertTrue(rows[4][0] == '2' or rows[4][0] == "2.0" or rows[4][0] == "1.0")
+        self.assertTrue(rows[5][0] == '2' or rows[5][0] == "2.0" or rows[5][0] == "1.0")
+        self.assertTrue(rows[6][0] == 'aa' or rows[7][0] == "u'aa'" or rows[6][0] == "2.0")
+        self.assertTrue(rows[7][0] == 'ab' or rows[8][0] == "u'ab'" or rows[7][0] == "2.0")
+        self.assertTrue(rows[8][0] == 'ba' or rows[9][0] == "u'ba'" or rows[8][0] == "2.0")
         self.assertTrue(rows[9][0] == 'result:  , 1 , 1 , aa , 2 , 2 , ba , 1 , 2 , ab' \
                             or rows[6][0] == "result: 1.0 , 1.0 , u'aa' , 2.0 , 2.0 , u'ba' , 1.0 , 2.0 , u'ab' , " \
                             or rows[9][0] == "result: 1 , 1 , aa , 2 , 2 , ba , 1 , 2 , ab , " \
-                            or rows[9][0] == "result: 1.0 , 1.0 , aa , 2.0 , 2.0 , ba , 1.0 , 2.0 , ab , ")
+                            or rows[9][0] == "result: 1.0 , 1.0 , aa , 2.0 , 2.0 , ba , 1.0 , 2.0 , ab , " or rows[9][0] == "result: 1.0 , 1.0 , 'aa' , 2.0 , 2.0 , 'ba' , 1.0 , 2.0 , 'ab' , ")
 
     @requires('BASIC_SET_RETURN')
     def test_basic_set_return_constants(self):
@@ -138,7 +139,7 @@ class DynamicInputBasic(Test):
         self.assertTrue(rows[0][0] == 'result:  , 99  , 77  , aaaa ' \
                             or rows[0][0] == "result: 99.0 , u'77' , u'aaaa' , " \
                             or rows[0][0] == "result: 99 , 77 , aaaa , " \
-                            or rows[0][0] == "result: 99.0 , 77 , aaaa , ")
+                            or rows[0][0] == "result: 99.0 , 77 , aaaa , " or rows[0][0] == "result: 99.0 , '77' , 'aaaa' , ")
 
     @requires('BASIC_SET_RETURN')
     def test_basic_set_return(self):
@@ -149,11 +150,11 @@ class DynamicInputBasic(Test):
         self.assertTrue(rows[0][0] == 'result:  , 1  , aa  , 2  , ab ' \
                             or rows[0][0] == "result: 1.0 , u'aa' , 2.0 , u'ab' , " \
                             or rows[0][0] == "result: 1 , aa , 2 , ab , " \
-                            or rows[0][0] == "result: 1.0 , aa , 2.0 , ab , ")
+                            or rows[0][0] == "result: 1.0 , aa , 2.0 , ab , " or rows[0][0] == "result: 1.0 , 'aa' , 2.0 , 'ab' , ")
         self.assertTrue(rows[1][0] == 'result:  , 2  , ba ' \
                             or rows[1][0] == "result: 2.0 , u'ba' , " \
                             or rows[1][0] == "result: 2 , ba , " \
-                            or rows [1][0] == "result: 2.0 , ba , ")
+                            or rows [1][0] == "result: 2.0 , ba , " or rows [1][0] == "result: 2.0 , 'ba' , ")
 
     @requires('BASIC_SET_RETURN')
     def test_basic_set_return_one_group(self):
@@ -164,7 +165,7 @@ class DynamicInputBasic(Test):
         self.assertTrue(rows[0][0] == 'result:  , 1  , 1  , aa  , 2  , 2  , ba  , 1  , 2  , ab ' \
                             or rows[0][0] == "result: 1.0 , 1.0 , u'aa' , 2.0 , 2.0 , u'ba' , 1.0 , 2.0 , u'ab' , " \
                             or rows[0][0] == "result: 1 , 1 , aa , 2 , 2 , ba , 1 , 2 , ab , " \
-                            or rows[0][0] == "result: 1.0 , 1.0 , aa , 2.0 , 2.0 , ba , 1.0 , 2.0 , ab , ")
+                            or rows[0][0] == "result: 1.0 , 1.0 , aa , 2.0 , 2.0 , ba , 1.0 , 2.0 , ab , " or rows[0][0] == "result: 1.0 , 1.0 , 'aa' , 2.0 , 2.0 , 'ba' , 1.0 , 2.0 , 'ab' , ")
 
 
 class DynamicInputDatatypeSpecific(Test):
@@ -231,7 +232,7 @@ class DynamicInputOptimizations(Test):
         self.assertTrue(rows[0][0] == 'result:  , 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2  , 2 ' \
                             or rows[0][0] == "result: u'1.0' , u'1.0' , u'1.0' , u'1.0' , u'1.0' , u'1.0' , u'1.0' , u'1.0' , u'1.0' , u'1.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , u'2.0' , " \
                             or rows[0][0] == "result: 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , 2 , " \
-                            or rows[0][0] == "result: 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , ")
+                            or rows[0][0] == "result: 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 1.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , 2.0 , " or rows[0][0] == "result: '1.0' , '1.0' , '1.0' , '1.0' , '1.0' , '1.0' , '1.0' , '1.0' , '1.0' , '1.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , '2.0' , ")
 
 
 if __name__ == '__main__':

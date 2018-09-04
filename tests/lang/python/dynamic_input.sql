@@ -66,7 +66,7 @@ type_specific_add(...)
 RETURNS VARCHAR(2000) as
 def run(ctx):
         var = 'result: '
-        if repr(exa.meta.input_columns[0].type) == "<type 'unicode'>":
+        if repr(exa.meta.input_columns[0].type) == "<type 'unicode'>" or repr(exa.meta.input_columns[0].type) == "<class 'str'>":
                 while True:
                         for i in range (0,exa.meta.input_column_count):
                                 var = var + ctx[i] + ' , '

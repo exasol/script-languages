@@ -1,4 +1,4 @@
-language_definition=R=localzmq+protobuf:///bfsdefault/myudfs/fancyr_60?lang=r#buckets/bfsdefault/myudfs/fancyr_60/exaudf/exaudfclient
+language_definition=R=localzmq+protobuf:///bfsdefault/myudfs/fancyr_60?lang=r#buckets/bfsdefault/myudfs/fancyr_60/exaudf/exaudfclient PYTHON=builtin_python JAVA=builtin_java
 generic_language_tests=r
 test_folders=r
 # ending new line required!

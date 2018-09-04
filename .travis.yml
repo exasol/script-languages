@@ -18,6 +18,9 @@ matrix:
     env: MATRIX_FLAVOR=mini
   - name: standard
     env: MATRIX_FLAVOR=standard
+  - name: python3_60
+    env: MATRIX_FLAVOR=python3_60
+
 
 script:
   - ./build --flavor=$MATRIX_FLAVOR

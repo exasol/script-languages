@@ -108,7 +108,6 @@ function waitForLine {
 
 RETURN_CODE=0
 if [ -z ${EXASOLO+x} ]; then
-    echo 'skipping cleanup'
     trap cleanup EXIT
     TEST_TMP_DIR=$(mktemp -d -t "udftestdb_${FLAVOR}_XXXXXXXX")
     echo "config files dir for exadb: ${TEST_TMP_DIR}"

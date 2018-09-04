@@ -13,6 +13,9 @@ CREATE python SCALAR SCRIPT
 vectorsize(length INT, dummy DOUBLE) 
 RETURNS VARCHAR(2000000) AS
 import gc
+import sys
+
+if sys.version_info[0] == 3: xrange = range
 
 cache = {}
 cache_size = 0
@@ -36,6 +39,9 @@ CREATE python SCALAR SCRIPT
 vectorsize_set(length INT, n INT, dummy DOUBLE) 
 EMITS (o VARCHAR(2000000)) AS
 import gc
+import sys
+
+if sys.version_info[0] == 3: xrange = range
 
 cache = {}
 cache_size = 0
