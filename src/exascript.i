@@ -1,10 +1,12 @@
+%begin %{
+#define SWIG_PYTHON_STRICT_BYTE_CHAR
+%}
 
 %{
 #include <exaudflib.h>
 
 using namespace SWIGVMContainers;
 #include "script_data_transfer_objects_wrapper.h"
-
 %}
 
 %ignore ExecutionGraph::ConnectionInformationWrapper::ConnectionInformationWrapper;

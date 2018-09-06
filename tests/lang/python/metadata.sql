@@ -96,21 +96,21 @@ emits (column_id number, column_name varchar(200), column_type varchar(20),
  	   column_sql_type varchar(20), column_precision number, column_scale number,
   	   column_length number) as
 def run(ctx):
-	cols = exa.meta.input_columns
- 	for i in range(0, len(cols)):
-		name  = cols[i].name
-		precision = cols[i].precision
-		thetype = repr(cols[i].type)
-		sql_type = cols[i].sql_type
-		scale = cols[i].scale
-		length = cols[i].length
-		if name == None: name = 'no-name'
-		if thetype == None: thetype = 'no-type'
-		if sql_type == None: sql_type = 'no-sql-type'
-		if precision == None: precision = 0
-		if scale == None: scale = 0
-		if length == None: length = 0
-		ctx.emit(i+1, name, thetype, sql_type, precision, scale, length)
+        cols = exa.meta.input_columns
+        for i in range(0, len(cols)):
+                name  = cols[i].name
+                precision = cols[i].precision
+                thetype = repr(cols[i].type)
+                sql_type = cols[i].sql_type
+                scale = cols[i].scale
+                length = cols[i].length
+                if name == None: name = 'no-name'
+                if thetype == None: thetype = 'no-type'
+                if sql_type == None: sql_type = 'no-sql-type'
+                if precision == None: precision = 0
+                if scale == None: scale = 0
+                if length == None: length = 0
+                ctx.emit(i+1, name, thetype, sql_type, precision, scale, length)
 /
 create python scalar script
 get_output_type_return()
@@ -166,21 +166,21 @@ create python scalar script
 get_precision_scale_length(n decimal(6,3), v varchar(10))
 emits (precision1 number, scale1 number, length1 number, precision2 number, scale2 number, length2 number) as
 def run(ctx):
-	v = exa.meta.input_columns[0]
-  	precision1 = v.precision
-  	scale1 = v.scale
-	length1 = v.length
-	w = exa.meta.input_columns[1]
-	precision2 = w.precision
-	scale2 = w.scale
-	length2 = w.length
-  	if precision1== None: precision1= 0 
-  	if scale1== None: scale1= 0
-	if length1== None: length1= 0
-  	if precision2== None: precision2= 0 
-  	if scale2== None: scale2= 0
-	if length2== None: length2= 0
-   	ctx.emit(precision1, scale1, length1, precision2, scale2, length2)
+        v = exa.meta.input_columns[0]
+        precision1 = v.precision
+        scale1 = v.scale
+        length1 = v.length
+        w = exa.meta.input_columns[1]
+        precision2 = w.precision
+        scale2 = w.scale
+        length2 = w.length
+        if precision1== None: precision1= 0 
+        if scale1== None: scale1= 0
+        if length1== None: length1= 0
+        if precision2== None: precision2= 0 
+        if scale2== None: scale2= 0
+        if length2== None: length2= 0
+        ctx.emit(precision1, scale1, length1, precision2, scale2, length2)
 /
 
 create python scalar script

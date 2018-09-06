@@ -8,6 +8,7 @@ if sys.version_info[0] == 3:
 else:
     decodeUTF8 = lambda x: x.decode('utf-8')
 
+
 class exaiter(object):
     def __init__(self, meta, inp, out):
         self.__meta = meta
@@ -125,8 +126,10 @@ class exaiter(object):
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setBoolean(k, bool(v))
             elif type(v) in (str, unicode):
-                vl = len(v)
+#                vl = len(v)
                 if not isPython3 and type(v) == unicode: v = v.encode('utf-8')
+#                if isPython3 or type(v) == unicode: v = v.encode('utf-8')
+                vl = len(v)
                 if self.__outcoltypes[k] != STRING:
                     raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
@@ -180,7 +183,7 @@ def __disallowed_function(*args, **kw):
 
 def __pythonvm_wrapped_run():
     runfunc = None
-    try: runfunc = run
+    try: runfunc = globals()['run']
     except: raise RuntimeError("function 'run' is not defined")
     inp = TableIterator(); msg = inp.checkException();
     if msg: raise RuntimeError(msg)

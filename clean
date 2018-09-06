@@ -47,5 +47,8 @@ fi
 
 if [ ! "X$FLAVOR" = "X" ]; then
     echo "Removing all images for the flavor: $FLAVOR"
-    docker images --filter "reference=exaudf/*_$FLAVOR" -q | xargs docker rmi
+    images=$(docker images --filter "reference=exaudf/*_$FLAVOR" -q)
+    if [ ! X"$images" = X"" ]; then
+	docker rmi $images
+    fi
 fi

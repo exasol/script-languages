@@ -2,7 +2,7 @@
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 
-optarr=$(getopt -o 'h' --long 'help,flavor:,target:,rm,deploy:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,flavor:,target:,rm,deploy:,force' -- "$@")
 
 eval set -- "$optarr"
 
@@ -11,10 +11,12 @@ while true; do
         --flavor) FLAVOR="$2"; shift 2;;
         --deploy) DEPLOY="$2"; shift 2;;
         --rm) DELETE_EXPORT="yes"; shift 1;;
+        --force) FORCE="yes"; shift 1;;
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
 		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
 		   echo "  [--rm]         Remove the exported file (tar.gz)"
+		   echo "  [--force]      overwrite .tar.gz if it exists"
 		   echo "  [--deploy]     Deploy the export into specified bucket (i.e. --deploy=http://w:w@192.168.122.158:2580/myudfs/)"
 		   echo "  [-h|--help]    Print this help."; exit 0;;
         --) shift; break;;
@@ -26,7 +28,8 @@ done
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 TARGET="$FLAVOR"
 
-if [ -e "$TARGET.tar.gz" ]; then
+
+if [ -e "$TARGET.tar.gz" ] && [ -z "$FORCE" ]; then
 echo "Warning: $TARGET.tar.gz exists"
 while true; do
     read -p "Do you want to overwrite $TARGET.tar.gz? (please answer \"yes\" or \"no\"): " yn

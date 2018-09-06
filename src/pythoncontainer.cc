@@ -35,10 +35,11 @@ static void check() {
     if (NULL != (pvc = PyObject_GetAttrString(pv, "__class__"))) {
         if (NULL != (pvcn = PyObject_GetAttrString(pvc, "__name__"))) {
 #ifdef ENABLE_PYTHON3
-	  PyObject* repr = PyObject_Repr(pvcn);
-	  PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+	  PyObject* repr = PyObject_Str(pvcn);
+	  PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "ignore");
 	  const char *bytes = PyBytes_AS_STRING(p3str);
 	  pvcns = string(bytes) + string(": ");
+	  
 #else
 	  pvcns = string(PyString_AS_STRING(pvcn)) + string(": ");
 #endif
@@ -48,10 +49,10 @@ static void check() {
     }
     string exception_string("");
 #ifdef ENABLE_PYTHON3
-    PyObject* repr = PyObject_Repr(s);
-    PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    PyObject* repr = PyObject_Str(s);
+    PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "ignore");
     const char *bytes = PyBytes_AS_STRING(p3str);
-    exception_string = string(bytes) + string(": ");
+    exception_string = pvcns + string(bytes);
 #else
     exception_string = pvcns + PyString_AS_STRING(s);
 #endif
@@ -115,6 +116,9 @@ bool PythonVM::run() {
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "python crashed for unknown reasons";
     }
     return false;
 }
@@ -182,7 +186,9 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         PythonThreadBlock block;
 #endif
         
-        script = Py_CompileString(script_code.c_str(), SWIGVM_params->script_name, Py_file_input); check();
+	globals = PyDict_New();
+	PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
+	script = Py_CompileString(script_code.c_str(), SWIGVM_params->script_name, Py_file_input); check();
         if (script == NULL) throw PythonVM::exception("Failed to compile script");
 
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -198,9 +204,6 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         PyThreadState_Swap(pythread);
 #endif
 
-	globals = PyDict_New();
-	PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
-
 
 #ifndef ENABLE_PYTHON3
          init_exascript_python();
@@ -210,31 +213,32 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         exatable = PyImport_ExecCodeModule((char*)"exascript_python", code);
 	check();
 	if (exatable == NULL) throw PythonVM::exception("Failed to import code module");
+
         code = Py_CompileString(integrated_exascript_python_preset_py, "<EXASCRIPTPP>", Py_file_input); check();
         if (code == NULL) {check();}
-#ifdef ENABLE_PYTHON3
-	PyEval_EvalCode(code, globals, globals); check();
-#else
-        PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
-#endif
-        Py_DECREF(code);
-//#ifdef ENABLE_PYTHON3
-//	PyEval_EvalCode(script, globals, globals); check();
-//#else
-//       PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(script), globals, globals); check();
-//#endif
-        PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check();
-        PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
-        Py_XDECREF(retvalue); retvalue = NULL;
 
-        code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check();
+ #ifdef ENABLE_PYTHON3
+ 	PyEval_EvalCode(code, globals, globals); check();
+ #else
+	PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
+ #endif
+        Py_DECREF(code);
+
+         PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check();
+         //PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
+	 PyObject *retvalue = PyObject_CallFunctionObjArgs(runobj, globals, NULL); check();
+         Py_XDECREF(retvalue); retvalue = NULL;
+
+	code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check();
         if (code == NULL) throw PythonVM::exception("Failed to compile wrapping script");
+
 #ifdef ENABLE_PYTHON3
 	PyEval_EvalCode(code, globals, globals); check();
 #else
         PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check();
 #endif
-        Py_XDECREF(code);
+
+        Py_XDECREF(code); 
     }
 }
 
@@ -271,6 +275,9 @@ bool PythonVMImpl::run() {
 #endif
         runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_run"); check();
         retvalue = PyObject_CallFunction(runobj, NULL); check();
+	if (retvalue == NULL) {
+	  throw PythonVM::exception("Python VM: calling 'run' failed without an exception)");
+	}
         Py_XDECREF(retvalue); retvalue = NULL;
     }
     return true;
@@ -497,8 +504,16 @@ std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
             sb << " did not return string type (singleCall)";
             throw PythonVM::exception(sb.str().c_str());
         }
+	string result("");
+#ifdef ENABLE_PYTHON3
+	  PyObject* repr = PyObject_Str(retvalue);
+	  PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "ignore");
+	  const char *bytes = PyBytes_AS_STRING(p3str);
+	  result = string(bytes);
+#else
         const char * s = PyString_AsString(retvalue);
-        std::string result(s);
+        result = string(s);
+#endif
         Py_XDECREF(retvalue); retvalue = NULL;
         return result;
 }

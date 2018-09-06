@@ -114,26 +114,26 @@ class DynamicOutputTest(Test):
             FROM DUAL
             ''')
         stringType = {
-            'ext-python': "<type 'unicode'>",
-            'python': "<type 'unicode'>",
-            'r': "character",
-            'lua': "string",
-            'java': "java.lang.String"
+            'ext-python': ["<type 'unicode'>", "<class 'str'>"],
+            'python': ["<type 'unicode'>", "<class 'str'>"],
+            'r': ["character"],
+            'lua': ["string"],
+            'java': ["java.lang.String"]
         }
         numType = {
-            'ext-python': "<type 'float'>",
-            'python': "<type 'float'>",
-            'r': "double",
-            'lua': "number",
-            'java': "java.lang.Double"
+            'ext-python': ["<type 'float'>","<class 'float'>"],
+            'python': ["<type 'float'>", "<class 'float'>"],
+            'r': ["double"],
+            'lua': ["number"],
+            'java': ["java.lang.Double"]
         }
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] == stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] == numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
 
 
@@ -384,26 +384,26 @@ class DefaultDynamicOutputTest(Test):
             FROM DUAL
             ''')
         stringType = {
-            'ext-python': "<type 'unicode'>",
-            'python': "<type 'unicode'>",
-            'r': "character",
-            'lua': "string",
-            'java': "java.lang.String"
+            'ext-python': ["<type 'unicode'>", "<class 'str'>"],
+            'python': ["<type 'unicode'>", "<class 'str'>"],
+            'r': ["character"],
+            'lua': ["string"],
+            'java': ["java.lang.String"]
         }
         numType = {
-            'ext-python': "<type 'float'>",
-            'python': "<type 'float'>",
-            'r': "double",
-            'lua': "number",
-            'java': "java.lang.Double"
+            'ext-python': ["<type 'float'>", "<class 'float'>"],
+            'python': ["<type 'float'>", "<class 'float'>"],
+            'r': ["double"],
+            'lua': ["number"],
+            'java': ["java.lang.Double"]
         }
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] == stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] == numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
         # now again with intrinsic emits clause
         rows = self.query('''
@@ -412,11 +412,11 @@ class DefaultDynamicOutputTest(Test):
             ''')
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] == stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] == numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
 
 

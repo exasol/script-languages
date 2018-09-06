@@ -3,12 +3,14 @@
 #sys.path.append("/usr/lib/python2.7/dist-packages")
 
 import sys
-if sys.version_info[0] == 3:
+if sys.version_info[0] >= 3:
     unicode = str
     decodeUTF8 = lambda x: x
+    encodeUTF8 = lambda x: x
 else:
     decodeUTF8 = lambda x: x.decode('utf-8')
-    
+    encodeUTF8 = lambda x: x.encode('utf-8')
+
 from exascript_python import *
 import decimal
 import datetime
@@ -87,20 +89,25 @@ class exa:
     def import_script(self, script):
         modobj = None
         modname = unicode(script)
-        code = self.__meta.moduleContent(modname.encode('utf-8'))
+        code = self.__meta.moduleContent(encodeUTF8(modname))
         msg = self.__meta.checkException()
+
         if msg: raise ImportError(u"Importing module %s failed: %s" % (modname, msg))
         code = decodeUTF8(code)
-        if self.__modules.has_key(code):
+        if str(code) in self.__modules:
             print("%%% found code", modname, repr(code))
-            modobj = self.__modules[code]
+            modobj = self.__modules[str(code)]
         else:
             print("%%% new code", modname, repr(code), code in self.__modules)
             modobj = imp.new_module(modname)
             modobj.__file__ = "<%s>" % modname
             modobj.__dict__['exa'] = self
-            self.__modules[code] = modobj
-            try: exec(compile(code, script, 'exec')) in modobj.__dict__
+            self.__modules[str(code)] = modobj
+            try:
+                if sys.version_info[0] >= 3:
+                    exec(compile(code, script, 'exec'), modobj.__dict__)
+                else:
+                    exec(compile(code, script, 'exec')) in modobj.__dict__
             except Exception as err:
                 raise ImportError(u"Importing module %s failed: %s" % (modname, str(err)))
         return modobj
@@ -119,7 +126,7 @@ class exa:
 
     def get_connection(self, name):
         connection_name = unicode(name)
-        connectionInfo = self.__meta.connectionInformation(connection_name.encode('utf-8'))
+        connectionInfo = self.__meta.connectionInformation(encodeUTF8(connection_name))
         msg = self.__meta.checkException()
         if msg: raise ImportError(u"get_connection for connection name %s failed: %s" % (name, msg))
         return exa.ConnectionInformation(decodeUTF8(connectionInfo.copyKind()), decodeUTF8(connectionInfo.copyAddress()), decodeUTF8(connectionInfo.copyUser()), decodeUTF8(connectionInfo.copyPassword()))
@@ -138,8 +145,12 @@ class exa:
 
 exa = exa()
 
-def __pythonvm_wrapped_parse():
-    try: exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
+def __pythonvm_wrapped_parse(env):
+    try:
+        if sys.version_info[0] >= 3:
+            exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec'), env)
+        else:
+            exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
     except Exception as err:
         errtypel, errobj, backtrace = sys.exc_info()
         if backtrace.tb_next: backtrace = backtrace.tb_next

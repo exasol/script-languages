@@ -84,13 +84,13 @@ class XMLProcessingTest(udf.TestCase):
                 process_users(url VARCHAR(200))
                 EMITS (firstname VARCHAR(100), lastname VARCHAR(100)) AS
 
-                import urllib
+                import urllib.request
                 import lxml.etree as etree
                 # import xml.etree.cElementTree as etree
 
 
                 def run(ctx):
-                    data = ''.join(urllib.urlopen(ctx.url).readlines())
+                    data = b''.join(urllib.request.urlopen(ctx.url).readlines())
                     tree = etree.XML(data)
                     for user in tree.findall('user/[@active="1"]'):
                         fn = user.findtext('first_name')
@@ -114,18 +114,61 @@ class XMLProcessingTest(udf.TestCase):
         self.assertRowsEqual(expected, rows)
 
     @skipIf(running_in_travis, reason="This test is not supported when running in travis")
+    def test_xml_processing_using_pycurl(self):
+        self.query(udf.fixindent('''
+                CREATE python SCALAR SCRIPT
+                process_users(url VARCHAR(200))
+                EMITS (firstname VARCHAR(100), lastname VARCHAR(100)) AS
+
+                import pycurl
+                from io import BytesIO
+                import lxml.etree as etree
+
+                def run(ctx):
+                    buffer = BytesIO()
+                    c = pycurl.Curl()
+                    c.setopt(c.URL, ctx.url)
+                    c.setopt(c.WRITEDATA, buffer)
+                    c.perform()
+                    c.close()
+                    data=buffer.getvalue()
+
+                    tree = etree.XML(data)
+                    for user in tree.findall('user/[@active="1"]'):
+                        fn = user.findtext('first_name')
+                        ln = user.findtext('family_name')
+                        ctx.emit(fn, ln)
+                '''))
+            
+        with tempdir() as tmp:
+            with open(os.path.join(tmp, 'keepers.xml'), 'w') as f:
+                f.write(self.xml())
+            
+            with HTTPServer(tmp) as hs:
+                url = 'http://%s:%d/keepers.xml' % hs.address
+                rows = self.query('''
+                        SELECT process_users('%s')
+                        FROM DUAL
+                        ORDER BY lastname
+                        ''' % url)
+            
+        expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
+        self.assertRowsEqual(expected, rows)
+
+
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xmlns_processing(self):
         self.query(udf.fixindent('''
                 CREATE python SCALAR SCRIPT
                 process_users(url VARCHAR(200))
                 EMITS (firstname VARCHAR(100), lastname VARCHAR(100)) AS
 
-                import urllib
+                import urllib.request
                 import lxml.etree as etree
                 # import xml.etree.cElementTree as etree
        
                 def run(ctx):
-                    data = ''.join(urllib.urlopen(ctx.url).readlines())
+                    data = b''.join(urllib.request.urlopen(ctx.url).readlines())
                     tree = etree.XML(data)
                     for user in tree.findall('{http://default/}user/[@active="1"]'):
                         fn = user.findtext('{http://default/}first_name')
@@ -186,7 +229,7 @@ class CleanupTest(udf.TestCase):
             self.query('''SELECT sendmail('%s', %d, 'foobar') FROM DUAL''' %
                     (host, port))
 
-        self.assertIn('foobar', mb.data)
+        self.assertIn(b'foobar', mb.data)
 
     @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_cleanup_is_called_exactly_once_for_each_vm(self):
@@ -207,7 +250,7 @@ class CleanupTest(udf.TestCase):
 
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect(('%s', %d))
-                sock.send('init:' + msg)
+                sock.send(b'init:' + msg.encode('utf-8'))
                 sock.close()
 
                 def run(ctx):
@@ -216,7 +259,7 @@ class CleanupTest(udf.TestCase):
                 def cleanup():
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.connect(('%s', %d))
-                    sock.send('cleanup:' + msg)
+                    sock.send(b'cleanup:' + msg.encode('utf-8'))
                     sock.close()
                 ''' % (host, port, host, port)))
             self.query('''create or replace table ten as values 0,1,2,3,4,5,6,7,8,9 as p(x)''')
@@ -227,8 +270,8 @@ class CleanupTest(udf.TestCase):
         data = mb.data
         self.assertGreater(len(data), 0)
         #for x in sorted(data): print('received: '+str(x))
-        init = sorted([x.split(':')[1] for x in data if x.startswith('init')])
-        cleanup = sorted([x.split(':')[1] for x in data if x.startswith('cleanup')])
+        init = sorted([x.split(b':')[1] for x in data if x.startswith('init')])
+        cleanup = sorted([x.split(b':')[1] for x in data if x.startswith('cleanup')])
         self.assertEquals(init, cleanup)
         self.assertEquals(sorted(set(init)), init)
 
@@ -249,7 +292,7 @@ class CleanupTest(udf.TestCase):
 
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect(('%s', %d))
-                sock.send('init:' + msg)
+                sock.send(b'init:' + msg.encode('utf-8'))
                 sock.close()
 
                 def run(ctx):
@@ -258,7 +301,7 @@ class CleanupTest(udf.TestCase):
                 def cleanup():
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.connect(('%s', %d))
-                    sock.send('cleanup:' + msg)
+                    sock.send(b'cleanup:' + msg.encode('utf-8'))
                     sock.close()
                 ''' % (host, port, host, port)))
             with self.assertRaises(Exception):
