@@ -237,7 +237,7 @@ cols = document.getElementsByName('li_emits_cols');
 
 li = document.createElement('li');
 li.setAttribute('name', 'li_emits_cols');
-li.innerHTML = '<input type="text" name="emits_cols" oninput="generate_sql(this)" placeholder="Column Name"> <input type="text" name="emits_types" list="datatypes" title="Double-click to show some data types" oninput="generate_sql(this)" placeholder="Type"><a href="javascript:return false;" onClick="remove_li(this.parentNode)">Remove</a>';
+li.innerHTML = '<input type="text" name="emits_cols" oninput="generate_sql(this)" placeholder="Column Name"> <input type="text" name="emits_types" list="datatypes" title="Double-click to show some data types" oninput="generate_sql(this)" placeholder="Type"><button onClick="remove_li(this.parentNode)">Remove</button>';
 document.getElementById('ul_emits_cols').appendChild(li);
 generate_sql(li);
 }
@@ -247,7 +247,7 @@ parameters = document.getElementsByName('parameter');
 
 li = document.createElement('li');
 li.setAttribute('name', 'li_parameter');
-li.innerHTML = '<input type="text" name="parameters" oninput="generate_sql(this)" placeholder="Parameter Name"> <input type="text" name="parameter_types" list="datatypes" title="Double-click to show some data types" oninput="generate_sql(this)" placeholder="Type"><a href="javascript:return false;" onClick="remove_li(this.parentNode)">Remove</a>';
+li.innerHTML = '<input type="text" name="parameters" oninput="generate_sql(this)" placeholder="Parameter Name"> <input type="text" name="parameter_types" list="datatypes" title="Double-click to show some data types" oninput="generate_sql(this)" placeholder="Type"><button onClick="remove_li(this.parentNode)">Remove</button>';
 document.getElementById('ul_parameters').appendChild(li);
 
 document.getElementById('variadic_input').checked = false;
@@ -268,13 +268,13 @@ function remove_li(obj) {
 <li>Language: <input type="radio" name="language" id="language_python" oninput="generate_sql(this)" checked>PYTHON <input name="language" type="radio" id="language_lua" oninput="generate_sql(this)">Lua <input type="radio" name="language" id="language_java" oninput="generate_sql(this)">Java <input name="language" type="radio" id="language_r" oninput="generate_sql(this)">R</li> 
 <li>Input Type: <input type="radio" name="scalar_set" id="imput_scalar" oninput="generate_sql(this)" checked>SCALAR <input name="scalar_set" type="radio" id="input_set" oninput="generate_sql(this)">SET</li> 
 <li>Script Name: <input type="text" id="name" oninput="generate_sql(this)"></input></li>
-<li>Input Parameters: <a href="javascript:return false;" onClick="add_parameter()">Add</a> <input type="checkbox" id="variadic_input" oninput="generate_sql(this)"/> Variadic
+<li>Input Parameters: <button onClick="add_parameter()">Add</button> <input type="checkbox" id="variadic_input" oninput="generate_sql(this)"/> Variadic
     <ul id="ul_parameters">
     </ul>
 </li>
 <li>Output Type: <input type="radio" name="returns_emits" id="output_returns" oninput="generate_sql(this)" checked>RETURNS <input name="returns_emits" type="radio" id="output_emits" oninput="generate_sql(this)">EMITS</li></li>
 <li id="li_returns">RETURNS: <input type="text" id="returns" list="datatypes" title="Double-click to show some data types" oninput="generate_sql(this)"></input></li>
-<li id="li_emits">EMITS: <a href="javascript:return false;" onClick="add_emit()">Add</a> <input type="checkbox" id="variadic_output" oninput="generate_sql(this)"/> Variadic
+<li id="li_emits">EMITS: <button onClick="add_emit()">Add</button> <input type="checkbox" id="variadic_output" oninput="generate_sql(this)"/> Variadic
     <ul id="ul_emits_cols">
     <li name="li_emits_cols"><input type="text" name="emits_cols" oninput="generate_sql(this)" placeholder="Column Name"> <input type="text" name="emits_types" list="datatypes" title="Double-click to show some data types" oninput="generate_sql(this)" placeholder="Type"></li>
     </ul>
