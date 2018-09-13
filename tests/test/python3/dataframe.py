@@ -26,11 +26,10 @@ class PandasDataFrame(udf.TestCase):
             self.query('INSERT INTO TEST1 SELECT * FROM TEST1')
         self.num_rows = 2**num_inserts
 
-    def test_dataframe_scalar(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
-            foo(%s)
-            EMITS(%s) AS
+            DATAFRAME_EMITS_HELPER(...)
+            EMITS(...) AS
 
             import numpy as np
             import pandas as pd
@@ -69,92 +68,86 @@ class PandasDataFrame(udf.TestCase):
                 #    out_list = np_numeric_as_scalar(df.iloc[i, :])
                 #    ctx.emit(*out_list)
             /
-            ''' % (self.col_defs, self.col_defs)))
-        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
-        self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
-
-
-
-"""
-    def test_dataframe_set(self):
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
-            foo(C1 INT, C2 INT)
-            EMITS(C1 INT, C2 INT) AS
-
-            import numpy as np
-
-            def np_numeric_as_scalar(x):
-                return [np.asscalar(x[i]) for i in range(0, len(x))]
-
-            def run(ctx):
-                df = ctx.get_dataframe(num_rows=2)
-                for i in range(0, df.shape[0]):
-                    out_list = np_numeric_as_scalar(df.iloc[i, :])
-                    ctx.emit(*out_list)
-            /
             '''))
-        rows = self.query('SELECT foo(C1, C2) FROM FN2.TEST1')
-        self.assertRowsEqual([(1, 2), (3, 4)], rows)
 
     def test_dataframe_scalar(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
-            foo(C1 INT, C2 INT)
-            EMITS(C1 INT, C2 INT) AS
-
-            import numpy as np
-
-            def np_numeric_as_scalar(x):
-                return [np.asscalar(x[i]) for i in range(0, len(x))]
+            foo(%s)
+            EMITS(%s) AS
+            
+            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
 
             def run(ctx):
-                df = ctx.get_dataframe(num_rows=2)
-                df = ctx.get_dataframe(num_rows=2)
+                df = ctx.get_dataframe()
+                df_list = df_emit.transform_dataframe_to_list(df)
                 for i in range(0, df.shape[0]):
-                    out_list = np_numeric_as_scalar(df.iloc[i, :])
-                    ctx.emit(*out_list)
+                    ctx.emit(*df_list[i])
             /
-            '''))
-        rows = self.query('SELECT foo(C1, C2) FROM FN2.TEST1')
-        self.assertRowsEqual([(1, 2), (3, 4)], rows)
+            ''' % (self.col_defs, self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
-
-    def test_get_dataframe_set_get_dataframe_null(self):
+    def test_dataframe_set(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
-            foo(C1 INT, C2 INT)
-            EMITS(C1 INT, C2 INT) AS
-            def run(ctx):
-                df = ctx.get_dataframe(num_rows=2)
-                df = ctx.get_dataframe(num_rows=2)
-                if df is None:
-                    ctx.emit(3, 42)
-            /
-            '''))
-        rows = self.query('SELECT foo(C1, C2) FROM FN2.TEST1')
-        self.assertRowsEqual([(3, 42)], rows)
+            foo(%s)
+            EMITS(%s) AS
+            
+            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
 
-    def test_get_dataframe_set_get_dataframe_exception(self):
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows=100)
+                df_list = df_emit.transform_dataframe_to_list(df)
+                for i in range(0, df.shape[0]):
+                    ctx.emit(*df_list[i])
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
+
+    def test_dataframe_set_iter(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
-            foo(C1 INT, C2 INT)
-            EMITS(C1 INT, C2 INT) AS
-
-            import numpy as np
-
-            def np_numeric_as_scalar(x):
-                return [np.asscalar(x[i]) for i in range(0, len(x))]
+            foo(%s)
+            EMITS(%s) AS
+            
+            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
 
             def run(ctx):
-                df = ctx.get_dataframe(num_rows=2)
-                df = ctx.get_dataframe()
-                df = ctx.get_dataframe()
+                while True:
+                    df = ctx.get_dataframe(num_rows=1)
+                    if df is None:
+                        break
+                    df_list = df_emit.transform_dataframe_to_list(df)
+                    for i in range(0, df.shape[0]):
+                        ctx.emit(*df_list[i])
             /
-            '''))
+            ''' % (self.col_defs, self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
+
+    def test_dataframe_set_iter_exception(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+            
+            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
+
+            def run(ctx):
+                while True:
+                    df = ctx.get_dataframe(num_rows=1)
+                    if df is None:
+                        #break
+                        df = ctx.get_dataframe(num_rows=1)
+                    df_list = df_emit.transform_dataframe_to_list(df)
+                    for i in range(0, df.shape[0]):
+                        ctx.emit(*df_list[i])
+            /
+            ''' % (self.col_defs, self.col_defs)))
         with self.assertRaisesRegexp(Exception, 'Iteration finished'):
-            rows = self.query('SELECT foo(C1, C2) FROM FN2.TEST1')
-"""
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
 
 if __name__ == '__main__':
     udf.main()
