@@ -306,7 +306,7 @@ if(language=="JAVA") {
  
  if(scalar_set=="SET") {
   sql += ' do {       // loop over input\n';
-  sql += '  '+java_type+' '+parameters[0].value+' = ctx.get'+example_type+'("'+example_input+'");     // access input variable\n';
+  sql += '  '+java_type+' '+parameters[0].value+' = ctx.get'+example_type+'("'+parameters[0].value+'");     // access input variable\n';
   sql += ' } while(ctx.next());\n';
  } else if(parameters.length>=1) {
   sql += '  '+java_type+' '+parameters[0].value+' = ctx.get'+example_type+'("'+parameters[0].value+'");     // access input variable\n';
