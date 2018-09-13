@@ -1,0 +1,395 @@
+<html>
+<head><title>Exasol UDF-Script Signature Generator</title>
+<style type="text/css">
+header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-left: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  z-index: 100;
+  background-color: #0a3d51;
+  color:white;
+  font: 32px museo-sans,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+}
+section {
+	margin: 60px 20px 20px;
+	max-width: 980px;
+	position: relative;
+	padding: 20px
+}
+
+.form-style-2{
+    max-width: 700px;
+    padding: 0px 12px 10px 0px;
+    font: 13px museo-sans,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+}
+.form-style-2 label{
+    display: block;
+    margin: 0px 0px 0px 0px;
+}
+.form-style-2 label > span{
+    width: 120px;
+    font-weight: bold;
+    float: left;
+    padding-top: 3px;
+    padding-right: 5px;
+}
+.form-style-2 label > p{
+    padding-top: 0px;
+}
+.form-style-2 .tel-number-field{
+    width: 40px;
+    text-align: center;
+}
+.form-style-2 input.input-field, .form-style-2 .select-field{
+    width: 48%; 
+}
+.form-style-2 input.small-field{
+    width: 22%; 
+}
+.form-style-2 input.input-field, 
+.form-style-2 .tel-number-field, 
+.form-style-2 .textarea-field, 
+ .form-style-2 .select-field{
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    border: 1px solid #C2C2C2;
+    box-shadow: 1px 1px 4px #EBEBEB;
+    -moz-box-shadow: 1px 1px 4px #EBEBEB;
+    -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    padding: 7px;
+    outline: none;
+}
+.form-style-2 .input-field:focus, 
+.form-style-2 .tel-number-field:focus, 
+.form-style-2 .textarea-field:focus,  
+.form-style-2 .select-field:focus{
+    border: 1px solid #0C0;
+}
+.form-style-2 .textarea-field{
+    height:100px;
+    width: 55%;
+}
+.form-style-2 input[type=submit],
+.form-style-2 input[type=button]{
+    border: none;
+    padding: 8px 15px 8px 15px;
+    background: #FF8500;
+    color: #fff;
+    box-shadow: 1px 1px 4px #DADADA;
+    -moz-box-shadow: 1px 1px 4px #DADADA;
+    -webkit-box-shadow: 1px 1px 4px #DADADA;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+}
+.form-style-2 input[type=submit]:hover,
+.form-style-2 input[type=button]:hover{
+    background: #EA7B00;
+    color: #fff;
+}
+</style>
+<script type="text/javascript">
+function generate_sql(obj) {
+language = document.getElementById('language_lua').checked ? "LUA" : document.getElementById('language_java').checked ? "JAVA" : document.getElementById('language_r').checked ? "R" : "PYTHON";
+scalar_set = document.getElementById('input_set').checked ? "SET" : "SCALAR";
+name = document.getElementById('scriptname').value;
+parameters = document.getElementsByName('parameters');
+parameter_types = document.getElementsByName('parameter_types');
+returns_emits = document.getElementById('output_emits').checked ? "EMITS" : "RETURNS";
+returns = document.getElementById('returns').value;
+emits_cols = document.getElementsByName('emits_cols');
+emits_types = document.getElementsByName('emits_types');
+variadic_input = document.getElementById('variadic_input');
+variadic_output = document.getElementById('variadic_output');
+
+if(name == '') {
+ document.getElementById('scriptname').style.border = '1px solid #EE0000';
+} else {
+ document.getElementById('scriptname').style.border = '';
+}
+if(returns == '') {
+ document.getElementById('returns').style.border = '1px solid #FF0000';
+} else if(language=='LUA' && (returns.toUpperCase() == 'DATE' || returns.toUpperCase() == 'TIMESTAMP')) {
+ document.getElementById('returns').style.border = '1px solid #FF0000';
+} else {
+ document.getElementById('returns').style.border = '';
+}
+
+for(i=0; i<parameters.length;i++) {
+ if(parameters[i].value=='') { 
+  parameters[i].style.border = '1px solid #FF0000';
+ } else {
+  parameters[i].style.borderColor = '';
+ }
+ 
+ if (parameter_types[i].value=='') {
+  parameter_types[i].style.border = '1px solid #FF0000';
+ }
+ else if(language=='LUA' && (parameter_types[i].value.toUpperCase() == 'DATE' || parameter_types[i].value.toUpperCase() == 'TIMESTAMP')) {
+  parameter_types[i].style.border = '1px solid #FF0000';
+ } else {
+  parameter_types[i].style.borderColor = '';
+ }
+}
+for(i=0; i<emits_cols.length;i++) {
+ if(emits_cols[i].value=='') { 
+  emits_cols[i].style.border = '1px solid #FF0000';
+ } else {
+  emits_cols[i].style.borderColor = '';
+ }
+ 
+ if (emits_types[i].value=='') {
+  emits_types[i].style.border = '1px solid #FF0000';
+ }
+ else if(language=='LUA' && (emits_types[i].value.toUpperCase() == 'DATE' || emits_types[i].value.toUpperCase() == 'TIMESTAMP')) {
+  emits_types[i].style.border = '1px solid #FF0000';
+ } else {
+  emits_types[i].style.borderColor = '';
+ }
+}
+
+
+
+if (scalar_set == 'SET' && parameters.length==0) {
+ add_parameter();
+}
+
+if(obj.id=='input_scalar' && parameters.length==1 && parameters[0].value=='' && parameter_types[0].value=='') {
+ remove_li(parameters[0].parentNode.parentNode.parentNode);
+}
+
+if(returns_emits == 'RETURNS') {
+ document.getElementById('item_returns').style.display = "block";
+ document.getElementById('item_emits').style.display = "none";
+}
+
+if(returns_emits == 'EMITS') {
+ document.getElementById('item_returns').style.display = "none";
+ document.getElementById('item_emits').style.display = "block";
+}
+
+if(variadic_input.checked) {
+ document.getElementById('list_parameters').style.display = "none";
+} else {
+ document.getElementById('list_parameters').style.display = "block";
+}
+
+if(variadic_output.checked) {
+ document.getElementById('list_emits_cols').style.display = "none";
+} else {
+ document.getElementById('list_emits_cols').style.display = "block";
+}
+
+
+sql = '--/\n'
+sql += 'CREATE OR REPLACE '+language+' '+scalar_set+' SCRIPT '+name+'(';
+
+if(variadic_input.checked) {
+ sql += '...';
+} else {
+ for(i=0; i<parameters.length;i++) {
+   if (i>=1) { sql += ', ' }
+   sql += parameters[i].value+' '+parameter_types[i].value;
+ }
+}
+
+sql += ') \n'+returns_emits;
+if(returns_emits == 'RETURNS') {
+ sql += ' '+returns;
+} else {
+ sql += '('
+ if(variadic_output.checked) {
+  sql += '...';
+ } else {
+  for(i=0; i<emits_cols.length;i++) {
+   if (i>=1) { sql += ', ' }
+   sql += emits_cols[i].value+' '+emits_types[i].value;
+  }
+ }
+ sql += ')'
+}
+
+sql += ' AS \n';
+
+if (language=="LUA") {
+ sql += 'function run(ctx)\n';
+ sql += ' -- TODO: implement script\n'
+ if(scalar_set=="SET") {
+  sql += ' repeat       -- loop over input\n';
+  sql += '  '+parameters[0].value+' = ctx.'+parameters[0].value+'     -- access input variable\n';
+  sql += ' until not ctx.next()\n';
+ } else if (parameters.length>=1) {
+   sql += ' '+parameters[0].value+' = ctx.'+parameters[0].value+'     -- access input variable\n';
+ }
+ if(returns_emits=="RETURNS") {
+  sql += ' return NULL\n';
+ } else {
+  sql += ' ctx.emit(NULL'+(', NULL'.repeat(emits_cols.length-1))+')\n';
+ }
+ sql += 'end\n';
+}
+
+if(language=="PYTHON") {
+ sql += 'def run(ctx):\n';
+ sql += ' ## TODO: implement script\n';
+ if (scalar_set=="SET") {
+  sql += ' while True:     ## loop over input\n';
+  sql += '  '+parameters[0].value+' = ctx.'+parameters[0].value+'      ## access input variable\n';
+  sql += '  if not ctx.next(): break\n';
+ } else if (parameters.length>=1) {
+  sql += ' '+parameters[0].value+' = ctx.'+parameters[0].value+'      ## access input variable\n';
+ }
+ if (returns_emits=="RETURNS") {
+  sql += ' return None\n';
+ } else {
+  sql += ' ctx.emit(None'+(', None'.repeat(emits_cols.length-1))+')\n';
+ }
+}
+
+if (language=="R") { 
+ sql += 'run <- function(ctx) {\n';
+ sql += ' ## TODO: implement script\n';
+ if(scalar_set=="SET") {
+  sql += ' repeat {       ## loop over input\n';
+  sql += '  '+parameters[0].value+' <- ctx$'+parameters[0].value+'     ## access input variable\n';
+  sql += '  if (!(ctx$next_row())){break}\n';
+  sql += ' }\n';
+ } else if(parameters.length>=1) {
+  sql += ' '+parameters[0].value+' <- ctx$'+parameters[0].value+'     ## access input variable\n';
+ }
+ if(returns_emits=="RETURNS") {
+  sql += ' NA\n';
+ } else {
+  sql += ' ctx$emit(NA'+(', NA'.repeat(emits_cols.length-1))+')\n';
+ }
+ sql += '}\n';
+}
+
+if(language=="JAVA") {
+ if(returns_emits == "RETURNS") {
+  return_type = returns.toLowerCase();
+  if(return_type == "date") { return_type = 'java.sql.Date'; }
+  else if(return_type.indexOf('char')>-1) { return_type = 'String'; }
+  else if(return_type == 'int') { return_type = 'Integer'; }
+  else if(return_type == 'double') { return_type = 'Double'; }
+  else { return_type = return_type.substr(0,1).toUpperCase()+return_type.substr(1); }
+ } else {
+  return_type = 'void';
+ }
+
+ sql += 'class '+name.toUpperCase()+' {\n';
+ sql += ' static '+return_type+' run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n';
+ 
+ sql += ' // TODO: implement script\n';
+
+ example_type = 'Object';
+ java_type = 'Object';
+ if(parameters.length>=1) {
+  example_type = parameter_types[0].value.toLowerCase();
+  if(example_type == "date") { example_type = 'Date'; }
+  else if(example_type.indexOf('char')>-1) { example_type = 'String'; }
+  else if(example_type == 'int') { example_type = 'Integer'; }
+  else if(example_type == 'double') { example_type = 'Double'; }
+  else { example_type = example_type.substr(0,1).toUpperCase()+example_type.substr(1); }
+  if(example_type == 'Date') { java_type = 'java.sql.Date' } else { java_type = example_type }
+ }
+ 
+ 
+ 
+ if(scalar_set=="SET") {
+  sql += ' do {       // loop over input\n';
+  sql += '  '+java_type+' '+parameters[0].value+' = ctx.get'+example_type+'("'+example_input+'");     // access input variable\n';
+  sql += ' } while(ctx.next());\n';
+ } else if(parameters.length>=1) {
+  sql += '  '+java_type+' '+parameters[0].value+' = ctx.get'+example_type+'("'+parameters[0].value+'");     // access input variable\n';
+ }
+ if(returns_emits=="RETURNS") {
+  sql += ' return null;\n';
+ } else {
+  sql += ' ctx.emit(null'+(', null'.repeat(emits_cols.length-1))+');\n';
+ }
+ sql += ' }\n';
+ sql += '}\n';  
+}
+
+
+sql += '/';
+
+document.getElementById('sql').innerHTML = sql;
+}
+
+function add_emit() {
+cols = document.getElementsByName('item_emits_cols');
+
+li = document.createElement('label');
+li.setAttribute('name', 'item_emits_cols');
+li.innerHTML = '<span>&nbsp;</span><div><p><input type="text" name="emits_cols" oninput="generate_sql(this)" placeholder="Column Name" class="input-field small-field"> <input type="text" name="emits_types" list="datatypes" oninput="generate_sql(this)" placeholder="Type" class="input-field small-field"> <button onClick="remove_li(this.parentNode.parentNode.parentNode)">-</button></p></div>';
+document.getElementById('list_emits_cols').appendChild(li);
+generate_sql(li);
+}
+
+function add_parameter() {
+parameters = document.getElementsByName('parameter');
+
+li = document.createElement('label');
+li.setAttribute('name', 'item_parameter');
+li.innerHTML = '<span>&nbsp;</span><div><p><input type="text" name="parameters" oninput="generate_sql(this)" placeholder="Parameter Name" class="input-field small-field"> <input type="text" name="parameter_types" list="datatypes" oninput="generate_sql(this)" placeholder="Type" class="input-field small-field"> <button onClick="remove_li(this.parentNode.parentNode.parentNode)">-</button></p></div>';
+document.getElementById('list_parameters').appendChild(li);
+
+document.getElementById('variadic_input').checked = false;
+
+generate_sql(li);
+}
+
+function remove_li(obj) {
+ obj.parentNode.removeChild(obj);
+ generate_sql(obj);
+}
+</script>
+</head>
+<body onLoad="generate_sql(this)">
+
+<header>
+<img alt="Exasol" src="https://www.exasol.com/wp-content/themes/exasol/assets/images/logo-exasol-wht.png" height="25pt"> UDF-Script Signature Generator
+</header>
+<section>
+<textarea style="width:480px" id="sql" rows="12"></textarea>
+
+<div class="form-style-2">
+<label for=""><span>Language</span><p><input type="radio" name="language" id="language_python" oninput="generate_sql(this)" checked>Python <input name="language" type="radio" id="language_lua" oninput="generate_sql(this)">Lua <input type="radio" name="language" id="language_java" oninput="generate_sql(this)">Java <input name="language" type="radio" id="language_r" oninput="generate_sql(this)">R</p></label>
+<label for=""><span>Input Type</span><p><input type="radio" name="scalar_set" id="input_scalar" oninput="generate_sql(this)" checked>SCALAR <input name="scalar_set" type="radio" id="input_set" oninput="generate_sql(this)">SET</p></label>
+<label><span>Script Name</span><input type="text" id="scriptname" oninput="generate_sql(this)" class="input-field"></input></label>
+<label for=""><span>Parameters</span><p><button onClick="add_parameter()">+</button> <input type="checkbox" id="variadic_input" oninput="generate_sql(this)"/>Variadic</p>
+    </label>
+<span id="list_parameters"></span>
+<label for=""><span>Output Type</span><p><input type="radio" name="returns_emits" id="output_returns" oninput="generate_sql(this)" checked>RETURNS <input name="returns_emits" type="radio" id="output_emits" oninput="generate_sql(this)">EMITS</p></label>
+<label id="item_returns"><span>RETURNS</span><input type="text" id="returns" list="datatypes" oninput="generate_sql(this)" class="input-field"/></label>
+<span id="item_emits">
+<label><span>EMITS</span><p><button onClick="add_emit()">+</button> <input type="checkbox" id="variadic_output" oninput="generate_sql(this)"/>Variadic</p>
+    </label>
+<span id="list_emits_cols"><label id="item_emits_cols"><span>&nbsp;</span><div><p><input type="text" name="emits_cols" oninput="generate_sql(this)" placeholder="Column Name" class="input-field small-field"> <input type="text" name="emits_types" list="datatypes" oninput="generate_sql(this)" placeholder="Type" class="input-field small-field"></p></div>
+    </label></span>
+</span>
+</div>
+</section>
+
+
+
+<datalist id="datatypes">
+  <option>INT</option>
+  <option>VARCHAR(2000000)</option>
+  <option>CHAR(20)</option>
+  <option>DATE</option>
+  <option>TIMESTAMP</option>
+</datalist>
+
+</body>
+</html>
