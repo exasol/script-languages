@@ -88,6 +88,26 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
+    def test_dataframe_scalar_no_iter(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+            
+            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
+
+            def run(ctx):
+                df = ctx.get_dataframe()
+                df = ctx.get_dataframe()
+                df = ctx.get_dataframe()
+                df_list = df_emit.transform_dataframe_to_list(df)
+                for i in range(0, df.shape[0]):
+                    ctx.emit(*df_list[i])
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
+
     def test_dataframe_set(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
