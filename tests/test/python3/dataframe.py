@@ -32,7 +32,6 @@ class PandasDataFrame(udf.TestCase):
             foo(%s)
             EMITS(%s) AS
 
-            from decimal import Decimal
             import numpy as np
             import pandas as pd
 
@@ -40,21 +39,35 @@ class PandasDataFrame(udf.TestCase):
                 if isinstance(val, (np.number, np.bool_)):
                     return np.asscalar(val)
                 elif isinstance(val, pd.tslib.Timestamp):
-                    #return val.astype('str')
                     return val.to_pydatetime()
                 else:
                     return val
 
             def np_numeric_as_scalar(x):
                 return [to_scalar(x[i]) for i in range(0, len(x))]
-                #return [np.asscalar(x[i]) if isinstance(x[i], (np.number, np.bool_)) else x[i] for i in range(0, len(x))]
+
+            def transform_dataframe_to_list(x):
+                ret = []
+                for i in range(0, x.shape[1]):
+                    if np.issubdtype(x.iloc[:, i].dtypes, np.number):
+                        ret.append([np.asscalar(v) for v in x.iloc[:, i].values])
+                    elif np.issubdtype(x.iloc[:, i].dtypes, np.bool_):
+                        ret.append([np.asscalar(v) for v in x.iloc[:, i].values])
+                    elif pd.core.dtypes.common.is_datetime_or_timedelta_dtype(x.iloc[:, i]):
+                        ret.append([v.to_pydatetime() for v in x.iloc[:, i]])
+                    else:
+                        ret.append([v for v in x.iloc[:, i]])
+                ret = [list(i) for i in zip(*ret)]
+                return ret
 
             def run(ctx):
                 df = ctx.get_dataframe()
+                df_list = transform_dataframe_to_list(df)
                 for i in range(0, df.shape[0]):
-                    out_list = np_numeric_as_scalar(df.iloc[i, :])
-                    #out_list = df.iloc[i, :]
-                    ctx.emit(*out_list)
+                    ctx.emit(*df_list[i])
+                #for i in range(0, df.shape[0]):
+                #    out_list = np_numeric_as_scalar(df.iloc[i, :])
+                #    ctx.emit(*out_list)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
