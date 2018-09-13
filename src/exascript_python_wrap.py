@@ -1,5 +1,8 @@
 import sys
+import pandas as pd
+
 isPython3 = False
+
 if sys.version_info[0] == 3:
     unicode = str
     decodeUTF8 = lambda x: x
@@ -18,6 +21,7 @@ class exaiter(object):
         data = {}
         self.__cache = [None]*incount
         self.__finished = False
+        self.__dataframe_finished = False
         def rd(get, null, col, postfun = None):
             if postfun == None:
                 newget = lambda: (get(col), null())
@@ -173,6 +177,31 @@ class exaiter(object):
         if not val:
             self.__finished = True
         return val
+    def get_dataframe(self, num_rows=1, all=False):
+        if self.__dataframe_finished:
+            # Exception after None already returned
+            raise RuntimeError("Iteration finished")
+        elif self.__finished:
+            # Return None the first time there is no data
+            self.__dataframe_finished = True
+            return None
+        def get_row(num_cols):
+            row_data = []
+            for col in range(num_cols):
+                row_data.append(self.__getitem__(col))
+            return row_data
+        num_in_cols = self.__meta.inputColumnCount()
+        row_data = get_row(num_in_cols)
+        data = [row_data]
+        if self.__meta.inputType() == EXACTLY_ONCE:
+            # Only 1 row, no iteration
+            pass
+        else:
+            while self.next() and len(data) < num_rows:
+                row_data = get_row(num_in_cols)
+                data.append(row_data)
+        in_col_names = [decodeUTF8(self.__meta.inputColumnName(col)) for col in range(num_in_cols)]
+        return pd.DataFrame(data, columns=in_col_names)
     def reset(self):
         return self.next(reset = True)
     def size(self):
