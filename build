@@ -18,7 +18,7 @@ while true; do
 done
 
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
-
+TMPDIR=$(mktemp -d -p .)
 
 function cleanup {
     if [ ! -z "$TMPDIR" ]; then
@@ -31,7 +31,6 @@ echo Using base docker file: Dockerfile.base_$FLAVOR
 docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR || die "Could not create exaudf/baseimage"
 echo Using build docker file: Dockerfile.build_$FLAVOR
 docker build . --tag exaudf/build_$FLAVOR -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
-TMPDIR=$(mktemp -d -p .)
 trap cleanup EXIT
 docker container create --name extract_$FLAVOR exaudf/build_$FLAVOR
 docker container cp extract_$FLAVOR:/exaudf $TMPDIR
