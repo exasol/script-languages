@@ -103,7 +103,7 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([(Decimal('12346.6789'),)]*self.num_rows, rows)
 
-    def test_dataframe_scalar_no_iter(self):
+    def test_dataframe_scalar_emits_no_iter(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
             foo(%s)
@@ -157,7 +157,7 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([(Decimal(self.num_rows),)], rows)
 
-    def test_dataframe_set_iter(self):
+    def test_dataframe_set_emits_iter(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
             foo(%s)
@@ -178,7 +178,7 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
-    def test_dataframe_set_iter_exception(self):
+    def test_dataframe_set_emits_iter_exception(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
             foo(%s)
