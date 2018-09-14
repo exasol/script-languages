@@ -100,11 +100,14 @@ RUN apt-get -y update && \
 	r-cran-scales \
 	r-cran-stringr \
         maven \
-        swig \
         git && \
     pip3 install protobuf && \
     pip install azure-storage && \
     easy_install pytz && \
+    wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
+    tar zxf swig-2.0.4.tar.gz && \
+    (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
+    rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
     Rscript -e 'install.packages("rredis",repos = "http://cran.r-project.org")' && \
     Rscript -e 'install.packages("data.table",repos = "http://cran.r-project.org")' && \
     Rscript -e 'install.packages("htmltools",repos = "http://cran.r-project.org")' && \
