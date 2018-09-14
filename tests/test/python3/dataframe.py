@@ -70,7 +70,7 @@ class PandasDataFrame(udf.TestCase):
             /
             '''))
 
-    def test_dataframe_scalar(self):
+    def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
             foo(%s)
@@ -87,6 +87,21 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
+
+    def test_dataframe_scalar_returns(self):
+        from decimal import Decimal
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            RETURNS DECIMAL(10,5) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe()
+                return df.iloc[0, 0] + df.iloc[0, 1]
+            /
+            ''' % (self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([(Decimal('12346.6789'),)]*self.num_rows, rows)
 
     def test_dataframe_scalar_no_iter(self):
         self.query(udf.fixindent('''
@@ -108,24 +123,7 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
-    def test_dataframe_scalar_returns(self):
-        from decimal import Decimal
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
-            foo(%s)
-            RETURNS DECIMAL(10,5) AS
-            import numpy as np
-
-            def run(ctx):
-                df = ctx.get_dataframe()
-                ret = df.iloc[0, 0] + df.iloc[0, 1]
-                return ret
-            /
-            ''' % (self.col_defs)))
-        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
-        self.assertRowsEqual([(Decimal('12346.6789'),)]*self.num_rows, rows)
-
-    def test_dataframe_set(self):
+    def test_dataframe_set_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
             foo(%s)
@@ -142,6 +140,22 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
+
+    def test_dataframe_set_returns(self):
+        from decimal import Decimal
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            RETURNS DECIMAL(10,5) AS
+            import numpy as np
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows=100)
+                return np.asscalar(df.iloc[:, 0].sum())
+            /
+            ''' % (self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([(Decimal(self.num_rows),)], rows)
 
     def test_dataframe_set_iter(self):
         self.query(udf.fixindent('''
