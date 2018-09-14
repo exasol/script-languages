@@ -123,6 +123,20 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
+    def test_dataframe_scalar_emits_col_names(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe()
+                ctx.emit(*(df.columns.tolist()))
+            /
+            ''' % (self.col_defs, 'X1 VARCHAR(5), X2 VARCHAR(5), X3 VARCHAR(5), X4 VARCHAR(5), X5 VARCHAR(5), X6 VARCHAR(5), X7 VARCHAR(5), X8 VARCHAR(5)')))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([tuple(self.col_names.split(", "))]*self.num_rows, rows)
+
     def test_dataframe_set_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
@@ -199,6 +213,23 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs, self.col_defs)))
         with self.assertRaisesRegexp(Exception, 'Iteration finished'):
             rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_set_emits_col_names(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                while True:
+                    df = ctx.get_dataframe(num_rows=1)
+                    if df is None:
+                        break
+                    ctx.emit(*(df.columns.tolist()))
+            /
+            ''' % (self.col_defs, 'X1 VARCHAR(5), X2 VARCHAR(5), X3 VARCHAR(5), X4 VARCHAR(5), X5 VARCHAR(5), X6 VARCHAR(5), X7 VARCHAR(5), X8 VARCHAR(5)')))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([tuple(self.col_names.split(", "))]*self.num_rows, rows)
 
 if __name__ == '__main__':
     udf.main()
