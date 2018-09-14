@@ -19,11 +19,11 @@ class PandasDataFrame(udf.TestCase):
         self.col_defs = 'C1 INT, C2 DECIMAL(36,5), C3 DOUBLE, C4 BOOLEAN, C5 DATE, C6 TIMESTAMP, C7 VARCHAR(500), C8 CHAR(10)'
         self.col_vals = "1, 12345.6789, 12345.6789, TRUE, '2018-09-12', '2018-09-12 13:37:00.123', 'abcdefghij', 'abcdefgh'"
         self.col_tuple = (Decimal('1'), Decimal('12345.6789'), 12345.6789, True, date(2018, 9, 12), datetime(2018, 9, 12, 13, 37, 0, 123000), 'abcdefghij', 'abcdefgh  ')
-        self.query('CREATE TABLE TEST1(%s)' % (self.col_defs))
-        self.query('INSERT INTO TEST1 VALUES (%s)' % (self.col_vals))
+        self.query('CREATE TABLE TEST1(C0 INT IDENTITY, %s)' % (self.col_defs))
+        self.query('INSERT INTO TEST1 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
         num_inserts = 6
         for i in range(num_inserts):
-            self.query('INSERT INTO TEST1 SELECT * FROM TEST1')
+            self.query('INSERT INTO TEST1 (%s) SELECT %s FROM TEST1' % (self.col_names, self.col_names))
         self.num_rows = 2**num_inserts
 
         self.query(udf.fixindent('''
@@ -137,6 +137,21 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([tuple(self.col_names.split(", "))]*self.num_rows, rows)
 
+    def test_dataframe_scalar_emits_unique(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(C0 INT)
+            EMITS(C0 INT) AS
+            import numpy as np
+
+            def run(ctx):
+                df = ctx.get_dataframe()
+                ctx.emit(np.asscalar(df.C0))
+            /
+            '''))
+        rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
+        self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
+
     def test_dataframe_set_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
@@ -230,6 +245,24 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs, 'X1 VARCHAR(5), X2 VARCHAR(5), X3 VARCHAR(5), X4 VARCHAR(5), X5 VARCHAR(5), X6 VARCHAR(5), X7 VARCHAR(5), X8 VARCHAR(5)')))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([tuple(self.col_names.split(", "))]*self.num_rows, rows)
+
+    def test_dataframe_set_emits_unique(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(C0 INT)
+            EMITS(C0 INT) AS
+            import numpy as np
+
+            def run(ctx):
+                while True:
+                    df = ctx.get_dataframe(num_rows=1)
+                    if df is None:
+                        break
+                    ctx.emit(np.asscalar(df.C0))
+            /
+            '''))
+        rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
+        self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
 
 if __name__ == '__main__':
     udf.main()
