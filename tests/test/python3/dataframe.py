@@ -76,13 +76,9 @@ class PandasDataFrame(udf.TestCase):
             foo(%s)
             EMITS(%s) AS
             
-            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
-
             def run(ctx):
                 df = ctx.get_dataframe()
-                df_list = df_emit.transform_dataframe_to_list(df)
-                for i in range(0, df.shape[0]):
-                    ctx.emit(*df_list[i])
+                ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
@@ -109,15 +105,11 @@ class PandasDataFrame(udf.TestCase):
             foo(%s)
             EMITS(%s) AS
             
-            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
-
             def run(ctx):
                 df = ctx.get_dataframe()
                 df = ctx.get_dataframe()
                 df = ctx.get_dataframe()
-                df_list = df_emit.transform_dataframe_to_list(df)
-                for i in range(0, df.shape[0]):
-                    ctx.emit(*df_list[i])
+                ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
@@ -158,13 +150,9 @@ class PandasDataFrame(udf.TestCase):
             foo(%s)
             EMITS(%s) AS
             
-            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
-
             def run(ctx):
                 df = ctx.get_dataframe(num_rows=100)
-                df_list = df_emit.transform_dataframe_to_list(df)
-                for i in range(0, df.shape[0]):
-                    ctx.emit(*df_list[i])
+                ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
@@ -192,16 +180,12 @@ class PandasDataFrame(udf.TestCase):
             foo(%s)
             EMITS(%s) AS
             
-            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
-
             def run(ctx):
                 while True:
                     df = ctx.get_dataframe(num_rows=1)
                     if df is None:
                         break
-                    df_list = df_emit.transform_dataframe_to_list(df)
-                    for i in range(0, df.shape[0]):
-                        ctx.emit(*df_list[i])
+                    ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
@@ -213,17 +197,13 @@ class PandasDataFrame(udf.TestCase):
             foo(%s)
             EMITS(%s) AS
             
-            df_emit = exa.import_script('FN2.DATAFRAME_EMITS_HELPER')
-
             def run(ctx):
                 while True:
                     df = ctx.get_dataframe(num_rows=1)
                     if df is None:
                         #break
                         df = ctx.get_dataframe(num_rows=1)
-                    df_list = df_emit.transform_dataframe_to_list(df)
-                    for i in range(0, df.shape[0]):
-                        ctx.emit(*df_list[i])
+                    ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
         with self.assertRaisesRegexp(Exception, 'Iteration finished'):

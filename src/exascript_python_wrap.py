@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 import pandas as pd
 
 isPython3 = False
@@ -102,6 +103,27 @@ class exaiter(object):
                 NUMERIC: "decimal.Decimal",
                 DATE: "datetime.date",
                 TIMESTAMP: "datetime.datetime" }
+        if len(output) == 1 and isinstance(output[0], pd.DataFrame):
+            v = output[0]
+            if v.shape[0] == 0:
+                raise RuntimeError("emit DataFrame is empty")
+            if v.shape[1] != len(self.__outcoltypes):
+                exp_num_out = len(self.__outcoltypes)
+                raise TypeError("emit() takes exactly %d argument%s (%d given)" % (exp_num_out, 's' if exp_num_out > 1 else '', v.shape[1]))
+            transform_col_funcs = []
+            for c in range(v.shape[1]):
+                if isinstance(v.iloc[0, c], (np.number, np.bool_)):
+                    transform_col_funcs.append(lambda x: np.asscalar(x))
+                elif isinstance(v.iloc[0, c], pd.tslib.Timestamp):
+                    transform_col_funcs.append(lambda x: x.to_pydatetime())
+                else:
+                    transform_col_funcs.append(lambda x: x)
+            for r in range(v.shape[0]):
+                row = []
+                for c in range(v.shape[1]):
+                    row.append(transform_col_funcs[c](v.iloc[r, c]))
+                self.emit(*row)
+            return
         if len(output) != len(self.__outcoltypes):
             if len(self.__outcoltypes) > 1:
                 raise TypeError("emit() takes exactly %d arguments (%d given)" % (len(self.__outcoltypes), len(output)))
