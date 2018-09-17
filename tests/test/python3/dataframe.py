@@ -144,6 +144,51 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
         self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
 
+    def test_dataframe_scalar_emits_empty(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+            import pandas as pd
+
+            def run(ctx):
+                df = pd.DataFrame()
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'emit DataFrame is empty'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_scalar_emits_wrong_args0(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+            import pandas as pd
+
+            def run(ctx):
+                df = pd.DataFrame([[]])
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 8 arguments \(0 given\)'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_scalar_emits_wrong_args7(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe()
+                df = df.iloc[:, 1:]
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 8 arguments \(7 given\)'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
     def test_dataframe_set_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
@@ -243,6 +288,51 @@ class PandasDataFrame(udf.TestCase):
             '''))
         rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
         self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
+
+    def test_dataframe_set_emits_empty(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+            import pandas as pd
+
+            def run(ctx):
+                df = pd.DataFrame()
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'emit DataFrame is empty'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_set_emits_wrong_args0(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+            import pandas as pd
+
+            def run(ctx):
+                df = pd.DataFrame([[]])
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 8 arguments \(0 given\)'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_set_emits_wrong_args7(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows=100)
+                df = df.iloc[:, 1:]
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 8 arguments \(7 given\)'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
 
 if __name__ == '__main__':
     udf.main()
