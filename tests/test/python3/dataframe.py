@@ -144,6 +144,21 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
         self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
 
+    def test_dataframe_scalar_emits_all_unique(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(C0 INT)
+            EMITS(C0 INT) AS
+            import numpy as np
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows="all")
+                ctx.emit(np.asscalar(df.C0))
+            /
+            '''))
+        rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
+        self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
+
     def test_dataframe_scalar_emits_empty(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
@@ -196,7 +211,7 @@ class PandasDataFrame(udf.TestCase):
             EMITS(%s) AS
             
             def run(ctx):
-                df = ctx.get_dataframe(num_rows=100)
+                df = ctx.get_dataframe(num_rows="all")
                 ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
@@ -212,7 +227,7 @@ class PandasDataFrame(udf.TestCase):
             import numpy as np
 
             def run(ctx):
-                df = ctx.get_dataframe(num_rows=100)
+                df = ctx.get_dataframe(num_rows="all")
                 return np.asscalar(df.iloc[:, 0].sum())
             /
             ''' % (self.col_defs)))
@@ -289,6 +304,25 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
         self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
 
+    def test_dataframe_set_emits_all_unique(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(C0 INT)
+            EMITS(C0 INT) AS
+            import numpy as np
+
+            def run(ctx):
+                while True:
+                    df = ctx.get_dataframe(num_rows="all")
+                    if df is None:
+                        break
+                    for i in range(df.shape[0]):
+                        ctx.emit(np.asscalar(df.iloc[i, 0]))
+            /
+            '''))
+        rows = self.query('SELECT foo(C0) FROM FN2.TEST1')
+        self.assertEqual(self.num_rows, len(set([x[0] for x in rows])))
+
     def test_dataframe_set_emits_empty(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SET SCRIPT
@@ -326,7 +360,7 @@ class PandasDataFrame(udf.TestCase):
             EMITS(%s) AS
 
             def run(ctx):
-                df = ctx.get_dataframe(num_rows=100)
+                df = ctx.get_dataframe(num_rows="all")
                 df = df.iloc[:, 1:]
                 ctx.emit(df)
             /

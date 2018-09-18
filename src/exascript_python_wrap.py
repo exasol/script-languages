@@ -199,7 +199,7 @@ class exaiter(object):
         if not val:
             self.__finished = True
         return val
-    def get_dataframe(self, num_rows=1, all=False):
+    def get_dataframe(self, num_rows=1):
         if self.__dataframe_finished:
             # Exception after None already returned
             raise RuntimeError("Iteration finished")
@@ -219,7 +219,7 @@ class exaiter(object):
             # Only 1 row, no iteration
             pass
         else:
-            while self.next() and len(data) < num_rows:
+            while self.next() and (num_rows == "all" or len(data) < num_rows):
                 row_data = get_row(num_in_cols)
                 data.append(row_data)
         in_col_names = [decodeUTF8(self.__meta.inputColumnName(col)) for col in range(num_in_cols)]
