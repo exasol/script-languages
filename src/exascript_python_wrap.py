@@ -200,6 +200,8 @@ class exaiter(object):
             self.__finished = True
         return val
     def get_dataframe(self, num_rows=1):
+        if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
+            raise RuntimeError("get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
         if self.__dataframe_finished:
             # Exception after None already returned
             raise RuntimeError("Iteration finished")

@@ -368,6 +368,62 @@ class PandasDataFrame(udf.TestCase):
         with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 8 arguments \(7 given\)'):
             rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
 
+    def test_dataframe_set_emits_numrows_not_all(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows="some")
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'get_dataframe\(\) parameter'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_set_emits_numrows_not_int(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows=True)
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'get_dataframe\(\) parameter'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_set_emits_numrows_zero(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows=0)
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, 'get_dataframe\(\) parameter'):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
+    def test_dataframe_set_emits_numrows_negative(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows=-1)
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, "get_dataframe\(\) parameter"):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+
 if __name__ == '__main__':
     udf.main()
 
