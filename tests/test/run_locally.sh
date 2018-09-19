@@ -8,18 +8,7 @@ die() { echo "ERROR:" "$@" >&2; exit 1; }
 # $2: exasol server address
 # $3...: additional arguments passed to tests
 function run_test() {
-    # echo "execute $@"
-#    cmd=$(echo python -tt "$1" \
-#                       --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
-#                       --server "$2" \
-#                       --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar \
-#                       --script-languages \""$3"\" \
-#                       "${@:4}" # for, e.g., --lang
-#         )
-#    echo "$cmd"
-#    $cmd
-  echo "Starting tests in $1" 1>&2
-
+  echo "Starting test: $1" 1>&2
   python -tt "$1" --loglevel=critical --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so --server "$2" --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar --script-languages "$3" "${@:4}"
          
 }
@@ -129,15 +118,7 @@ if [ ! -z "${generic_test_lang-}" ]; then
     if [ "$generic_test_lang" != "none" ]; then
 	run_generic_tests "$generic_test_lang" "$server" "${config[language_definition]}"
     else
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 	echo "Generic tests disabled for this test run"
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     fi
 else
     if [ ! -z "${config[generic_language_tests]-}" ]; then
@@ -170,13 +151,3 @@ if [ -f '/tmp/failed-tests.txt' ]; then
 fi
 
 exit $all_tests_passed
-
-# if [ ! -z "${1-}" ]; then
-#     run_tests_in_folder "$1" 2>&1 | tee "run_locally-$1.out"
-#     exit $?
-# else
-#     languages=(java lua python r)
-#     for lang in ${languages[@]}; do
-#         run_tests_in_folder "$lang" 2>&1 | tee "run_locally-$lang.out"
-#     done
-# fi

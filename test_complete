@@ -38,8 +38,4 @@ fi
 
 
 
-./build --flavor=$FLAVOR
-./export --flavor=$FLAVOR --force
-./start_dockerdb --db-port=$DB_PORT --bucketfs-port=$BUCKETFS_PORT
-cmd="./test --flavor $FLAVOR --use-connection=localhost:$DB_PORT --bucketfs-port=$BUCKETFS_PORT $test_restriction"
-$cmd
+./build --flavor=$FLAVOR && ./export --flavor=$FLAVOR --force && ./start_dockerdb --db-port=$DB_PORT --bucketfs-port=$BUCKETFS_PORT && ( cmd="./test --flavor $FLAVOR --use-connection=localhost:$DB_PORT --bucketfs-port=$BUCKETFS_PORT $test_restriction" ; $cmd )
