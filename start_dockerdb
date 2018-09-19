@@ -2,7 +2,7 @@
 #!/usr/bin/env bash
 
 
-set -eux
+set -eu
 
 cd "$(dirname "$0")"
 
@@ -64,9 +64,13 @@ touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
 
 DB_HOST=localhost
 
-docker run --name "exasoldb_test" -p ${DB_PORT}:8888 -p ${BUCKETFS_PORT}:6583 --detach --privileged -v "$TEST_TMP_DIR/exa:/exa" exasol/docker-db:6.0.11-d1 init-sc --node-id 11
+#docker run --name "exasoldb_test" -p ${DB_PORT}:8888 -p ${BUCKETFS_PORT}:6583 --detach --privileged -v "$TEST_TMP_DIR/exa:/exa" exasol/docker-db:6.0.11-d1 init-sc --node-id 11
+docker run --name "exasoldb_test" -p ${DB_PORT}:8888 -p ${BUCKETFS_PORT}:6583 --detach --privileged -v "$TEST_TMP_DIR/exa:/exa" exasol/docker-db:6.0.12-d1
 
 echo "Wait until database is ready..."
+
+docker logs --details --follow exasoldb_test 2>&1 &
+LOGPID="$!"
 
 while [ ! -f $TEST_TMP_DIR/exa/logs/db/DB1/*ConnectionServer* ]
 do
@@ -84,4 +88,4 @@ if [ -z ${NOIMPORT+x} ]; then
 fi
 
 echo "start_dockerdb finished"
-
+kill "$LOGPID"

@@ -24,7 +24,10 @@ RUN apt-get update && \
  	swig \
         python3-pip \
         python3.6-tk \
-        libpcre3-dev
+        libpcre3-dev \
+	pkg-config \
+	libfreetype6-dev \
+	libpng12-dev
 
 RUN apt-get -y install cython3 libcurl4-openssl-dev
 RUN  python3.6 -m pip install --upgrade pip setuptools wheel

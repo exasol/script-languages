@@ -10,10 +10,10 @@
     Networks = private
     # Comma-separated list of nameservers for this cluster.
     NameServers =
-    ConfVersion = 6.0.11
-    OSVersion = 6.0.11
-    DBVersion = 6.0.11
-    ImageVersion = 6.0.11-d1
+    ConfVersion = 6.0.12
+    OSVersion = 6.0.12
+    DBVersion = 6.0.12
+    ImageVersion = 6.0.12-d1
 
 # SSL options
 [SSL]
@@ -28,7 +28,7 @@
     # (except for mapped devices)
     RootDir = /exa/etc
     # The EXASOL docker image used for all containers of this cluster
-    Image = exasol/docker-db:6.0.11-d1
+    Image = exasol/docker-db:6.0.12-d1
     # The type of storage devices for this cluster: 'block' or 'file'
     DeviceType = file
 
@@ -72,7 +72,7 @@
     DataVolume = DataVolume1
     ArchiveVolume =
     # The EXASOL version to be used for this database
-    Version = 6.0.11
+    Version = 6.0.12
     # User and group ID that should own this database
     Owner = 500 : 500
     # Memory size over all nodes (e. g. '1 TiB')
@@ -121,7 +121,7 @@
         WritePasswd = d3JpdGU=
         Public = True
         Name = default
-        AdditionalFiles = EXAClusterOS:/usr/opt/EXASuite-6/EXAClusterOS-6.0.11/var/clients/packages/ScriptLanguages-*, EXASolution-6.0.11:/usr/opt/EXASuite-6/EXASolution-6.0.11/bin/udf/*
+        AdditionalFiles = EXAClusterOS:/usr/opt/EXASuite-6/EXAClusterOS-6.0.12/var/clients/packages/ScriptLanguages-*, EXASolution-6.0.12:/usr/opt/EXASuite-6/EXASolution-6.0.12/bin/udf/*
 
     [[Bucket : myudfs]]
         # ReadPasswd is "read" (without quotes)
