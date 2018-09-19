@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+echo "Cleanup: removing exasoldb_test"
+docker rm -f "exasoldb_test" || true
+echo "Cleanup: removing config files"
+sudo rm -rf "/tmp/udftestdb"
+

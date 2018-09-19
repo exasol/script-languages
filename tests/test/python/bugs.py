@@ -8,6 +8,30 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 import udf
 from udf import useData, expectedFailure
 
+
+class GetConnectionMemoryBug(udf.TestCase):
+    def setUp(self):
+        self.query('create schema get_connection_bugs', ignore_errors=True)
+        self.query(udf.fixindent('''
+             CREATE OR REPLACE PYTHON SET SCRIPT get_connection_bugs.python_conn ("str" VARCHAR(100))
+             EMITS (con VARCHAR(500))
+             AS
+             def run(ctx):
+                conn = exa.get_connection(ctx.str)
+                ctx.emit(str(conn))
+             /
+             '''))
+        self.query('''CREATE OR REPLACE CONNECTION test_get_connection_bug_connection TO '' USER 'ialjksdhfalskdjhflaskdjfhalskdjhflaksjdhflaksdjfhalksjdfhlaksjdhflaksjdhfalskjdfhalskdjhflaksjdhflaksjdfhlaksjsadajksdhfaksjdfhalksdjfhalksdjfhalksjdfhqwiueryqw;er;lkjqwe;rdhflaksjdfhlaksdjfhaabcdefghijklmnopqrstuvwxyz' IDENTIFIED BY 'abcdeoqsdfgsdjfglksjdfhglskjdfhglskdjfglskjdfghuietyewlrkjthertrewerlkjhqwelrkjhqwerlkjnwqerlkjhqwerkjlhqwerlkjhqwerlkhqwerkljhqwerlkjhqwerfghijklmnopqrstuvwxyz';''')
+        self.query('''CREATE OR REPLACE table ten as (values 0,1,2,3,4,5,6,7,8,9 as p(x));''')
+
+
+    def test_get_connection(self):
+        for x in range(10):
+            row = self.query('''select count(*) from (select get_connection_bugs.python_conn('test_get_connection_bug_connection') from (select a.x from ten a, ten, ten, ten, ten) v group by mod(v.rownum,4019))''')[0]
+            self.assertEqual(4019,row[0])
+
+
+
 class SUP7256(udf.TestCase):
     def setUp(self):
         self.query('create schema sup7256', ignore_errors=True)

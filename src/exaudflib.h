@@ -238,7 +238,7 @@ class SWIGMetadata {
         virtual const unsigned long long memoryLimit() { return impl->memoryLimit(); }
         virtual const VMTYPE vmType() { return impl->vmType(); }
         virtual const char *vmID_S() { return impl->vmID_S(); }
-        virtual const ExecutionGraph::ConnectionInformationWrapper connectionInformation(const char* connection_name){
+        virtual const ExecutionGraph::ConnectionInformationWrapper* connectionInformation(const char* connection_name){
             return impl->connectionInformation(connection_name);
         }
         virtual const char* moduleContent(const char* name) {return impl->moduleContent(name);}
