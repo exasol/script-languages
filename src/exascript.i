@@ -11,6 +11,7 @@ using namespace SWIGVMContainers;
 
 %ignore ExecutionGraph::ConnectionInformationWrapper::ConnectionInformationWrapper;
 %include "script_data_transfer_objects_wrapper.h"
+%newobject SWIGMetadata::connectionInformation(char*);
 %newobject ConnectionInformationWrapper::copyKind();
 %newobject ConnectionInformationWrapper::copyAddress();
 %newobject ConnectionInformationWrapper::copyUser();
@@ -61,7 +62,7 @@ class SWIGMetadata {
         inline const char* currentSchema();
         inline const char* scriptCode();
         inline const char* moduleContent(const char* name);
-        inline const ExecutionGraph::ConnectionInformationWrapper connectionInformation(const char* connection_name);
+        inline const ExecutionGraph::ConnectionInformationWrapper* connectionInformation(const char* connection_name);
         inline const unsigned long long sessionID();
         inline const const char *sessionID_S();
         inline const unsigned long statementID();

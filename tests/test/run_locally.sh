@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -u
 
@@ -8,18 +8,7 @@ die() { echo "ERROR:" "$@" >&2; exit 1; }
 # $2: exasol server address
 # $3...: additional arguments passed to tests
 function run_test() {
-    # echo "execute $@"
-#    cmd=$(echo python -tt "$1" \
-#                       --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so \
-#                       --server "$2" \
-#                       --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar \
-#                       --script-languages \""$3"\" \
-#                       "${@:4}" # for, e.g., --lang
-#         )
-#    echo "$cmd"
-#    $cmd
-  echo "Starting tests in $1" 1>&2
-set +eux
+  echo "Starting test: $1" 1>&2
   python -tt "$1" --loglevel=critical --driver=$(pwd)/../../downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so --server "$2" --jdbc-path $(pwd)/../../downloads/JDBC/exajdbc.jar --script-languages "$3" "${@:4}"
          
 }
@@ -63,7 +52,7 @@ function run_tests_in_folder() {
 
 single_test=""
 
-optarr=$(getopt -o 'h' --long 'help,server:,test-config:,single-test:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,server:,test-config:,single-test:,generic-test-lang:,test-folder:' -- "$@")
 
 eval set -- "$optarr"
 
@@ -73,6 +62,8 @@ while true; do
         --server) server="$2"; shift 2;;
         --test-config) test_config="$2"; shift 2;;
         --single-test) single_test="$2"; shift 2;;
+	--generic-test-lang) generic_test_lang="$2"; shift 2;;
+	--test-folder) test_folder="$2"; shift 2;;
         --) shift; break;;
         *) echo "Usage: $0"
 		       echo "Options:"
@@ -123,19 +114,35 @@ fi
 
 all_tests_passed=0
 
-if [ ! -z "${config[generic_language_tests]-}" ]; then
-    for folder in ${config[generic_language_tests]}; do
-        echo "$folder"
-        run_generic_tests "$folder" "$server" "${config[language_definition]}"
-        if [ $? != 0 ]; then all_tests_passed=1; fi
-    done
+if [ ! -z "${generic_test_lang-}" ]; then
+    if [ "$generic_test_lang" != "none" ]; then
+	run_generic_tests "$generic_test_lang" "$server" "${config[language_definition]}"
+    else
+	echo "Generic tests disabled for this test run"
+    fi
+else
+    if [ ! -z "${config[generic_language_tests]-}" ]; then
+	for folder in ${config[generic_language_tests]}; do
+            echo "$folder"
+            run_generic_tests "$folder" "$server" "${config[language_definition]}"
+            if [ $? != 0 ]; then all_tests_passed=1; fi
+	done
+    fi
 fi
 
-if [ ! -z "${config[test_folders]-}" ]; then
-    for folder in ${config[test_folders]}; do
-        run_tests_in_folder "$folder" "$server" "${config[language_definition]}"
-        if [ $? != 0 ]; then all_tests_passed=1; fi
-    done
+if [ ! -z "${test_folder-}" ]; then
+    if [ "$test_folder" != "none" ]; then
+	run_tests_in_folder "$test_folder" "$server" "${config[language_definition]}"
+    else
+	echo "Specific tests disabled for this test run"
+    fi
+else
+    if [ ! -z "${config[test_folders]-}" ]; then
+	for folder in ${config[test_folders]}; do
+            run_tests_in_folder "$folder" "$server" "${config[language_definition]}"
+            if [ $? != 0 ]; then all_tests_passed=1; fi
+	done
+    fi
 fi
 
 if [ -f '/tmp/failed-tests.txt' ]; then
@@ -144,13 +151,3 @@ if [ -f '/tmp/failed-tests.txt' ]; then
 fi
 
 exit $all_tests_passed
-
-# if [ ! -z "${1-}" ]; then
-#     run_tests_in_folder "$1" 2>&1 | tee "run_locally-$1.out"
-#     exit $?
-# else
-#     languages=(java lua python r)
-#     for lang in ${languages[@]}; do
-#         run_tests_in_folder "$lang" 2>&1 | tee "run_locally-$lang.out"
-#     done
-# fi

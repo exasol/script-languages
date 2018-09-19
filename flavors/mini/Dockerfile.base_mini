@@ -23,7 +23,7 @@ RUN apt-get -y update && \
         python-cjson \
         python-pandas \
         libpcre3-dev && \
-    pip install zxcvbn faker numpy scipy sklearn pytz && \
+    pip install pytz && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
