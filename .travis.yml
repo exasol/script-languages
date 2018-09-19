@@ -26,5 +26,5 @@ matrix:
     env: MATRIX_FLAVOR=python3_60 GENERIC_TEST_LANG=python TEST_FOLDER=python3
 
 script:
-  - ./test_standalone --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
+  - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
 
