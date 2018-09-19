@@ -2,7 +2,7 @@
 #!/usr/bin/env bash
 
 
-set -eux
+set -eu
 
 cd "$(dirname "$0")"
 
@@ -68,6 +68,9 @@ docker run --name "exasoldb_test" -p ${DB_PORT}:8888 -p ${BUCKETFS_PORT}:6583 --
 
 echo "Wait until database is ready..."
 
+docker logs --details --follow exasoldb_test 2>&1 &
+LOGPID="$!"
+
 while [ ! -f $TEST_TMP_DIR/exa/logs/db/DB1/*ConnectionServer* ]
 do
   sleep 5
@@ -84,4 +87,4 @@ if [ -z ${NOIMPORT+x} ]; then
 fi
 
 echo "start_dockerdb finished"
-
+kill "$LOGPID"
