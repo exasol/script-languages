@@ -1,0 +1,90 @@
+
+#!/usr/bin/env bash
+
+
+set -eu
+
+cd "$(dirname "$0")"
+
+die() { echo "ERROR:" "$@" >&2; exit 1; }
+
+optarr=$(getopt -o 'h' --long 'help,no-cleanup,no-import,db-port:,bucketfs-port:' -- "$@")
+eval set -- "$optarr"
+
+while true; do
+    case "$1" in
+        --no-import) NOIMPORT="yes"; shift;;
+	--db-port) DB_PORT="$2"; shift 2;;
+	--bucketfs-port) BUCKETFS_PORT="$2"; shift 2;;
+        -h|--help) echo "Usage: $0"
+       echo "Options:"
+       echo "  [--no-import]                         Do not import the standard test data called enginedb"
+       echo "  [--db-port]                           port to connect to the database"
+       echo "  [--bucketfs-port]                     port to connect to the bucketfs"
+       echo "  [-h|--help]                           Print this help."; exit 0;;
+        --) shift; break;;
+        *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
+    esac
+done
+
+
+function waitForLine {
+    FILE=$1
+    PATTERN=$2
+    tail -f "$FILE" | while read LOGLINE
+    do
+        # TODO pkill does not return 0, apparently no process is matched
+        # `|| true` is only a workaround
+        [[ "${LOGLINE}" =~ $PATTERN ]] && pkill -P $$ tail || true
+    done
+}
+
+[ "X${DB_PORT-}" = "X" ] && die "Missing mandatory argument --db-port"
+[ "X${BUCKETFS_PORT-}" = "X" ] && die "Missing mandatory argument --bucketfs-port"
+
+
+if [ ! -d "./downloads" ]; then
+    mkdir -p downloads/{ODBC,JDBC,EXAplus}
+    curl https://www.exasol.com/support/secure/attachment/65437/EXASOL_ODBC-6.0.11.tar.gz | tar -C downloads/ODBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz | tar -C downloads/JDBC --strip-components 1 -zxf -
+    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
+fi
+
+
+RETURN_CODE=0
+
+TEST_TMP_DIR="/tmp/udftestdb"
+echo "config files dir for exadb: ${TEST_TMP_DIR}"
+
+# Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
+mkdir -p $TEST_TMP_DIR/exa/{etc,data/storage}
+cp ext/EXAConf $TEST_TMP_DIR/exa/etc/EXAConf
+dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
+touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
+
+DB_HOST=localhost
+
+docker run --name "exasoldb_test" -p ${DB_PORT}:8888 -p ${BUCKETFS_PORT}:6583 --detach --privileged -v "$TEST_TMP_DIR/exa:/exa" exasol/docker-db:6.0.11-d1 init-sc --node-id 11
+
+echo "Wait until database is ready..."
+
+docker logs --details --follow exasoldb_test 2>&1 &
+LOGPID="$!"
+
+while [ ! -f $TEST_TMP_DIR/exa/logs/db/DB1/*ConnectionServer* ]
+do
+  sleep 5
+done
+
+echo "Started dockerdb@$DB_HOST:$DB_PORT"
+
+# import tables for tests
+if [ -z ${NOIMPORT+x} ]; then
+    echo "Importing enginetable ..."
+    (cd tests/test/enginedb_small ;
+     echo "Changed to directory: $(pwd)" ;
+     ../../../downloads/EXAplus/exaplus -c "$DB_HOST:$DB_PORT" -u sys -P exasol -B import.sql)
+fi
+
+echo "start_dockerdb finished"
+kill "$LOGPID"

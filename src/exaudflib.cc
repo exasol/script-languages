@@ -773,7 +773,7 @@ public:
     inline const unsigned long long memoryLimit() { return m_memory_limit; }
     inline const VMTYPE vmType() { return m_vm_type; }
     inline const char *vmID_S() { return m_vm_id_s.c_str(); }
-    inline const ExecutionGraph::ConnectionInformationWrapper connectionInformation(const char* connection_name)
+    inline const ExecutionGraph::ConnectionInformationWrapper* connectionInformation(const char* connection_name)
     {
         exascript_request request;
         request.set_type(MT_IMPORT);
@@ -783,7 +783,7 @@ public:
         req->set_kind(PB_IMPORT_CONNECTION_INFORMATION);
         if (!request.SerializeToString(&m_output_buffer)) {
             m_exch->setException("Communication error: failed to serialize data");
-            return ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
+            return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         zmq::message_t zmsg_req((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
         socket_send(m_socket, zmsg_req);
@@ -792,23 +792,23 @@ public:
         exascript_response response;
         if (!response.ParseFromArray(zmsg_rep.data(), zmsg_rep.size())) {
             m_exch->setException("Communication error: failed to parse data");
-            return ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
+            return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         if (response.type() != MT_IMPORT) {
             m_exch->setException("Internal error: wrong message type");
-            return ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
+            return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         const exascript_import_rep &rep = response.import();
         if (rep.has_exception_message()) {
             m_exch->setException(rep.exception_message().c_str());
-            return ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
+            return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         if (!rep.has_connection_information()) {
             m_exch->setException("Internal error: No connection information returned");
-            return ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
+            return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         connection_information_rep ci = rep.connection_information();
-        return ExecutionGraph::ConnectionInformationWrapper(
+        return new ExecutionGraph::ConnectionInformationWrapper(
                     ExecutionGraph::ConnectionInformation(ci.kind(), ci.address(), ci.user(), ci.password()));
     }
     inline const char* moduleContent(const char* name) {

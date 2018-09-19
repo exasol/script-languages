@@ -250,6 +250,7 @@ class UnicodeData(udf.TestCase):
 
     @requires('UNICODE_LOWER')
     @expectedFailureIfLang('lua')
+    @expectedFailureIfLang('java')
     #@skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
     def test_unicode_lower_is_subset_of_Unicode520_part2(self):
         '''DWA-13702 (Lua)'''

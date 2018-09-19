@@ -10,6 +10,17 @@ from udf import requires
 import exatest
 from exatest.testcase import skip
 
+class GetConnectionMemoryBug(udf.TestCase):
+    def setUp(self):
+        self.query('''CREATE OR REPLACE CONNECTION test_get_connection_bug_connection TO '' USER 'ialjksdhfalskdjhflaskdjfhalskdjhflaksjdhflaksdjfhalksjdfhlaksjdhflaksjdhfalskjdfhalskdjhflaksjdhflaksjdfhlaksjsadajksdhfaksjdfhalksdjfhalksdjfhalksjdfhqwiueryqw;er;lkjqwe;rdhflaksjdfhlaksdjfhaabcdefghijklmnopqrstuvwxyz' IDENTIFIED BY 'abcdeoqsdfgsdjfglksjdfhglskjdfhglskdjfglskjdfghuietyewlrkjthertrewerlkjhqwelrkjhqwerlkjnwqerlkjhqwerkjlhqwerlkjhqwerlkhqwerkljhqwerlkjhqwerfghijklmnopqrstuvwxyz';''')
+
+    @requires('PRINT_CONNECTION_SET_EMITS')
+    def test_get_connection(self):
+        for x in range(10):
+            row = self.query('''with ten as (values 0,1,2,3,4,5,6,7,8,9 as p(x)) select count(*) from (select fn1.print_connection_set_emits('test_get_connection_bug_connection') from (select a.x from ten a, ten, ten, ten, ten) v group by mod(v.rownum,4019))''')[0]
+            self.assertEqual(4019,row[0])
+
+
 
 class AccessConnectionSysPriv(udf.TestCase):
     def testSysPrivExists(self):
