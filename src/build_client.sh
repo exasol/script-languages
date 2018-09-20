@@ -53,7 +53,8 @@ export PATH=$PYTHON_PREFIX/bin:$PATH
 echo "Copying common source files to the build dir"
 for SRC in \
         zmqcontainer.proto exascript.i filter_swig_code.py build_integrated.py exaudfclient.cc exaudflib* \
-        script_data_transfer_objects* LICENSE-exasol-script-api.txt scriptoptionlines.h scriptoptionlines.cc
+        script_data_transfer_objects* LICENSE-exasol-script-api.txt scriptoptionlines.h scriptoptionlines.cc \
+        python_ext_dataframe.cc
 do
     cp "$SRC" "$BUILDDIR/" || die "Failed to copy file $SRC to build dir: $BUILDDIR."
 done
@@ -217,6 +218,7 @@ if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
     echo "Compiling Python3 specific code with these CXXFLAGS:$CXXFLAGS"
     g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
     g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
+    g++ -shared -fPIC $($PYTHON3_CONFIG --includes) $($PYTHON3_CONFIG --libs) -opyextdataframe.so python_ext_dataframe.cc
 
     CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"
 fi
@@ -396,6 +398,10 @@ g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionli
 cp -a "$BUILDDIR/exaudfclient" "$OUTPUTDIR/exaudfclient" || die "Failed to create $OUTPUTDIR/exaudfclient"
 cp -a "$BUILDDIR/libexaudflib.so" "$OUTPUTDIR/libexaudflib.so" || die "Failed to create $OUTPUTDIR/libexaudflib.so"
 chmod +x "$OUTPUTDIR/exaudfclient" || die "Failed chmod of $OUTPUTDIR/exaudfclient"
+
+if [ -f pyextdataframe.so ]; then
+    cp -a "$BUILDDIR/pyextdataframe.so" "$OUTPUTDIR/pyextdataframe.so" || die "Failed to create $OUTPUTDIR/pyextdataframe.so"
+fi
 
 
 if [ "$ENABLE_JAVA_IMPL" = "yes" ]; then

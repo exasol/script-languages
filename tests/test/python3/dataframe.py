@@ -70,6 +70,23 @@ class PandasDataFrame(udf.TestCase):
             /
             '''))
 
+    def test_dataframe_test_c_func(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            RETURNS VARCHAR(50) AS
+            import sys
+            sys.path.append('/exaudf')
+            import pyextdataframe
+
+            def run(ctx):
+                num = pyextdataframe.myFunction()
+                return num
+            /
+            ''' % (self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([('Test Test Test',)]*self.num_rows, rows)
+
     def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
