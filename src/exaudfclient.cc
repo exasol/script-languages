@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
 #else
     string libProtobufPath = "/usr/lib/x86_64-linux-gnu/libprotobuf.so";
 #endif
-    cerr << "libprotobufpath: " << libProtobufPath << endl;
     Lmid_t  my_namespace_id;
     handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
     if (!handle) {

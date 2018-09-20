@@ -316,13 +316,24 @@ def handle_import():
     response.type = MT_IMPORT
     response.connection_id = connection_id
     fname = getattr(request, 'import').script_name
-    if script_name.endswith('.py'): fname = fname + '.py'
-    elif script_name.endswith('.R'): fname = fname + '.R'
-    else: fname = fname + '.java'
-    try: getattr(response, 'import').source_code = open(fname).read()
-    except Exception, err:
-        response.exception_message = str(err)
-    send_message(response.SerializeToString())
+    kind = getattr(request, 'import').kind
+    if kind == PB_IMPORT_SCRIPT_CODE:
+        if script_name.endswith('.py'): fname = fname + '.py'
+        elif script_name.endswith('.R'): fname = fname + '.R'
+        else: fname = fname + '.java'
+        try: getattr(response, 'import').source_code = open(fname).read()
+        except Exception, err:
+            response.exception_message = str(err)
+        send_message(response.SerializeToString())
+    elif kind == PB_IMPORT_CONNECTION_INFORMATION:
+        try:
+            getattr(response, 'import').connection_information.kind = 'connection'
+            getattr(response, 'import').connection_information.address = 'some_sql_database'  
+            getattr(response, 'import').connection_information.user = 'some_user_you_cannot_guess!!'
+            getattr(response, 'import').connection_information.password = 'some_password_you_cannot_guess!!'
+        except Exception, err:
+            response.exception = str(err)
+        send_message(response.SerializeToString())
 
 nextpacket = None; restrows = []; emited_rows = sys.maxint; lastpacket = False
 def generate_nextpacket():
