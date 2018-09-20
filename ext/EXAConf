@@ -76,7 +76,7 @@
     # User and group ID that should own this database
     Owner = 500 : 500
     # Memory size over all nodes (e. g. '1 TiB')
-    MemSize = 3 GiB
+    MemSize = 4 GiB
     Port = 8888
     Nodes = 11,
     NumMasterNodes = 1
