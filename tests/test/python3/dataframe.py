@@ -80,8 +80,8 @@ class PandasDataFrame(udf.TestCase):
             import pyextdataframe
 
             def run(ctx):
-                num = pyextdataframe.get_dataframe("Test Test Test")
-                return num
+                ret = pyextdataframe.get_dataframe(ctx, 8, 2)
+                return ret
             /
             ''' % (self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
