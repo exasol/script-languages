@@ -80,7 +80,7 @@ class PandasDataFrame(udf.TestCase):
             import pyextdataframe
 
             def run(ctx):
-                ret = pyextdataframe.get_dataframe(ctx, 8, 2)
+                ret = pyextdataframe.get_dataframe(exa.meta, ctx, 2)
                 return ret
             /
             ''' % (self.col_defs)))

@@ -218,7 +218,7 @@ if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
     echo "Compiling Python3 specific code with these CXXFLAGS:$CXXFLAGS"
     g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
     g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
-    g++ -shared -fPIC $($PYTHON3_CONFIG --includes) $($PYTHON3_CONFIG --libs) -opyextdataframe.so python_ext_dataframe.cc
+    g++ -shared $CXXFLAGS $($PYTHON3_CONFIG --libs) -opyextdataframe.so python_ext_dataframe.cc || die "Failed to compile pyextdataframe.so"
 
     CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"
 fi
