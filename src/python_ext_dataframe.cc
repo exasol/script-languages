@@ -1,10 +1,32 @@
 #include <Python.h>
 
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 extern "C" {
+
+enum ColumnType {
+    type_int,
+    type_float,
+    type_string,
+    type_bool,
+    type_decimal,
+    type_date,
+    type_datetime
+};
+
+std::map<std::string, ColumnType> column_types {
+    {"int", ColumnType::type_int},
+    {"float", ColumnType::type_float},
+    {"unicode", ColumnType::type_string},
+    {"str", ColumnType::type_string},
+    {"bool", ColumnType::type_bool},
+    {"Decimal", ColumnType::type_decimal},
+    {"date", ColumnType::type_date},
+    {"datetime", ColumnType::type_datetime}
+};
 
 struct InputColumnInfo
 {
@@ -87,18 +109,37 @@ std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
     return col_info;
 }
 
+void get_column_data(std::vector<InputColumnInfo>& col_info, PyObject *ctx_iter, long num_rows)
+{
+    Py_INCREF(ctx_iter);
+
+    const long num_cols = col_info.size();
+    std::vector<ColumnType> colTypes;
+    for (long i = 0; i < num_cols; i++) {
+        colTypes.push_back(column_types[col_info[i].type_name]);
+    }
+
+    for (long r = 0; r < num_rows; r++) {
+        for (long c = 0; c < num_cols; c++) {
+        }
+    }
+
+    Py_XDECREF(ctx_iter);
+}
+
 static PyObject* get_dataframe(PyObject* self, PyObject* args)
 {
     PyObject *exa_meta = NULL;
     PyObject *ctx_iter = NULL;
-    long num_output_rows = 0;
+    long num_out_rows = 0;
 
-    if (!PyArg_ParseTuple(args, "OOl", &exa_meta, &ctx_iter, &num_output_rows))
+    if (!PyArg_ParseTuple(args, "OOl", &exa_meta, &ctx_iter, &num_out_rows))
         return NULL;
 
+    // Get input column info
+    std::vector<InputColumnInfo> in_col_info;
     try {
-        std::vector<InputColumnInfo> in_col_info = get_column_info(exa_meta);
-        in_col_info.size();
+        in_col_info = get_column_info(exa_meta);
     }
     catch (std::exception &ex) {
         return NULL;
@@ -107,6 +148,14 @@ static PyObject* get_dataframe(PyObject* self, PyObject* args)
     PyObject *iter = PyObject_GetAttrString(ctx_iter, "_exaiter__inp");
     if (!iter)
         return NULL;
+
+    // Get input data
+    try {
+        get_column_data(in_col_info, iter, num_out_rows);
+    }
+    catch (std::exception &ex) {
+        return NULL;
+    }
 
     Py_XDECREF(iter);
 
