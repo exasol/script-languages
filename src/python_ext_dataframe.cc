@@ -19,8 +19,7 @@ struct InputColumnInfo
 
 std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
 {
-//    if (!PyObject_HasAttrString(exa_meta, "input_columns"))
-//        return NULL;
+    Py_INCREF(exa_meta);
 
     PyObject *py_in_cols = PyObject_GetAttrString(exa_meta, "input_columns");
     if (!py_in_cols)
@@ -28,9 +27,9 @@ std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
     if (!PyList_Check(py_in_cols))
         throw std::runtime_error("Python exception");
 
-    Py_ssize_t py_num_cols = PyList_Size(py_in_cols);
-
     std::vector<InputColumnInfo> col_info;
+
+    Py_ssize_t py_num_cols = PyList_Size(py_in_cols);
 
     for (Py_ssize_t i = 0; i < py_num_cols; i++) {
         PyObject *py_col = PyList_GetItem(py_in_cols, i);
@@ -38,9 +37,6 @@ std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
             PyErr_Format(PyExc_IndexError, "Cannot access item %d in exa.meta.input_columns.", i);
             throw std::runtime_error("Python exception");
         }
-
-//        if (!PyObject_HasAttrString(col, "name"))
-//            return NULL;
 
         PyObject *py_col_name = PyObject_GetAttrString(py_col, "name");
         if (!py_col_name)
@@ -57,6 +53,8 @@ std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
         if (PyErr_Occurred())
             throw std::runtime_error("Python exception");
         std::string col_name(col_name_buf, col_name_len);
+
+        Py_XDECREF(py_col_name);
 
         Py_ssize_t py_col_type_name_len = 0;
         PyObject *py_col_type = PyObject_GetAttrString(py_col, "type");
@@ -77,15 +75,22 @@ std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
         std::string col_type_name(col_type_name_buf, col_type_name_len);
 
         col_info.push_back(InputColumnInfo(col_name, col_type_name));
+
+        Py_XDECREF(py_col_type);
+        Py_XDECREF(py_col_type_name);
     }
+
+    Py_XDECREF(py_in_cols);
+
+    Py_XDECREF(exa_meta);
 
     return col_info;
 }
 
 static PyObject* get_dataframe(PyObject* self, PyObject* args)
 {
-    PyObject *ctx_iter = NULL;
     PyObject *exa_meta = NULL;
+    PyObject *ctx_iter = NULL;
     long num_output_rows = 0;
 
     if (!PyArg_ParseTuple(args, "OOl", &exa_meta, &ctx_iter, &num_output_rows))
@@ -98,9 +103,6 @@ static PyObject* get_dataframe(PyObject* self, PyObject* args)
     catch (std::exception &ex) {
         return NULL;
     }
-
-    if (!PyObject_HasAttrString(ctx_iter, "_exaiter__inp"))
-        return NULL;
 
     PyObject *iter = PyObject_GetAttrString(ctx_iter, "_exaiter__inp");
     if (!iter)
