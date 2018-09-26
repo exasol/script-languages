@@ -103,7 +103,6 @@ std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
     }
 
     Py_XDECREF(py_in_cols);
-
     Py_XDECREF(exa_meta);
 
     return col_info;
@@ -115,12 +114,85 @@ void get_column_data(std::vector<InputColumnInfo>& col_info, PyObject *ctx_iter,
 
     const long num_cols = col_info.size();
     std::vector<ColumnType> colTypes;
+
+    struct PyColumnInfo {
+        PyColumnInfo() {
+        }
+        ~PyColumnInfo() {
+            std::vector<PyObject*>::iterator it;
+            for (it = pyColumnNums.begin(); it != pyColumnNums.end(); it++) {
+                Py_XDECREF(*it);
+            }
+            for (it = pyMethodNames.begin(); it != pyMethodNames.end(); it++) {
+                Py_XDECREF(*it);
+            }
+        }
+
+        void addColumnNum(PyObject *pyColumnNum) {
+            pyColumnNums.push_back(pyColumnNum);
+        }
+        void addMethodName(PyObject *pyMethodName) {
+            pyMethodNames.push_back(pyMethodName);
+        }
+
+        PyObject *getColumnNum(long columnNum) {
+            return pyColumnNums.at(columnNum);
+        }
+        PyObject *getMethodName(long columnNum) {
+            return pyMethodNames.at(columnNum);
+        }
+
+        std::vector<PyObject*> pyColumnNums;
+        std::vector<PyObject*> pyMethodNames;
+    };
+
+    PyColumnInfo pyColumnInfo;
+
     for (long i = 0; i < num_cols; i++) {
         colTypes.push_back(column_types[col_info[i].type_name]);
+
+        PyObject *py_col_num = PyLong_FromLong(i);
+        if (!py_col_num)
+            throw std::runtime_error("Python exception");
+        pyColumnInfo.addColumnNum(py_col_num);
+
+        PyObject *py_method_name = NULL;
+        switch(colTypes[i]) {
+            case ColumnType::type_int:
+                py_method_name = PyUnicode_FromString("getInt64");
+                break;
+            case ColumnType::type_float:
+                py_method_name = PyUnicode_FromString("getDouble");
+                break;
+            case ColumnType::type_string:
+                py_method_name = PyUnicode_FromString("getString");
+                break;
+            case ColumnType::type_bool:
+                py_method_name = PyUnicode_FromString("getBoolean");
+                break;
+            case ColumnType::type_decimal:
+                py_method_name = PyUnicode_FromString("getNumeric");
+                break;
+            case ColumnType::type_date:
+                py_method_name = PyUnicode_FromString("getDate");
+                break;
+            case ColumnType::type_datetime:
+                py_method_name = PyUnicode_FromString("getTimestamp");
+                break;
+            default:
+                throw std::runtime_error("Unexpected type");
+        }
+        if (!py_method_name)
+            throw std::runtime_error("Python exception");
+        pyColumnInfo.addMethodName(py_method_name);
     }
 
     for (long r = 0; r < num_rows; r++) {
         for (long c = 0; c < num_cols; c++) {
+            PyObject *py_val = PyObject_CallMethodObjArgs(ctx_iter, pyColumnInfo.getMethodName(c), pyColumnInfo.getColumnNum(c), NULL);
+            if (!py_val)
+                throw std::runtime_error("Python exception");
+            Py_XDECREF(py_val);
         }
     }
 
@@ -154,6 +226,7 @@ static PyObject* get_dataframe(PyObject* self, PyObject* args)
         get_column_data(in_col_info, iter, num_out_rows);
     }
     catch (std::exception &ex) {
+        Py_XDECREF(iter);
         return NULL;
     }
 
