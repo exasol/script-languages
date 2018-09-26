@@ -8,115 +8,128 @@
 extern "C" {
 
 enum ColumnType {
-    type_int,
-    type_float,
-    type_string,
-    type_bool,
-    type_decimal,
-    type_date,
-    type_datetime
+    typeInt,
+    typeFloat,
+    typeString,
+    typeBoolean,
+    typeDecimal,
+    typeDate,
+    typeDatetime
 };
 
-std::map<std::string, ColumnType> column_types {
-    {"int", ColumnType::type_int},
-    {"float", ColumnType::type_float},
-    {"unicode", ColumnType::type_string},
-    {"str", ColumnType::type_string},
-    {"bool", ColumnType::type_bool},
-    {"Decimal", ColumnType::type_decimal},
-    {"date", ColumnType::type_date},
-    {"datetime", ColumnType::type_datetime}
+std::map<std::string, ColumnType> columnTypes {
+    {"int", ColumnType::typeInt},
+    {"float", ColumnType::typeFloat},
+    {"unicode", ColumnType::typeString},
+    {"str", ColumnType::typeString},
+    {"bool", ColumnType::typeBoolean},
+    {"Decimal", ColumnType::typeDecimal},
+    {"date", ColumnType::typeDate},
+    {"datetime", ColumnType::typeDatetime}
 };
 
 struct InputColumnInfo
 {
-    InputColumnInfo(std::string& name, std::string& type_name) {
+    InputColumnInfo(std::string& name, std::string& typeName) {
         this->name = name;
-        this->type_name = type_name;
+        this->typeName = typeName;
     }
 
     std::string name;
-    std::string type_name;
+    std::string typeName;
 };
 
-std::vector<InputColumnInfo> get_column_info(PyObject *exa_meta)
+std::vector<InputColumnInfo> getColumnInfo(PyObject *exaMeta)
 {
-    Py_INCREF(exa_meta);
+    struct PyColumnInfo {
+        PyColumnInfo(PyObject *exaMeta) {
+            Py_INCREF(exaMeta);
+            this->exaMeta = exaMeta;
+            this->pyInCols = NULL;
+            this->pyColName = NULL;
+            this->pyColType = NULL;
+            this->pyColTypeName = NULL;
+        }
+        ~PyColumnInfo() {
+            Py_XDECREF(pyInCols);
+            Py_XDECREF(pyColName);
+            Py_XDECREF(pyColType);
+            Py_XDECREF(pyColTypeName);
+            Py_XDECREF(exaMeta);
+        }
 
-    PyObject *py_in_cols = PyObject_GetAttrString(exa_meta, "input_columns");
-    if (!py_in_cols)
+        PyObject *exaMeta;
+        PyObject *pyInCols;
+        PyObject *pyColName;
+        PyObject *pyColType;
+        PyObject *pyColTypeName;
+    };
+
+    PyColumnInfo pyColInfo(exaMeta);
+
+    pyColInfo.pyInCols = PyObject_GetAttrString(exaMeta, "input_columns");
+    if (!pyColInfo.pyInCols)
         throw std::runtime_error("Python exception");
-    if (!PyList_Check(py_in_cols))
+    if (!PyList_Check(pyColInfo.pyInCols))
         throw std::runtime_error("Python exception");
 
-    std::vector<InputColumnInfo> col_info;
+    std::vector<InputColumnInfo> colInfo;
 
-    Py_ssize_t py_num_cols = PyList_Size(py_in_cols);
+    Py_ssize_t pyNumCols = PyList_Size(pyColInfo.pyInCols);
 
-    for (Py_ssize_t i = 0; i < py_num_cols; i++) {
-        PyObject *py_col = PyList_GetItem(py_in_cols, i);
-        if (!py_col) {
+    for (Py_ssize_t i = 0; i < pyNumCols; i++) {
+        PyObject *pyCol = PyList_GetItem(pyColInfo.pyInCols, i);
+        if (!pyCol) {
             PyErr_Format(PyExc_IndexError, "Cannot access item %d in exa.meta.input_columns.", i);
             throw std::runtime_error("Python exception");
         }
 
-        PyObject *py_col_name = PyObject_GetAttrString(py_col, "name");
-        if (!py_col_name)
+        pyColInfo.pyColName = PyObject_GetAttrString(pyCol, "name");
+        if (!pyColInfo.pyColName)
             throw std::runtime_error("Python exception");
 
-        Py_ssize_t py_col_name_len = 0;
-        const char *col_name_buf = PyUnicode_AsUTF8AndSize(py_col_name, &py_col_name_len);
-        if (!col_name_buf)
+        Py_ssize_t pyColNameLen = 0;
+        const char *colNameBuf = PyUnicode_AsUTF8AndSize(pyColInfo.pyColName, &pyColNameLen);
+        if (!colNameBuf)
             throw std::runtime_error("Python exception");
-        PyObject *py_long_col_name_len = PyLong_FromSsize_t(py_col_name_len);
-        if (!py_long_col_name_len)
+        PyObject *pyLongColNameLen = PyLong_FromSsize_t(pyColNameLen);
+        if (!pyLongColNameLen)
             throw std::runtime_error("Python exception");
-        size_t col_name_len = PyLong_AsSize_t(py_long_col_name_len);
+        size_t colNameLen = PyLong_AsSize_t(pyLongColNameLen);
         if (PyErr_Occurred())
             throw std::runtime_error("Python exception");
-        std::string col_name(col_name_buf, col_name_len);
+        std::string colName(colNameBuf, colNameLen);
 
-        Py_XDECREF(py_col_name);
-
-        Py_ssize_t py_col_type_name_len = 0;
-        PyObject *py_col_type = PyObject_GetAttrString(py_col, "type");
-        if (!py_col_type)
+        Py_ssize_t pyColTypeNameLen = 0;
+        pyColInfo.pyColType = PyObject_GetAttrString(pyCol, "type");
+        if (!pyColInfo.pyColType)
             throw std::runtime_error("Python exception");
-        PyObject *py_col_type_name = PyObject_GetAttrString(py_col_type, "__name__");
-        if (!py_col_type_name)
+        pyColInfo.pyColTypeName = PyObject_GetAttrString(pyColInfo.pyColType, "__name__");
+        if (!pyColInfo.pyColTypeName)
             throw std::runtime_error("Python exception");
-        const char *col_type_name_buf = PyUnicode_AsUTF8AndSize(py_col_type_name, &py_col_type_name_len);
-        if (!col_type_name_buf)
+        const char *colTypeNameBuf = PyUnicode_AsUTF8AndSize(pyColInfo.pyColTypeName, &pyColTypeNameLen);
+        if (!colTypeNameBuf)
             throw std::runtime_error("Python exception");
-        PyObject *py_long_col_type_name_len = PyLong_FromSsize_t(py_col_type_name_len);
-        if (!py_long_col_type_name_len)
+        PyObject *pyLongColTypeNameLen = PyLong_FromSsize_t(pyColTypeNameLen);
+        if (!pyLongColTypeNameLen)
             throw std::runtime_error("Python exception");
-        size_t col_type_name_len = PyLong_AsSize_t(py_long_col_type_name_len);
+        size_t colTypeNameLen = PyLong_AsSize_t(pyLongColTypeNameLen);
         if (PyErr_Occurred())
             throw std::runtime_error("Python exception");
-        std::string col_type_name(col_type_name_buf, col_type_name_len);
+        std::string colTypeName(colTypeNameBuf, colTypeNameLen);
 
-        col_info.push_back(InputColumnInfo(col_name, col_type_name));
-
-        Py_XDECREF(py_col_type);
-        Py_XDECREF(py_col_type_name);
+        colInfo.push_back(InputColumnInfo(colName, colTypeName));
     }
 
-    Py_XDECREF(py_in_cols);
-    Py_XDECREF(exa_meta);
-
-    return col_info;
+    return colInfo;
 }
 
-void get_column_data(std::vector<InputColumnInfo>& col_info, PyObject *ctx_iter, long num_rows)
+void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, long numRows)
 {
-    Py_INCREF(ctx_iter);
-
-    const long num_cols = col_info.size();
-    std::vector<ColumnType> colTypes;
-
     struct PyColumnInfo {
-        PyColumnInfo() {
+        PyColumnInfo(PyObject *ctxIter) {
+            Py_INCREF(ctxIter);
+            this->ctxIter = ctxIter;
         }
         ~PyColumnInfo() {
             std::vector<PyObject*>::iterator it;
@@ -126,6 +139,7 @@ void get_column_data(std::vector<InputColumnInfo>& col_info, PyObject *ctx_iter,
             for (it = pyMethodNames.begin(); it != pyMethodNames.end(); it++) {
                 Py_XDECREF(*it);
             }
+            Py_XDECREF(ctxIter);
         }
 
         void addColumnNum(PyObject *pyColumnNum) {
@@ -142,88 +156,91 @@ void get_column_data(std::vector<InputColumnInfo>& col_info, PyObject *ctx_iter,
             return pyMethodNames.at(columnNum);
         }
 
+        PyObject *ctxIter;
         std::vector<PyObject*> pyColumnNums;
         std::vector<PyObject*> pyMethodNames;
     };
 
-    PyColumnInfo pyColumnInfo;
+    PyColumnInfo pyColumnInfo(ctxIter);
 
-    for (long i = 0; i < num_cols; i++) {
-        colTypes.push_back(column_types[col_info[i].type_name]);
+    const long numCols = colInfo.size();
+    std::vector<ColumnType> colTypes;
 
-        PyObject *py_col_num = PyLong_FromLong(i);
-        if (!py_col_num)
+
+    for (long i = 0; i < numCols; i++) {
+        colTypes.push_back(columnTypes[colInfo[i].typeName]);
+
+        PyObject *pyColNum = PyLong_FromLong(i);
+        if (!pyColNum)
             throw std::runtime_error("Python exception");
-        pyColumnInfo.addColumnNum(py_col_num);
+        pyColumnInfo.addColumnNum(pyColNum);
 
-        PyObject *py_method_name = NULL;
+        PyObject *pyMethodName = NULL;
         switch(colTypes[i]) {
-            case ColumnType::type_int:
-                py_method_name = PyUnicode_FromString("getInt64");
+            case ColumnType::typeInt:
+                pyMethodName = PyUnicode_FromString("getInt64");
                 break;
-            case ColumnType::type_float:
-                py_method_name = PyUnicode_FromString("getDouble");
+            case ColumnType::typeFloat:
+                pyMethodName = PyUnicode_FromString("getDouble");
                 break;
-            case ColumnType::type_string:
-                py_method_name = PyUnicode_FromString("getString");
+            case ColumnType::typeString:
+                pyMethodName = PyUnicode_FromString("getString");
                 break;
-            case ColumnType::type_bool:
-                py_method_name = PyUnicode_FromString("getBoolean");
+            case ColumnType::typeBoolean:
+                pyMethodName = PyUnicode_FromString("getBoolean");
                 break;
-            case ColumnType::type_decimal:
-                py_method_name = PyUnicode_FromString("getNumeric");
+            case ColumnType::typeDecimal:
+                pyMethodName = PyUnicode_FromString("getNumeric");
                 break;
-            case ColumnType::type_date:
-                py_method_name = PyUnicode_FromString("getDate");
+            case ColumnType::typeDate:
+                pyMethodName = PyUnicode_FromString("getDate");
                 break;
-            case ColumnType::type_datetime:
-                py_method_name = PyUnicode_FromString("getTimestamp");
+            case ColumnType::typeDatetime:
+                pyMethodName = PyUnicode_FromString("getTimestamp");
                 break;
             default:
                 throw std::runtime_error("Unexpected type");
         }
-        if (!py_method_name)
+        if (!pyMethodName)
             throw std::runtime_error("Python exception");
-        pyColumnInfo.addMethodName(py_method_name);
+        pyColumnInfo.addMethodName(pyMethodName);
     }
 
-    for (long r = 0; r < num_rows; r++) {
-        for (long c = 0; c < num_cols; c++) {
-            PyObject *py_val = PyObject_CallMethodObjArgs(ctx_iter, pyColumnInfo.getMethodName(c), pyColumnInfo.getColumnNum(c), NULL);
-            if (!py_val)
+    for (long r = 0; r < numRows; r++) {
+        for (long c = 0; c < numCols; c++) {
+            PyObject *pyVal = PyObject_CallMethodObjArgs(ctxIter, pyColumnInfo.getMethodName(c), pyColumnInfo.getColumnNum(c), NULL);
+            if (!pyVal)
                 throw std::runtime_error("Python exception");
-            Py_XDECREF(py_val);
+            Py_XDECREF(pyVal);
         }
     }
-
-    Py_XDECREF(ctx_iter);
 }
 
-static PyObject* get_dataframe(PyObject* self, PyObject* args)
+static PyObject* getDataframe(PyObject* self, PyObject* args)
 {
-    PyObject *exa_meta = NULL;
-    PyObject *ctx_iter = NULL;
-    long num_out_rows = 0;
+    PyObject *exaMeta = NULL;
+    PyObject *ctxIter = NULL;
+    long numOutRows = 0;
 
-    if (!PyArg_ParseTuple(args, "OOl", &exa_meta, &ctx_iter, &num_out_rows))
+    if (!PyArg_ParseTuple(args, "OOl", &exaMeta, &ctxIter, &numOutRows))
         return NULL;
 
     // Get input column info
-    std::vector<InputColumnInfo> in_col_info;
+    std::vector<InputColumnInfo> inColInfo;
     try {
-        in_col_info = get_column_info(exa_meta);
+        inColInfo = getColumnInfo(exaMeta);
     }
     catch (std::exception &ex) {
         return NULL;
     }
 
-    PyObject *iter = PyObject_GetAttrString(ctx_iter, "_exaiter__inp");
+    PyObject *iter = PyObject_GetAttrString(ctxIter, "_exaiter__inp");
     if (!iter)
         return NULL;
 
     // Get input data
     try {
-        get_column_data(in_col_info, iter, num_out_rows);
+        getColumnData(inColInfo, iter, numOutRows);
     }
     catch (std::exception &ex) {
         Py_XDECREF(iter);
@@ -235,23 +252,23 @@ static PyObject* get_dataframe(PyObject* self, PyObject* args)
     return Py_BuildValue("s", "Test Test Test");
 }
 
-static PyMethodDef dataframe_module_methods[] = {
-        {"get_dataframe", get_dataframe, METH_VARARGS},
+static PyMethodDef dataframeModuleMethods[] = {
+        {"get_dataframe", getDataframe, METH_VARARGS},
         {NULL, NULL}
 };
 
-static struct PyModuleDef dataframe_module = {
+static struct PyModuleDef dataframeModule = {
     PyModuleDef_HEAD_INIT,
     "pyextdataframe", /* name of module */
     NULL,
     -1,
-    dataframe_module_methods
+    dataframeModuleMethods
 };
 
 PyMODINIT_FUNC
 PyInit_pyextdataframe(void)
 {
-    return PyModule_Create(&dataframe_module);
+    return PyModule_Create(&dataframeModule);
 }
 
 }
