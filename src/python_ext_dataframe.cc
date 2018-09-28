@@ -131,6 +131,8 @@ void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, lon
             Py_INCREF(ctxIter);
             this->ctxIter = ctxIter;
             this->wasNullMethodName = NULL;
+            this->nextMethodName = NULL;
+            this->checkExceptionMethodName = NULL;
         }
         ~PyColumnInfo() {
             std::vector<PyObject*>::iterator it;
@@ -141,27 +143,38 @@ void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, lon
                 Py_XDECREF(*it);
             }
             Py_XDECREF(wasNullMethodName);
+            Py_XDECREF(nextMethodName);
+            Py_XDECREF(checkExceptionMethodName);
             Py_XDECREF(ctxIter);
         }
 
-        void addColumnNum(PyObject *pyColumnNum) {
+        void addPyColumnNum(PyObject *pyColumnNum) {
             pyColumnNums.push_back(pyColumnNum);
         }
-        void addColumnGetMethodName(PyObject *pyMethodName) {
+        void addPyColumnGetMethodName(PyObject *pyMethodName) {
             pyColumnGetMethodNames.push_back(pyMethodName);
         }
+        void addColumnGetMethodName(const char *methodName) {
+            columnGetMethodNames.push_back(std::string(methodName));
+        }
 
-        PyObject *getColumnNum(long columnNum) {
+        PyObject *getPyColumnNum(long columnNum) {
             return pyColumnNums.at(columnNum);
         }
-        PyObject *getColumnGetMethodName(long columnNum) {
+        PyObject *getPyColumnGetMethodName(long columnNum) {
             return pyColumnGetMethodNames.at(columnNum);
+        }
+        const char *getColumnGetMethodName(long columnNum) {
+            return columnGetMethodNames.at(columnNum).c_str();
         }
 
         PyObject *ctxIter;
         PyObject *wasNullMethodName;
+        PyObject *nextMethodName;
+        PyObject *checkExceptionMethodName;
         std::vector<PyObject*> pyColumnNums;
         std::vector<PyObject*> pyColumnGetMethodNames;
+        std::vector<std::string> columnGetMethodNames;
     };
 
     PyColumnInfo pyColumnInfo(ctxIter);
@@ -176,54 +189,109 @@ void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, lon
         PyObject *pyColNum = PyLong_FromLong(i);
         if (!pyColNum)
             throw std::runtime_error("Python exception");
-        pyColumnInfo.addColumnNum(pyColNum);
+        pyColumnInfo.addPyColumnNum(pyColNum);
 
-        PyObject *pyMethodName = NULL;
         switch(colTypes[i]) {
             case ColumnType::typeInt:
-                pyMethodName = PyUnicode_FromString("getInt64");
+                pyColumnInfo.addColumnGetMethodName("getInt64");
                 break;
             case ColumnType::typeFloat:
-                pyMethodName = PyUnicode_FromString("getDouble");
+                pyColumnInfo.addColumnGetMethodName("getDouble");
                 break;
             case ColumnType::typeString:
-                pyMethodName = PyUnicode_FromString("getString");
+                pyColumnInfo.addColumnGetMethodName("getString");
                 break;
             case ColumnType::typeBoolean:
-                pyMethodName = PyUnicode_FromString("getBoolean");
+                pyColumnInfo.addColumnGetMethodName("getBoolean");
                 break;
             case ColumnType::typeDecimal:
-                pyMethodName = PyUnicode_FromString("getNumeric");
+                pyColumnInfo.addColumnGetMethodName("getNumeric");
                 break;
             case ColumnType::typeDate:
-                pyMethodName = PyUnicode_FromString("getDate");
+                pyColumnInfo.addColumnGetMethodName("getDate");
                 break;
             case ColumnType::typeDatetime:
-                pyMethodName = PyUnicode_FromString("getTimestamp");
+                pyColumnInfo.addColumnGetMethodName("getTimestamp");
                 break;
             default:
                 throw std::runtime_error("Unexpected type");
         }
+        PyObject *pyMethodName = PyUnicode_FromString(pyColumnInfo.getColumnGetMethodName(i));
         if (!pyMethodName)
             throw std::runtime_error("Python exception");
-        pyColumnInfo.addColumnGetMethodName(pyMethodName);
+        pyColumnInfo.addPyColumnGetMethodName(pyMethodName);
 
         pyColumnInfo.wasNullMethodName = PyUnicode_FromString("wasNull");
         if (!pyColumnInfo.wasNullMethodName)
+            throw std::runtime_error("Python exception");
+
+        pyColumnInfo.nextMethodName = PyUnicode_FromString("next");
+        if (!pyColumnInfo.nextMethodName)
+            throw std::runtime_error("Python exception");
+
+        pyColumnInfo.checkExceptionMethodName = PyUnicode_FromString("checkException");
+        if (!pyColumnInfo.checkExceptionMethodName)
             throw std::runtime_error("Python exception");
     }
 
     for (long r = 0; r < numRows; r++) {
         for (long c = 0; c < numCols; c++) {
-            PyObject *pyVal = PyObject_CallMethodObjArgs(ctxIter, pyColumnInfo.getColumnGetMethodName(c), pyColumnInfo.getColumnNum(c), NULL);
-            if (!pyVal)
-                throw std::runtime_error("Python exception");
+            PyObject *pyVal = PyObject_CallMethodObjArgs(ctxIter, pyColumnInfo.getPyColumnGetMethodName(c), pyColumnInfo.getPyColumnNum(c), NULL);
+            if (!pyVal) {
+                PyObject *ptype, *pvalue, *ptraceback;
+                PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+                char *pStrErrorMessage = PyUnicode_AsUTF8(pvalue);
+                std::string msg("Col: ");
+                msg.append(std::to_string(c));
+                msg.append(", Type: ");
+                msg.append(Py_TYPE(pyColumnInfo.getPyColumnNum(c))->tp_name);
+                msg.append(", ");
+                msg.append(pStrErrorMessage);
+                throw std::runtime_error(msg.c_str());
+            }
+
             PyObject *pyWasNull = PyObject_CallMethodObjArgs(ctxIter, pyColumnInfo.wasNullMethodName, NULL);
             if (!pyWasNull)
-                throw std::runtime_error("Python exception");
-            Py_XDECREF(pyVal);
+                throw std::runtime_error("wasNull Python exception");
+            int wasNull = PyObject_IsTrue(pyWasNull);
+            if (wasNull < 0)
+                throw std::runtime_error("wasNull isTrue Python exception");
+            else if (wasNull)
+                throw std::runtime_error("wasNull isTrue");
             Py_XDECREF(pyWasNull);
         }
+
+        PyObject *pyNext = PyObject_CallMethodObjArgs(ctxIter, pyColumnInfo.nextMethodName, NULL);
+        if (!pyNext) {
+            PyObject *ptype, *pvalue, *ptraceback;
+            PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+            char *pStrErrorMessage = PyUnicode_AsUTF8(pvalue);
+            std::string msg("Row: ");
+            msg.append(std::to_string(r));
+            msg.append(", ");
+            msg.append(pStrErrorMessage);
+            throw std::runtime_error(msg.c_str());
+        }
+
+        PyObject *pyCheckException = PyObject_CallMethodObjArgs(ctxIter, pyColumnInfo.checkExceptionMethodName, NULL);
+        if (!pyCheckException)
+            throw std::runtime_error("checkException next Python exception");
+        if (pyCheckException != Py_None) {
+            const char *exMsg = PyUnicode_AsUTF8(pyCheckException);
+            if (exMsg) {
+                std::string msg("Iterator exception: ");
+                msg.append(exMsg);
+                throw std::runtime_error(msg.c_str());
+            }
+        }
+        Py_XDECREF(pyCheckException);
+
+        int next = PyObject_IsTrue(pyNext);
+        if (next < 0)
+            throw std::runtime_error("next isTrue Python exception");
+        else if (!next)
+            break;
+        Py_XDECREF(pyNext);
     }
 }
 
@@ -242,7 +310,7 @@ static PyObject* getDataframe(PyObject* self, PyObject* args)
         inColInfo = getColumnInfo(exaMeta);
     }
     catch (std::exception &ex) {
-        return NULL;
+        throw;
     }
 
     PyObject *iter = PyObject_GetAttrString(ctxIter, "_exaiter__inp");
@@ -255,7 +323,8 @@ static PyObject* getDataframe(PyObject* self, PyObject* args)
     }
     catch (std::exception &ex) {
         Py_XDECREF(iter);
-        return NULL;
+        throw;
+        //return NULL;
     }
 
     Py_XDECREF(iter);
