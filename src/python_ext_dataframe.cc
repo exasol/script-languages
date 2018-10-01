@@ -91,7 +91,7 @@ void getColumnInfo(PyObject *exaMeta, std::vector<InputColumnInfo>& colInfo)
     }
 }
 
-void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, long numRows)
+PyObject *getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, long numRows)
 {
     const long numCols = colInfo.size();
     std::vector<std::pair<PyPtr, PyPtr>> pyColGetMethods;
@@ -140,7 +140,16 @@ void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, lon
     PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
     checkPyPtrIsNull(pyCheckExceptionMethodName);
 
+    PyPtr pyNumRowsLong(PyLong_FromLong(0L));
+    checkPyPtrIsNull(pyNumRowsLong);
+    Py_ssize_t pyNumRows = PyLong_AsSsize_t(pyNumRowsLong.get());
+    if (pyNumRows < 0 && PyErr_Occurred()) 
+        throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
+
+    PyPtr pyData(PyList_New(pyNumRows));
     for (long r = 0; r < numRows; r++) {
+        PyPtr pyRow(PyList_New(numCols));
+
         for (long c = 0; c < numCols; c++) {
             PyPtr pyVal(PyObject_CallMethodObjArgs(ctxIter, pyColGetMethods[c].second.get(), pyColGetMethods[c].first.get(), NULL));
             if (!pyVal) {
@@ -168,7 +177,18 @@ void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, lon
             int wasNull = PyObject_IsTrue(pyWasNull.get());
             if (wasNull < 0)
                 throw std::runtime_error("getColumnData(): wasNull() PyObject_IsTrue() error");
+
+            Py_ssize_t pyColNum = PyLong_AsSsize_t(pyColGetMethods[c].first.get());
+            if (pyColNum < 0 && PyErr_Occurred())
+                throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
+
+            PyObject *item = wasNull ? Py_None : pyVal.release();
+            PyList_SET_ITEM(pyRow.get(), pyColNum, item);
         }
+
+        int ok = PyList_Append(pyData.get(), pyRow.get());
+        if (ok < 0)
+            throw std::runtime_error("getColumnData(): PyList_Append error");
 
         PyPtr pyNext(PyObject_CallMethodObjArgs(ctxIter, pyNextMethodName.get(), NULL));
         checkPyPtrIsNull(pyNext);
@@ -190,6 +210,8 @@ void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, lon
         else if (!next)
             break;
     }
+
+    return pyData.release();
 }
 
 static PyObject* getDataframe(PyObject* self, PyObject* args)
@@ -201,6 +223,7 @@ static PyObject* getDataframe(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "OOl", &exaMeta, &ctxIter, &numOutRows))
         return NULL;
 
+    PyPtr pyData;
     try {
         PyPtr iter(PyObject_GetAttrString(ctxIter, "_exaiter__inp"));
         checkPyPtrIsNull(iter);
@@ -208,7 +231,7 @@ static PyObject* getDataframe(PyObject* self, PyObject* args)
         std::vector<InputColumnInfo> inColInfo;
         getColumnInfo(exaMeta, inColInfo);
         // Get input data
-        getColumnData(inColInfo, iter.get(), numOutRows);
+        pyData.reset(getColumnData(inColInfo, iter.get(), numOutRows));
     }
     catch (std::exception &ex) {
         if (ex.what())
@@ -216,7 +239,7 @@ static PyObject* getDataframe(PyObject* self, PyObject* args)
         return NULL;
     }
 
-    return Py_BuildValue("s", "Test Test Test");
+    return pyData.release();
 }
 
 static PyMethodDef dataframeModuleMethods[] = {
