@@ -60,14 +60,12 @@ struct InputColumnInfo
 
 
 
-std::vector<InputColumnInfo> getColumnInfo(PyObject *exaMeta)
+void getColumnInfo(PyObject *exaMeta, std::vector<InputColumnInfo>& colInfo)
 {
     PyPtr pyInCols(PyObject_GetAttrString(exaMeta, "input_columns"));
     checkPyPtrIsNull(pyInCols);
     if (!PyList_Check(pyInCols.get()))
         throw std::runtime_error("exa.meta.input_columns is not a list");
-
-    std::vector<InputColumnInfo> colInfo;
 
     Py_ssize_t pyNumCols = PyList_Size(pyInCols.get());
 
@@ -91,8 +89,6 @@ std::vector<InputColumnInfo> getColumnInfo(PyObject *exaMeta)
 
         colInfo.push_back(InputColumnInfo(std::string(colName), std::string(colTypeName)));
     }
-
-    return colInfo;
 }
 
 void getColumnData(std::vector<InputColumnInfo>& colInfo, PyObject *ctxIter, long numRows)
@@ -210,7 +206,7 @@ static PyObject* getDataframe(PyObject* self, PyObject* args)
         checkPyPtrIsNull(iter);
         // Get input column info
         std::vector<InputColumnInfo> inColInfo;
-        inColInfo = getColumnInfo(exaMeta);
+        getColumnInfo(exaMeta, inColInfo);
         // Get input data
         getColumnData(inColInfo, iter.get(), numOutRows);
     }
