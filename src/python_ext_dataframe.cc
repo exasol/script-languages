@@ -1,7 +1,9 @@
 #include <Python.h>
 
 #include <map>
+#include <memory>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -28,9 +30,26 @@ std::map<std::string, ColumnType> columnTypes {
     {"datetime", ColumnType::typeDatetime}
 };
 
+
+
+struct PyPtrDeleter {
+    void operator()(PyObject *obj) const noexcept {
+        Py_XDECREF(obj);
+    }
+};
+
+using PyPtr = std::unique_ptr<PyObject, PyPtrDeleter>;
+
+inline void checkPyPtrIsNull(const PyPtr& obj) {
+    if (!obj)
+        throw std::runtime_error("");
+}
+
+
+
 struct InputColumnInfo
 {
-    InputColumnInfo(std::string& name, std::string& typeName) {
+    InputColumnInfo(std::string const& name, std::string const& typeName) {
         this->name = name;
         this->typeName = typeName;
     }
@@ -39,86 +58,40 @@ struct InputColumnInfo
     std::string typeName;
 };
 
+
+
 std::vector<InputColumnInfo> getColumnInfo(PyObject *exaMeta)
 {
-    struct PyColumnInfo {
-        PyColumnInfo(PyObject *exaMeta) {
-            Py_INCREF(exaMeta);
-            this->exaMeta = exaMeta;
-            this->pyInCols = NULL;
-            this->pyColName = NULL;
-            this->pyColType = NULL;
-            this->pyColTypeName = NULL;
-        }
-        ~PyColumnInfo() {
-            Py_XDECREF(pyInCols);
-            Py_XDECREF(pyColName);
-            Py_XDECREF(pyColType);
-            Py_XDECREF(pyColTypeName);
-            Py_XDECREF(exaMeta);
-        }
-
-        PyObject *exaMeta;
-        PyObject *pyInCols;
-        PyObject *pyColName;
-        PyObject *pyColType;
-        PyObject *pyColTypeName;
-    };
-
-    PyColumnInfo pyColInfo(exaMeta);
-
-    pyColInfo.pyInCols = PyObject_GetAttrString(exaMeta, "input_columns");
-    if (!pyColInfo.pyInCols)
-        throw std::runtime_error("Python exception");
-    if (!PyList_Check(pyColInfo.pyInCols))
-        throw std::runtime_error("Python exception");
+    PyPtr pyInCols(PyObject_GetAttrString(exaMeta, "input_columns"));
+    checkPyPtrIsNull(pyInCols);
+    if (!PyList_Check(pyInCols.get())) {
+        PyErr_SetString(PyExc_RuntimeError, "exa.meta.input_columns is not a list");
+        throw std::runtime_error("");
+    }
 
     std::vector<InputColumnInfo> colInfo;
 
-    Py_ssize_t pyNumCols = PyList_Size(pyColInfo.pyInCols);
+    Py_ssize_t pyNumCols = PyList_Size(pyInCols.get());
 
     for (Py_ssize_t i = 0; i < pyNumCols; i++) {
-        PyObject *pyCol = PyList_GetItem(pyColInfo.pyInCols, i);
-        if (!pyCol) {
-            PyErr_Format(PyExc_IndexError, "Cannot access item %d in exa.meta.input_columns.", i);
-            throw std::runtime_error("Python exception");
-        }
+        PyPtr pyCol(PyList_GetItem(pyInCols.get(), i));
+        checkPyPtrIsNull(pyCol);
 
-        pyColInfo.pyColName = PyObject_GetAttrString(pyCol, "name");
-        if (!pyColInfo.pyColName)
-            throw std::runtime_error("Python exception");
+        PyPtr pyColName(PyObject_GetAttrString(pyCol.get(), "name"));
+        checkPyPtrIsNull(pyColName);
+        const char *colName = PyUnicode_AsUTF8(pyColName.get());
+        if (!colName)
+            throw std::runtime_error("");
 
-        Py_ssize_t pyColNameLen = 0;
-        const char *colNameBuf = PyUnicode_AsUTF8AndSize(pyColInfo.pyColName, &pyColNameLen);
-        if (!colNameBuf)
-            throw std::runtime_error("Python exception");
-        PyObject *pyLongColNameLen = PyLong_FromSsize_t(pyColNameLen);
-        if (!pyLongColNameLen)
-            throw std::runtime_error("Python exception");
-        size_t colNameLen = PyLong_AsSize_t(pyLongColNameLen);
-        if (PyErr_Occurred())
-            throw std::runtime_error("Python exception");
-        std::string colName(colNameBuf, colNameLen);
+        PyPtr pyColType(PyObject_GetAttrString(pyCol.get(), "type"));
+        checkPyPtrIsNull(pyColType);
+        PyPtr pyColTypeName(PyObject_GetAttrString(pyColType.get(), "__name__"));
+        checkPyPtrIsNull(pyColTypeName);
+        const char *colTypeName = PyUnicode_AsUTF8(pyColTypeName.get());
+        if (!colTypeName)
+            throw std::runtime_error("");
 
-        Py_ssize_t pyColTypeNameLen = 0;
-        pyColInfo.pyColType = PyObject_GetAttrString(pyCol, "type");
-        if (!pyColInfo.pyColType)
-            throw std::runtime_error("Python exception");
-        pyColInfo.pyColTypeName = PyObject_GetAttrString(pyColInfo.pyColType, "__name__");
-        if (!pyColInfo.pyColTypeName)
-            throw std::runtime_error("Python exception");
-        const char *colTypeNameBuf = PyUnicode_AsUTF8AndSize(pyColInfo.pyColTypeName, &pyColTypeNameLen);
-        if (!colTypeNameBuf)
-            throw std::runtime_error("Python exception");
-        PyObject *pyLongColTypeNameLen = PyLong_FromSsize_t(pyColTypeNameLen);
-        if (!pyLongColTypeNameLen)
-            throw std::runtime_error("Python exception");
-        size_t colTypeNameLen = PyLong_AsSize_t(pyLongColTypeNameLen);
-        if (PyErr_Occurred())
-            throw std::runtime_error("Python exception");
-        std::string colTypeName(colTypeNameBuf, colTypeNameLen);
-
-        colInfo.push_back(InputColumnInfo(colName, colTypeName));
+        colInfo.push_back(InputColumnInfo(std::string(colName), std::string(colTypeName)));
     }
 
     return colInfo;
@@ -310,7 +283,10 @@ static PyObject* getDataframe(PyObject* self, PyObject* args)
         inColInfo = getColumnInfo(exaMeta);
     }
     catch (std::exception &ex) {
-        throw;
+        if (ex.what())
+            throw;
+        else
+            return NULL;
     }
 
     PyObject *iter = PyObject_GetAttrString(ctxIter, "_exaiter__inp");
