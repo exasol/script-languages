@@ -43,25 +43,28 @@ class exaiter(object):
             return datetime.date(val.year, val.month, val.day)
         def convert_timestamp(x):
             return datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f")
+        self.__incoltypes = []
+        for col in range(self.__meta.inputColumnCount()):
+            self.__incoltypes.append(self.__meta.inputColumnType(col))
         for col in range(incount):
             colname = decodeUTF8(self.__meta.inputColumnName(col))
-            if self.__meta.inputColumnType(col) == DOUBLE:
+            if self.__incoltypes[col] == DOUBLE:
                 data[colname] = rd(inp.getDouble, inp.wasNull, col)
-            elif self.__meta.inputColumnType(col) == STRING:
+            elif self.__incoltypes[col] == STRING:
                 data[colname] = rd(inp.getString, inp.wasNull, col, lambda x: decodeUTF8(x))
-            elif self.__meta.inputColumnType(col) == INT32:
+            elif self.__incoltypes[col] == INT32:
                 data[colname] = rd(inp.getInt32, inp.wasNull, col)
-            elif self.__meta.inputColumnType(col) == INT64:
+            elif self.__incoltypes[col] == INT64:
                 data[colname] = rd(inp.getInt64, inp.wasNull, col)
-            elif self.__meta.inputColumnType(col) == NUMERIC:
+            elif self.__incoltypes[col] == NUMERIC:
                 if self.__meta.inputColumnScale(col) == 0:
                     data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: int(str(x)))
                 else: data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: decimal.Decimal(str(x)))
-            elif self.__meta.inputColumnType(col) == DATE:
+            elif self.__incoltypes[col] == DATE:
                 data[colname] = rd(inp.getDate, inp.wasNull, col, convert_date)
-            elif self.__meta.inputColumnType(col) == TIMESTAMP:
+            elif self.__incoltypes[col] == TIMESTAMP:
                 data[colname] = rd(inp.getTimestamp, inp.wasNull, col, convert_timestamp)
-            elif self.__meta.inputColumnType(col) == BOOLEAN:
+            elif self.__incoltypes[col] == BOOLEAN:
                 data[colname] = rd(inp.getBoolean, inp.wasNull, col)
             data[col] = data[colname]
         self.__outcoltypes = []

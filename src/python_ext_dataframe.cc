@@ -1,3 +1,5 @@
+#include "exaudflib.h"
+
 #include <Python.h>
 
 #define NPY_NO_DEPRECATED_API NPY_API_VERSION
@@ -14,6 +16,7 @@
 
 extern "C" {
 
+#if 0
 enum ColumnType {
     typeInt,
     typeFloat,
@@ -34,6 +37,7 @@ std::map<std::string, ColumnType> columnTypes {
     {"date", ColumnType::typeDate},
     {"datetime", ColumnType::typeDatetime}
 };
+#endif
 
 std::map<std::string, int> typeMap {
     {"bool", NPY_BOOL},
@@ -75,48 +79,61 @@ inline void checkPyPtrIsNull(const PyPtr& obj) {
 
 struct ColumnInfo
 {
-    ColumnInfo(std::string const& name, std::string const& typeName) {
+    ColumnInfo(std::string const& name, long type) {
         this->name = name;
-        this->typeName = typeName;
+        this->type = static_cast<SWIGVMContainers::SWIGVM_datatype_e>(type);
     }
 
     std::string name;
-    std::string typeName;
+    SWIGVMContainers::SWIGVM_datatype_e type;
 };
 
 
 
-void getColumnInfo(PyObject *exaMeta, const char *columnList, std::vector<ColumnInfo>& colInfo)
+void getColumnInfo(PyObject *ctxIter, PyObject *exaMeta, bool isInput, std::vector<ColumnInfo>& colInfo)
 {
-    PyPtr pyInCols(PyObject_GetAttrString(exaMeta, columnList));
-    checkPyPtrIsNull(pyInCols);
-    if (!PyList_Check(pyInCols.get())) {
+    const char *ctxColumnTypeList = isInput ? "_exaiter__incoltypes" : "_exaiter__outcoltypes";
+    const char *metaColumnList = isInput ? "input_columns" : "output_columns";
+
+    PyPtr pyColTypes(PyObject_GetAttrString(ctxIter, ctxColumnTypeList));
+    checkPyPtrIsNull(pyColTypes);
+    if (!PyList_Check(pyColTypes.get())) {
         std::stringstream ss;
-        ss << "getColumnInfo: " << columnList << " is not a list";
+        ss << "getColumnInfo: " << ctxColumnTypeList << " is not a list";
         throw std::runtime_error(ss.str().c_str());
     }
 
-    Py_ssize_t pyNumCols = PyList_Size(pyInCols.get());
+    PyPtr pyMetaCols(PyObject_GetAttrString(exaMeta, metaColumnList));
+    checkPyPtrIsNull(pyMetaCols);
+    if (!PyList_Check(pyMetaCols.get())) {
+        std::stringstream ss;
+        ss << "getColumnInfo: " << metaColumnList << " is not a list";
+        throw std::runtime_error(ss.str().c_str());
+    }
+
+    Py_ssize_t pyNumCols = PyList_Size(pyColTypes.get());
+    if (pyNumCols != PyList_Size(pyMetaCols.get())) {
+        std::stringstream ss;
+        ss << "getColumnInfo: ";
+        ss << ctxColumnTypeList << " has length " << pyNumCols << ", but ";
+        ss << metaColumnList << " has length " << PyList_Size(pyMetaCols.get());
+        throw std::runtime_error(ss.str().c_str());
+    }
 
     for (Py_ssize_t i = 0; i < pyNumCols; i++) {
-        PyPtr pyCol(PyList_GetItem(pyInCols.get(), i));
-        checkPyPtrIsNull(pyCol);
+        PyPtr pyColType(PyList_GetItem(pyColTypes.get(), i));
+        checkPyPtrIsNull(pyColType);
+        long colType = PyLong_AsLong(pyColTypes.get());
 
-        PyPtr pyColName(PyObject_GetAttrString(pyCol.get(), "name"));
+        PyPtr pyMetaCol(PyList_GetItem(pyMetaCols.get(), i));
+        checkPyPtrIsNull(pyMetaCol);
+        PyPtr pyColName(PyObject_GetAttrString(pyMetaCol.get(), "name"));
         checkPyPtrIsNull(pyColName);
         const char *colName = PyUnicode_AsUTF8(pyColName.get());
         if (!colName)
             throw std::runtime_error("");
 
-        PyPtr pyColType(PyObject_GetAttrString(pyCol.get(), "type"));
-        checkPyPtrIsNull(pyColType);
-        PyPtr pyColTypeName(PyObject_GetAttrString(pyColType.get(), "__name__"));
-        checkPyPtrIsNull(pyColTypeName);
-        const char *colTypeName = PyUnicode_AsUTF8(pyColTypeName.get());
-        if (!colTypeName)
-            throw std::runtime_error("");
-
-        colInfo.push_back(ColumnInfo(std::string(colName), std::string(colTypeName)));
+        colInfo.push_back(ColumnInfo(std::string(colName), colType));
     }
 }
 
@@ -129,32 +146,38 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
         PyPtr pyColNum(PyLong_FromLong(i));
         checkPyPtrIsNull(pyColNum);
 
-        ColumnType colType = columnTypes[colInfo[i].typeName];
         std::string methodName;
-        switch(colType) {
-            case ColumnType::typeInt:
+        switch(colInfo[i].type) {
+            case SWIGVMContainers::INT32:
+                methodName = "getInt32";
+                break;
+            case SWIGVMContainers::INT64:
                 methodName = "getInt64";
                 break;
-            case ColumnType::typeFloat:
+            case SWIGVMContainers::DOUBLE:
                 methodName = "getDouble";
                 break;
-            case ColumnType::typeString:
-                methodName = "getString";
-                break;
-            case ColumnType::typeBoolean:
-                methodName = "getBoolean";
-                break;
-            case ColumnType::typeDecimal:
+            case SWIGVMContainers::NUMERIC:
                 methodName = "getNumeric";
                 break;
-            case ColumnType::typeDate:
+            case SWIGVMContainers::STRING:
+                methodName = "getString";
+                break;
+            case SWIGVMContainers::BOOLEAN:
+                methodName = "getBoolean";
+                break;
+            case SWIGVMContainers::DATE:
                 methodName = "getDate";
                 break;
-            case ColumnType::typeDatetime:
+            case SWIGVMContainers::TIMESTAMP:
                 methodName = "getTimestamp";
                 break;
             default:
-                throw std::runtime_error("getColumnData(): unexpected type");
+            {
+                std::stringstream ss;
+                ss << "getColumnData(): unexpected type " << colInfo[i].type;
+                throw std::runtime_error(ss.str().c_str());
+            }
         }
         PyPtr pyMethodName(PyUnicode_FromString(methodName.c_str()));
         checkPyPtrIsNull(pyMethodName);
@@ -196,7 +219,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
                 if (exMsg) {
                     std::stringstream ss;
-                    ss << "getColumnData(): " << exMsg;
+                    ss << "getColumnData(): get row " << r << ", column " << c << exMsg;
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
@@ -228,7 +251,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
             const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
             if (exMsg) {
                 std::stringstream ss;
-                ss << "getColumnData(): " << exMsg;
+                ss << "getColumnData(): next(): " << exMsg;
                 throw std::runtime_error(ss.str().c_str());
             }
         }
@@ -251,41 +274,44 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
     checkPyPtrIsNull(np);
 
     // Get output column info
-    std::vector<ColumnInfo> outColInfo;
-    getColumnInfo(exaMeta, "output_columns", outColInfo);
+    std::vector<ColumnInfo> colInfo;
+    getColumnInfo(ctxIter, exaMeta, "output_columns", colInfo);
 
     std::vector<std::pair<PyPtr, PyPtr>> pyColSetMethods;
-    for (unsigned int i = 0; i < outColInfo.size(); i++) {
+    for (unsigned int i = 0; i < colInfo.size(); i++) {
         PyPtr pyColNum(PyLong_FromLong(i));
         checkPyPtrIsNull(pyColNum);
 
-        ColumnType colType = columnTypes[outColInfo[i].typeName];
         std::string methodName;
-        switch(colType) {
-            case ColumnType::typeInt:
+        switch(colInfo[i].type) {
+            case SWIGVMContainers::INT32:
+                methodName = "setInt32";
+                break;
+            case SWIGVMContainers::INT64:
                 methodName = "setInt64";
                 break;
-            case ColumnType::typeFloat:
+            case SWIGVMContainers::DOUBLE:
                 methodName = "setDouble";
                 break;
-            case ColumnType::typeString:
-                methodName = "setString";
-                break;
-            case ColumnType::typeBoolean:
-                methodName = "setBoolean";
-                break;
-            case ColumnType::typeDecimal:
+            case SWIGVMContainers::NUMERIC:
                 methodName = "setNumeric";
                 break;
-            case ColumnType::typeDate:
+            case SWIGVMContainers::STRING:
+                methodName = "setString";
+                break;
+            case SWIGVMContainers::BOOLEAN:
+                methodName = "setBoolean";
+                break;
+            case SWIGVMContainers::DATE:
                 methodName = "setDate";
                 break;
-            case ColumnType::typeDatetime:
+            case SWIGVMContainers::TIMESTAMP:
                 methodName = "setTimestamp";
                 break;
-            default: {
+            default:
+            {
                 std::stringstream ss;
-                ss << "emit(): unexpected type " << colType;
+                ss << "emit(): unexpected type " << colInfo[i].type;
                 throw std::runtime_error(ss.str().c_str());
             }
         }
@@ -469,12 +495,12 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         checkPyPtrIsNull(iter);
         // Get input column info
         std::vector<ColumnInfo> inColInfo;
-        getColumnInfo(exaMeta, "input_columns", inColInfo);
+        getColumnInfo(ctxIter, exaMeta, "input_columns", inColInfo);
         // Get input data
         pyData.reset(getColumnData(inColInfo, iter.get(), numOutRows));
     }
     catch (std::exception &ex) {
-        if (ex.what())
+        if (ex.what() && strlen(ex.what()))
             PyErr_SetString(PyExc_RuntimeError, ex.what());
         return NULL;
     }
