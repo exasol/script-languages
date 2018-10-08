@@ -123,7 +123,9 @@ void getColumnInfo(PyObject *ctxIter, PyObject *exaMeta, bool isInput, std::vect
     for (Py_ssize_t i = 0; i < pyNumCols; i++) {
         PyPtr pyColType(PyList_GetItem(pyColTypes.get(), i));
         checkPyPtrIsNull(pyColType);
-        long colType = PyLong_AsLong(pyColTypes.get());
+        long colType = PyLong_AsLong(pyColType.get());
+        if (colType < 0 && PyErr_Occurred())
+            throw std::runtime_error("getColumnInfo(): PyLong_AsLong error");
 
         PyPtr pyMetaCol(PyList_GetItem(pyMetaCols.get(), i));
         checkPyPtrIsNull(pyMetaCol);
@@ -137,7 +139,7 @@ void getColumnInfo(PyObject *ctxIter, PyObject *exaMeta, bool isInput, std::vect
     }
 }
 
-PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, long numRows)
+PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows)
 {
     const long numCols = colInfo.size();
     std::vector<std::pair<PyPtr, PyPtr>> pyColGetMethods;
@@ -203,7 +205,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
         PyPtr pyRow(PyList_New(numCols));
 
         for (long c = 0; c < numCols; c++) {
-            PyPtr pyVal(PyObject_CallMethodObjArgs(ctxIter, pyColGetMethods[c].second.get(), pyColGetMethods[c].first.get(), NULL));
+            PyPtr pyVal(PyObject_CallMethodObjArgs(tableIter, pyColGetMethods[c].second.get(), pyColGetMethods[c].first.get(), NULL));
             if (!pyVal) {
                 PyObject *ptype, *pvalue, *ptraceback;
                 PyErr_Fetch(&ptype, &pvalue, &ptraceback);
@@ -213,7 +215,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
                 throw std::runtime_error(ss.str().c_str());
             }
 
-            PyPtr pyCheckException(PyObject_CallMethodObjArgs(ctxIter, pyCheckExceptionMethodName.get(), NULL));
+            PyPtr pyCheckException(PyObject_CallMethodObjArgs(tableIter, pyCheckExceptionMethodName.get(), NULL));
             checkPyPtrIsNull(pyCheckException);
             if (pyCheckException.get() != Py_None) {
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
@@ -224,7 +226,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
                 }
             }
 
-            PyPtr pyWasNull(PyObject_CallMethodObjArgs(ctxIter, pyWasNullMethodName.get(), NULL));
+            PyPtr pyWasNull(PyObject_CallMethodObjArgs(tableIter, pyWasNullMethodName.get(), NULL));
             checkPyPtrIsNull(pyWasNull);
             int wasNull = PyObject_IsTrue(pyWasNull.get());
             if (wasNull < 0)
@@ -242,10 +244,10 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
         if (ok < 0)
             throw std::runtime_error("getColumnData(): PyList_Append error");
 
-        PyPtr pyNext(PyObject_CallMethodObjArgs(ctxIter, pyNextMethodName.get(), NULL));
+        PyPtr pyNext(PyObject_CallMethodObjArgs(tableIter, pyNextMethodName.get(), NULL));
         checkPyPtrIsNull(pyNext);
 
-        PyPtr pyCheckException(PyObject_CallMethodObjArgs(ctxIter, pyCheckExceptionMethodName.get(), NULL));
+        PyPtr pyCheckException(PyObject_CallMethodObjArgs(tableIter, pyCheckExceptionMethodName.get(), NULL));
         checkPyPtrIsNull(pyCheckException);
         if (pyCheckException.get() != Py_None) {
             const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
@@ -266,16 +268,12 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *ctxIter, lon
     return pyData.release();
 }
 
-void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *numpyTypes)
+void emit(PyObject *exaMeta, PyObject *tableIter, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
 {
     PyPtr pd(PyImport_ImportModule("pandas"));
     checkPyPtrIsNull(pd);
     PyPtr np(PyImport_ImportModule("numpy"));
     checkPyPtrIsNull(np);
-
-    // Get output column info
-    std::vector<ColumnInfo> colInfo;
-    getColumnInfo(ctxIter, exaMeta, "output_columns", colInfo);
 
     std::vector<std::pair<PyPtr, PyPtr>> pyColSetMethods;
     for (unsigned int i = 0; i < colInfo.size(); i++) {
@@ -354,7 +352,6 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
     PyPtr arrayIter(PyArray_IterNew(data.get()));
     checkPyPtrIsNull(arrayIter);
     PyArrayIterObject *iter = reinterpret_cast<PyArrayIterObject*>(arrayIter.get());
-    (void)iter;
 
     PyPtr pyVal;
     for (int r = 0; r < numRows; r++) {
@@ -366,7 +363,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     int64_t val = *((int64_t*)(iter->dataptr));
                     PyPtr pyVal(PyLong_FromLong(val));
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_INT32:
@@ -375,7 +372,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     int32_t val = *((int32_t*)(iter->dataptr));
                     PyPtr pyVal(PyLong_FromLong(val));
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_INT16:
@@ -384,7 +381,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     int16_t val = *((int16_t*)(iter->dataptr));
                     PyPtr pyVal(PyLong_FromLong(val));
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_INT8:
@@ -393,7 +390,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     int8_t val = *((int8_t*)(iter->dataptr));
                     PyPtr pyVal(PyLong_FromLong(val));
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_FLOAT64:
@@ -401,7 +398,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     uint64_t val = *((uint64_t*)(iter->dataptr));
                     PyPtr pyVal(PyFloat_FromDouble(static_cast<double>(val)));
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_FLOAT32:
@@ -409,7 +406,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     uint32_t val = *((uint32_t*)(iter->dataptr));
                     PyPtr pyVal(PyFloat_FromDouble(static_cast<double>(val)));
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_FLOAT16:
@@ -417,7 +414,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     uint16_t val = *((uint16_t*)(iter->dataptr));
                     PyPtr pyVal(PyFloat_FromDouble(static_cast<double>(val)));
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_BOOL:
@@ -425,7 +422,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     bool val = *((bool*)(iter->dataptr));
                     PyPtr pyVal(val ? Py_True : Py_False);
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
                     break;
                 }
                 case NPY_USERDEF: // Pandas timestamp: pd.tslib.Timestamp
@@ -439,7 +436,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                     PyPtr pyVal(PyUnicode_FromString(val));
 #if 0
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(ctxIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), strlen(val), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), strlen(val), NULL));
 #endif
                     break;
                 }
@@ -462,7 +459,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
                 }
             }
 
-            PyPtr pyCheckException(PyObject_CallMethodObjArgs(ctxIter, pyCheckExceptionMethodName.get(), NULL));
+            PyPtr pyCheckException(PyObject_CallMethodObjArgs(tableIter, pyCheckExceptionMethodName.get(), NULL));
             checkPyPtrIsNull(pyCheckException);
             if (pyCheckException.get() != Py_None) {
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
@@ -475,7 +472,7 @@ void emit(PyObject *exaMeta, PyObject *ctxIter, PyObject *dataframe, PyObject *n
             PyArray_ITER_NEXT(iter);
         }
 
-        PyPtr pyNext(PyObject_CallMethodObjArgs(ctxIter, pyNextMethodName.get(), NULL));
+        PyPtr pyNext(PyObject_CallMethodObjArgs(tableIter, pyNextMethodName.get(), NULL));
         checkPyPtrIsNull(pyNext);
     }
 }
@@ -491,13 +488,13 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
 
     PyPtr pyData;
     try {
-        PyPtr iter(PyObject_GetAttrString(ctxIter, "_exaiter__inp"));
-        checkPyPtrIsNull(iter);
+        PyPtr tableIter(PyObject_GetAttrString(ctxIter, "_exaiter__inp"));
+        checkPyPtrIsNull(tableIter);
         // Get input column info
-        std::vector<ColumnInfo> inColInfo;
-        getColumnInfo(ctxIter, exaMeta, "input_columns", inColInfo);
+        std::vector<ColumnInfo> colInfo;
+        getColumnInfo(ctxIter, exaMeta, true, colInfo);
         // Get input data
-        pyData.reset(getColumnData(inColInfo, iter.get(), numOutRows));
+        pyData.reset(getColumnData(colInfo, tableIter.get(), numOutRows));
     }
     catch (std::exception &ex) {
         if (ex.what() && strlen(ex.what()))
@@ -519,9 +516,13 @@ static PyObject *emitDataframe(PyObject *self, PyObject *args)
         return NULL;
 
     try {
-        PyPtr iter(PyObject_GetAttrString(ctxIter, "_exaiter__out"));
-        checkPyPtrIsNull(iter);
-        emit(exaMeta, iter.get(), dataframe, numpyTypes);
+        PyPtr tableIter(PyObject_GetAttrString(ctxIter, "_exaiter__out"));
+        checkPyPtrIsNull(tableIter);
+        // Get output column info
+        std::vector<ColumnInfo> colInfo;
+        getColumnInfo(ctxIter, exaMeta, false, colInfo);
+        // Emit output data
+        emit(exaMeta, tableIter.get(), colInfo, dataframe, numpyTypes);
     }
     catch (std::exception &ex) {
         if (ex.what())
