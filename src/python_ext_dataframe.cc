@@ -39,6 +39,9 @@ std::map<std::string, ColumnType> columnTypes {
 };
 #endif
 
+#define PY_INT (NPY_USERDEF+1)
+#define PY_STR (NPY_USERDEF+2)
+
 std::map<std::string, int> typeMap {
     {"bool", NPY_BOOL},
     {"int", NPY_INT32},
@@ -56,8 +59,9 @@ std::map<std::string, int> typeMap {
     {"float16", NPY_FLOAT16},
     {"float32", NPY_FLOAT32},
     {"float64", NPY_FLOAT64},
-    {"datetime64[ns]", NPY_USERDEF}, // Pandas timestamp: pd.tslib.Timestamp
-    {"object", NPY_OBJECT},
+    {"py_int", PY_INT},
+    {"py_str", PY_STR},
+    {"object", NPY_OBJECT}
 };
 
 
@@ -268,13 +272,8 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
     return pyData.release();
 }
 
-void emit(PyObject *exaMeta, PyObject *tableIter, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
+void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
 {
-    PyPtr pd(PyImport_ImportModule("pandas"));
-    checkPyPtrIsNull(pd);
-    PyPtr np(PyImport_ImportModule("numpy"));
-    checkPyPtrIsNull(np);
-
     std::vector<std::pair<PyPtr, PyPtr>> pyColSetMethods;
     for (unsigned int i = 0; i < colInfo.size(); i++) {
         PyPtr pyColNum(PyLong_FromLong(i));
@@ -320,15 +319,16 @@ void emit(PyObject *exaMeta, PyObject *tableIter, std::vector<ColumnInfo>& colIn
     }
 
     // Get data type info
-    std::vector<int> colTypes;
+    std::vector<std::pair<std::string, int>> colTypes;
     PyPtr numpyTypeIter(PyObject_GetIter(numpyTypes));
     checkPyPtrIsNull(numpyTypeIter);
+
     std::map<std::string, int>::iterator it;
     for (PyPtr numpyType(PyIter_Next(numpyTypeIter.get())); numpyType.get(); numpyType.reset(PyIter_Next(numpyTypeIter.get()))) {
         const char *typeName = PyUnicode_AsUTF8(numpyType.get());
         it = typeMap.find(typeName);
         if (it != typeMap.end()) {
-            colTypes.push_back(it->second);
+            colTypes.push_back(*it);
         }
         else {
             std::stringstream ss;
@@ -340,9 +340,73 @@ void emit(PyObject *exaMeta, PyObject *tableIter, std::vector<ColumnInfo>& colIn
     PyPtr data(PyObject_GetAttrString(dataframe, "values"));
     checkPyPtrIsNull(data);
 
-    PyArrayObject *array = reinterpret_cast<PyArrayObject*>(data.get());
+
+    PyArrayObject* array = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(),
+                                                            NPY_OBJECT,
+                                                            NPY_ARRAY_IN_ARRAY));
     int numRows = PyArray_DIM(array, 0);
     int numCols = PyArray_DIM(array, 1);
+
+    std::vector<PyPtr> columnArrays;
+    // Transpose to column-major
+    PyObject *colArray = PyArray_Transpose(array, NULL);
+    for (int c = 0; c < numCols; c++) {
+        PyPtr pyStart(PyLong_FromLong(c));
+        PyPtr pyStop(PyLong_FromLong(c + 1));
+        PyPtr none(Py_None);
+        PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), none.get()));
+        checkPyPtrIsNull(slice);
+        PyPtr arr(PyObject_GetItem(colArray, slice.get()));
+        checkPyPtrIsNull(arr);
+
+        PyPtr pyZero(PyLong_FromLong(0L));
+        arr.reset(PyObject_GetItem(arr.get(), pyZero.get()));
+        checkPyPtrIsNull(arr);
+
+        PyPtr asType (PyObject_GetAttrString(arr.get(), "astype"));
+        checkPyPtrIsNull(asType);
+        PyPtr keywordArgs(PyDict_New());
+        checkPyPtrIsNull(keywordArgs);
+        PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
+        PyPtr funcArgs(Py_BuildValue("(s)", colTypes[c].first.c_str()));
+        checkPyPtrIsNull(funcArgs);
+        PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
+        checkPyPtrIsNull(scalarArr);
+
+        if (colTypes[c].second == NPY_OBJECT) {
+            // Convert numpy array to python list
+            PyPtr pyList(PyObject_CallMethod(scalarArr.get(), "tolist", NULL));
+            checkPyPtrIsNull(pyList);
+            if (!PyList_Check(pyList.get())) {
+                std::stringstream ss;
+                ss << "emit(): column array " << c << " is not a list";
+                throw std::runtime_error(ss.str().c_str());
+            }
+
+            // Get type of first item in list
+            PyPtr pyVal(PyList_GetItem(pyList.get(), 0));
+            checkPyPtrIsNull(pyVal);
+            std::string pyTypeName("py_");
+            pyTypeName.append(Py_TYPE(pyVal.get())->tp_name);
+
+            // Update type in column type info
+            std::map<std::string, int>::iterator userDefIt;
+            userDefIt = typeMap.find(pyTypeName);
+            if (userDefIt != typeMap.end()) {
+                colTypes[c] = *userDefIt;
+            }
+            else {
+                std::stringstream ss;
+                ss << "emit: unexpected python type: " << pyTypeName;
+                throw std::runtime_error(ss.str().c_str());
+            }
+
+            columnArrays.push_back(std::move(pyList));
+        }
+        else {
+            columnArrays.push_back(std::move(scalarArr));
+        }
+    }
 
     PyPtr pyNextMethodName(PyUnicode_FromString("next"));
     checkPyPtrIsNull(pyNextMethodName);
@@ -353,102 +417,290 @@ void emit(PyObject *exaMeta, PyObject *tableIter, std::vector<ColumnInfo>& colIn
     checkPyPtrIsNull(arrayIter);
     PyArrayIterObject *iter = reinterpret_cast<PyArrayIterObject*>(arrayIter.get());
 
-    PyPtr pyVal;
+    PyPtr pyValue;
+    PyPtr pyResult;
     for (int r = 0; r < numRows; r++) {
         for (int c = 0; c < numCols; c++) {
-            switch (colTypes[c]) {
+            switch (colTypes[c].second) {
                 case NPY_INT64:
                 case NPY_UINT64:
                 {
-                    int64_t val = *((int64_t*)(iter->dataptr));
-                    PyPtr pyVal(PyLong_FromLong(val));
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    int64_t value = *((int64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    //ss << "INT64: " << value << "; ";
+                    //break;
+
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(PyLong_FromLong(value));
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                            pyValue.reset(PyFloat_FromDouble(static_cast<double>(value)));
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    //std::stringstream ss;
+                    //ss << "XXXX types: '" << Py_TYPE(pyColSetMethods[c].first.get())->tp_name << "', '" << Py_TYPE(pyValue.get())->tp_name << "' XXXXX";
+                    //throw std::runtime_error(ss.str().c_str());
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_INT32:
                 case NPY_UINT32:
                 {
-                    int32_t val = *((int32_t*)(iter->dataptr));
-                    PyPtr pyVal(PyLong_FromLong(val));
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    int32_t value = *((int32_t*)(iter->dataptr));
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(PyLong_FromLong(value));
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                            pyValue.reset(PyFloat_FromDouble(static_cast<double>(value)));
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_INT16:
                 case NPY_UINT16:
                 {
-                    int16_t val = *((int16_t*)(iter->dataptr));
-                    PyPtr pyVal(PyLong_FromLong(val));
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    int16_t value = *((int16_t*)(iter->dataptr));
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(PyLong_FromLong(value));
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                            pyValue.reset(PyFloat_FromDouble(static_cast<double>(value)));
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_INT8:
                 case NPY_UINT8:
                 {
-                    int8_t val = *((int8_t*)(iter->dataptr));
-                    PyPtr pyVal(PyLong_FromLong(val));
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    int8_t value = *((int8_t*)(iter->dataptr));
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(PyLong_FromLong(value));
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                            pyValue.reset(PyFloat_FromDouble(static_cast<double>(value)));
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_FLOAT64:
                 {
-                    uint64_t val = *((uint64_t*)(iter->dataptr));
-                    PyPtr pyVal(PyFloat_FromDouble(static_cast<double>(val)));
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    double value = *((double*)(iter->dataptr));
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(PyLong_FromLong(static_cast<int64_t>(value)));
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                            pyValue.reset(PyFloat_FromDouble(value));
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_FLOAT32:
                 {
-                    uint32_t val = *((uint32_t*)(iter->dataptr));
-                    PyPtr pyVal(PyFloat_FromDouble(static_cast<double>(val)));
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    double value = *((float*)(iter->dataptr));
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(PyLong_FromLong(static_cast<int64_t>(value)));
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                            pyValue.reset(PyFloat_FromDouble(value));
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_FLOAT16:
                 {
-                    uint16_t val = *((uint16_t*)(iter->dataptr));
-                    PyPtr pyVal(PyFloat_FromDouble(static_cast<double>(val)));
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    double value = static_cast<double>(*((uint16_t*)(iter->dataptr)));
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(PyLong_FromLong(static_cast<int64_t>(value)));
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                            pyValue.reset(PyFloat_FromDouble(value));
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_BOOL:
                 {
-                    bool val = *((bool*)(iter->dataptr));
-                    PyPtr pyVal(val ? Py_True : Py_False);
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), NULL));
+                    bool value = *((bool*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    //ss << "BOOL: " << value << "; ";
+                    //break;
+
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::BOOLEAN:
+                            pyValue.reset(value ? Py_True : Py_False);
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
-                case NPY_USERDEF: // Pandas timestamp: pd.tslib.Timestamp
+                case PY_INT:
                 {
+                    PyPtr pyInt(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyInt);
+
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::INT64:
+                        case SWIGVMContainers::INT32:
+                            pyValue.reset(pyInt.get());
+                            break;
+                        case SWIGVMContainers::NUMERIC:
+                            pyValue.reset(PyObject_Str(pyInt.get()));
+                            break;
+                        case SWIGVMContainers::DOUBLE:
+                        {
+                            double value = PyFloat_AsDouble(pyInt.get());
+                            if (value < 0 && PyErr_Occurred())
+                                throw std::runtime_error("emit() PY_INT: PyFloat_AsDouble error");
+                            pyValue.reset(PyFloat_FromDouble(value));
+                            break;
+                        }
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+                    break;
+                }
+                case PY_STR:
+                {
+                    PyPtr pyValue(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyValue);
+
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::NUMERIC:
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_OBJECT:
                 {
+                    std::stringstream ss;
+                    ss << "emit column " << c << ": OBJECT not supported";
+                    throw std::runtime_error(ss.str().c_str());
+
                     // Have to check for DATE, NUMERIC, etc.
-                    const char *val = (char*)(iter->dataptr);
-                    PyPtr pyVal(PyUnicode_FromString(val));
+                    //const char *val = (char*)(iter->dataptr);
+                    //PyPtr pyVal(PyUnicode_FromString(val));
 #if 0
                     checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(tableIter, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), strlen(val), NULL));
+                    pyVal.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), strlen(val), NULL));
 #endif
                     break;
                 }
                 default:
                 {
                     std::stringstream ss;
-                    ss << "emit: unexpected type: " << colTypes[c];
+                    ss << "emit: unexpected type: " << colTypes[c].first;
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
 
-            if (!pyVal) {
+            if (!pyResult) {
                 PyObject *ptype, *pvalue, *ptraceback;
                 PyErr_Fetch(&ptype, &pvalue, &ptraceback);
                 if (pvalue) {
@@ -459,7 +711,7 @@ void emit(PyObject *exaMeta, PyObject *tableIter, std::vector<ColumnInfo>& colIn
                 }
             }
 
-            PyPtr pyCheckException(PyObject_CallMethodObjArgs(tableIter, pyCheckExceptionMethodName.get(), NULL));
+            PyPtr pyCheckException(PyObject_CallMethodObjArgs(resultHandler, pyCheckExceptionMethodName.get(), NULL));
             checkPyPtrIsNull(pyCheckException);
             if (pyCheckException.get() != Py_None) {
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
@@ -472,7 +724,7 @@ void emit(PyObject *exaMeta, PyObject *tableIter, std::vector<ColumnInfo>& colIn
             PyArray_ITER_NEXT(iter);
         }
 
-        PyPtr pyNext(PyObject_CallMethodObjArgs(tableIter, pyNextMethodName.get(), NULL));
+        PyPtr pyNext(PyObject_CallMethodObjArgs(resultHandler, pyNextMethodName.get(), NULL));
         checkPyPtrIsNull(pyNext);
     }
 }
@@ -516,13 +768,13 @@ static PyObject *emitDataframe(PyObject *self, PyObject *args)
         return NULL;
 
     try {
-        PyPtr tableIter(PyObject_GetAttrString(ctxIter, "_exaiter__out"));
-        checkPyPtrIsNull(tableIter);
+        PyPtr resultHandler(PyObject_GetAttrString(ctxIter, "_exaiter__out"));
+        checkPyPtrIsNull(resultHandler);
         // Get output column info
         std::vector<ColumnInfo> colInfo;
         getColumnInfo(ctxIter, exaMeta, false, colInfo);
         // Emit output data
-        emit(exaMeta, tableIter.get(), colInfo, dataframe, numpyTypes);
+        emit(exaMeta, resultHandler.get(), colInfo, dataframe, numpyTypes);
     }
     catch (std::exception &ex) {
         if (ex.what())
