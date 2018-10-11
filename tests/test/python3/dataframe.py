@@ -15,10 +15,22 @@ class PandasDataFrame(udf.TestCase):
 
         self.query('CREATE SCHEMA FN2', ignore_errors=True)
         self.query('OPEN SCHEMA FN2', ignore_errors=True)
-        self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8'
-        self.col_defs = 'C1 INT, C2 DECIMAL(36,5), C3 DOUBLE, C4 BOOLEAN, C5 DATE, C6 TIMESTAMP, C7 VARCHAR(500), C8 CHAR(10)'
-        self.col_vals = "1, 12345.6789, 12345.6789, TRUE, '2018-09-12', '2018-09-12 13:37:00.123', 'abcdefghij', 'abcdefgh'"
-        self.col_tuple = (Decimal('1'), Decimal('12345.6789'), 12345.6789, True, date(2018, 9, 12), datetime(2018, 9, 12, 13, 37, 0, 123000), 'abcdefghij', 'abcdefgh  ')
+
+        #self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8'
+        #self.col_defs = 'C1 INT, C2 DECIMAL(36,5), C3 DOUBLE, C4 BOOLEAN, C5 DATE, C6 TIMESTAMP, C7 VARCHAR(500), C8 CHAR(10)'
+        #self.col_vals = "1, 12345.6789, 12345.6789, TRUE, '2018-09-12', '2018-09-12 13:37:00.123', 'abcdefghij', 'abcdefgh'"
+        #self.col_tuple = (Decimal('1'), Decimal('12345.6789'), 12345.6789, True, date(2018, 9, 12), datetime(2018, 9, 12, 13, 37, 0, 123000), 'abcdefghij', 'abcdefgh  ')
+
+        self.col_names = 'C1, C2, C3, C4, C5, C6'
+        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36, 0), C6 BOOLEAN'
+        self.col_vals = "12, 1234, 12345678, 1234567890123456, 123456789012345678901234567890123456, TRUE"
+        self.col_tuple = (Decimal('12'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('123456789012345678901234567890123456'), True)
+
+        #self.col_names = 'C1, C2, C3, C4, C5'
+        #self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 INT'
+        #self.col_vals = "12, 1234, 12345678, 1234567890123456, 12345678"
+        #self.col_tuple = (Decimal('12'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('12345678'))
+
         self.query('CREATE TABLE TEST1(C0 INT IDENTITY, %s)' % (self.col_defs))
         self.query('INSERT INTO TEST1 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
         num_inserts = 6
@@ -70,7 +82,38 @@ class PandasDataFrame(udf.TestCase):
             /
             '''))
 
-    def test_dataframe_test_c_func(self):
+    def test_dataframe_test_c_func_set(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            import sys
+            sys.path.append('/exaudf')
+            import decimal
+            import datetime
+            import pandas as pd
+            import pyextdataframe
+
+            def run(ctx):
+                pyListList = pyextdataframe.get_dataframe(exa.meta, ctx, 100)
+                df = pd.DataFrame(pyListList)
+                #df.iloc[:, 1] = df.iloc[:, 1].apply(lambda x: decimal.Decimal(x))
+                #df.iloc[:, 4] = df.iloc[:, 4].apply(lambda x: datetime.datetime.strptime(x, "%%Y-%%m-%%d"))
+                #df.iloc[:, 4] = df.iloc[:, 4].apply(lambda x: datetime.date(x.year, x.month, x.day))
+                #df.iloc[:, 5] = df.iloc[:, 5].apply(lambda x: datetime.datetime.strptime(x, "%%Y-%%m-%%d %%H:%%M:%%S.%%f"))
+                #ctx.emit(df)
+
+                numpyTypes = [str(x) for x in df.dtypes.values]
+                pyextdataframe.emit_dataframe(exa.meta, ctx, df, numpyTypes)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
+
+
+"""
+    def test_dataframe_test_c_func_scalar(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
             foo(%s)
@@ -86,7 +129,9 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([('Test Test Test',)]*self.num_rows, rows)
+"""
 
+"""
     def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
@@ -440,6 +485,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs, self.col_defs)))
         with self.assertRaisesRegexp(Exception, "get_dataframe\(\) parameter"):
             rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+"""
 
 if __name__ == '__main__':
     udf.main()
