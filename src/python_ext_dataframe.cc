@@ -443,7 +443,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -472,7 +472,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -498,7 +498,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -524,7 +524,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -549,7 +549,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -574,7 +574,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -599,7 +599,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -620,7 +620,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -652,7 +652,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -666,15 +666,25 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::NUMERIC:
+                            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                             break;
+                        case SWIGVMContainers::STRING: {
+                            Py_ssize_t size = -1;
+                            const char *str = PyUnicode_AsUTF8AndSize(pyValue.get(), &size);
+                            if (!str && size < 0)
+                                throw std::runtime_error("");
+                            PyPtr pySize(PyLong_FromSsize_t(size));
+                            checkPyPtrIsNull(pySize);
+                            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), pySize.get(), NULL));
+                            break;
+                        }
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << "but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
-                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_OBJECT:
