@@ -444,10 +444,6 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
     PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
     checkPyPtrIsNull(pyCheckExceptionMethodName);
 
-    PyPtr arrayIter(PyArray_IterNew(data.get()));
-    checkPyPtrIsNull(arrayIter);
-    PyArrayIterObject *iter = reinterpret_cast<PyArrayIterObject*>(arrayIter.get());
-
     PyPtr pyValue;
     PyPtr pyResult;
     for (int r = 0; r < numRows; r++) {
@@ -457,9 +453,6 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                 case NPY_UINT64:
                 {
                     int64_t value = *((int64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
-                    //ss << "INT64: " << value << "; ";
-                    //break;
-
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -479,16 +472,13 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                         }
                     }
                     checkPyPtrIsNull(pyValue);
-                    //std::stringstream ss;
-                    //ss << "XXXX types: '" << Py_TYPE(pyColSetMethods[c].first.get())->tp_name << "', '" << Py_TYPE(pyValue.get())->tp_name << "' XXXXX";
-                    //throw std::runtime_error(ss.str().c_str());
                     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
                 case NPY_INT32:
                 case NPY_UINT32:
                 {
-                    int32_t value = *((int32_t*)(iter->dataptr));
+                    int32_t value = *((int32_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -514,7 +504,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                 case NPY_INT16:
                 case NPY_UINT16:
                 {
-                    int16_t value = *((int16_t*)(iter->dataptr));
+                    int16_t value = *((int16_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -540,7 +530,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                 case NPY_INT8:
                 case NPY_UINT8:
                 {
-                    int8_t value = *((int8_t*)(iter->dataptr));
+                    int8_t value = *((int8_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -565,7 +555,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                 }
                 case NPY_FLOAT64:
                 {
-                    double value = *((double*)(iter->dataptr));
+                    double value = *((double*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -590,7 +580,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                 }
                 case NPY_FLOAT32:
                 {
-                    double value = *((float*)(iter->dataptr));
+                    double value = *((float*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -615,7 +605,7 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                 }
                 case NPY_FLOAT16:
                 {
-                    double value = static_cast<double>(*((uint16_t*)(iter->dataptr)));
+                    double value = static_cast<double>(*((uint16_t*)(PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r))));
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -641,9 +631,6 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                 case NPY_BOOL:
                 {
                     bool value = *((bool*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
-                    //ss << "BOOL: " << value << "; ";
-                    //break;
-
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::BOOLEAN:
                             pyValue.reset(value ? Py_True : Py_False);
@@ -746,14 +733,6 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                     std::stringstream ss;
                     ss << "emit column " << c << ": OBJECT not supported";
                     throw std::runtime_error(ss.str().c_str());
-
-                    // Have to check for DATE, NUMERIC, etc.
-                    //const char *val = (char*)(iter->dataptr);
-                    //PyPtr pyVal(PyUnicode_FromString(val));
-#if 0
-                    checkPyPtrIsNull(pyVal);
-                    pyVal.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyVal.get(), strlen(val), NULL));
-#endif
                     break;
                 }
                 default:
@@ -785,7 +764,6 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
-            PyArray_ITER_NEXT(iter);
         }
 
         PyPtr pyNext(PyObject_CallMethodObjArgs(resultHandler, pyNextMethodName.get(), NULL));
