@@ -21,10 +21,10 @@ class PandasDataFrame(udf.TestCase):
         #self.col_vals = "1, 12345.6789, 12345.6789, TRUE, '2018-09-12', '2018-09-12 13:37:00.123', 'abcdefghij', 'abcdefgh'"
         #self.col_tuple = (Decimal('1'), Decimal('12345.6789'), 12345.6789, True, date(2018, 9, 12), datetime(2018, 9, 12, 13, 37, 0, 123000), 'abcdefghij', 'abcdefgh  ')
 
-        self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8'
-        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36, 0), C6 BOOLEAN, C7 VARCHAR(500), C8 CHAR(10)'
-        self.col_vals = "12, 1234, 12345678, 1234567890123456, 123456789012345678901234567890123456, TRUE, 'abcdefghij', 'abcdefgh'"
-        self.col_tuple = (Decimal('12'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('123456789012345678901234567890123456'), True, 'abcdefghij', 'abcdefgh  ')
+        self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8, C9'
+        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36, 0), C6 BOOLEAN, C7 VARCHAR(500), C8 CHAR(10), C9 DATE'
+        self.col_vals = "12, 1234, 12345678, 1234567890123456, 123456789012345678901234567890123456, TRUE, 'abcdefghij', 'abcdefgh', '2018-09-12'"
+        self.col_tuple = (Decimal('12'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('123456789012345678901234567890123456'), True, 'abcdefghij', 'abcdefgh  ', date(2018, 9, 12))
 
         #self.col_names = 'C1, C2, C3, C4, C5'
         #self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 INT'
