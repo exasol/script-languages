@@ -4,7 +4,7 @@
 PYTHON_PREFIX="/usr"
 
 
-optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,enable-python3,python-prefix:,python-syspath:,enable-streaming,custom-protobuf-prefix:' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,enable-python3,python-prefix:,python-syspath:,enable-streaming,custom-protobuf-prefix:,release-proto-info' -- "$@")
 
 eval set -- "$optarr"
 
@@ -21,6 +21,7 @@ while true; do
         --enable-java) ENABLE_JAVA_IMPL="yes"; shift 1;;
         --enable-streaming) ENABLE_STREAMING_IMPL="yes"; shift 1;;
         --custom-protobuf-prefix) CUSTOM_PROTOBUF_PREFIX="$2"; shift 2;;
+	--release-proto-info) RELEASE_PROTO_INFO="yes"; shift 1;;
         -h|--help) echo "Usage: $0 --src-dir=<dir> --build-dir=<dir> --output-dir=<>"
 		   echo "Options:"
 		   echo "  [--enable-python]   Enable support for the Python language in the script language client"
@@ -396,6 +397,16 @@ g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionli
 cp -a "$BUILDDIR/exaudfclient" "$OUTPUTDIR/exaudfclient" || die "Failed to create $OUTPUTDIR/exaudfclient"
 cp -a "$BUILDDIR/libexaudflib.so" "$OUTPUTDIR/libexaudflib.so" || die "Failed to create $OUTPUTDIR/libexaudflib.so"
 chmod +x "$OUTPUTDIR/exaudfclient" || die "Failed chmod of $OUTPUTDIR/exaudfclient"
+
+if [ "$RELEASE_PROTO_INFO" = "yes" ]; then
+    sources_target="$OUTPUTDIR/src"
+    mkdir -p $sources_target
+    for SRC in \
+        zmqcontainer.proto zmqcontainer.pb.cc zmqcontainer.pb.h
+    do
+	cp "$BUILDDIR/$SRC" "$sources_target/" || die "Failed to copy file $SRC from $BUILDDIR to $sources_target"
+    done
+fi
 
 
 if [ "$ENABLE_JAVA_IMPL" = "yes" ]; then
