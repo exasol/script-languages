@@ -65,6 +65,7 @@ std::map<std::string, int> typeMap {
     {"py_int", PY_INT},
     {"py_str", PY_STR},
     {"py_datetime.date", PY_DATE},
+    {"datetime64[ns]", NPY_DATETIME},
     {"object", NPY_OBJECT}
 };
 
@@ -169,6 +170,19 @@ PyObject *getDateFromString(PyObject *value)
     return pyDate.release();
 }
 
+PyObject *getDatetimeFromString(PyObject *value)
+{
+    PyPtr datetimeModule(PyImport_ImportModule("datetime"));
+    checkPyPtrIsNull(datetimeModule);
+
+    PyPtr datetime(PyObject_GetAttrString(datetimeModule.get(), "datetime"));
+    checkPyPtrIsNull(datetime);
+    PyPtr pyDatetime(PyObject_CallMethod(datetime.get(), "strptime", "(Os)", value, "%Y-%m-%d %H:%M:%S.%f"));
+    checkPyPtrIsNull(pyDatetime);
+
+    return pyDatetime.release();
+}
+
 PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows)
 {
     const long numCols = colInfo.size();
@@ -204,6 +218,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 methodName = "getDate";
                 break;
             case SWIGVMContainers::TIMESTAMP:
+                postFunction = &getDatetimeFromString;
                 methodName = "getTimestamp";
                 break;
             default:
@@ -717,6 +732,44 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
                             PyPtr pyIsoDate(PyObject_CallMethod(pyValue.get(), "isoformat", NULL));
                             checkPyPtrIsNull(pyIsoDate);
                             pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDate.get(), NULL));
+                            break;
+                        }
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    break;
+                }
+                case NPY_DATETIME:
+                {
+                    uint64_t value = *((uint64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::TIMESTAMP:
+                        {
+                            PyPtr pandasModule(PyImport_ImportModule("pandas"));
+                            checkPyPtrIsNull(pandasModule);
+                            PyPtr pdTimestamp(PyObject_GetAttrString(pandasModule.get(), "Timestamp"));
+                            checkPyPtrIsNull(pdTimestamp);
+
+                            PyPtr funcArgs(Py_BuildValue("(k)", value));
+                            checkPyPtrIsNull(funcArgs);
+
+                            PyPtr pyUnit(PyUnicode_FromString("ns"));
+                            checkPyPtrIsNull(pyUnit);
+                            PyPtr keywordArgs(PyDict_New());
+                            checkPyPtrIsNull(keywordArgs);
+                            PyDict_SetItemString(keywordArgs.get(), "unit", pyUnit.get());
+
+                            PyPtr pdTimestampValue(PyObject_Call(pdTimestamp.get(), funcArgs.get(), keywordArgs.get()));
+                            checkPyPtrIsNull(pdTimestampValue);
+
+                            PyPtr pyIsoDatetime(PyObject_CallMethod(pdTimestampValue.get(), "isoformat", "s", " "));
+                            checkPyPtrIsNull(pyIsoDatetime);
+                            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
                             break;
                         }
                         default:
