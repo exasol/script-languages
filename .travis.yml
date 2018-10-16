@@ -17,12 +17,12 @@ matrix:
   include:
   - name: mini-python-python
     env: MATRIX_FLAVOR=mini GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-python
-    env: MATRIX_FLAVOR=standard GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-r
-    env: MATRIX_FLAVOR=standard GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard-java
-    env: MATRIX_FLAVOR=standard GENERIC_TEST_LANG=java TEST_FOLDER=java
+  - name: standard_60-python
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=python TEST_FOLDER=python
+  - name: standard_60-r
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
+  - name: standard_60-java
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=java TEST_FOLDER=java
   - name: python3_60-python3
     env: MATRIX_FLAVOR=python3_60 GENERIC_TEST_LANG=python TEST_FOLDER=python3
 

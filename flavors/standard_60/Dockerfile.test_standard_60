@@ -1,4 +1,4 @@
-FROM exaudf/release_standard
+FROM exaudf/release_standard_60
 
 RUN mkdir /exasol_emulator
 
