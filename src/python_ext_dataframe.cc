@@ -275,11 +275,8 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
     if (pyNumRows < 0 && PyErr_Occurred()) 
         throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
 
-//    std::stringstream ss;
-//    ss << "numRows: " << numRows;
     PyPtr pyData(PyList_New(pyNumRows));
     for (long r = 0; r < numRows; r++) {
-//        ss << " " << r;
         PyPtr pyRow(PyList_New(numCols));
 
         for (long c = 0; c < numCols; c++) {
@@ -325,7 +322,6 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
         if (ok < 0)
             throw std::runtime_error("getColumnData(): PyList_Append error");
 
-        //isSetInput = true;
         if (isSetInput) {
             PyPtr pyNext(PyObject_CallMethodObjArgs(tableIter, pyNextMethodName.get(), NULL));
             checkPyPtrIsNull(pyNext);
@@ -342,7 +338,6 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             }
 
             int next = PyObject_IsTrue(pyNext.get());
-//            ss << "next " << next << "; ";
             if (next < 0)
                 throw std::runtime_error("getColumnData(): next() PyObject_IsTrue() error");
             else if (!next)
@@ -350,7 +345,6 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
         }
     }
 
-//    throw std::runtime_error(ss.str().c_str());
     return pyData.release();
 }
 
