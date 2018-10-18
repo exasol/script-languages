@@ -91,13 +91,7 @@ class PandasDataFrame(udf.TestCase):
             import pyextdataframe
 
             def run(ctx):
-                pyListList = pyextdataframe.get_dataframe(exa.meta, ctx, 100)
-                df = pd.DataFrame(pyListList)
-                #df.iloc[:, 1] = df.iloc[:, 1].apply(lambda x: decimal.Decimal(x))
-                #df.iloc[:, 4] = df.iloc[:, 4].apply(lambda x: datetime.datetime.strptime(x, "%%Y-%%m-%%d"))
-                #df.iloc[:, 4] = df.iloc[:, 4].apply(lambda x: datetime.date(x.year, x.month, x.day))
-                #df.iloc[:, 5] = df.iloc[:, 5].apply(lambda x: datetime.datetime.strptime(x, "%%Y-%%m-%%d %%H:%%M:%%S.%%f"))
-                #ctx.emit(df)
+                df = pyextdataframe.get_dataframe(exa.meta, ctx, 100)
 
                 numpyTypes = [str(x) for x in df.dtypes.values]
                 pyextdataframe.emit_dataframe(exa.meta, ctx, df, numpyTypes)
@@ -118,11 +112,8 @@ class PandasDataFrame(udf.TestCase):
             import pyextdataframe
             
             def run(ctx):
-                #df = ctx.get_dataframe()
-                pyListList = pyextdataframe.get_dataframe(exa.meta, ctx, 2)
-                df = pd.DataFrame(pyListList)
+                df = pyextdataframe.get_dataframe(exa.meta, ctx, 2)
 
-                #ctx.emit(df)
                 numpyTypes = [str(x) for x in df.dtypes.values]
                 pyextdataframe.emit_dataframe(exa.meta, ctx, df, numpyTypes)
             /

@@ -888,6 +888,34 @@ void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& c
     }
 }
 
+PyObject *createDataFrame(PyObject *data, std::vector<ColumnInfo>& colInfo)
+{
+    PyPtr pandasModule(PyImport_ImportModule("pandas"));
+    checkPyPtrIsNull(pandasModule);
+    PyPtr pdDataFrame(PyObject_GetAttrString(pandasModule.get(), "DataFrame"));
+    checkPyPtrIsNull(pdDataFrame);
+
+    Py_ssize_t numCols = static_cast<Py_ssize_t>(colInfo.size());
+    PyPtr pyColumnNames(PyList_New(numCols));
+    for (Py_ssize_t i = 0; i < numCols; i++) {
+        PyPtr pyColName(PyUnicode_FromString(colInfo[i].name.c_str()));
+        checkPyPtrIsNull(pyColName);
+        PyList_SET_ITEM(pyColumnNames.get(), i, pyColName.release());
+    }
+
+    PyPtr funcArgs(Py_BuildValue("(O)", data));
+    checkPyPtrIsNull(funcArgs);
+
+    PyPtr keywordArgs(PyDict_New());
+    checkPyPtrIsNull(keywordArgs);
+    PyDict_SetItemString(keywordArgs.get(), "columns", pyColumnNames.get());
+
+    PyObject *pyDataFrame = PyObject_Call(pdDataFrame.get(), funcArgs.get(), keywordArgs.get());
+    checkPyObjectIsNull(pyDataFrame);
+
+    return pyDataFrame;
+}
+
 static PyObject *getDataframe(PyObject *self, PyObject *args)
 {
     PyObject *exaMeta = NULL;
@@ -897,7 +925,7 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OOl", &exaMeta, &ctxIter, &numRows))
         return NULL;
 
-    PyPtr pyData;
+    PyPtr pyDataFrame;
     try {
         PyPtr tableIter(PyObject_GetAttrString(ctxIter, "_exaiter__inp"));
         checkPyPtrIsNull(tableIter);
@@ -912,7 +940,10 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         // Get input data
         if (!isSetInput && numRows > 1)
             numRows = 1;
-        pyData.reset(getColumnData(colInfo, tableIter.get(), numRows, isSetInput));
+        PyPtr pyData(getColumnData(colInfo, tableIter.get(), numRows, isSetInput));
+        checkPyPtrIsNull(pyData);
+        // Create DataFrame
+        pyDataFrame.reset(createDataFrame(pyData.get(), colInfo));
     }
     catch (std::exception &ex) {
         if (ex.what() && strlen(ex.what()))
@@ -920,7 +951,7 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    return pyData.release();
+    return pyDataFrame.release();
 }
 
 static PyObject *emitDataframe(PyObject *self, PyObject *args)
