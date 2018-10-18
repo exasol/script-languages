@@ -26,11 +26,6 @@ class PandasDataFrame(udf.TestCase):
         self.col_vals = "12, 1234, 12345678, 1234567890123456, 123456789012345678901234567890123456, 12345.6789, TRUE, 'abcdefghij', 'abcdefgh', '2018-10-12', '2018-10-12 12:15:30.123'"
         self.col_tuple = (Decimal('12'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('123456789012345678901234567890123456'), 12345.6789, True, 'abcdefghij', 'abcdefgh  ', date(2018, 10, 12), datetime(2018, 10, 12, 12, 15, 30, 123000))
 
-        #self.col_names = 'C1, C2, C3, C4, C5'
-        #self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 INT'
-        #self.col_vals = "12, 1234, 12345678, 1234567890123456, 12345678"
-        #self.col_tuple = (Decimal('12'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('12345678'))
-
         self.query('CREATE TABLE TEST1(C0 INT IDENTITY, %s)' % (self.col_defs))
         self.query('INSERT INTO TEST1 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
         num_inserts = 6
@@ -112,40 +107,30 @@ class PandasDataFrame(udf.TestCase):
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
 
-"""
-    def test_dataframe_test_c_func_scalar(self):
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
-            foo(%s)
-            RETURNS VARCHAR(50) AS
-            import sys
-            sys.path.append('/exaudf')
-            import pyextdataframe
-
-            def run(ctx):
-                ret = pyextdataframe.get_dataframe(exa.meta, ctx, 2)
-                return ret
-            /
-            ''' % (self.col_defs)))
-        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
-        self.assertRowsEqual([('Test Test Test',)]*self.num_rows, rows)
-"""
-
-"""
     def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
+
+            import sys
+            sys.path.append('/exaudf')
+            import pyextdataframe
             
             def run(ctx):
-                df = ctx.get_dataframe()
-                ctx.emit(df)
+                #df = ctx.get_dataframe()
+                pyListList = pyextdataframe.get_dataframe(exa.meta, ctx, 2)
+                df = pd.DataFrame(pyListList)
+
+                #ctx.emit(df)
+                numpyTypes = [str(x) for x in df.dtypes.values]
+                pyextdataframe.emit_dataframe(exa.meta, ctx, df, numpyTypes)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
+"""
     def test_dataframe_scalar_returns(self):
         from decimal import Decimal
         self.query(udf.fixindent('''
