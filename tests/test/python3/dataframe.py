@@ -92,9 +92,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = pyextdataframe.get_dataframe(exa.meta, ctx, 100)
-
-                numpyTypes = [str(x) for x in df.dtypes.values]
-                pyextdataframe.emit_dataframe(exa.meta, ctx, df, numpyTypes)
+                pyextdataframe.emit_dataframe(exa.meta, ctx, df)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
@@ -113,9 +111,7 @@ class PandasDataFrame(udf.TestCase):
             
             def run(ctx):
                 df = pyextdataframe.get_dataframe(exa.meta, ctx, 2)
-
-                numpyTypes = [str(x) for x in df.dtypes.values]
-                pyextdataframe.emit_dataframe(exa.meta, ctx, df, numpyTypes)
+                pyextdataframe.emit_dataframe(exa.meta, ctx, df)
             /
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))

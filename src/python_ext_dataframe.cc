@@ -910,10 +910,36 @@ PyObject *createDataFrame(PyObject *data, std::vector<ColumnInfo>& colInfo)
     checkPyPtrIsNull(keywordArgs);
     PyDict_SetItemString(keywordArgs.get(), "columns", pyColumnNames.get());
 
-    PyObject *pyDataFrame = PyObject_Call(pdDataFrame.get(), funcArgs.get(), keywordArgs.get());
-    checkPyObjectIsNull(pyDataFrame);
+    PyPtr pyDataFrame(PyObject_Call(pdDataFrame.get(), funcArgs.get(), keywordArgs.get()));
+    checkPyPtrIsNull(pyDataFrame);
 
-    return pyDataFrame;
+    return pyDataFrame.release();
+}
+
+PyObject *getNumpyTypes(PyObject *dataframe)
+{
+    PyPtr pyDtypes(PyObject_GetAttrString(dataframe, "dtypes"));
+    checkPyPtrIsNull(pyDtypes);
+    PyPtr pyDtypeValues(PyObject_CallMethod(pyDtypes.get(), "tolist", NULL));
+    checkPyPtrIsNull(pyDtypeValues);
+
+    if (!PyList_Check(pyDtypeValues.get())) {
+        std::stringstream ss;
+        ss << "DataFrame.dtypes.values is not a list";
+        throw std::runtime_error(ss.str().c_str());
+    }
+
+    Py_ssize_t pyNumCols = PyList_Size(pyDtypeValues.get());
+    PyPtr pyColumnDtypes(PyList_New(pyNumCols));
+    for (Py_ssize_t i = 0; i < pyNumCols; i++) {
+        PyObject *pyColDtype = PyList_GetItem(pyDtypeValues.get(), i);
+        checkPyObjectIsNull(pyColDtype);
+        PyPtr pyColDtypeString(PyObject_Str(pyColDtype));
+        checkPyPtrIsNull(pyColDtypeString);
+        PyList_SET_ITEM(pyColumnDtypes.get(), i, pyColDtypeString.release());
+    }
+
+    return pyColumnDtypes.release();
 }
 
 static PyObject *getDataframe(PyObject *self, PyObject *args)
@@ -959,9 +985,8 @@ static PyObject *emitDataframe(PyObject *self, PyObject *args)
     PyObject *exaMeta = NULL;
     PyObject *ctxIter = NULL;
     PyObject *dataframe = NULL;
-    PyObject *numpyTypes = NULL;
 
-    if (!PyArg_ParseTuple(args, "OOOO", &exaMeta, &ctxIter, &dataframe, &numpyTypes))
+    if (!PyArg_ParseTuple(args, "OOO", &exaMeta, &ctxIter, &dataframe))
         return NULL;
 
     try {
@@ -970,8 +995,11 @@ static PyObject *emitDataframe(PyObject *self, PyObject *args)
         // Get output column info
         std::vector<ColumnInfo> colInfo;
         getColumnInfo(ctxIter, exaMeta, false, colInfo);
+        // Get NumPy types
+        PyPtr pyNumpyTypes(getNumpyTypes(dataframe));
+        checkPyPtrIsNull(pyNumpyTypes);
         // Emit output data
-        emit(exaMeta, resultHandler.get(), colInfo, dataframe, numpyTypes);
+        emit(exaMeta, resultHandler.get(), colInfo, dataframe, pyNumpyTypes.get());
     }
     catch (std::exception &ex) {
         if (ex.what() && strlen(ex.what()))
