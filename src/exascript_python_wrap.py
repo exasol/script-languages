@@ -2,6 +2,9 @@ import sys
 import numpy as np
 import pandas as pd
 
+sys.path.append('/exaudf')
+import pyextdataframe
+
 isPython3 = False
 
 if sys.version_info[0] == 3:
@@ -18,6 +21,7 @@ class exaiter(object):
         self.__meta = meta
         self.__inp = inp
         self.__out = out
+        self.__intype = self.__meta.inputType()
         incount = self.__meta.inputColumnCount()
         data = {}
         self.__cache = [None]*incount
@@ -46,8 +50,11 @@ class exaiter(object):
         self.__incoltypes = []
         for col in range(self.__meta.inputColumnCount()):
             self.__incoltypes.append(self.__meta.inputColumnType(col))
+        self.__incolnames = []
+        for col in range(self.__meta.inputColumnCount()):
+            self.__incolnames.append(decodeUTF8(self.__meta.inputColumnName(col)))
         for col in range(incount):
-            colname = decodeUTF8(self.__meta.inputColumnName(col))
+            colname = self.__incolnames[col]
             if self.__incoltypes[col] == DOUBLE:
                 data[colname] = rd(inp.getDouble, inp.wasNull, col)
             elif self.__incoltypes[col] == STRING:
@@ -113,19 +120,7 @@ class exaiter(object):
             if v.shape[1] != len(self.__outcoltypes):
                 exp_num_out = len(self.__outcoltypes)
                 raise TypeError("emit() takes exactly %d argument%s (%d given)" % (exp_num_out, 's' if exp_num_out > 1 else '', v.shape[1]))
-            transform_col_funcs = []
-            for c in range(v.shape[1]):
-                if isinstance(v.iloc[0, c], (np.number, np.bool_)):
-                    transform_col_funcs.append(lambda x: np.asscalar(x))
-                elif isinstance(v.iloc[0, c], pd.tslib.Timestamp):
-                    transform_col_funcs.append(lambda x: x.to_pydatetime())
-                else:
-                    transform_col_funcs.append(lambda x: x)
-            for r in range(v.shape[0]):
-                row = []
-                for c in range(v.shape[1]):
-                    row.append(transform_col_funcs[c](v.iloc[r, c]))
-                self.emit(*row)
+            pyextdataframe.emit_dataframe(self, self.__outcoltypes, v)
             return
         if len(output) != len(self.__outcoltypes):
             if len(self.__outcoltypes) > 1:
@@ -205,6 +200,8 @@ class exaiter(object):
     def get_dataframe(self, num_rows=1):
         if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
             raise RuntimeError("get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
+        if num_rows == "all":
+            num_rows = sys.maxsize
         if self.__dataframe_finished:
             # Exception after None already returned
             raise RuntimeError("Iteration finished")
@@ -212,23 +209,7 @@ class exaiter(object):
             # Return None the first time there is no data
             self.__dataframe_finished = True
             return None
-        def get_row(num_cols):
-            row_data = []
-            for col in range(num_cols):
-                row_data.append(self.__getitem__(col))
-            return row_data
-        num_in_cols = self.__meta.inputColumnCount()
-        row_data = get_row(num_in_cols)
-        data = [row_data]
-        if self.__meta.inputType() == EXACTLY_ONCE:
-            # Only 1 row, no iteration
-            pass
-        else:
-            while self.next() and (num_rows == "all" or len(data) < num_rows):
-                row_data = get_row(num_in_cols)
-                data.append(row_data)
-        in_col_names = [decodeUTF8(self.__meta.inputColumnName(col)) for col in range(num_in_cols)]
-        return pd.DataFrame(data, columns=in_col_names)
+        return pyextdataframe.get_dataframe(self, self.__incolnames, self.__intype, num_rows)
     def reset(self):
         return self.next(reset = True)
     def size(self):

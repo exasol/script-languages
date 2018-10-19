@@ -106,10 +106,9 @@ struct ColumnInfo
 
 
 
-void getColumnInfo(PyObject *ctxIter, PyObject *exaMeta, bool isInput, std::vector<ColumnInfo>& colInfo)
+void getColumnInfo(PyObject *ctxIter, PyObject *colNames, std::vector<ColumnInfo>& colInfo)
 {
-    const char *ctxColumnTypeList = isInput ? "_exaiter__incoltypes" : "_exaiter__outcoltypes";
-    const char *metaColumnList = isInput ? "input_columns" : "output_columns";
+    const char *ctxColumnTypeList = "_exaiter__incoltypes";
 
     PyPtr pyColTypes(PyObject_GetAttrString(ctxIter, ctxColumnTypeList));
     checkPyPtrIsNull(pyColTypes);
@@ -119,20 +118,18 @@ void getColumnInfo(PyObject *ctxIter, PyObject *exaMeta, bool isInput, std::vect
         throw std::runtime_error(ss.str().c_str());
     }
 
-    PyPtr pyMetaCols(PyObject_GetAttrString(exaMeta, metaColumnList));
-    checkPyPtrIsNull(pyMetaCols);
-    if (!PyList_Check(pyMetaCols.get())) {
+    if (!PyList_Check(colNames)) {
         std::stringstream ss;
-        ss << "getColumnInfo: " << metaColumnList << " is not a list";
+        ss << "getColumnInfo: colNames is not a list";
         throw std::runtime_error(ss.str().c_str());
     }
 
     Py_ssize_t pyNumCols = PyList_Size(pyColTypes.get());
-    if (pyNumCols != PyList_Size(pyMetaCols.get())) {
+    if (pyNumCols != PyList_Size(colNames)) {
         std::stringstream ss;
         ss << "getColumnInfo: ";
         ss << ctxColumnTypeList << " has length " << pyNumCols << ", but ";
-        ss << metaColumnList << " has length " << PyList_Size(pyMetaCols.get());
+        ss << "colNames has length " << PyList_Size(colNames);
         throw std::runtime_error(ss.str().c_str());
     }
 
@@ -143,11 +140,9 @@ void getColumnInfo(PyObject *ctxIter, PyObject *exaMeta, bool isInput, std::vect
         if (colType < 0 && PyErr_Occurred())
             throw std::runtime_error("getColumnInfo(): PyLong_AsLong error");
 
-        PyObject *pyMetaCol = PyList_GetItem(pyMetaCols.get(), i);
-        checkPyObjectIsNull(pyMetaCol);
-        PyPtr pyColName(PyObject_GetAttrString(pyMetaCol, "name"));
-        checkPyPtrIsNull(pyColName);
-        const char *colName = PyUnicode_AsUTF8(pyColName.get());
+        PyObject *pyColName = PyList_GetItem(colNames, i);
+        checkPyObjectIsNull(pyColName);
+        const char *colName = PyUnicode_AsUTF8(pyColName);
         if (!colName)
             throw std::runtime_error("");
 
@@ -348,7 +343,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
     return pyData.release();
 }
 
-void emit(PyObject *exaMeta, PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
+void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
 {
     std::vector<std::pair<PyPtr, PyPtr>> pyColSetMethods;
     for (unsigned int i = 0; i < colInfo.size(); i++) {
@@ -942,13 +937,35 @@ PyObject *getNumpyTypes(PyObject *dataframe)
     return pyColumnDtypes.release();
 }
 
+void getOutputColumnTypes(PyObject *colTypes, std::vector<ColumnInfo>& colInfo)
+{
+    if (!PyList_Check(colTypes)) {
+        std::stringstream ss;
+        ss << "getOutputColumnTypes(): colTypes is not a list";
+        throw std::runtime_error(ss.str().c_str());
+    }
+
+    Py_ssize_t pyNumCols = PyList_Size(colTypes);
+    for (Py_ssize_t i = 0; i < pyNumCols; i++) {
+        PyObject *pyColType = PyList_GetItem(colTypes, i);
+        checkPyObjectIsNull(pyColType);
+        int colType = PyLong_AsLong(pyColType);
+        if (colType < 0 && PyErr_Occurred())
+            throw std::runtime_error("getColumnInfo(): PyLong_AsLong error");
+
+        colInfo.push_back(ColumnInfo(std::to_string(i), colType));
+    }
+}
+
+
 static PyObject *getDataframe(PyObject *self, PyObject *args)
 {
-    PyObject *exaMeta = NULL;
     PyObject *ctxIter = NULL;
+    PyObject *colNames = NULL;
+    long inputType = 0;
     long numRows = 0;
 
-    if (!PyArg_ParseTuple(args, "OOl", &exaMeta, &ctxIter, &numRows))
+    if (!PyArg_ParseTuple(args, "OOll", &ctxIter, &colNames, &inputType, &numRows))
         return NULL;
 
     PyPtr pyDataFrame;
@@ -956,13 +973,10 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         PyPtr tableIter(PyObject_GetAttrString(ctxIter, "_exaiter__inp"));
         checkPyPtrIsNull(tableIter);
         // Get script input type
-        PyPtr pyInputType(PyObject_GetAttrString(exaMeta, "input_type"));
-        checkPyPtrIsNull(pyInputType);
-        const char *inputType = PyUnicode_AsUTF8(pyInputType.get());
-        bool isSetInput = (std::string(inputType) == "SET");
+        bool isSetInput = (static_cast<SWIGVMContainers::SWIGVM_itertype_e>(inputType) == SWIGVMContainers::MULTIPLE);
         // Get input column info
         std::vector<ColumnInfo> colInfo;
-        getColumnInfo(ctxIter, exaMeta, true, colInfo);
+        getColumnInfo(ctxIter, colNames, colInfo);
         // Get input data
         if (!isSetInput && numRows > 1)
             numRows = 1;
@@ -982,11 +996,11 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
 
 static PyObject *emitDataframe(PyObject *self, PyObject *args)
 {
-    PyObject *exaMeta = NULL;
     PyObject *ctxIter = NULL;
+    PyObject *colTypes = NULL;
     PyObject *dataframe = NULL;
 
-    if (!PyArg_ParseTuple(args, "OOO", &exaMeta, &ctxIter, &dataframe))
+    if (!PyArg_ParseTuple(args, "OOO", &ctxIter, &colTypes, &dataframe))
         return NULL;
 
     try {
@@ -994,12 +1008,12 @@ static PyObject *emitDataframe(PyObject *self, PyObject *args)
         checkPyPtrIsNull(resultHandler);
         // Get output column info
         std::vector<ColumnInfo> colInfo;
-        getColumnInfo(ctxIter, exaMeta, false, colInfo);
+        getOutputColumnTypes(colTypes, colInfo);
         // Get NumPy types
         PyPtr pyNumpyTypes(getNumpyTypes(dataframe));
         checkPyPtrIsNull(pyNumpyTypes);
         // Emit output data
-        emit(exaMeta, resultHandler.get(), colInfo, dataframe, pyNumpyTypes.get());
+        emit(resultHandler.get(), colInfo, dataframe, pyNumpyTypes.get());
     }
     catch (std::exception &ex) {
         if (ex.what() && strlen(ex.what()))
