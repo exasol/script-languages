@@ -117,7 +117,6 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
 
-"""
     def test_dataframe_scalar_returns(self):
         from decimal import Decimal
         self.query(udf.fixindent('''
@@ -125,13 +124,15 @@ class PandasDataFrame(udf.TestCase):
             foo(%s)
             RETURNS DECIMAL(10,5) AS
 
+            import numpy as np
+
             def run(ctx):
                 df = ctx.get_dataframe()
-                return df.iloc[0, 0] + df.iloc[0, 1]
+                return np.asscalar(df.iloc[0, 0] + df.iloc[0, 1])
             /
             ''' % (self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
-        self.assertRowsEqual([(Decimal('12346.6789'),)]*self.num_rows, rows)
+        self.assertRowsEqual([(Decimal('1246'),)]*self.num_rows, rows)
 
     def test_dataframe_scalar_emits_no_iter(self):
         self.query(udf.fixindent('''
@@ -159,7 +160,7 @@ class PandasDataFrame(udf.TestCase):
                 df = ctx.get_dataframe()
                 ctx.emit(*(df.columns.tolist()))
             /
-            ''' % (self.col_defs, 'X1 VARCHAR(5), X2 VARCHAR(5), X3 VARCHAR(5), X4 VARCHAR(5), X5 VARCHAR(5), X6 VARCHAR(5), X7 VARCHAR(5), X8 VARCHAR(5)')))
+            ''' % (self.col_defs, 'X1 VARCHAR(5), X2 VARCHAR(5), X3 VARCHAR(5), X4 VARCHAR(5), X5 VARCHAR(5), X6 VARCHAR(5), X7 VARCHAR(5), X8 VARCHAR(5), X9 VARCHAR(5), X10 VARCHAR(5), X11 VARCHAR(5)')))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([tuple(self.col_names.split(", "))]*self.num_rows, rows)
 
@@ -220,7 +221,7 @@ class PandasDataFrame(udf.TestCase):
                 ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
-        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 8 arguments \(0 given\)'):
+        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 11 arguments \(0 given\)'):
             rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
 
     def test_dataframe_scalar_emits_wrong_args7(self):
@@ -235,8 +236,9 @@ class PandasDataFrame(udf.TestCase):
                 ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
-        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 8 arguments \(7 given\)'):
+        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 11 arguments \(10 given\)'):
             rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
+"""
 
     def test_dataframe_set_emits(self):
         self.query(udf.fixindent('''
