@@ -205,7 +205,7 @@ PyObject *getDecimalFromString(PyObject *value)
 }
 
 
-PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows, bool isSetInput)
+PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows, bool isSetInput, bool& isFinished)
 {
     const long numCols = colInfo.size();
     std::vector<std::tuple<PyPtr, PyPtr, std::function<PyObject *(PyObject*)>>> pyColGetMethods;
@@ -333,10 +333,13 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             }
 
             int next = PyObject_IsTrue(pyNext.get());
-            if (next < 0)
+            if (next < 0) {
                 throw std::runtime_error("getColumnData(): next() PyObject_IsTrue() error");
-            else if (!next)
+            }
+            else if (!next) {
+                isFinished = true;
                 break;
+            }
         }
     }
 
@@ -438,7 +441,8 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         checkPyPtrIsNull(asType);
         PyPtr keywordArgs(PyDict_New());
         checkPyPtrIsNull(keywordArgs);
-        PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
+        PyPtr pyFalse(Py_False);
+        PyDict_SetItemString(keywordArgs.get(), "copy", pyFalse.get());
         PyPtr funcArgs(Py_BuildValue("(s)", colTypes[c].first.c_str()));
         checkPyPtrIsNull(funcArgs);
         PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
@@ -980,8 +984,15 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         // Get input data
         if (!isSetInput && numRows > 1)
             numRows = 1;
-        PyPtr pyData(getColumnData(colInfo, tableIter.get(), numRows, isSetInput));
+        bool isFinished = false;
+        PyPtr pyData(getColumnData(colInfo, tableIter.get(), numRows, isSetInput, isFinished));
         checkPyPtrIsNull(pyData);
+        if (isFinished) {
+            PyPtr pyTrue(Py_True);
+            int ok = PyObject_SetAttrString(ctxIter, "_exaiter__finished", pyTrue.get());
+            if (ok < 0)
+                throw std::runtime_error("getDataframe(): error setting exaiter.__finished");
+        }
         // Create DataFrame
         pyDataFrame.reset(createDataFrame(pyData.get(), colInfo));
     }
