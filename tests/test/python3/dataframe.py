@@ -28,7 +28,8 @@ class PandasDataFrame(udf.TestCase):
 
         self.query('CREATE TABLE TEST1(C0 INT IDENTITY, %s)' % (self.col_defs))
         self.query('INSERT INTO TEST1 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
-        num_inserts = 6
+        #num_inserts = 6
+        num_inserts = 9
         for i in range(num_inserts):
             self.query('INSERT INTO TEST1 (%s) SELECT %s FROM TEST1' % (self.col_names, self.col_names))
         self.num_rows = 2**num_inserts
@@ -77,28 +78,6 @@ class PandasDataFrame(udf.TestCase):
             /
             '''))
 
-    def test_dataframe_test_c_func_set(self):
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
-            foo(%s)
-            EMITS(%s) AS
-
-            import sys
-            sys.path.append('/exaudf')
-            import decimal
-            import datetime
-            import pandas as pd
-            import pyextdataframe
-
-            def run(ctx):
-                df = ctx.get_dataframe(100)
-                ctx.emit(df)
-            /
-            ''' % (self.col_defs, self.col_defs)))
-        rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
-        self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
-
-
     def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
@@ -108,7 +87,7 @@ class PandasDataFrame(udf.TestCase):
             import sys
             sys.path.append('/exaudf')
             import pyextdataframe
-            
+
             def run(ctx):
                 df = ctx.get_dataframe()
                 ctx.emit(df)

@@ -81,6 +81,21 @@ struct PyPtrDeleter {
 
 using PyPtr = std::unique_ptr<PyObject, PyPtrDeleter>;
 
+#if 0
+struct PyPtrDummy {
+    PyPtrDummy(PyObject *obj) {
+        ptr = obj;
+    }
+    PyObject *get() {
+        return ptr;
+    }
+    void reset(PyObject *obj) {
+        ptr = obj;
+    }
+    PyObject *ptr;
+};
+#endif
+
 inline void checkPyPtrIsNull(const PyPtr& obj) {
     if (!obj)
         throw std::runtime_error("");
@@ -306,8 +321,10 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             if (pyColNum < 0 && PyErr_Occurred())
                 throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
 
-            if (wasNull)
+            if (wasNull) {
+                Py_INCREF(Py_None);
                 pyVal.reset(Py_None);
+            }
             else if (std::get<2>(pyColGetMethods[c]))
                 pyVal.reset(std::get<2>(pyColGetMethods[c])(pyVal.get()));
             PyList_SET_ITEM(pyRow.get(), pyColNum, pyVal.release());
@@ -427,6 +444,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     for (int c = 0; c < numCols; c++) {
         PyPtr pyStart(PyLong_FromLong(c));
         PyPtr pyStop(PyLong_FromLong(c + 1));
+        Py_INCREF(Py_None);
         PyPtr none(Py_None);
         PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), none.get()));
         checkPyPtrIsNull(slice);
@@ -441,6 +459,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         checkPyPtrIsNull(asType);
         PyPtr keywordArgs(PyDict_New());
         checkPyPtrIsNull(keywordArgs);
+        Py_INCREF(Py_False);
         PyPtr pyFalse(Py_False);
         PyDict_SetItemString(keywordArgs.get(), "copy", pyFalse.get());
         PyPtr funcArgs(Py_BuildValue("(s)", colTypes[c].first.c_str()));
@@ -677,7 +696,14 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                     bool value = *((bool*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::BOOLEAN:
-                            pyValue.reset(value ? Py_True : Py_False);
+                            if (value) {
+                                Py_INCREF(Py_True);
+                                pyValue.reset(Py_True);
+                            }
+                            else {
+                                Py_INCREF(Py_False);
+                                pyValue.reset(Py_False);
+                            }
                             break;
                         default:
                         {
@@ -981,6 +1007,7 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         PyPtr pyData(getColumnData(colInfo, tableIter.get(), numRows, isSetInput, isFinished));
         checkPyPtrIsNull(pyData);
         if (isFinished) {
+            Py_INCREF(Py_True);
             PyPtr pyTrue(Py_True);
             int ok = PyObject_SetAttrString(ctxIter, "_exaiter__finished", pyTrue.get());
             if (ok < 0)

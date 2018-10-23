@@ -201,7 +201,7 @@ class exaiter(object):
         if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
             raise RuntimeError("get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
         if num_rows == "all":
-            num_rows = 1024
+            num_rows = sys.maxsize
         if self.__dataframe_finished:
             # Exception after None already returned
             raise RuntimeError("Iteration finished")
