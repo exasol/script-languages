@@ -415,29 +415,29 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     checkPyPtrIsNull(data);
 
 
-    PyArrayObject* array = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(),
+    PyArrayObject* pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(),
                                                             NPY_OBJECT,
                                                             NPY_ARRAY_IN_ARRAY));
-    int numRows = PyArray_DIM(array, 0);
-    int numCols = PyArray_DIM(array, 1);
+    int numRows = PyArray_DIM(pyArray, 0);
+    int numCols = PyArray_DIM(pyArray, 1);
 
     std::vector<PyPtr> columnArrays;
     // Transpose to column-major
-    PyObject *colArray = PyArray_Transpose(array, NULL);
+    PyObject *colArray = PyArray_Transpose(pyArray, NULL);
     for (int c = 0; c < numCols; c++) {
         PyPtr pyStart(PyLong_FromLong(c));
         PyPtr pyStop(PyLong_FromLong(c + 1));
         PyPtr none(Py_None);
         PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), none.get()));
         checkPyPtrIsNull(slice);
-        PyPtr arr(PyObject_GetItem(colArray, slice.get()));
-        checkPyPtrIsNull(arr);
+        PyPtr arraySlice(PyObject_GetItem(colArray, slice.get()));
+        checkPyPtrIsNull(arraySlice);
 
         PyPtr pyZero(PyLong_FromLong(0L));
-        arr.reset(PyObject_GetItem(arr.get(), pyZero.get()));
-        checkPyPtrIsNull(arr);
+        PyPtr array(PyObject_GetItem(arraySlice.get(), pyZero.get()));
+        checkPyPtrIsNull(array);
 
-        PyPtr asType (PyObject_GetAttrString(arr.get(), "astype"));
+        PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
         checkPyPtrIsNull(asType);
         PyPtr keywordArgs(PyDict_New());
         checkPyPtrIsNull(keywordArgs);
@@ -692,20 +692,20 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
                 case PY_INT:
                 {
-                    PyObject *pyInt = PyList_GetItem(columnArrays[c].get(), r);
-                    checkPyObjectIsNull(pyInt);
+                    PyPtr pyInt(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyInt);
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
-                            pyValue.reset(pyInt);
+                            pyValue.reset(pyInt.release());
                             break;
                         case SWIGVMContainers::NUMERIC:
-                            pyValue.reset(PyObject_Str(pyInt));
+                            pyValue.reset(PyObject_Str(pyInt.get()));
                             break;
                         case SWIGVMContainers::DOUBLE:
                         {
-                            double value = PyFloat_AsDouble(pyInt);
+                            double value = PyFloat_AsDouble(pyInt.get());
                             if (value < 0 && PyErr_Occurred())
                                 throw std::runtime_error("emit() PY_INT: PyFloat_AsDouble error");
                             pyValue.reset(PyFloat_FromDouble(value));
@@ -723,26 +723,26 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
                 case PY_DECIMAL:
                 {
-                    PyObject *pyDecimal = PyList_GetItem(columnArrays[c].get(), r);
-                    checkPyObjectIsNull(pyDecimal);
+                    PyPtr pyDecimal(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyDecimal);
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
                         {
-                            PyPtr pyInt(PyObject_CallMethod(pyDecimal, "__int__", NULL));
+                            PyPtr pyInt(PyObject_CallMethod(pyDecimal.get(), "__int__", NULL));
                             checkPyPtrIsNull(pyInt);
-                            pyValue.reset(pyInt.get());
+                            pyValue.reset(pyInt.release());
                             break;
                         }
                         case SWIGVMContainers::NUMERIC:
-                            pyValue.reset(PyObject_Str(pyDecimal));
+                            pyValue.reset(PyObject_Str(pyDecimal.get()));
                             break;
                         case SWIGVMContainers::DOUBLE:
                         {
-                            PyPtr pyFloat(PyObject_CallMethod(pyDecimal, "__float__", NULL));
+                            PyPtr pyFloat(PyObject_CallMethod(pyDecimal.get(), "__float__", NULL));
                             checkPyPtrIsNull(pyFloat);
-                            pyValue.reset(pyFloat.get());
+                            pyValue.reset(pyFloat.release());
                             break;
                         }
                         default:
@@ -757,22 +757,22 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
                 case PY_STR:
                 {
-                    PyObject *pyString = PyList_GetItem(columnArrays[c].get(), r);
-                    checkPyObjectIsNull(pyString);
+                    PyPtr pyString(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyString);
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::NUMERIC:
-                            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString, NULL));
+                            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString.get(), NULL));
                             break;
                         case SWIGVMContainers::STRING:
                         {
                             Py_ssize_t size = -1;
-                            const char *str = PyUnicode_AsUTF8AndSize(pyString, &size);
+                            const char *str = PyUnicode_AsUTF8AndSize(pyString.get(), &size);
                             if (!str && size < 0)
                                 throw std::runtime_error("");
                             PyPtr pySize(PyLong_FromSsize_t(size));
                             checkPyPtrIsNull(pySize);
-                            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString, pySize.get(), NULL));
+                            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString.get(), pySize.get(), NULL));
                             break;
                         }
                         default:
@@ -786,13 +786,13 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
                 case PY_DATE:
                 {
-                    PyObject *pyDate = PyList_GetItem(columnArrays[c].get(), r);
-                    checkPyObjectIsNull(pyDate);
+                    PyPtr pyDate(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyDate);
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::DATE:
                         {
-                            PyPtr pyIsoDate(PyObject_CallMethod(pyDate, "isoformat", NULL));
+                            PyPtr pyIsoDate(PyObject_CallMethod(pyDate.get(), "isoformat", NULL));
                             checkPyPtrIsNull(pyIsoDate);
                             pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDate.get(), NULL));
                             break;
@@ -842,13 +842,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
-                    break;
-                }
-                case NPY_OBJECT:
-                {
-                    std::stringstream ss;
-                    ss << "emit column " << c << ": OBJECT not supported";
-                    throw std::runtime_error(ss.str().c_str());
                     break;
                 }
                 default:
