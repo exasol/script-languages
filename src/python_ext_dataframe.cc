@@ -121,7 +121,7 @@ struct ColumnInfo
 
 
 
-void getColumnInfo(PyObject *ctxIter, PyObject *colNames, std::vector<ColumnInfo>& colInfo)
+void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::vector<ColumnInfo>& colInfo)
 {
     const char *ctxColumnTypeList = "_exaiter__incoltypes";
 
@@ -148,7 +148,7 @@ void getColumnInfo(PyObject *ctxIter, PyObject *colNames, std::vector<ColumnInfo
         throw std::runtime_error(ss.str().c_str());
     }
 
-    for (Py_ssize_t i = 0; i < pyNumCols; i++) {
+    for (Py_ssize_t i = startCol; i < pyNumCols; i++) {
         PyObject *pyColType = PyList_GetItem(pyColTypes.get(), i);
         checkPyObjectIsNull(pyColType);
         int colType = PyLong_AsLong(pyColType);
@@ -220,13 +220,13 @@ PyObject *getDecimalFromString(PyObject *value)
 }
 
 
-PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows, bool isSetInput, bool& isFinished)
+PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows, long startCol, bool isSetInput, bool& isFinished)
 {
     const long numCols = colInfo.size();
     std::vector<std::tuple<PyPtr, PyPtr, std::function<PyObject *(PyObject*)>>> pyColGetMethods;
 
     for (long i = 0; i < numCols; i++) {
-        PyPtr pyColNum(PyLong_FromLong(i));
+        PyPtr pyColNum(PyLong_FromLong(i + startCol));
         checkPyPtrIsNull(pyColNum);
         std::function<PyObject *(PyObject*)> postFunction;
 
@@ -279,13 +279,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
     PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
     checkPyPtrIsNull(pyCheckExceptionMethodName);
 
-    PyPtr pyNumRowsLong(PyLong_FromLong(0L));
-    checkPyPtrIsNull(pyNumRowsLong);
-    Py_ssize_t pyNumRows = PyLong_AsSsize_t(pyNumRowsLong.get());
-    if (pyNumRows < 0 && PyErr_Occurred()) 
-        throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
-
-    PyPtr pyData(PyList_New(pyNumRows));
+    PyPtr pyData(PyList_New(0));
     for (long r = 0; r < numRows; r++) {
         PyPtr pyRow(PyList_New(numCols));
 
@@ -327,7 +321,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             }
             else if (std::get<2>(pyColGetMethods[c]))
                 pyVal.reset(std::get<2>(pyColGetMethods[c])(pyVal.get()));
-            PyList_SET_ITEM(pyRow.get(), pyColNum, pyVal.release());
+            PyList_SET_ITEM(pyRow.get(), pyColNum - startCol, pyVal.release());
         }
 
         int ok = PyList_Append(pyData.get(), pyRow.get());
@@ -987,8 +981,9 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
     PyObject *colNames = NULL;
     long inputType = 0;
     long numRows = 0;
+    long startCol = 0;
 
-    if (!PyArg_ParseTuple(args, "OOll", &ctxIter, &colNames, &inputType, &numRows))
+    if (!PyArg_ParseTuple(args, "OOlll", &ctxIter, &colNames, &inputType, &numRows, &startCol))
         return NULL;
 
     PyPtr pyDataFrame;
@@ -999,12 +994,12 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         bool isSetInput = (static_cast<SWIGVMContainers::SWIGVM_itertype_e>(inputType) == SWIGVMContainers::MULTIPLE);
         // Get input column info
         std::vector<ColumnInfo> colInfo;
-        getColumnInfo(ctxIter, colNames, colInfo);
+        getColumnInfo(ctxIter, colNames, startCol, colInfo);
         // Get input data
         if (!isSetInput && numRows > 1)
             numRows = 1;
         bool isFinished = false;
-        PyPtr pyData(getColumnData(colInfo, tableIter.get(), numRows, isSetInput, isFinished));
+        PyPtr pyData(getColumnData(colInfo, tableIter.get(), numRows, startCol, isSetInput, isFinished));
         checkPyPtrIsNull(pyData);
         if (isFinished) {
             Py_INCREF(Py_True);
