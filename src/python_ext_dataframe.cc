@@ -47,6 +47,7 @@ std::map<std::string, ColumnType> columnTypes {
 #define PY_STR (NPY_USERDEF+3)
 #define PY_DATE (NPY_USERDEF+4)
 #define PY_NONETYPE (NPY_USERDEF+5)
+#define PY_BOOL (NPY_USERDEF+6)
 
 std::map<std::string, int> typeMap {
     {"bool", NPY_BOOL},
@@ -71,7 +72,8 @@ std::map<std::string, int> typeMap {
     {"py_datetime.date", PY_DATE},
     {"datetime64[ns]", NPY_DATETIME},
     {"object", NPY_OBJECT},
-    {"py_NoneType", PY_NONETYPE}
+    {"py_NoneType", PY_NONETYPE},
+    {"py_bool", PY_BOOL}
 };
 
 
@@ -516,9 +518,9 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_UINT64:
                 {
                     int64_t value = *((int64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
-                    bool isNull = npy_isnan(value);
-                    if (isNull) {
+                    if (npy_isnan(value)) {
                         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
                     }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
@@ -546,6 +548,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_UINT32:
                 {
                     int32_t value = *((int32_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -572,6 +578,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_UINT16:
                 {
                     int16_t value = *((int16_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -598,6 +608,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_UINT8:
                 {
                     int8_t value = *((int8_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -623,6 +637,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_FLOAT64:
                 {
                     double value = *((double*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -648,6 +666,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_FLOAT32:
                 {
                     double value = *((float*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -673,6 +695,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_FLOAT16:
                 {
                     double value = static_cast<double>(*((uint16_t*)(PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r))));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -720,10 +746,44 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
                     break;
                 }
+                case PY_BOOL:
+                {
+                    PyPtr pyBool(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyBool);
+                    if (pyBool.get() == Py_None) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
+                    switch (colInfo[c].type) {
+                        case SWIGVMContainers::BOOLEAN:
+                            if (pyBool.get() == Py_True) {
+                                Py_INCREF(Py_True);
+                                pyValue.reset(Py_True);
+                            }
+                            else if (pyBool.get() == Py_False) {
+                                Py_INCREF(Py_False);
+                                pyValue.reset(Py_False);
+                            }
+                            break;
+                        default:
+                        {
+                            std::stringstream ss;
+                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            throw std::runtime_error(ss.str().c_str());
+                        }
+                    }
+                    checkPyPtrIsNull(pyValue);
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+                    break;
+                }
                 case PY_INT:
                 {
                     PyPtr pyInt(PyList_GetItem(columnArrays[c].get(), r));
                     checkPyPtrIsNull(pyInt);
+                    if (pyInt.get() == Py_None) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
@@ -755,6 +815,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 {
                     PyPtr pyDecimal(PyList_GetItem(columnArrays[c].get(), r));
                     checkPyPtrIsNull(pyDecimal);
+                    if (pyDecimal.get() == Py_None) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
@@ -789,6 +853,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 {
                     PyPtr pyString(PyList_GetItem(columnArrays[c].get(), r));
                     checkPyPtrIsNull(pyString);
+                    if (pyString.get() == Py_None) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::NUMERIC:
@@ -818,6 +886,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 {
                     PyPtr pyDate(PyList_GetItem(columnArrays[c].get(), r));
                     checkPyPtrIsNull(pyDate);
+                    if (pyDate.get() == Py_None) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::DATE:
@@ -839,6 +911,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_DATETIME:
                 {
                     uint64_t value = *((uint64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::TIMESTAMP:
