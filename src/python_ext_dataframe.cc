@@ -5,6 +5,7 @@
 #define NPY_NO_DEPRECATED_API NPY_API_VERSION
 #include <numpy/ndarraytypes.h>
 #include <numpy/npy_3kcompat.h>
+#include <numpy/npy_math.h>
 #include <numpy/ufuncobject.h>
 
 #include <functional>
@@ -45,6 +46,7 @@ std::map<std::string, ColumnType> columnTypes {
 #define PY_DECIMAL (NPY_USERDEF+2)
 #define PY_STR (NPY_USERDEF+3)
 #define PY_DATE (NPY_USERDEF+4)
+#define PY_NONETYPE (NPY_USERDEF+5)
 
 std::map<std::string, int> typeMap {
     {"bool", NPY_BOOL},
@@ -68,7 +70,8 @@ std::map<std::string, int> typeMap {
     {"py_str", PY_STR},
     {"py_datetime.date", PY_DATE},
     {"datetime64[ns]", NPY_DATETIME},
-    {"object", NPY_OBJECT}
+    {"object", NPY_OBJECT},
+    {"py_NoneType", PY_NONETYPE}
 };
 
 
@@ -311,16 +314,17 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             if (wasNull < 0)
                 throw std::runtime_error("getColumnData(): wasNull() PyObject_IsTrue() error");
 
-            Py_ssize_t pyColNum = PyLong_AsSsize_t(std::get<0>(pyColGetMethods[c]).get());
-            if (pyColNum < 0 && PyErr_Occurred())
-                throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
-
             if (wasNull) {
                 Py_INCREF(Py_None);
                 pyVal.reset(Py_None);
             }
-            else if (std::get<2>(pyColGetMethods[c]))
+            else if (std::get<2>(pyColGetMethods[c])) {
                 pyVal.reset(std::get<2>(pyColGetMethods[c])(pyVal.get()));
+            }
+
+            Py_ssize_t pyColNum = PyLong_AsSsize_t(std::get<0>(pyColGetMethods[c]).get());
+            if (pyColNum < 0 && PyErr_Occurred())
+                throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
             PyList_SET_ITEM(pyRow.get(), pyColNum - startCol, pyVal.release());
         }
 
@@ -485,7 +489,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
             }
             else {
                 std::stringstream ss;
-                ss << "emit: unexpected python type: " << pyTypeName;
+                ss << "emit: column " <<  c << ", unexpected python type: " << pyTypeName;
                 throw std::runtime_error(ss.str().c_str());
             }
 
@@ -496,6 +500,8 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         }
     }
 
+    PyPtr pySetNullMethodName(PyUnicode_FromString("setNull"));
+    checkPyPtrIsNull(pySetNullMethodName);
     PyPtr pyNextMethodName(PyUnicode_FromString("next"));
     checkPyPtrIsNull(pyNextMethodName);
     PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
@@ -510,6 +516,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_UINT64:
                 {
                     int64_t value = *((int64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    bool isNull = npy_isnan(value);
+                    if (isNull) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
@@ -862,6 +872,11 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
+                    break;
+                }
+                case PY_NONETYPE:
+                {
+                    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
                     break;
                 }
                 default:
