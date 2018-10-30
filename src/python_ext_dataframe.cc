@@ -42,6 +42,34 @@ std::map<std::string, ColumnType> columnTypes {
 };
 #endif
 
+#if 0
+enum NPY_TYPES {    NPY_BOOL=0,
+                    NPY_BYTE, NPY_UBYTE,
+                    NPY_SHORT, NPY_USHORT,
+                    NPY_INT, NPY_UINT,
+                    NPY_LONG, NPY_ULONG,
+                    NPY_LONGLONG, NPY_ULONGLONG,
+                    NPY_FLOAT, NPY_DOUBLE, NPY_LONGDOUBLE,
+                    NPY_CFLOAT, NPY_CDOUBLE, NPY_CLONGDOUBLE,
+                    NPY_OBJECT=17,
+                    NPY_STRING, NPY_UNICODE,
+                    NPY_VOID,
+                    /*
+                     * New 1.6 types appended, may be integrated
+                     * into the above in 2.0.
+                     */
+                    NPY_DATETIME, NPY_TIMEDELTA, NPY_HALF,
+
+                    NPY_NTYPES,
+                    NPY_NOTYPE,
+                    NPY_CHAR NPY_ATTR_DEPRECATE("Use NPY_STRING"),
+                    NPY_USERDEF=256,  /* leave room for characters */
+
+                    /* The number of types not including the new 1.6 types */
+                    NPY_NTYPES_ABI_COMPATIBLE=21
+};
+#endif
+
 #define PY_INT (NPY_USERDEF+1)
 #define PY_DECIMAL (NPY_USERDEF+2)
 #define PY_STR (NPY_USERDEF+3)
@@ -910,17 +938,24 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
                 case NPY_DATETIME:
                 {
-                    uint64_t value = *((uint64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
-                    if (npy_isnan(value)) {
-                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
-                        break;
-                    }
+                    PyPtr pandasModule(PyImport_ImportModule("pandas"));
+                    checkPyPtrIsNull(pandasModule);
+
+                    PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
+                    checkPyPtrIsNull(pdNaT);
+                    long nat = PyLong_AsLong(pdNaT.get());
+                    if (nat == -1 && PyErr_Occurred())
+                        throw std::runtime_error("emit() datetime: PyLong_AsLong error");
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::TIMESTAMP:
                         {
-                            PyPtr pandasModule(PyImport_ImportModule("pandas"));
-                            checkPyPtrIsNull(pandasModule);
+                            uint64_t value = *((uint64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                            if (value == static_cast<uint64_t>(nat)) {
+                                pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                                break;
+                            }
+
                             PyPtr pdTimestamp(PyObject_GetAttrString(pandasModule.get(), "Timestamp"));
                             checkPyPtrIsNull(pdTimestamp);
 
