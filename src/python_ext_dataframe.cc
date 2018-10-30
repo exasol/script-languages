@@ -505,11 +505,20 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 throw std::runtime_error(ss.str().c_str());
             }
 
-            // Get type of first item in list
+            // Get type of first non-None item in list
+            Py_INCREF(Py_None);
+            PyPtr pyNone(Py_None);
             PyObject *pyVal = PyList_GetItem(pyList.get(), 0);
             checkPyObjectIsNull(pyVal);
-            std::string pyTypeName("py_");
-            pyTypeName.append(Py_TYPE(pyVal)->tp_name);
+            std::string pyTypeName(std::string("py_") + Py_TYPE(pyVal)->tp_name);
+            for (int r = 1; r < numRows && pyVal == pyNone.get(); r++) {
+                pyVal = PyList_GetItem(pyList.get(), r);
+                checkPyObjectIsNull(pyVal);
+                if (pyVal != pyNone.get()) {
+                    pyTypeName = std::string("py_") + Py_TYPE(pyVal)->tp_name;
+                    break;
+                }
+            }
 
             // Update type in column type info
             std::map<std::string, int>::iterator userDefIt;
