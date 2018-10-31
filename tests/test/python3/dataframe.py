@@ -16,11 +16,6 @@ class PandasDataFrame(udf.TestCase):
         self.query('CREATE SCHEMA FN2', ignore_errors=True)
         self.query('OPEN SCHEMA FN2', ignore_errors=True)
 
-        #self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8'
-        #self.col_defs = 'C1 INT, C2 DECIMAL(36,5), C3 DOUBLE, C4 BOOLEAN, C5 DATE, C6 TIMESTAMP, C7 VARCHAR(500), C8 CHAR(10)'
-        #self.col_vals = "1, 12345.6789, 12345.6789, TRUE, '2018-09-12', '2018-09-12 13:37:00.123', 'abcdefghij', 'abcdefgh'"
-        #self.col_tuple = (Decimal('1'), Decimal('12345.6789'), 12345.6789, True, date(2018, 9, 12), datetime(2018, 9, 12, 13, 37, 0, 123000), 'abcdefghij', 'abcdefgh  ')
-
         self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11'
         self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36, 0), C6 DOUBLE, C7 BOOLEAN, C8 VARCHAR(500), C9 CHAR(10), C10 DATE, C11 TIMESTAMP'
         self.col_vals = "1, 1234, 12345678, 1234567890123456, 123456789012345678901234567890123456, 12345.6789, TRUE, 'abcdefghij', 'abcdefgh', '2018-10-12', '2018-10-12 12:15:30.123'"
@@ -34,59 +29,56 @@ class PandasDataFrame(udf.TestCase):
             self.query('INSERT INTO TEST1 (%s) SELECT %s FROM TEST1' % (self.col_names, self.col_names))
         self.num_rows = 2**num_inserts
 
+
+
+        self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11'
+        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36, 0), C6 DOUBLE, C7 BOOLEAN, C8 VARCHAR(500), C9 CHAR(10), C10 DATE, C11 TIMESTAMP'
+        self.query('CREATE TABLE TEST2(C0 INT IDENTITY, %s)' % (self.col_defs))
+#        self.col_vals = "NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL"
+#        self.query('INSERT INTO TEST2 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
+        self.col_vals = "1, 1234, 12345678, 1234567890123456, 123456789012345678901234567890123456, 12345.6789, TRUE, 'abcdefghij', 'abcdefgh', '2018-10-12', '2018-10-12 12:15:30.123'"
+        self.query('INSERT INTO TEST2 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
+        self.col_vals = "NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL"
+        self.query('INSERT INTO TEST2 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
+
+        self.col_tuple = (Decimal('1'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('123456789012345678901234567890123456'), 12345.6789, True, 'abcdefghij', 'abcdefgh  ', date(2018, 10, 12), datetime(2018, 10, 12, 12, 15, 30, 123000))
+        self.col_tuple_null = (None, None, None, None, None, None, None, None, None, None, None)
+
+
+
+    def test_dataframe_scalar_emits_null(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
-            DATAFRAME_EMITS_HELPER(...)
-            EMITS(...) AS
-
-            import numpy as np
-            import pandas as pd
-
-            def to_scalar(val):
-                if isinstance(val, (np.number, np.bool_)):
-                    return np.asscalar(val)
-                elif isinstance(val, pd.tslib.Timestamp):
-                    return val.to_pydatetime()
-                else:
-                    return val
-
-            def np_numeric_as_scalar(x):
-                return [to_scalar(x[i]) for i in range(0, len(x))]
-
-            def transform_dataframe_to_list(x):
-                ret = []
-                for i in range(0, x.shape[1]):
-                    if np.issubdtype(x.iloc[:, i].dtypes, np.number):
-                        ret.append([np.asscalar(v) for v in x.iloc[:, i].values])
-                    elif np.issubdtype(x.iloc[:, i].dtypes, np.bool_):
-                        ret.append([np.asscalar(v) for v in x.iloc[:, i].values])
-                    elif pd.core.dtypes.common.is_datetime_or_timedelta_dtype(x.iloc[:, i]):
-                        ret.append([v.to_pydatetime() for v in x.iloc[:, i]])
-                    else:
-                        ret.append([v for v in x.iloc[:, i]])
-                ret = [list(i) for i in zip(*ret)]
-                return ret
+            foo(%s)
+            EMITS(%s) AS
 
             def run(ctx):
                 df = ctx.get_dataframe()
-                df_list = transform_dataframe_to_list(df)
-                for i in range(0, df.shape[0]):
-                    ctx.emit(*df_list[i])
-                #for i in range(0, df.shape[0]):
-                #    out_list = np_numeric_as_scalar(df.iloc[i, :])
-                #    ctx.emit(*out_list)
+                ctx.emit(df)
             /
-            '''))
+            ''' % (self.col_defs, self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple, self.col_tuple_null], rows)
+
+    def test_dataframe_set_emits_null(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows='all')
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple, self.col_tuple_null], rows)
 
     def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
-
-            import sys
-            sys.path.append('/exaudf')
-            import pyextdataframe
 
             def run(ctx):
                 df = ctx.get_dataframe()

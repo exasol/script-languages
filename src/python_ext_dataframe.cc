@@ -459,7 +459,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     PyPtr data(PyObject_GetAttrString(dataframe, "values"));
     checkPyPtrIsNull(data);
 
-
     PyArrayObject* pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(),
                                                             NPY_OBJECT,
                                                             NPY_ARRAY_IN_ARRAY));
@@ -469,6 +468,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     std::vector<PyPtr> columnArrays;
     // Transpose to column-major
     PyObject *colArray = PyArray_Transpose(pyArray, NULL);
+
     for (int c = 0; c < numCols; c++) {
         PyPtr pyStart(PyLong_FromLong(c));
         PyPtr pyStop(PyLong_FromLong(c + 1));
@@ -483,21 +483,9 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         PyPtr array(PyObject_GetItem(arraySlice.get(), pyZero.get()));
         checkPyPtrIsNull(array);
 
-        PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
-        checkPyPtrIsNull(asType);
-        PyPtr keywordArgs(PyDict_New());
-        checkPyPtrIsNull(keywordArgs);
-        Py_INCREF(Py_False);
-        PyPtr pyFalse(Py_False);
-        PyDict_SetItemString(keywordArgs.get(), "copy", pyFalse.get());
-        PyPtr funcArgs(Py_BuildValue("(s)", colTypes[c].first.c_str()));
-        checkPyPtrIsNull(funcArgs);
-        PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
-        checkPyPtrIsNull(scalarArr);
-
         if (colTypes[c].second == NPY_OBJECT) {
             // Convert numpy array to python list
-            PyPtr pyList(PyObject_CallMethod(scalarArr.get(), "tolist", NULL));
+            PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
             checkPyPtrIsNull(pyList);
             if (!PyList_Check(pyList.get())) {
                 std::stringstream ss;
@@ -534,7 +522,31 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
 
             columnArrays.push_back(std::move(pyList));
         }
+        else if (colTypes[c].second == NPY_DATETIME) {
+            // Convert numpy array to python list
+            PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
+            checkPyPtrIsNull(pyList);
+            if (!PyList_Check(pyList.get())) {
+                std::stringstream ss;
+                ss << "emit(): column array " << c << " is not a list";
+                throw std::runtime_error(ss.str().c_str());
+            }
+
+            columnArrays.push_back(std::move(pyList));
+        }
         else {
+            PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
+            checkPyPtrIsNull(asType);
+            PyPtr keywordArgs(PyDict_New());
+            checkPyPtrIsNull(keywordArgs);
+            Py_INCREF(Py_False);
+            PyPtr pyFalse(Py_False);
+            PyDict_SetItemString(keywordArgs.get(), "copy", pyFalse.get());
+            PyPtr funcArgs(Py_BuildValue("(s)", colTypes[c].first.c_str()));
+            checkPyPtrIsNull(funcArgs);
+            PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
+            checkPyPtrIsNull(scalarArr);
+
             columnArrays.push_back(std::move(scalarArr));
         }
     }
@@ -949,38 +961,20 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 {
                     PyPtr pandasModule(PyImport_ImportModule("pandas"));
                     checkPyPtrIsNull(pandasModule);
-
                     PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
                     checkPyPtrIsNull(pdNaT);
-                    long nat = PyLong_AsLong(pdNaT.get());
-                    if (nat == -1 && PyErr_Occurred())
-                        throw std::runtime_error("emit() datetime: PyLong_AsLong error");
+
+                    PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
+                    checkPyPtrIsNull(pyTimestamp);
+                    if (pyTimestamp.get() == pdNaT.get()) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
 
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::TIMESTAMP:
                         {
-                            uint64_t value = *((uint64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
-                            if (value == static_cast<uint64_t>(nat)) {
-                                pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
-                                break;
-                            }
-
-                            PyPtr pdTimestamp(PyObject_GetAttrString(pandasModule.get(), "Timestamp"));
-                            checkPyPtrIsNull(pdTimestamp);
-
-                            PyPtr funcArgs(Py_BuildValue("(k)", value));
-                            checkPyPtrIsNull(funcArgs);
-
-                            PyPtr pyUnit(PyUnicode_FromString("ns"));
-                            checkPyPtrIsNull(pyUnit);
-                            PyPtr keywordArgs(PyDict_New());
-                            checkPyPtrIsNull(keywordArgs);
-                            PyDict_SetItemString(keywordArgs.get(), "unit", pyUnit.get());
-
-                            PyPtr pdTimestampValue(PyObject_Call(pdTimestamp.get(), funcArgs.get(), keywordArgs.get()));
-                            checkPyPtrIsNull(pdTimestampValue);
-
-                            PyPtr pyIsoDatetime(PyObject_CallMethod(pdTimestampValue.get(), "isoformat", "s", " "));
+                            PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " "));
                             checkPyPtrIsNull(pyIsoDatetime);
                             pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
                             break;
