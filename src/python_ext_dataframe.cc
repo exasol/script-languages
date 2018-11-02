@@ -113,7 +113,7 @@ struct ColumnInfo
 
 
 
-// Globals
+// Global modules
 PyPtr datetimeModule(PyImport_ImportModule("datetime"));
 PyPtr decimalModule(PyImport_ImportModule("decimal"));
 PyPtr pandasModule(PyImport_ImportModule("pandas"));
@@ -253,6 +253,14 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
     PyPtr pyNextMethodName(PyUnicode_FromString("next"));
     PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
 
+    std::vector<Py_ssize_t> pyColNums;
+    for (long c = 0; c < numCols; c++) {
+        Py_ssize_t pyColNum = PyLong_AsSsize_t(std::get<0>(pyColGetMethods[c]).get());
+        if (pyColNum < 0 && PyErr_Occurred())
+            throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
+        pyColNums.push_back(pyColNum);
+    }
+
     PyPtr pyData(PyList_New(0));
     for (long r = 0; r < numRows; r++) {
         PyPtr pyRow(PyList_New(numCols));
@@ -273,7 +281,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
                 if (exMsg) {
                     std::stringstream ss;
-                    ss << "getColumnData(): get row " << r << ", column " << c << exMsg;
+                    ss << "getColumnData(): get row " << r << ", column " << c << ": " << exMsg;
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
@@ -288,13 +296,11 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 pyVal.reset(Py_None);
             }
             else if (std::get<2>(pyColGetMethods[c])) {
+                // Call post function
                 pyVal.reset(std::get<2>(pyColGetMethods[c])(pyVal.get()));
             }
 
-            Py_ssize_t pyColNum = PyLong_AsSsize_t(std::get<0>(pyColGetMethods[c]).get());
-            if (pyColNum < 0 && PyErr_Occurred())
-                throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
-            PyList_SET_ITEM(pyRow.get(), pyColNum - startCol, pyVal.release());
+            PyList_SET_ITEM(pyRow.get(), pyColNums[c] - startCol, pyVal.release());
         }
 
         int ok = PyList_Append(pyData.get(), pyRow.get());
