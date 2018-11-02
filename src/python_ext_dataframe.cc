@@ -377,11 +377,9 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     // Get data type info
     std::vector<std::pair<std::string, int>> colTypes;
     PyPtr numpyTypeIter(PyObject_GetIter(numpyTypes));
-
-    std::map<std::string, int>::iterator it;
     for (PyPtr numpyType(PyIter_Next(numpyTypeIter.get())); numpyType.get(); numpyType.reset(PyIter_Next(numpyTypeIter.get()))) {
         const char *typeName = PyUnicode_AsUTF8(numpyType.get());
-        it = typeMap.find(typeName);
+        std::map<std::string, int>::iterator it = typeMap.find(typeName);
         if (it != typeMap.end()) {
             colTypes.push_back(*it);
         }
@@ -393,23 +391,18 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     }
 
     PyPtr data(PyObject_GetAttrString(dataframe, "values"));
-
-    PyArrayObject* pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(),
-                                                            NPY_OBJECT,
-                                                            NPY_ARRAY_IN_ARRAY));
+    PyArrayObject *pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
     int numRows = PyArray_DIM(pyArray, 0);
     int numCols = PyArray_DIM(pyArray, 1);
 
-    std::vector<PyPtr> columnArrays;
     // Transpose to column-major
     PyObject *colArray = PyArray_Transpose(pyArray, NULL);
 
+    std::vector<PyPtr> columnArrays;
     for (int c = 0; c < numCols; c++) {
         PyPtr pyStart(PyLong_FromLong(c));
         PyPtr pyStop(PyLong_FromLong(c + 1));
-        Py_INCREF(Py_None);
-        PyPtr none(Py_None);
-        PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), none.get()));
+        PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), Py_None));
         PyPtr arraySlice(PyObject_GetItem(colArray, slice.get()));
 
         PyPtr pyZero(PyLong_FromLong(0L));
@@ -425,15 +418,13 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
             }
 
             // Get type of first non-None item in list
-            Py_INCREF(Py_None);
-            PyPtr pyNone(Py_None);
             PyObject *pyVal = PyList_GetItem(pyList.get(), 0);
             checkPyObjectIsNull(pyVal);
             std::string pyTypeName(std::string("py_") + Py_TYPE(pyVal)->tp_name);
-            for (int r = 1; r < numRows && pyVal == pyNone.get(); r++) {
+            for (int r = 1; r < numRows && pyVal == Py_None; r++) {
                 pyVal = PyList_GetItem(pyList.get(), r);
                 checkPyObjectIsNull(pyVal);
-                if (pyVal != pyNone.get()) {
+                if (pyVal != Py_None) {
                     pyTypeName = std::string("py_") + Py_TYPE(pyVal)->tp_name;
                     break;
                 }
@@ -467,9 +458,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         else {
             PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
             PyPtr keywordArgs(PyDict_New());
-            Py_INCREF(Py_False);
-            PyPtr pyFalse(Py_False);
-            PyDict_SetItemString(keywordArgs.get(), "copy", pyFalse.get());
+            PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
             PyPtr funcArgs(Py_BuildValue("(s)", colTypes[c].first.c_str()));
             PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
 
@@ -1032,9 +1021,7 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         bool isFinished = false;
         PyPtr pyData(getColumnData(colInfo, tableIter.get(), numRows, startCol, isSetInput, isFinished));
         if (isFinished) {
-            Py_INCREF(Py_True);
-            PyPtr pyTrue(Py_True);
-            int ok = PyObject_SetAttrString(ctxIter, "_exaiter__finished", pyTrue.get());
+            int ok = PyObject_SetAttrString(ctxIter, "_exaiter__finished", Py_True);
             if (ok < 0)
                 throw std::runtime_error("getDataframe(): error setting exaiter.__finished");
         }
