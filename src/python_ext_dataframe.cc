@@ -1051,17 +1051,17 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
 static PyObject *emitDataframe(PyObject *self, PyObject *args)
 {
     PyObject *ctxIter = NULL;
-    PyObject *colTypes = NULL;
     PyObject *dataframe = NULL;
 
-    if (!PyArg_ParseTuple(args, "OOO", &ctxIter, &colTypes, &dataframe))
+    if (!PyArg_ParseTuple(args, "OO", &ctxIter, &dataframe))
         return NULL;
 
     try {
         PyPtr resultHandler(PyObject_GetAttrString(ctxIter, "_exaiter__out"));
+        PyPtr colTypes(PyObject_GetAttrString(ctxIter, "_exaiter__outcoltypes"));
         // Get output column info
         std::vector<ColumnInfo> colInfo;
-        getOutputColumnTypes(colTypes, colInfo);
+        getOutputColumnTypes(colTypes.get(), colInfo);
         // Get NumPy types
         PyPtr pyNumpyTypes(getNumpyTypes(dataframe));
         // Emit output data

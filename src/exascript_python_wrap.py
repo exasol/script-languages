@@ -120,7 +120,7 @@ class exaiter(object):
             if v.shape[1] != len(self.__outcoltypes):
                 exp_num_out = len(self.__outcoltypes)
                 raise TypeError("emit() takes exactly %d argument%s (%d given)" % (exp_num_out, 's' if exp_num_out > 1 else '', v.shape[1]))
-            pyextdataframe.emit_dataframe(self, self.__outcoltypes, v)
+            pyextdataframe.emit_dataframe(self, v)
             return
         if len(output) != len(self.__outcoltypes):
             if len(self.__outcoltypes) > 1:
