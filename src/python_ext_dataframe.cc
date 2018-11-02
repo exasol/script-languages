@@ -1004,22 +1004,26 @@ void getOutputColumnTypes(PyObject *colTypes, std::vector<ColumnInfo>& colInfo)
 static PyObject *getDataframe(PyObject *self, PyObject *args)
 {
     PyObject *ctxIter = NULL;
-    PyObject *colNames = NULL;
-    long inputType = 0;
     long numRows = 0;
     long startCol = 0;
 
-    if (!PyArg_ParseTuple(args, "OOlll", &ctxIter, &colNames, &inputType, &numRows, &startCol))
+    if (!PyArg_ParseTuple(args, "Oll", &ctxIter, &numRows, &startCol))
         return NULL;
 
     PyPtr pyDataFrame;
     try {
         PyPtr tableIter(PyObject_GetAttrString(ctxIter, "_exaiter__inp"));
+        PyPtr colNames(PyObject_GetAttrString(ctxIter, "_exaiter__incolnames"));
+        PyPtr pyInputType(PyObject_GetAttrString(ctxIter, "_exaiter__intype"));
+        int inputType = PyLong_AsLong(pyInputType.get());
+        if (inputType < 0 && PyErr_Occurred())
+            throw std::runtime_error("getDataframe(): PyLong_AsLong error");
+
         // Get script input type
         bool isSetInput = (static_cast<SWIGVMContainers::SWIGVM_itertype_e>(inputType) == SWIGVMContainers::MULTIPLE);
         // Get input column info
         std::vector<ColumnInfo> colInfo;
-        getColumnInfo(ctxIter, colNames, startCol, colInfo);
+        getColumnInfo(ctxIter, colNames.get(), startCol, colInfo);
         // Get input data
         if (!isSetInput && numRows > 1)
             numRows = 1;

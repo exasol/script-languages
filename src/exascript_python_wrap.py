@@ -213,7 +213,7 @@ class exaiter(object):
             # Return None the first time there is no data
             self.__dataframe_finished = True
             return None
-        return pyextdataframe.get_dataframe(self, self.__incolnames, self.__intype, num_rows, start_col)
+        return pyextdataframe.get_dataframe(self, num_rows, start_col)
     def reset(self):
         return self.next(reset = True)
     def size(self):
