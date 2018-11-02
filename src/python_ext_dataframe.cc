@@ -113,6 +113,13 @@ struct ColumnInfo
 
 
 
+// Globals
+PyPtr datetimeModule(PyImport_ImportModule("datetime"));
+PyPtr decimalModule(PyImport_ImportModule("decimal"));
+PyPtr pandasModule(PyImport_ImportModule("pandas"));
+
+
+
 void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::vector<ColumnInfo>& colInfo)
 {
     const char *ctxColumnTypeList = "_exaiter__incoltypes";
@@ -156,10 +163,9 @@ void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::ve
     }
 }
 
+
 PyObject *getDateFromString(PyObject *value)
 {
-    PyPtr datetimeModule(PyImport_ImportModule("datetime"));
-
     PyPtr datetime(PyObject_GetAttrString(datetimeModule.get(), "datetime"));
     PyPtr pyDatetime(PyObject_CallMethod(datetime.get(), "strptime", "(Os)", value, "%Y-%m-%d"));
     PyPtr pyYear(PyObject_GetAttrString(pyDatetime.get(), "year"));
@@ -172,8 +178,6 @@ PyObject *getDateFromString(PyObject *value)
 
 PyObject *getDatetimeFromString(PyObject *value)
 {
-    PyPtr datetimeModule(PyImport_ImportModule("datetime"));
-
     PyPtr datetime(PyObject_GetAttrString(datetimeModule.get(), "datetime"));
     PyPtr pyDatetime(PyObject_CallMethod(datetime.get(), "strptime", "(Os)", value, "%Y-%m-%d %H:%M:%S.%f"));
 
@@ -189,7 +193,6 @@ PyObject *getLongFromString(PyObject *value)
 
 PyObject *getDecimalFromString(PyObject *value)
 {
-    PyPtr decimalModule(PyImport_ImportModule("decimal"));
     PyPtr pyDecimal(PyObject_CallMethod(decimalModule.get(), "Decimal", "(O)", value));
 
     return pyDecimal.release();
@@ -870,7 +873,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
                 case NPY_DATETIME:
                 {
-                    PyPtr pandasModule(PyImport_ImportModule("pandas"));
                     PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
 
                     PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
@@ -936,7 +938,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
 
 PyObject *createDataFrame(PyObject *data, std::vector<ColumnInfo>& colInfo)
 {
-    PyPtr pandasModule(PyImport_ImportModule("pandas"));
     PyPtr pdDataFrame(PyObject_GetAttrString(pandasModule.get(), "DataFrame"));
 
     Py_ssize_t numCols = static_cast<Py_ssize_t>(colInfo.size());
