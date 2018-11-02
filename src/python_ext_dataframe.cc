@@ -202,7 +202,7 @@ PyObject *getDecimalFromString(PyObject *value)
 PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows, long startCol, bool isSetInput, bool& isFinished)
 {
     const long numCols = colInfo.size();
-    std::vector<std::tuple<PyPtr, PyPtr, std::function<PyObject *(PyObject*)>>> pyColGetMethods;
+    std::vector<std::tuple<Py_ssize_t, PyPtr, PyPtr, std::function<PyObject *(PyObject*)>>> pyColGetMethods;
 
     for (long i = 0; i < numCols; i++) {
         PyPtr pyColNum(PyLong_FromLong(i + startCol));
@@ -246,27 +246,23 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
         }
         PyPtr pyMethodName(PyUnicode_FromString(methodName.c_str()));
 
-        pyColGetMethods.push_back(std::make_tuple(std::move(pyColNum), std::move(pyMethodName), postFunction));
+        Py_ssize_t colNum = PyLong_AsSsize_t(pyColNum.get());
+        if (colNum < 0 && PyErr_Occurred())
+            throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
+
+        pyColGetMethods.push_back(pyColNum, std::make_tuple(std::move(pyColNum), std::move(pyMethodName), postFunction));
     }
 
     PyPtr pyWasNullMethodName(PyUnicode_FromString("wasNull"));
     PyPtr pyNextMethodName(PyUnicode_FromString("next"));
     PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
 
-    std::vector<Py_ssize_t> pyColNums;
-    for (long c = 0; c < numCols; c++) {
-        Py_ssize_t pyColNum = PyLong_AsSsize_t(std::get<0>(pyColGetMethods[c]).get());
-        if (pyColNum < 0 && PyErr_Occurred())
-            throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
-        pyColNums.push_back(pyColNum);
-    }
-
     PyPtr pyData(PyList_New(0));
     for (long r = 0; r < numRows; r++) {
         PyPtr pyRow(PyList_New(numCols));
 
         for (long c = 0; c < numCols; c++) {
-            PyPtr pyVal(PyObject_CallMethodObjArgs(tableIter, std::get<1>(pyColGetMethods[c]).get(), std::get<0>(pyColGetMethods[c]).get(), NULL));
+            PyPtr pyVal(PyObject_CallMethodObjArgs(tableIter, std::get<2>(pyColGetMethods[c]).get(), std::get<1>(pyColGetMethods[c]).get(), NULL));
             if (!pyVal) {
                 PyObject *ptype, *pvalue, *ptraceback;
                 PyErr_Fetch(&ptype, &pvalue, &ptraceback);
@@ -295,12 +291,12 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 Py_INCREF(Py_None);
                 pyVal.reset(Py_None);
             }
-            else if (std::get<2>(pyColGetMethods[c])) {
+            else if (std::get<3>(pyColGetMethods[c])) {
                 // Call post function
-                pyVal.reset(std::get<2>(pyColGetMethods[c])(pyVal.get()));
+                pyVal.reset(std::get<3>(pyColGetMethods[c])(pyVal.get()));
             }
 
-            PyList_SET_ITEM(pyRow.get(), pyColNums[c] - startCol, pyVal.release());
+            PyList_SET_ITEM(pyRow.get(), std::get<0>(pyColGetMethods[c]) - startCol, pyVal.release());
         }
 
         int ok = PyList_Append(pyData.get(), pyRow.get());
