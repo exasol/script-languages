@@ -53,6 +53,21 @@ std::map<std::string, int> typeMap {
     {"py_bool", PY_BOOL}
 };
 
+std::map<int, std::string> emitTypeMap {
+    {SWIGVMContainers::UNSUPPORTED, "UNSUPPORTED"},
+    {SWIGVMContainers::DOUBLE, "DOUBLE"},
+    {SWIGVMContainers::INT32, "INT32"},
+    {SWIGVMContainers::INT64, "INT64"},
+    {SWIGVMContainers::NUMERIC, "NUMERIC"},
+    {SWIGVMContainers::TIMESTAMP, "TIMESTAMP"},
+    {SWIGVMContainers::DATE, "DATE"},
+    {SWIGVMContainers::STRING, "STRING"},
+    {SWIGVMContainers::BOOLEAN, "BOOLEAN"},
+    {SWIGVMContainers::INTERVALYM, "INTERVALYM"},
+    {SWIGVMContainers::INTERVALDS, "INTERVALDS"},
+    {SWIGVMContainers::GEOMETRY, "GEOMETRY"}
+};
+
 
 
 inline void checkPyObjectIsNull(const PyObject *obj) {
@@ -365,7 +380,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
             default:
             {
                 std::stringstream ss;
-                ss << "emit(): unexpected type " << colInfo[i].type;
+                ss << "emit(): unexpected type " << emitTypeMap.at(colInfo[i].type);
                 throw std::runtime_error(ss.str().c_str());
             }
         }
@@ -497,7 +512,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -527,7 +542,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -557,7 +572,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -587,7 +602,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -616,7 +631,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -645,7 +660,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -674,7 +689,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -685,6 +700,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 case NPY_BOOL:
                 {
                     bool value = *((bool*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+                    if (npy_isnan(value)) {
+                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+                        break;
+                    }
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::BOOLEAN:
                             if (value) {
@@ -699,7 +718,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -725,11 +744,14 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                                 Py_INCREF(Py_False);
                                 pyValue.reset(Py_False);
                             }
+                            else {
+                                pyValue.reset(nullptr);
+                            }
                             break;
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -765,7 +787,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -800,7 +822,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -832,7 +854,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -856,7 +878,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -882,7 +904,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << colInfo[c].type << " but data given have type " << colTypes[c].first;
+                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
