@@ -250,7 +250,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
         if (colNum < 0 && PyErr_Occurred())
             throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
 
-        pyColGetMethods.push_back(pyColNum, std::make_tuple(std::move(pyColNum), std::move(pyMethodName), postFunction));
+        pyColGetMethods.push_back(std::make_tuple(colNum, std::move(pyColNum), std::move(pyMethodName), postFunction));
     }
 
     PyPtr pyWasNullMethodName(PyUnicode_FromString("wasNull"));
