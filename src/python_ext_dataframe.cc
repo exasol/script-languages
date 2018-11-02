@@ -106,28 +106,38 @@ std::map<std::string, int> typeMap {
 
 
 
-struct PyPtrDeleter {
+struct PyUniquePtrDeleter {
     void operator()(PyObject *obj) const noexcept {
         Py_XDECREF(obj);
     }
 };
 
-using PyPtr = std::unique_ptr<PyObject, PyPtrDeleter>;
+using PyUniquePtr = std::unique_ptr<PyObject, PyUniquePtrDeleter>;
 
-#if 0
-struct PyPtrDummy {
-    PyPtrDummy(PyObject *obj) {
-        ptr = obj;
+struct PyPtr {
+    explicit PyPtr() {
     }
-    PyObject *get() {
-        return ptr;
+    explicit PyPtr(PyObject *obj) {
+        if (!obj) {
+            // Error message set by Python
+            throw std::runtime_error("");
+        }
+        ptr.reset(obj);
     }
     void reset(PyObject *obj) {
-        ptr = obj;
+        ptr.reset(obj);
     }
-    PyObject *ptr;
+    PyObject *get() const {
+        return ptr.get();
+    }
+    PyObject *release() {
+        return ptr.release();
+    }
+    explicit operator bool() const {
+        return (ptr.get() != nullptr);
+    }
+    PyUniquePtr ptr;
 };
-#endif
 
 inline void checkPyPtrIsNull(const PyPtr& obj) {
     if (!obj)
