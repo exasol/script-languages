@@ -484,6 +484,10 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     PyPtr pySetNullMethodName(PyUnicode_FromString("setNull"));
     PyPtr pyNextMethodName(PyUnicode_FromString("next"));
     PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
+    PyPtr pyIntMethodName(PyUnicode_FromString("__int__"));
+    PyPtr pyFloatMethodName(PyUnicode_FromString("__float__"));
+    PyPtr pyIsoformatMethodName(PyUnicode_FromString("isoformat"));
+    PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
 
     PyPtr pyValue;
     PyPtr pyResult;
@@ -806,7 +810,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         case SWIGVMContainers::INT64:
                         case SWIGVMContainers::INT32:
                         {
-                            PyPtr pyInt(PyObject_CallMethod(pyDecimal.get(), "__int__", NULL));
+                            PyPtr pyInt(PyObject_CallMethodObjArgs(pyDecimal.get(), pyIntMethodName.get(), NULL));
                             pyValue.reset(pyInt.release());
                             break;
                         }
@@ -815,7 +819,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                             break;
                         case SWIGVMContainers::DOUBLE:
                         {
-                            PyPtr pyFloat(PyObject_CallMethod(pyDecimal.get(), "__float__", NULL));
+                            PyPtr pyFloat(PyObject_CallMethodObjArgs(pyDecimal.get(), pyFloatMethodName.get(), NULL));
                             pyValue.reset(pyFloat.release());
                             break;
                         }
@@ -871,7 +875,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                     switch (colInfo[c].type) {
                         case SWIGVMContainers::DATE:
                         {
-                            PyPtr pyIsoDate(PyObject_CallMethod(pyDate.get(), "isoformat", NULL));
+                            PyPtr pyIsoDate(PyObject_CallMethodObjArgs(pyDate.get(), pyIsoformatMethodName.get(), NULL));
                             pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDate.get(), NULL));
                             break;
                         }
@@ -886,8 +890,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
                 case NPY_DATETIME:
                 {
-                    PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
-
                     PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
                     if (pyTimestamp.get() == pdNaT.get()) {
                         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
