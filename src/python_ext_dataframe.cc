@@ -413,6 +413,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     // Transpose to column-major
     PyObject *colArray = PyArray_Transpose(pyArray, NULL);
 
+    // Get column arrays
     std::vector<PyPtr> columnArrays;
     for (int c = 0; c < numCols; c++) {
         PyPtr pyStart(PyLong_FromLong(c));
@@ -489,6 +490,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     PyPtr pyIsoformatMethodName(PyUnicode_FromString("isoformat"));
     PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
 
+    // Emit data
     PyPtr pyValue;
     PyPtr pyResult;
     for (int r = 0; r < numRows; r++) {
