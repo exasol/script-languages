@@ -1,4 +1,4 @@
-FROM exaudf/baseimage_standard
+FROM exaudf/baseimage_standard_60
 ARG extract_dir
 COPY $extract_dir/exaudf /exaudf
 

@@ -1,3 +1,4 @@
+#
 language: python
 
 # Setting sudo to false will cause Travis to use Containers (default in the meantime)
@@ -6,23 +7,25 @@ sudo: true
 services:
     - docker
 
-
 install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq unixodbc unixodbc-dev
   - sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
 
+
 matrix:
   include:
-  - name: mini
-    env: MATRIX_FLAVOR=mini
-  - name: standard
-    env: MATRIX_FLAVOR=standard
-  - name: python3_60
-    env: MATRIX_FLAVOR=python3_60
-
+  - name: mini-python-python
+    env: MATRIX_FLAVOR=mini GENERIC_TEST_LANG=python TEST_FOLDER=python
+  - name: standard_60-python
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=python TEST_FOLDER=python
+  - name: standard_60-r
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
+  - name: standard_60-java
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=java TEST_FOLDER=java
+  - name: python3_60-python3
+    env: MATRIX_FLAVOR=python3_60 GENERIC_TEST_LANG=python TEST_FOLDER=python3
 
 script:
-  - ./build --flavor=$MATRIX_FLAVOR
-  - ./export --flavor=$MATRIX_FLAVOR
-  - ./test --flavor $MATRIX_FLAVOR
+  - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
+
