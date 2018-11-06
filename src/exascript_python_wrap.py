@@ -2,9 +2,6 @@ import sys
 import numpy as np
 import pandas as pd
 
-sys.path.append('/exaudf')
-import pyextdataframe
-
 isPython3 = False
 
 if sys.version_info[0] == 3:
@@ -14,6 +11,10 @@ if sys.version_info[0] == 3:
     isPython3 = True
 else:
     decodeUTF8 = lambda x: x.decode('utf-8')
+
+if isPython3:
+    sys.path.append('/exaudf')
+    import pyextdataframe
 
 
 class exaiter(object):
