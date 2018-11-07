@@ -38,7 +38,7 @@ done
 [ ! -e "$FLAVOR.tar.gz" ] && die "Flavor not exported here: `pwd`/$FLAVOR.tar.gz"
 
 test_config="$(pwd)/flavors/$FLAVOR/testconfig"
-[ ! -f "$test_config" ] && die "Testconfig of $flavor not found here: $test_config"
+[ ! -f "$test_config" ] && die "Testconfig of $FLAVOR not found here: $test_config"
 
 if [ ! -z ${CONNECTION+x} ]; then
     OIFS=$IFS

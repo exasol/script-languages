@@ -17,7 +17,7 @@ class PandasDataFrame(udf.TestCase):
         self.query('OPEN SCHEMA FN2', ignore_errors=True)
 
         self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11'
-        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36, 0), C6 DOUBLE, C7 BOOLEAN, C8 VARCHAR(500), C9 CHAR(10), C10 DATE, C11 TIMESTAMP'
+        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36,0), C6 DOUBLE, C7 BOOLEAN, C8 VARCHAR(500), C9 CHAR(10), C10 DATE, C11 TIMESTAMP'
         self.col_vals = "1, 1234, 12345678, 1234567890123456, 123456789012345678901234567890123456, 12345.6789, TRUE, 'abcdefghij', 'abcdefgh', '2018-10-12', '2018-10-12 12:15:30.123'"
         self.col_tuple = (Decimal('1'), Decimal('1234'), Decimal('12345678'), Decimal('1234567890123456'), Decimal('123456789012345678901234567890123456'), 12345.6789, True, 'abcdefghij', 'abcdefgh  ', date(2018, 10, 12), datetime(2018, 10, 12, 12, 15, 30, 123000))
 
@@ -32,7 +32,7 @@ class PandasDataFrame(udf.TestCase):
 
 
         self.col_names = 'C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11'
-        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36, 0), C6 DOUBLE, C7 BOOLEAN, C8 VARCHAR(500), C9 CHAR(10), C10 DATE, C11 TIMESTAMP'
+        self.col_defs = 'C1 Decimal(2,0), C2 Decimal(4,0), C3 Decimal(8,0), C4 Decimal(16,0), C5 Decimal(36,0), C6 DOUBLE, C7 BOOLEAN, C8 VARCHAR(500), C9 CHAR(10), C10 DATE, C11 TIMESTAMP'
         self.query('CREATE TABLE TEST2(C0 INT IDENTITY, %s)' % (self.col_defs))
         self.col_vals = "1, 1, 1, 1, 1, 1, TRUE, 'abcdefghij', 'abcdefgh', '2018-10-12', '2018-10-12 12:15:30.123'"
         self.query('INSERT INTO TEST2 (%s) VALUES (%s)' % (self.col_names, self.col_vals))
@@ -430,6 +430,62 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
         self.assertRowsEqual([self.col_tuple_1, self.col_tuple_2, self.col_tuple_null], rows)
+
+    def test_dataframe_scalar_emits_start_col(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(start_col=2)
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, ', '.join(self.col_defs.split(', ')[2:]))))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple_1[2:], self.col_tuple_2[2:], self.col_tuple_null[2:]], rows)
+
+    def test_dataframe_set_emits_null_start_col(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows='all', start_col=5)
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, ', '.join(self.col_defs.split(', ')[5:]))))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
+        self.assertRowsEqual([self.col_tuple_1[5:], self.col_tuple_2[5:], self.col_tuple_null[5:]], rows)
+
+    def test_dataframe_set_emits_null_start_col_negative(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows='all', start_col=-1)
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, "must be an integer > 0"):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
+
+    def test_dataframe_set_emits_null_start_col_too_large(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            def run(ctx):
+                df = ctx.get_dataframe(num_rows='all', start_col=100000)
+                ctx.emit(df)
+            /
+            ''' % (self.col_defs, self.col_defs)))
+        with self.assertRaisesRegexp(Exception, "is 100000, but there are only %d input columns" % len(self.col_names.split(', '))):
+            rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
 
 
 if __name__ == '__main__':
