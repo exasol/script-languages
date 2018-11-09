@@ -1,4 +1,5 @@
 language_definition=PYTHON=localzmq+protobuf:///bfsdefault/myudfs/standard_60?lang=python#buckets/bfsdefault/myudfs/standard_60/exaudf/exaudfclient JAVA=localzmq+protobuf:///bfsdefault/myudfs/standard_60?lang=java#buckets/bfsdefault/myudfs/standard_60/exaudf/exaudfclient R=localzmq+protobuf:///bfsdefault/myudfs/standard_60?lang=r#buckets/bfsdefault/myudfs/standard_60/exaudf/exaudfclient
 generic_language_tests=python java r
 test_folders=python java r
+#test_folders=mixed
 # ending new line required!

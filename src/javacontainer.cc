@@ -19,7 +19,7 @@ class SWIGVMContainers::JavaVMImpl {
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
-        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
+        const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
     private:
         void createJvm();
         void addPackageToScript();
@@ -54,9 +54,12 @@ class SWIGVMContainers::JavaVMImpl {
 JavaVMach::JavaVMach(bool checkOnly) {
     try {
         m_impl = new JavaVMImpl(checkOnly);
-    }  catch (std::exception& err) {
+    } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "some unknown exception occurred - 1";
     }
 }
 
@@ -67,6 +70,9 @@ bool JavaVMach::run() {
     }  catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "some unknown exception occurred - 2";
     }
     return false;
 }
@@ -77,26 +83,30 @@ void JavaVMach::shutdown() {
     }  catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "some unknown exception occurred - 3";
     }
 }
 
-std::string JavaVMach::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+const char* JavaVMach::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     try {
         return m_impl->singleCall(fn, args, calledUndefinedSingleCall);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "some unknown exception occurred - 4";
     }
-    return "<this is an error>";
+    return strdup("<this is an error>");
 }
 
 JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"),
                                         m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL) {
 
     stringstream ss;
-
     m_exaJavaPath = "/exaudf";
-
     setClasspath();
     getScriptClassName();  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
     importScripts();
@@ -132,7 +142,10 @@ bool JavaVMImpl::run() {
     return true;
 }
 
-std::string JavaVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall) {
+static string singleCallResult;
+
+const char* JavaVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall) {
+
     if (m_checkOnly)
         throwException("Java VM in check only mode");
 
@@ -144,8 +157,10 @@ std::string JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
     case SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC: func = "generateSqlForImportSpec"; break;
     case SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC: func = "generateSqlForExportSpec"; break;
     }
-    if (func == NULL)
+    if (func == NULL) {
+        cerr << "javavm impl: unknown single call: " << fn << endl;
         abort();
+    }
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
     check(calledUndefinedSingleCall);
     if (!cls)
@@ -156,6 +171,7 @@ std::string JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
         throwException("GetStaticMethodID for run failed");
     jstring fn_js = m_env->NewStringUTF(func);
     check(calledUndefinedSingleCall);
+
 
     // Prepare arg
     // TODO VS This will be refactored completely
@@ -195,15 +211,19 @@ std::string JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
     
     check(calledUndefinedSingleCall);
     jbyteArray resJ = (jbyteArray)m_env->CallStaticObjectMethod(cls, mid, fn_js, args_js);
-    if (check(calledUndefinedSingleCall) == 0) return "<error during singleCall>";
+    if (check(calledUndefinedSingleCall) == 0) return strdup("<error during singleCall>");
     jsize resLen = m_env->GetArrayLength(resJ);
     check(calledUndefinedSingleCall);
     char* buffer = new char[resLen + 1];
     m_env->GetByteArrayRegion(resJ, 0, resLen, reinterpret_cast<jbyte*>(buffer));
     buffer[resLen] = '\0';
-    string res = string(buffer);
+    singleCallResult = string(buffer);
     delete buffer;
-    return res;
+    m_env->DeleteLocalRef(args_js);
+    m_env->DeleteLocalRef(resJ);
+
+
+    return singleCallResult.c_str();
 }
 
 void JavaVMImpl::addPackageToScript() {
@@ -220,16 +240,16 @@ void JavaVMImpl::createJvm() {
     unsigned int numJvmOptions = m_jvmOptions.size();
     JavaVMOption *options = new JavaVMOption[numJvmOptions];
     for (size_t i = 0; i < numJvmOptions; ++i) {
-        options[i].optionString = (char*)(m_jvmOptions[i].c_str());
+      options[i].optionString = strdup((char*)(m_jvmOptions[i].c_str()));
         options[i].extraInfo = NULL;
     }
 
     JavaVMInitArgs vm_args;
-    vm_args.version = JNI_VERSION_1_6;
+    vm_args.version = JNI_VERSION_1_2;
     vm_args.nOptions = numJvmOptions;
     vm_args.options = options;
     vm_args.ignoreUnrecognized = JNI_FALSE;
-
+    //vm_args.ignoreUnrecognized = JNI_TRUE;
     int rc = JNI_CreateJavaVM(&m_jvm, (void**)&m_env, &vm_args);
     if (rc != JNI_OK) {
         stringstream ss;

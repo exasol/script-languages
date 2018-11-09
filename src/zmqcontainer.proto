@@ -207,7 +207,7 @@ message export_specification_rep {
 message exascript_single_call_rep {
     required single_call_function_id fn = 1;
     optional import_specification_rep import_specification = 2;
-    optional string json_arg = 3;   // Will be refactored in separate branch, just temporary
+    optional string json_arg = 3;
     optional export_specification_rep export_specification = 4;
 }
 
@@ -229,8 +229,8 @@ enum message_type {
     MT_FINISHED = 12;
     MT_PING_PONG = 13;
     MT_TRY_AGAIN = 14;
-    MT_CALL   = 15;          // this message request the synchronous invokation of a function in the remote container
-    MT_RETURN = 16;          // this message is used to communicate the result of a synchronous function invokation from the container to EXASolution
+    MT_CALL   = 15;          // this message request the synchronous invocation of a function in the remote container
+    MT_RETURN = 16;          // this message is used to communicate the result of a synchronous function invocation from the container to EXASolution
     MT_UNDEFINED_CALL = 17;  // this message tells EXASolution that the requested function in not available in the container
 }
 

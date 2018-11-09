@@ -7,7 +7,7 @@ RUN apt-get -y update && \
         software-properties-common \
         coreutils \
         locales \
-        openjdk-8-jdk-headless \
+        openjdk-9-jdk-headless \
         python2.7-dev  \
         r-base \
         r-base-dev \
@@ -116,7 +116,7 @@ RUN apt-get -y update && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
     apt-get -y autoremove && \
-    echo /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server >> /etc/ld.so.conf && \
+    echo /usr/lib/jvm/java-9-openjdk-amd64/jre/lib/amd64/server >> /etc/ld.so.conf && \
     ldconfig
 
 RUN addgroup --gid 1000 exasolution

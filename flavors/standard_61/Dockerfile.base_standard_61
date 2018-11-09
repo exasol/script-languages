@@ -9,10 +9,11 @@ RUN apt-get -y update && \
         software-properties-common \
         coreutils \
         locales \
-        openjdk-8-jdk-headless \
+        openjdk-11-jdk-headless \
         python2.7-dev  \
         r-base \
         r-base-dev \
+        libnss-db \
         libzmq3-dev \
         python-zmq \
         python3-zmq \
@@ -101,15 +102,14 @@ RUN apt-get -y update && \
 	r-cran-reshape2 \
 	r-cran-scales \
 	r-cran-stringr \
-        swig \
         maven \
         git && \
     pip3 install protobuf && \
     pip install azure-storage && \
     pip install pytz && \
-    #wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
-    #tar zxf swig-2.0.4.tar.gz && \
-    #(cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
+    wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
+    tar zxf swig-2.0.4.tar.gz && \
+    (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
     rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
     Rscript -e 'install.packages("rredis",repos = "http://cran.r-project.org")' && \
     Rscript -e 'install.packages("data.table",repos = "http://cran.r-project.org")' && \
@@ -119,7 +119,7 @@ RUN apt-get -y update && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
     apt-get -y autoremove && \
-    echo /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server >> /etc/ld.so.conf && \
+    echo /usr/lib/jvm/java-9-openjdk-amd64/jre/lib/amd64/server >> /etc/ld.so.conf && \
     ldconfig
 
 RUN addgroup --gid 1000 exasolution
