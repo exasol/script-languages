@@ -9,7 +9,9 @@
 #include <fcntl.h>
 #include <fstream>
 #include <link.h>
+#ifndef PROTEGRITY_PLUGIN_CLIENT
 #include <dlfcn.h>
+#endif
 #include <exception>
 #include "exaudflib.h"
 #include <functional>
@@ -25,6 +27,11 @@
 #endif
 #include <inttypes.h>
 
+
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+#include "protegrityclient.h"
+#endif
+
 using namespace std;
 using namespace SWIGVMContainers;
 
@@ -39,6 +46,7 @@ typedef int (*MAIN_FUN)(std::function<SWIGVM*()>vmMaker,int,char**);
 
 char* error;
 
+#ifndef PROTEGRITY_PLUGIN_CLIENT
 void* load_dynamic(const char* name) {
     void* res = dlsym(handle, name);
     if ((error = dlerror()) != NULL)
@@ -49,8 +57,14 @@ void* load_dynamic(const char* name) {
     }
     return res;
 }
+#endif
 
-
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+extern "C" {
+int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv);
+void set_SWIGVM_params(SWIGVM_params_t* p);
+}
+#endif
 
 int main(int argc, char **argv) {
 #ifdef CUSTOM_PROTOBUF_PREFIX
@@ -58,6 +72,10 @@ int main(int argc, char **argv) {
 #else
     string libProtobufPath = "/usr/lib/x86_64-linux-gnu/libprotobuf.so";
 #endif
+
+#ifndef PROTEGRITY_PLUGIN_CLIENT
+#if 1
+
     Lmid_t  my_namespace_id;
     handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
     if (!handle) {
@@ -68,17 +86,32 @@ int main(int argc, char **argv) {
         cerr << "Error when getting namespace id " << dlerror() << endl;
         exit(EXIT_FAILURE);
     }
-
+    
     handle = dlmopen(my_namespace_id, "/exaudf/libexaudflib.so",RTLD_NOW);
-    //handle = dlopen("/exaudf/libexaudflib.so",RTLD_NOW);   
+    //handle = dlmopen(LM_ID_NEWLM, "/exaudf/libexaudflib.so",RTLD_NOW);
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
+#else
+    handle = dlopen(libProtobufPath.c_str(),RTLD_NOW|RTLD_GLOBAL);
+    if (!handle) {
+        cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
+        exit(EXIT_FAILURE);
+    }
+    handle = dlopen("/exaudf/libexaudflib.so",RTLD_NOW);
+    if (!handle) {
+        fprintf(stderr, "dlopen: %s\n", dlerror());
+        exit(EXIT_FAILURE);
+    }
+#endif
 
-    MAIN_FUN exudfclient_main = (MAIN_FUN)load_dynamic("exaudfclient_main");
+
+    MAIN_FUN exaudfclient_main = (MAIN_FUN)load_dynamic("exaudfclient_main");
     VOID_FUN_WITH_SWIGVM_PARAMS_P set_SWIGVM_params = (VOID_FUN_WITH_SWIGVM_PARAMS_P)load_dynamic("set_SWIGVM_params");
 
+
+#endif  // ifndef PROTEGRITY_PLUGIN_CLIENT
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
     if (argc != 2) {
@@ -100,6 +133,9 @@ int main(int argc, char **argv) {
 
     std::function<SWIGVM*()>vmMaker=[](){return nullptr;}; // the initial vm maker returns NULL
 
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+    vmMaker = [](){return new SWIGVMContainers::Protegrity(false);};
+#else
     if (strcmp(argv[2], "lang=python")==0)
     {
 #ifdef ENABLE_PYTHON_VM
@@ -138,11 +174,13 @@ int main(int argc, char **argv) {
         throw SWIGVM::exception("this exaudfclient has been compilied without Streaming support");
 #endif
     }
+#endif
 
     SWIGVM_params = new SWIGVM_params_t(true);
     set_SWIGVM_params(SWIGVM_params);
 
 
-    return exudfclient_main(vmMaker, argc, argv);
+
+    return exaudfclient_main(vmMaker, argc, argv);
     
 }

@@ -131,4 +131,12 @@
         Public = True
         Name = myudfs
 
+    [[Bucket : jdbc-adapter]]
+        # ReadPasswd is "read" (without quotes)
+        ReadPasswd = cmVhZAo=
+        # WritePasswd is "write" (without quotes)
+        WritePasswd = d3JpdGU=
+        Public = True
+        Name = jdbc-adapter
+
 

@@ -139,7 +139,14 @@ curl -v -X PUT -T $FLAVOR.tar.gz http://w:write@${CONNECTION_HOST}:${BUCKETFS_PO
 echo "Waiting for container to be extracted"
 waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* $FLAVOR.*extracted
 echo "Extracted"
-
+echo "Uploading virtual schema adapter"
+curl -v -X PUT -T ext/virtualschema-jdbc-adapter.jar http://w:write@${CONNECTION_HOST}:${BUCKETFS_PORT}/jdbc-adapter/virtualschema-jdbc-adapter.jar
+waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* virtualschema-jdbc-adapter.jar
+echo "uploaded"
+echo "Uploading exajdbc.jar"
+curl -v -X PUT -T downloads/JDBC/exajdbc.jar http://w:write@${CONNECTION_HOST}:${BUCKETFS_PORT}/jdbc-adapter/exajdbc.jar
+waitForLine $TEST_TMP_DIR/exa/logs/cored/*bucketfsd* exajdbc.jar
+echo "uploaded"
 
 
 set +e

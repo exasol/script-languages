@@ -1,0 +1,7 @@
+import com.exasol.ExaMetadata;
+
+public class sc_script2 {
+    public static String adapterCall(final ExaMetadata meta, final String input) throws Exception {
+	return "{'schemaMetadata': {'tables': [{'name': 'table_1', 'columns': [{'dataType': {'type': 'VARCHAR', 'size': 2000000}, 'name': 'column_1'}, {'dataType': {'type': 'VARCHAR', 'size': 2000000}, 'name': 'column_2'}]}]}, 'type': 'createVirtualSchema'}".replace('\'','"');
+    }
+}
