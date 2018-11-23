@@ -6,9 +6,13 @@ import sys
 import urllib
 
 sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+
+running_in_travis = 'TRAVIS' in os.environ
+
 import udf
-from exatest.servers import HTTPServer, MessageBox
+from exatest.servers import HTTPServer
 from exatest.utils import tempdir
+from exatest.testcase import skipIf
 
 class PythonPackages(udf.TestCase):
     def setUp(self):
@@ -29,6 +33,7 @@ class PythonPackages(udf.TestCase):
                 ctx.emit(r.status_code)
             '''))
 
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_package_requests(self):
         with tempdir() as tmp:
             with open(os.path.join(tmp, 'foo.xml'), 'w') as f:
@@ -41,3 +46,4 @@ class PythonPackages(udf.TestCase):
 if __name__ == '__main__':
     udf.main()
 
+# vim: ts=4:sts=4:sw=4:et:fdm=indent
