@@ -60,6 +60,7 @@ RUN apt-get -y update && \
         python-scipy \
         python-boto \
 	python-pycurl \
+        python-requests \
         r-cran-rcurl \
         r-cran-xml \
         r-cran-formula \
