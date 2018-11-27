@@ -62,7 +62,7 @@ curl -v -X PUT -T mini.tar.gz w:pwd@192.168.122.158:2580/funwithudfs/mini.tar.gz
 ```sql
 ALTER SESSION SET SCRIPT_LANGUAGES='MYPYTHON=localzmq+protobuf:///bucketfsname/funwithudfs/mini?lang=python#buckets/bucketfsname/funwithudfs/mini/exaudf/exaudfclient';
 ```
-6. Afterwards you may choose to remove the docker images for this flavor from the local Docker repository
+6. Afterwards you may choose to remove the Docker images for this flavor from the local Docker repository
 ```bash
 ./clean --flavor=mini
 ```
