@@ -21,32 +21,44 @@ In order to follow the quickstart guide, you additionally need
 * curl
 * An SQL client connecting to the same EXASOL installation
 
-For running the tests you also need Python, GCC, Java and unixODBC.
+For running the tests you also need
+* Python
+* GCC
+* Java
+* unixODBC
+* Docker with privileged mode
 
 ## Quickstart
 1. Choose a flavor. Currently we have several pre-defined flavors available, e.g., `mini`, `standard` and `conda`.
 This project supports different versions of script language environments with different libraries and languages.
 We call these versions _flavors_. The pre-defined flavors can be modified and extended to create customized flavors.
 Each pre-defined flavor has its own set of Docker build-files in a corresponding subfolder of [flavors](flavors).
-2. create the language container (we choose to use the `mini` flavor which is the smallest of the currently available flavors and only support the Python language)
+2. Create the language container. We choose to use the `mini` flavor which is the smallest of the currently available flavors and which only support the Python language.
 ```bash
 $ ./build --flavor=mini
 ```
-3. export it into a standalone archive
+3. Export it into a standalone archive
 ```bash
 $ ./export --flavor=mini
 ```
 This creates the file `mini.tar.gz`.
 
-You can optionally run some automated tests for your flavor by using
+Optionally, you can run some automated tests for your flavor by using
 ```bash
-$ ./test --flavor=mini
+$ ./test_complete --flavor=mini
 ```
-4. Upload the file into bucketfs (we assume the password `w` and the bucketname `funwithudfs` in a bucketfs that is running on port `2580` on machine `192.168.122.158`)
+
+If the test fails with the message
+```
+cp: cannot create regular file ‘/tmp/udftestdb/exa/etc/EXAConf’: Permission denied
+```
+then run `stop_dockerdb` and restart the test.
+
+4. Upload the file into bucketfs. For the following example we assume the password `pwd` and the bucketname `funwithudfs` in a bucketfs that is running on port `2580` on machine `192.168.122.158`
 ```bash
-curl -v -X PUT -T mini.tar.gz w:w@192.168.122.158:2580/funwithudfs/mini.tar.gz
+curl -v -X PUT -T mini.tar.gz w:pwd@192.168.122.158:2580/funwithudfs/mini.tar.gz
 ```
-5. In SQL you activate the language implementation by using a statement like this
+5. In SQL you activate the Python implementation of the flavor `mini` by using a statement like this
 ```sql
 ALTER SESSION SET SCRIPT_LANGUAGES='MYPYTHON=localzmq+protobuf:///bucketfsname/funwithudfs/mini?lang=python#buckets/bucketfsname/funwithudfs/mini/exaudf/exaudfclient';
 ```
