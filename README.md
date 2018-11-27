@@ -62,6 +62,18 @@ curl -v -X PUT -T mini.tar.gz w:pwd@192.168.122.158:2580/funwithudfs/mini.tar.gz
 ```sql
 ALTER SESSION SET SCRIPT_LANGUAGES='MYPYTHON=localzmq+protobuf:///bucketfsname/funwithudfs/mini?lang=python#buckets/bucketfsname/funwithudfs/mini/exaudf/exaudfclient';
 ```
+Now the script language `MYPYTHON` can be used to define a script, e.g., 
+```
+CREATE SCHEMA S;
+CREATE mypython SCALAR SCRIPT small_test() RETURNS DOUBLE AS
+def run(ctx):
+   return 1.2
+/
+```
+The script can be executed as follows:
+```
+select small_test();
+```
 6. Afterwards you may choose to remove the Docker images for this flavor from the local Docker repository
 ```bash
 ./clean --flavor=mini
