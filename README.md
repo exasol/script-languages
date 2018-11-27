@@ -74,12 +74,11 @@ The script can be executed as follows:
 ```
 select small_test();
 ```
-6. Afterwards you may choose to remove the Docker images for this flavor from the local Docker repository
+6. Afterwards you may choose to remove the Docker images for this flavor. This can be done as follows:
 ```bash
 ./clean --flavor=mini
 ```
-
-Please note, that this script does not delete the Linux image that is used as basis from the local Docker repository.
+Please note that this script does not delete the Linux image that is used as basis for the images that were build in the previous steps.
 
 
 
