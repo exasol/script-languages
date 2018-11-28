@@ -27,8 +27,10 @@ function cleanup {
 }
 
 
+CORES=$(grep processor /proc/cpuinfo | wc -l | tr -d '\n')
+
 echo Using base docker file: Dockerfile.base_$FLAVOR
-docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR || die "Could not create exaudf/baseimage"
+docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES || die "Could not create exaudf/baseimage"
 echo Using build docker file: Dockerfile.build_$FLAVOR
 docker build . --tag exaudf/build_$FLAVOR -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
 trap cleanup EXIT
