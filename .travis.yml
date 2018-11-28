@@ -31,6 +31,8 @@ matrix:
     env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=r TEST_FOLDER=r
   - name: standard_61-java
     env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=java TEST_FOLDER=java
+  - name: fancyr_60-r
+    env: MATRIX_FLAVOR=fancyr_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
 
 script:
   - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
