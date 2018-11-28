@@ -35,5 +35,5 @@ matrix:
     env: MATRIX_FLAVOR=fancyr_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
 
 script:
-  - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
+  travis_wait - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
 
