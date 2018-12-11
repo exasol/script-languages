@@ -25,11 +25,7 @@ done
 
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-        TMPDIR=$(mktemp -d `basename $0`_${FLAVOR}_tmpdir.XXXXXXXX)
-else
-	TMPDIR=$(mktemp -d -t build_$FLAVOR_tmpdir)
-fi
+TMPDIR=$(mktemp -d `basename $0`_${FLAVOR}_tmpdir.XXXXXXXX)
 
 function cleanup {
     if [ ! -z "$TMPDIR" ]; then

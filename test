@@ -8,9 +8,9 @@ cd "$(dirname "$0")"
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-        optarr=$(getopt hf:c:p:nig:t: "$@")
+        optarr=$(getopt hf:c:b:nig:t: "$@")
 else
-	optarr=$(getopt -o 'hf:c:p:nig:t:' --long 'help,flavor:,use-connection:,no-test,import-enginedb,bucketfs-port:,generic-test-lang:,test-folder:' -- "$@")
+	optarr=$(getopt -o 'hf:c:b:nig:t:' --long 'help,flavor:,use-connection:,no-test,import-enginedb,bucketfs-port:,generic-test-lang:,test-folder:' -- "$@")
 fi
 
 eval set -- "$optarr"
@@ -21,7 +21,7 @@ while true; do
     case "$1" in
         -f|--flavor) FLAVOR="$2"; shift 2;;
         -c| --use-connection) CONNECTION="$2"; shift 2;;
-	-p|--bucketfs-port) BUCKETFS_PORT="$2"; shift 2;;
+	-b|--bucketfs-port) BUCKETFS_PORT="$2"; shift 2;;
         -n|--no-test) NOTESTS="yes"; shift;;
         -i|--import-enginedb) IMPORT_ENGINEDB="yes"; shift;;
 	-g|--generic-test-lang) generic_test_lang="$2"; shift 2;;

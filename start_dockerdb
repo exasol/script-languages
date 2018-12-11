@@ -9,7 +9,7 @@ die() { echo "ERROR:" "$@" >&2; exit 1; }
 if [[ "$OSTYPE" == "darwin"* ]]; then
         optarr=$(getopt hp:b: "$@")
 else
-	optarr=$(getopt -o 'hp:d:' --long 'help,no-cleanup,no-import,db-port:,bucketfs-port:' -- "$@")
+	optarr=$(getopt -o 'hp:b:' --long 'help,no-cleanup,no-import,db-port:,bucketfs-port:' -- "$@")
 fi
 eval set -- "$optarr"
 
