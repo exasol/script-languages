@@ -7,26 +7,32 @@ cd "$(dirname "$0")"
 
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-optarr=$(getopt -o 'h' --long 'help,flavor:,use-connection:,no-test,import-enginedb,bucketfs-port:,generic-test-lang:,test-folder:' -- "$@")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+        optarr=$(getopt hf:c:p:nig:t: "$@")
+else
+	optarr=$(getopt -o 'hf:c:p:nig:t:' --long 'help,flavor:,use-connection:,no-test,import-enginedb,bucketfs-port:,generic-test-lang:,test-folder:' -- "$@")
+fi
+
 eval set -- "$optarr"
 
 
 while true; do
+    echo "111 = $1"
     case "$1" in
-        --flavor) FLAVOR="$2"; shift 2;;
-        --use-connection) CONNECTION="$2"; shift 2;;
-	--bucketfs-port) BUCKETFS_PORT="$2"; shift 2;;
-        --no-test) NOTESTS="yes"; shift;;
-        --import-enginedb) IMPORT_ENGINEDB="yes"; shift;;
-	--generic-test-lang) generic_test_lang="$2"; shift 2;;
-	--test-folder) test_folder="$2"; shift 2;;
+        -f|--flavor) FLAVOR="$2"; shift 2;;
+        -c| --use-connection) CONNECTION="$2"; shift 2;;
+	-p|--bucketfs-port) BUCKETFS_PORT="$2"; shift 2;;
+        -n|--no-test) NOTESTS="yes"; shift;;
+        -i|--import-enginedb) IMPORT_ENGINEDB="yes"; shift;;
+	-g|--generic-test-lang) generic_test_lang="$2"; shift 2;;
+	-t| --test-folder) test_folder="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
        echo "Options:"
-       echo "  [--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
-       echo "  [--use-connection=<connection-string>]   Run test on Exasol running in existing EXASolo"
-       echo "  [--no-test]                           Don't run any tests"
-       echo "  [--bucketfs-port]                     port to connect to the bucketfs"
-       echo "  [--import-enginedb]                   Do import the standard test data called enginedb (default: no)"
+       echo "  [-f|--flavor=<name>]                     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
+       echo "  [-c|--use-connection=<connection-string>]   Run test on Exasol running in existing EXASolo"
+       echo "  [-n|--no-test]                           Don't run any tests"
+       echo "  [-p|--bucketfs-port]                     port to connect to the bucketfs"
+       echo "  [-i|--import-enginedb]                   Do import the standard test data called enginedb (default: no)"
        echo "  [-h|--help]                           Print this help."; exit 0;;
         --) shift; break;;
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;

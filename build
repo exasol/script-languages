@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	optarr=$(getopt hf: "$@")
+else
+	optarr=$(getopt -o 'hf:' --long 'help,flavor:' -- "$@")
+fi
+
+echo "OPTARR=$optarr"
 
 eval set -- "$optarr"
 
 while true; do
     case "$1" in
-        --flavor) FLAVOR="$2"; shift 2;;
+        -f|--flavor) FLAVOR="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
 		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
@@ -18,7 +24,12 @@ while true; do
 done
 
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
-TMPDIR=$(mktemp -d -p .)
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+        TMPDIR=$(mktemp -d `basename $0`_${FLAVOR}_tmpdir.XXXXXXXX)
+else
+	TMPDIR=$(mktemp -d -t build_$FLAVOR_tmpdir)
+fi
 
 function cleanup {
     if [ ! -z "$TMPDIR" ]; then
