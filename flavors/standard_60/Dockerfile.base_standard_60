@@ -1,4 +1,5 @@
 FROM ubuntu:16.04
+ARG numberOfCores
 
 COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc 
 
@@ -60,6 +61,7 @@ RUN apt-get -y update && \
         python-scipy \
         python-boto \
 	python-pycurl \
+        python-requests \
         r-cran-rcurl \
         r-cran-xml \
         r-cran-formula \
