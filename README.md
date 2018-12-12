@@ -37,17 +37,19 @@ Each pre-defined flavor has its own set of Docker build-files in a corresponding
 ```bash
 $ ./build --flavor=mini
 ```
+(on Mac OS X, use `./build -f mini`)
 3. Export it into a standalone archive
 ```bash
 $ ./export --flavor=mini
 ```
+(on Mac OS X, use `./export -f mini`)
 This creates the file `mini.tar.gz`.
 
 Optionally, you can run some automated tests for your flavor by using
 ```bash
 $ ./test_complete --flavor=mini
 ```
-
+(on Mac OS X you need to have pip installed for this to work)
 If the test fails with the message
 ```
 cp: cannot create regular file ‘/tmp/udftestdb/exa/etc/EXAConf’: Permission denied
