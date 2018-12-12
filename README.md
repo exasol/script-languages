@@ -38,6 +38,7 @@ Each pre-defined flavor has its own set of Docker build-files in a corresponding
 $ ./build --flavor=mini
 ```
 (on Mac OS X, use `./build -f mini`)
+
 3. Export it into a standalone archive
 ```bash
 $ ./export --flavor=mini
