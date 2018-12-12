@@ -13,7 +13,7 @@ This project contains implementations for user defined functions (UDF's) that ca
 
 ## Prerequisites
 In order to build this project, you need:
-* Linux
+* Linux or Mac OS X (experimental)
 * Docker
 
 In order to follow the quickstart guide, you additionally need
