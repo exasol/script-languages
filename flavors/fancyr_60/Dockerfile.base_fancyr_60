@@ -15,6 +15,7 @@ RUN apt-get -y update && \
         protobuf-compiler \
         r-base \
         r-base-dev \
+	libxml2-dev \
         libprotobuf-dev \
         build-essential \
         vim \

@@ -1,14 +1,17 @@
 #!/bin/sh
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-
-optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+        optarr=$(getopt hf: "$@")
+else
+	optarr=$(getopt -o 'hf' --long 'help,flavor:' -- "$@")
+fi
 
 eval set -- "$optarr"
 
 while true; do
     case "$1" in
-        --flavor) FLAVOR="$2"; shift 2;;
+        -f | --flavor) FLAVOR="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
            echo "This command will remove all exited containers and all dangling docker images. In addition, it will remove all images of a certain flavor if specified via --flavor."
 		   echo "Options:"

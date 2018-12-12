@@ -3,15 +3,19 @@
 
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-optarr=$(getopt -o 'h' --long 'help,flavor:,test-folder:,generic-test-lang:' -- "$@")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+        optarr=$(getopt hf:t:g: "$@")
+else
+	optarr=$(getopt -o 'hf:t:g:' --long 'help,flavor:,test-folder:,generic-test-lang:' -- "$@")
+fi
 
 eval set -- "$optarr"
 
-while true; do
+while true; do 
     case "$1" in
-        --flavor) FLAVOR="$2"; shift 2;;
-        --test-folder) test_folder="$2"; shift 2;;
-        --generic-test-lang) generic_test_lang="$2"; shift 2;;
+        -f|--flavor) FLAVOR="$2"; shift 2;;
+        -t|--test-folder) test_folder="$2"; shift 2;;
+        -g|--generic-test-lang) generic_test_lang="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
 		   echo "  [--flavor]     Choose flavor to test"
@@ -20,6 +24,8 @@ while true; do
         *) echo "Internal error while parsing arguments. ($1)"; exit 1;;
     esac
 done
+
+echo "$FALVOR"
 
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
@@ -30,12 +36,12 @@ BUCKETFS_PORT=$(ls flavors | grep --color=never -n ${FLAVOR} | awk -F ':' '{ pri
 test_restriction=""
 
 if [ ! -z "${test_folder-}" ]; then
-    test_restriction="--test-folder=$test_folder "
+    test_restriction="-t $test_folder "
 fi
 if [ ! -z "${generic_test_lang-}" ]; then
-    test_restriction+=" --generic-test-lang=$generic_test_lang"
+    test_restriction+=" -g $generic_test_lang"
 fi
 
 
-
-./build --flavor=$FLAVOR && ./export --flavor=$FLAVOR --force && ./clean && ./start_dockerdb --db-port=$DB_PORT --bucketfs-port=$BUCKETFS_PORT && ( cmd="./test --flavor $FLAVOR --use-connection=localhost:$DB_PORT --bucketfs-port=$BUCKETFS_PORT $test_restriction" ; $cmd )
+set -x
+./build -f $FLAVOR && ./export -f $FLAVOR && ./clean && ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT && ( cmd="./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction" ; $cmd )
