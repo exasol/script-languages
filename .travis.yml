@@ -6,17 +6,19 @@ sudo: true
 
 services:
     - docker
+os:
+  - linux
+  - osx
 
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then echo "pass"; else sudo apt-get install unixodbc unixodbc-dev; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then echo "pass"; else sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo apt-get install unixodbc unixodbc-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2; fi
 
 
 matrix:
   include:
   - name: mini-python-python
     env: MATRIX_FLAVOR=mini GENERIC_TEST_LANG=python TEST_FOLDER=python
-    os: osx
 #  - name: standard_60-python
 #    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=python TEST_FOLDER=python
 #  - name: standard_60-r
