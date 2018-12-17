@@ -6,35 +6,33 @@ sudo: true
 
 services:
     - docker
-os:
-  - linux
-  - osx
 
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo apt-get install unixodbc unixodbc-dev; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2; fi
+#  - sudo apt-get update 
+  - sudo apt-get install unixodbc unixodbc-dev
+  - sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
 
 
 matrix:
   include:
   - name: mini-python-python
     env: MATRIX_FLAVOR=mini GENERIC_TEST_LANG=python TEST_FOLDER=python
-#  - name: standard_60-python
-#    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=python TEST_FOLDER=python
-#  - name: standard_60-r
-#    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
-#  - name: standard_60-java
-#    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=java TEST_FOLDER=java
-#  - name: python3_60-python3
-#    env: MATRIX_FLAVOR=python3_60 GENERIC_TEST_LANG=python TEST_FOLDER=python3
-#  - name: standard_61-python
-#    env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=python TEST_FOLDER=python
-#  - name: standard_61-r
-#    env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=r TEST_FOLDER=r
-#  - name: standard_61-java
-#    env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=java TEST_FOLDER=java
-##  - name: fancyr_60-r
-##    env: MATRIX_FLAVOR=fancyr_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
+  - name: standard_60-python
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=python TEST_FOLDER=python
+  - name: standard_60-r
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
+  - name: standard_60-java
+    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=java TEST_FOLDER=java
+  - name: python3_60-python3
+    env: MATRIX_FLAVOR=python3_60 GENERIC_TEST_LANG=python TEST_FOLDER=python3
+  - name: standard_61-python
+    env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=python TEST_FOLDER=python
+  - name: standard_61-r
+    env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=r TEST_FOLDER=r
+  - name: standard_61-java
+    env: MATRIX_FLAVOR=standard_61 GENERIC_TEST_LANG=java TEST_FOLDER=java
+#  - name: fancyr_60-r
+#    env: MATRIX_FLAVOR=fancyr_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
 
 script:
   - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
