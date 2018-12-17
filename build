@@ -7,7 +7,6 @@ else
 	optarr=$(getopt -o 'hf:' --long 'help,flavor:' -- "$@")
 fi
 
-echo "OPTARR=$optarr"
 
 eval set -- "$optarr"
 
@@ -33,8 +32,11 @@ function cleanup {
     fi
 }
 
-
-CORES=$(grep processor /proc/cpuinfo | wc -l | tr -d '\n')
+if [[ "$OSTYPE" == "darwin"* ]]; then
+        CORES=$(sysctl -n hw.ncpu)
+else
+    	CORES=$(grep processor /proc/cpuinfo | wc -l | tr -d '\n')
+fi
 
 echo Using base docker file: Dockerfile.base_$FLAVOR
 docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES || die "Could not create exaudf/baseimage"
