@@ -37,14 +37,14 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
     	CORES=$(grep processor /proc/cpuinfo | wc -l | tr -d '\n')
 fi
-
+REPNAME=$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')
 echo Using base docker file: Dockerfile.base_$FLAVOR
-docker build . --tag exaudf/baseimage_$FLAVOR -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES || die "Could not create exaudf/baseimage"
+docker build . --tag exaudf/baseimage_$REPNAME -f flavors/$FLAVOR/Dockerfile.base_$FLAVOR --build-arg numberOfCores=$CORES || die "Could not create exaudf/baseimage"
 echo Using build docker file: Dockerfile.build_$FLAVOR
-docker build . --tag exaudf/build_$FLAVOR -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
+docker build . --tag exaudf/build_$REPNAME -f flavors/$FLAVOR/Dockerfile.build_$FLAVOR || die "Could not create exaudf/build"
 trap cleanup EXIT
-docker container create --name extract_$FLAVOR exaudf/build_$FLAVOR
-docker container cp extract_$FLAVOR:/exaudf $TMPDIR
-docker container rm -f extract_$FLAVOR
-docker build . --no-cache -t exaudf/release_$FLAVOR -f flavors/$FLAVOR/Dockerfile.release_$FLAVOR --build-arg extract_dir=$TMPDIR || die "Could not create exaudf/release"
+docker container create --name extract_$REPNAME exaudf/build_$REPNAME
+docker container cp extract_$REPNAME:/exaudf $TMPDIR
+docker container rm -f extract_$REPNAME
+docker build . --no-cache -t exaudf/release_$REPNAME -f flavors/$FLAVOR/Dockerfile.release_$FLAVOR --build-arg extract_dir=$TMPDIR || die "Could not create exaudf/release"
 rm -rf $TMPDIR

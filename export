@@ -44,7 +44,8 @@ while true; do
 done
 fi
 
-docker run --name releasecontainer exaudf/release_$FLAVOR
+REPNAME=$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')
+docker run --name releasecontainer exaudf/release_$REPNAME
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
         TMPDIR=$(mktemp -d `basename $0`_${FLAVOR}_tmpdir.XXXXXXXX)
