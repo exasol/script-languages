@@ -1,4 +1,4 @@
-FROM exaudf/release_python3_60
+FROM exaudf/release_python3-ds-exasol-6.0.0
 
 RUN mkdir /exasol_emulator
 

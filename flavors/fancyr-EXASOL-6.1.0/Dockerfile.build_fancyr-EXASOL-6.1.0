@@ -1,4 +1,4 @@
-FROM exaudf/baseimage_fancyr_60
+FROM exaudf/baseimage_fancyr-exasol-6.1.0
 
 RUN mkdir /exaudf_src /exaudf_src/build /exaudf
 

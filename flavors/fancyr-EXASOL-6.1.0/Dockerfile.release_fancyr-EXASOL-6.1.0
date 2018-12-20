@@ -1,4 +1,4 @@
-FROM exaudf/baseimage_fancyr
+FROM exaudf/baseimage_fancyr-exasol-6.1.0
 ARG extract_dir
 COPY $extract_dir/exaudf /exaudf
 
