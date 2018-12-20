@@ -15,22 +15,22 @@ install:
 
 matrix:
   include:
-  - name: mini-python-python
-    env: MATRIX_FLAVOR=mini GENERIC_TEST_LANG=python TEST_FOLDER=python
+#  - name: mini-python-python
+#    env: MATRIX_FLAVOR=mini GENERIC_TEST_LANG=python TEST_FOLDER=python
   - name: standard-EXASOL-6.0.0-python
     env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.0.0-r
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard-EXASOL-6.0.0-java
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
-  - name: python3-ds-EXASOL-6.0.0-python3
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
-  - name: standard-EXASOL-6.0.1-python
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.1 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.0.1-r
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.1 GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard-EXASOL-6.0.1-java
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.1 GENERIC_TEST_LANG=java TEST_FOLDER=java
+#  - name: standard-EXASOL-6.0.0-r
+#    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
+#  - name: standard-EXASOL-6.0.0-java
+#    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
+#  - name: python3-ds-EXASOL-6.0.0-python3
+#    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
+#  - name: standard-EXASOL-6.1.0-python
+#    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
+#  - name: standard-EXASOL-6.1.0-r
+#    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
+#  - name: standard-EXASOL-6.1.0-java
+#    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
 
 script:
   - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
