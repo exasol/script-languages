@@ -28,7 +28,7 @@ RUN apt-get -y update && \
     (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
     rm -rf swig-2.0.4 swig-2.0.4.tar.gz 
 RUN apt-get -y install cython3 libcurl4-openssl-dev
-run wget https://files.pythonhosted.org/packages/85/d1/69ee7e757f657e7f527cbf500ec2d295396e5bcec873cf4eb68962c41024/statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
+RUN wget https://files.pythonhosted.org/packages/85/d1/69ee7e757f657e7f527cbf500ec2d295396e5bcec873cf4eb68962c41024/statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
     pip3 install statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
     rm -f statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
     pip3 install keras tensorflow kmodes seaborn matplotlib imbalanced-learn lifelines nltk gensim lxml ujson && \
