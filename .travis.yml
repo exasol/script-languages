@@ -11,7 +11,6 @@ services:
 install:
 #  - sudo apt-get update 
   - sudo apt-get install unixodbc unixodbc-dev
-  - sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
 
 
 matrix:
