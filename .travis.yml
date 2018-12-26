@@ -1,5 +1,6 @@
 #
 language: python
+dist: xenial
 
 # Setting sudo to false will cause Travis to use Containers (default in the meantime)
 sudo: true

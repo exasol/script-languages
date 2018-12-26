@@ -127,7 +127,8 @@ RUN apt-get -y update && \
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution
 
-ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8  
-
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 
