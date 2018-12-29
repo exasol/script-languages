@@ -1,0 +1,4 @@
+language_definition=PYTHON=localzmq+protobuf:///bfsdefault/myudfs/python3-ds-EXASOL-6.1.0?lang=python#buckets/bfsdefault/myudfs/python3-ds-EXASOL-6.1.0/exaudf/exaudfclient JAVA=builtin_java R=builtin_r
+generic_language_tests=python
+test_folders=python3
+# ending new line required!

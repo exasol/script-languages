@@ -17,7 +17,6 @@ eval set -- "$optarr"
 
 
 while true; do
-    echo "111 = $1"
     case "$1" in
         -f|--flavor) FLAVOR="$2"; shift 2;;
         -c| --use-connection) CONNECTION="$2"; shift 2;;
@@ -44,7 +43,7 @@ done
 [ ! -e "$FLAVOR.tar.gz" ] && die "Flavor not exported here: `pwd`/$FLAVOR.tar.gz"
 
 test_config="$(pwd)/flavors/$FLAVOR/testconfig"
-[ ! -f "$test_config" ] && die "Testconfig of $flavor not found here: $test_config"
+[ ! -f "$test_config" ] && die "Testconfig of $FLAVOR not found here: $test_config"
 
 if [ ! -z ${CONNECTION+x} ]; then
     OIFS=$IFS

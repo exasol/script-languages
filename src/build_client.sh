@@ -182,7 +182,7 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     LDFLAGS="-L$PYTHON_PREFIX/lib -Wl,-rpath,$PYTHON_PREFIX/lib $LDFLAGS" 
 
     echo "Compiling Python specific code"
-    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
+    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS -Wno-unused-but-set-variable || die "Failed to compile exascript_python.o"
     g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
 
     CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"
@@ -218,7 +218,7 @@ if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
     LDFLAGS="-L$($PYTHON3_CONFIG --prefix)/lib -Wl,-rpath,$($PYTHON3_CONFIG --prefix)/lib $LDFLAGS" 
 
     echo "Compiling Python3 specific code with these CXXFLAGS:$CXXFLAGS"
-    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
+    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS -Wno-unused-but-set-variable || die "Failed to compile exascript_python.o"
     g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
 
     CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"

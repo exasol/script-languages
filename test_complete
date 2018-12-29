@@ -44,4 +44,8 @@ fi
 
 
 set -x
-./build -f $FLAVOR && ./export -f $FLAVOR && ./clean && ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT && ( cmd="./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction" ; $cmd )
+#./build -f $FLAVOR && ./export -f $FLAVOR && ./clean && ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT && ( cmd="./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction" ; $cmd )
+./build -f $FLAVOR && ./export -f $FLAVOR && ./clean && ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT && ./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction
+RETURN_CODE=$?
+exit $RETURN_CODE
+
