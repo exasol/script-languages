@@ -14,5 +14,5 @@ The naming convention is like this:
 This allows us to provide new versions of a flavor when new features become available in Exasol that are not supported in older flavors.
 For instance, the flavors for Exasol 6.1.0 support newer Linux distributions as their basis and hence, overall contain newer versions of libraries and languages.
 
-So, in order to find the correct version of a flavor for your version of Exasol, simply take the latest container with version less than or equal to your Exasol versio.
+So, in order to find the correct version of a flavor for your version of Exasol, simply take the latest container with version less than or equal to your Exasol version.
 So for Exasol 6.1.1, you would use the `*-EXASOL-6.1.0` flavors, while for Exasol 6.0.14 you would use the `*-EXASOL-6.0.0` flavors.
