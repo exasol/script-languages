@@ -10,6 +10,7 @@ import sys
 import tempfile
 import time
 import unittest
+import socket
 
 from unittest import (
         SkipTest,
@@ -211,13 +212,15 @@ class TestProgram(object):
 
     def _write_odbcini(self):
         name = os.path.realpath(os.path.join(self.opts.logdir, 'odbc.ini'))
+        # we have to resolve the hostname to ipv4 ourselve, because pyodbc sometimes resolve hostnames to ipv6 which is not supported by Exasol
+        server=self._resolve_host_to_ipv4(self.opts.server)
         with open(name, 'w') as tmp:
             tmp.write('[ODBC Data Sources]\n')
             tmp.write('exatest=EXASolution\n')
             tmp.write('\n')
             tmp.write('[exatest]\n')
             tmp.write('Driver = %s\n' % self.opts.driver)
-            tmp.write('EXAHOST = %s\n' % self.opts.server)
+            tmp.write('EXAHOST = %s\n' % server)
             tmp.write('EXAUID = sys\n')
             tmp.write('EXAPWD = exasol\n')
             tmp.write('CONNECTIONLCCTYPE = en_US.UTF-8\n')      # TODO Maybe make this optional
@@ -230,6 +233,12 @@ class TestProgram(object):
                         'verbose': 'VERBOSE',
                         }[self.opts.odbc_log])
         return name
+
+    def _resolve_host_to_ipv4(self,server):
+        host_port_split=server.split(":")
+        ip_of_host = socket.gethostbyname(self.opts.server.split(":")[0])
+        ip_with_port = ip_of_host+":"+host_port_split[1]
+        return ip_with_port
 
     def _lint(self):
         env = os.environ.copy()
