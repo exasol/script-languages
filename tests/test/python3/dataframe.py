@@ -470,7 +470,7 @@ class PandasDataFrame(udf.TestCase):
                 ctx.emit(df)
             /
             ''' % (self.col_defs, self.col_defs)))
-        with self.assertRaisesRegexp(Exception, "must be an integer > 0"):
+        with self.assertRaisesRegexp(Exception, "must be an integer >= 0"):
             rows = self.query('SELECT foo(%s) FROM FN2.TEST2' % (self.col_names))
 
     def test_dataframe_set_emits_null_start_col_too_large(self):

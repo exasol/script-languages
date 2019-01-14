@@ -202,7 +202,7 @@ class exaiter(object):
         if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
             raise RuntimeError("get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
         if (type(start_col) not in (int, long) or start_col < 0):
-            raise RuntimeError("get_dataframe() parameter 'start_col' must be an integer > 0")
+            raise RuntimeError("get_dataframe() parameter 'start_col' must be an integer >= 0")
         if (start_col > len(self.__incolnames)):
             raise RuntimeError("get_dataframe() parameter 'start_col' is %d, but there are only %d input columns" % (start_col, len(self.__incolnames)))
         if num_rows == "all":
