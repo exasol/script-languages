@@ -1,15 +1,16 @@
 #
 language: python
+python: "2.7"
+dist: trusty
 
-# Setting sudo to false will cause Travis to use Containers (default in the meantime)
-sudo: true
-
+sudo:  required
 services:
     - docker
 
 install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq unixodbc unixodbc-dev
+  #- sudo apt-get -y update
+  #- sudo apt-get -u upgrade
+  - sudo apt-get -y install unixodbc unixodbc-dev
   - sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
 
 
@@ -17,14 +18,22 @@ matrix:
   include:
   - name: mini-python-python
     env: MATRIX_FLAVOR=mini GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard_60-python
-    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard_60-r
-    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard_60-java
-    env: MATRIX_FLAVOR=standard_60 GENERIC_TEST_LANG=java TEST_FOLDER=java
-  - name: python3_60-python3
-    env: MATRIX_FLAVOR=python3_60 GENERIC_TEST_LANG=python TEST_FOLDER=python3
+  - name: standard-EXASOL-6.0.0-python
+    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
+  - name: standard-EXASOL-6.0.0-r
+    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
+  - name: standard-EXASOL-6.0.0-java
+    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
+  - name: python3-ds-EXASOL-6.0.0-python3
+    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
+  - name: python3-ds-EXASOL-6.1.0-python3
+    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
+  - name: standard-EXASOL-6.1.0-python
+    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
+  - name: standard-EXASOL-6.1.0-r
+    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
+  - name: standard-EXASOL-6.1.0-java
+    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
 
 script:
   - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG

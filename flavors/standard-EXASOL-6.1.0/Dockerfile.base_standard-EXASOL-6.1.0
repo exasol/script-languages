@@ -1,0 +1,134 @@
+FROM ubuntu:18.04
+ARG numberOfCores
+
+COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc 
+
+ENV DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+
+RUN apt-get -y update && \
+    apt-get -y install \
+        software-properties-common \
+        coreutils \
+        locales \
+        openjdk-11-jdk-headless \
+        python2.7-dev  \
+        r-base \
+        r-base-dev \
+        libnss-db \
+        libzmq3-dev \
+        python-zmq \
+        python3-zmq \
+        protobuf-compiler \
+        libprotobuf-dev \
+        scons \
+        libssl-dev \
+        wget \
+        unzip \
+        libpcre3-dev \
+        python-cffi \
+        python-cryptography \
+        python-docutils \
+        python-enum34 \
+        python-idna \
+        python-ipaddress \
+        ipython \
+        python-jinja2 \
+        python-martian \
+        python-pip \
+        python3-pip \
+        python-protobuf \
+        python-pyasn1 \
+        python-pyasn1-modules \
+        python-pycparser \
+        python-pycryptopp \
+        pyflakes \
+        python-pyftpdlib \
+        python-pygments \
+        python-pykickstart \
+        python-pyodbc \
+        python-openssl \
+        python-pypdf2 \
+        python-ldb \
+        python-ldap \
+        cython \
+        python-roman \
+        python-samba \
+        python-sklearn \
+        python-talloc \
+        python-cjson \
+        python-lxml \
+        python-numpy \
+        python-setuptools \
+        python-pandas \
+        python-redis \
+        python-scipy \
+        python-boto \
+	python-pycurl \
+        python-requests \
+        r-cran-rcurl \
+        r-cran-xml \
+        r-cran-formula \
+        r-cran-rcolorbrewer \
+        r-cran-rodbc \
+        r-cran-acepack \
+        r-cran-chron \
+        r-cran-e1071 \
+        r-cran-fastcluster \
+        r-cran-gbm \
+        r-cran-gridextra \
+        r-cran-gtable \
+        r-cran-latticeextra \
+        r-cran-randomforest \
+	r-cran-bradleyterry2 \
+	r-cran-brglm \
+	r-cran-car \
+	r-cran-caret \
+	r-cran-colorspace \
+	r-cran-dichromat \
+	r-cran-digest \
+	r-cran-foreach \
+	r-cran-ggplot2 \
+	r-cran-gtools \
+	r-cran-iterators \
+	r-cran-labeling \
+	r-cran-lme4 \
+	r-cran-magrittr \
+	r-cran-minqa \
+	r-cran-munsell \
+	r-cran-nloptr \
+	r-cran-plyr \
+	r-cran-profilemodel \
+	r-cran-proto \
+	r-cran-rcpp \
+	r-cran-rcppeigen \
+	r-cran-reshape2 \
+	r-cran-scales \
+	r-cran-stringr \
+        maven \
+        git && \
+    pip3 install protobuf && \
+    pip install azure-storage && \
+    pip install pytz && \
+    wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
+    tar zxf swig-2.0.4.tar.gz && \
+    (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
+    rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
+    Rscript -e 'install.packages("rredis",repos = "http://cran.r-project.org")' && \
+    Rscript -e 'install.packages("data.table",repos = "http://cran.r-project.org")' && \
+    Rscript -e 'install.packages("htmltools",repos = "http://cran.r-project.org")' && \
+    Rscript -e 'install.packages("flashClust",repos = "http://cran.r-project.org")' && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 && \
+    apt-get -y clean && \
+    apt-get -y autoremove && \
+    echo /usr/lib/jvm/java-11-openjdk-amd64/lib/server/ >> /etc/ld.so.conf && \
+    ldconfig
+
+RUN addgroup --gid 1000 exasolution
+RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+

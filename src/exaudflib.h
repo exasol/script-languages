@@ -17,14 +17,32 @@ void init_socket_name(const string socket_name);
 bool send_init(zmq::socket_t &socket, const string client_name);
 void send_close(zmq::socket_t &socket, const string &exmsg);
 bool send_run(zmq::socket_t &socket);
-bool send_return(zmq::socket_t &socket, std::string& result);
+//bool send_return(zmq::socket_t &socket, const char* result);
 void send_undefined_call(zmq::socket_t &socket, const std::string& fn);
 bool send_done(zmq::socket_t &socket);
 void send_finished(zmq::socket_t &socket);
 
+
+
+
+
 extern void* handle;
 void* load_dynamic(const char* name);
 
+#ifdef PROTEGRITY_PLUGIN_CLIENT
+namespace SWIGVMContainers {
+class SWIGMetadata;
+class AbstractSWIGTableIterator;
+class SWIGRAbstractResultHandler;
+class SWIGTableIterator;
+}
+
+extern "C" {
+SWIGVMContainers::SWIGMetadata* create_SWIGMetaData();
+SWIGVMContainers::AbstractSWIGTableIterator* create_SWIGTableIterator();
+SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator);
+}
+#endif
 
 namespace SWIGVMContainers {
 
@@ -208,14 +226,20 @@ struct SWIGVM_params_t {
 
 extern __thread SWIGVM_params_t *SWIGVM_params;
 
+
+
 class SWIGMetadata {
     SWIGMetadata* impl;
     typedef SWIGVMContainers::SWIGMetadata* (*CREATE_METADATA_FUN)();
     public:
         SWIGMetadata()
         {
+#ifndef PROTEGRITY_PLUGIN_CLIENT
             CREATE_METADATA_FUN create = (CREATE_METADATA_FUN)load_dynamic("create_SWIGMetaData");
             impl = create();
+#else
+            impl = create_SWIGMetaData();
+#endif
         }
         /* hack: use this constructor to avoid cycling loading of this class */
         SWIGMetadata(bool) {}
@@ -298,8 +322,12 @@ class SWIGTableIterator { //: public AbstractSWIGTableIterator {
 public:
     SWIGTableIterator()
     {
+#ifndef PROTEGRITY_PLUGIN_CLIENT
         CREATE_TABLEITERATOR_FUN creator = (CREATE_TABLEITERATOR_FUN)load_dynamic("create_SWIGTableIterator");
         impl = creator();
+#else
+        impl = create_SWIGTableIterator();
+#endif
     }
 
     virtual ~SWIGTableIterator() {
@@ -355,8 +383,12 @@ class SWIGResultHandler { //: public SWIGRAbstractResultHandler {
 public:
     SWIGResultHandler(SWIGTableIterator* table_iterator)
     {
+#ifndef PROTEGRITY_PLUGIN_CLIENT
         CREATE_RESULTHANDLER_FUN creator = (CREATE_RESULTHANDLER_FUN)load_dynamic("create_SWIGResultHandler");
         impl = creator(table_iterator);
+#else
+        impl = create_SWIGResultHandler(table_iterator);
+#endif
     }
 
     virtual ~SWIGResultHandler() {
@@ -408,39 +440,24 @@ class SWIGVM {
             }
         }
         virtual bool useZmqSocketLocks() {return false;}
-        virtual std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) = 0;
+        virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) = 0;
         string exception_msg;
         mutex exception_msg_mtx;
         string calledUndefinedSingleCall;
 
 };
-//struct swig_undefined_single_call_exception: public std::exception
-//{
-//    swig_undefined_single_call_exception(const std::string& fn): m_fn(fn) { }
-//    virtual ~swig_undefined_single_call_exception() throw() { }
-//    const std::string fn() const {return m_fn;}
-//    const char* what() const throw() {
-//        std::stringstream sb;
-//        sb << "Undefined in UDF: " << m_fn;
-//        return sb.str().c_str();
-//    }
-// private:
-//    const std::string m_fn;
-//};
+
+
 #ifdef ENABLE_PYTHON_VM
 class PythonVMImpl;
 
 class PythonVM: public SWIGVM {
     public:
-//        struct exception: SWIGVM::exception {
-//            exception(const char *reason): SWIGVM::exception(reason) { }
-//            virtual ~exception() throw() { }
-//        };
         PythonVM(bool checkOnly);
         virtual ~PythonVM() {};
         virtual void shutdown();
         virtual bool run();        
-        virtual std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
+        virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
     private:
         PythonVMImpl *m_impl;
 };
@@ -452,15 +469,11 @@ class RVMImpl;
 
 class RVM: public SWIGVM {
     public:
-//        struct exception: SWIGVM::exception {
-//            exception(const char *reason): SWIGVM::exception(reason) { }
-//            virtual ~exception() throw() { }
-//        };
         RVM(bool checkOnly);
         virtual ~RVM() {};
         virtual bool run();
         virtual void shutdown();
-        virtual std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
+        virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
     private:
         RVMImpl *m_impl;
 };
@@ -472,15 +485,11 @@ class JavaVMImpl;
 
 class JavaVMach: public SWIGVM {
     public:
-//        struct exception: SWIGVM::exception {
-//            exception(const char *reason): SWIGVM::exception(reason) { }
-//            virtual ~exception() throw() { }
-//        };
         JavaVMach(bool checkOnly);
         virtual ~JavaVMach() {}
         virtual void shutdown();
         virtual bool run();
-        virtual std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
+        virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
     private:
         JavaVMImpl *m_impl;
 };
@@ -499,7 +508,7 @@ class StreamingVM: public SWIGVM {
         virtual ~StreamingVM() {};
         virtual void shutdown();
         virtual bool run();
-        virtual std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
+        virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
         virtual bool useZmqSocketLocks() {return true;}
     private:
         SWIGMetadata meta;
