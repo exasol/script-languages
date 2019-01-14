@@ -16,3 +16,23 @@ For instance, the flavors for Exasol 6.1.0 support newer Linux distributions as 
 
 So, in order to find the correct version of a flavor for your version of Exasol, simply take the latest container with version less than or equal to your Exasol version.
 So for Exasol 6.1.1, you would use the `*-EXASOL-6.1.0` flavors, while for Exasol 6.0.14 you would use the `*-EXASOL-6.0.0` flavors.
+
+# Flavor-specific features
+## python3-ds
+### Pandas DataFrame support
+The `python3-ds-*` flavors now have direct DataFrame support for accessing and emitting data in Exasol.
+
+#### Accessing data
+Instead of accessing each column of a row individually and calling `next()` for every row, the `get_dataframe(num_rows, start_col)` function can now be called which returns a block of data as a Pandas DataFrame.
+
+The parameters of `get_dataframe` are the following.
+
+| Parameter | Description |
+| ----- | ----- |
+| num_rows | The number of rows to be returned in the DataFrame. Values: 'all' or a positive integer. Default: 1. |
+| start_col | The UDF column (0-based) which specifies the start of the data to be included in the returned DataFrame. The data for `start_col` and all columns thereafter will be included in the DataFrame. Values: a nonnegative integer. Default: 0. |
+
+`get_dataframe` will return a DataFrame containing `num_rows` rows or a lesser number if `num_rows` are not available. If there are zero rows available, `get_dataframe` will return `None`. The UDF data iterator will point to the next row (i.e. following the last row in the DataFrame) just as with `next()`.
+
+#### Emitting data
+`emit()`
