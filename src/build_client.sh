@@ -421,7 +421,6 @@ if [ -f pyextdataframe.so ]; then
     cp -a "$BUILDDIR/pyextdataframe.so" "$OUTPUTDIR/pyextdataframe.so" || die "Failed to create $OUTPUTDIR/pyextdataframe.so"
 fi
 
-
 if [ "$RELEASE_SOURCES" = "yes" ]; then
     sources_target="$OUTPUTDIR/src"
     mkdir -p $sources_target
