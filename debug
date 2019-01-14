@@ -1,15 +1,17 @@
 #!/bin/sh
 die() { echo "ERROR:" "$@" >&2; exit 1; }
 
-#set -x
-
-optarr=$(getopt -o 'h' --long 'help,flavor:' -- "$@")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+        optarr=$(getopt hf: -- "$@")
+else
+	optarr=$(getopt -o 'hf:' --long 'help,flavor:' -- "$@")
+fi
 
 eval set -- "$optarr"
 
 while true; do
     case "$1" in
-        --flavor) FLAVOR="$2"; shift 2;;
+        -f|--flavor) FLAVOR="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
 		   echo "Options:"
 		   echo "  [--flavor]     Choose between different versions of the Dockerfiles (added as _<flavor> suffix)"
@@ -24,8 +26,46 @@ done
 docker build . --tag exaudf/test_$FLAVOR -f flavors/$FLAVOR/Dockerfile.test_$FLAVOR
 
 docker run --detach --security-opt seccomp=unconfined --name test_container_$FLAVOR exaudf/test_$FLAVOR sleep 1000000
-
 docker exec test_container_$FLAVOR mkfifo /tmp/fff
+docker exec -it test_container_$FLAVOR /bin/bash
+
+
+### python exasol_emulator/exasolution.py unix:/tmp/fff --single-call-testcase 12 exasol_emulator/sc_script.py&
+### gdb /exaudf/exaudfclient --args /exaudf/exaudfclient ipc:///tmp/fff lang=java
+
+### cd /exasol_emulator && python /exasol_emulator/exasolution.py unix:/tmp/fff --single-call-testcase 12 sc_script2&
+### /exaudf/exaudfclient ipc:///tmp/fff lang=java
+### gdb /exaudf/exaudfclient --args /exaudf/exaudfclient ipc:///tmp/fff lang=java
+
+
+
+### python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.r&
+### /exaudf/exaudfclient ipc:///tmp/fff lang=r
+
+docker rm -f test_container_$FLAVOR
+
+#docker run --detach --security-opt seccomp=unconfined --name test_container_$FLAVOR exaudf/test_$FLAVOR sleep 1000000
+#docker exec test_container_$FLAVOR mkfifo /tmp/fff
+#docker exec --detach test_container_$FLAVOR bash -c 'python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/get_connections_script.py'
+#docker exec -it test_container_$FLAVOR bash -c '/exaudf/exaudfclient ipc:///tmp/fff lang=python'
+#docker exec -it test_container_$FLAVOR /bin/bash
+#docker exec test_container_$FLAVOR cat exasol_emulator/output.csv
+#docker rm -f test_container_$FLAVOR
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #docker exec --detach test_container_$FLAVOR bash -c 'python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script_fr.py'
 #docker exec --detach test_container_$FLAVOR python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script2.py
@@ -38,12 +78,3 @@ docker exec test_container_$FLAVOR mkfifo /tmp/fff
 # /opt/conda/bin/python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py &
 # python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py&
 # /exaudf/exaudfclient ipc:///tmp/fff lang=python
-
-docker exec --detach test_container_$FLAVOR bash -c 'python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/get_connections_script.py'
-
-docker exec -it test_container_$FLAVOR bash -c '/exaudf/exaudfclient ipc:///tmp/fff lang=python'
-
-#docker exec -it test_container_$FLAVOR /bin/bash
-
-#docker exec test_container_$FLAVOR cat exasol_emulator/output.csv
-docker rm -f test_container_$FLAVOR

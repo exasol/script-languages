@@ -31,9 +31,9 @@ using namespace SWIGVMContainers;
 using namespace std;
 using namespace google::protobuf;
 
-//__thread SWIGVM_params_t * SWIGVMContainers::SWIGVM_params;
-
+#ifndef PROTEGRITY_PLUGIN_CLIENT
 __thread SWIGVM_params_t* SWIGVMContainers::SWIGVM_params; // this is not used in the file, but defined to satisfy the "extern" requirement from exaudflib.h
+#endif
 
 static SWIGVM_params_t * SWIGVM_params_ref = nullptr;
 
@@ -596,19 +596,20 @@ bool send_run(zmq::socket_t &socket)
 
             return true;
         } else if (response.type() != MT_RUN) {
-            throw SWIGVM::exception("Wrong response type, should be done");
+            throw SWIGVM::exception("Wrong response type, should be MT_RUN");
         }
     }
     return true;
 }
 
-bool send_return(zmq::socket_t &socket, std::string& result)
+bool send_return(zmq::socket_t &socket, const char* result)
 {
+  assert(result != nullptr);
     {   /* send return request */
         request.Clear();
         request.set_type(MT_RETURN);
         ::exascript_return_req* rr = new ::exascript_return_req();
-        rr->set_result(result.c_str());
+        rr->set_result(result);
         request.set_allocated_call_result(rr);
         request.set_connection_id(SWIGVM_params_ref->connection_id);
         if (!request.SerializeToString(&output_buffer))
@@ -670,7 +671,8 @@ bool send_done(zmq::socket_t &socket)
             throw SWIGVM::exception("Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
-    } { /* receive done response */
+    } 
+    { /* receive done response */
         zmq::message_t zmsg;
         socket_recv(socket, zmsg);
         response.Clear();
@@ -683,7 +685,7 @@ bool send_done(zmq::socket_t &socket)
         } else if (response.type() == MT_CLEANUP) {
             return false;
         } else if (response.type() != MT_DONE)
-            throw SWIGVM::exception("Wrong response type, should be done");
+            throw SWIGVM::exception("Wrong response type, should be MT_DONE");
     }
     return true;
 }
@@ -1444,15 +1446,15 @@ public:
 
 extern "C" {
 
-SWIGVMContainers::SWIGMetadata_Impl* create_SWIGMetaData() {
+SWIGVMContainers::SWIGMetadata* create_SWIGMetaData() {
     return new SWIGVMContainers::SWIGMetadata_Impl();
 }
 
-SWIGVMContainers::SWIGTableIterator_Impl* create_SWIGTableIterator() {
+SWIGVMContainers::AbstractSWIGTableIterator* create_SWIGTableIterator() {
     return new SWIGVMContainers::SWIGTableIterator_Impl();
 }
 
-SWIGVMContainers::SWIGResultHandler_Impl* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator) {
+SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator) {
     return new SWIGVMContainers::SWIGResultHandler_Impl(table_iterator);
 }
 
@@ -1573,6 +1575,7 @@ reinit:
     SWIGVM_params_ref->singleCallMode = g_singleCallMode;
 
     SWIGVM*vm=nullptr;
+
     try {
         vm = vmMaker();
         if (vm == nullptr) {
@@ -1591,16 +1594,18 @@ reinit:
                 // in single call mode, after MT_RUN from the client,
                 // EXASolution responds with a CALL message that specifies
                 // the single call function to be made
-                if (!send_run(socket)) {break;}
-                assert(g_singleCallFunction != SC_FN_NIL);
-                //try {
-                    std::string result;
+                if (!send_run(socket)) {
+		  break;
+		}
+                assert(g_singleCallFunction != single_call_function_id_e::SC_FN_NIL);
+		try {
+		    const char* result = nullptr;
                     switch (g_singleCallFunction)
                     {
                     case single_call_function_id_e::SC_FN_NIL:
                         break;
                     case single_call_function_id_e::SC_FN_DEFAULT_OUTPUT_COLUMNS:
-                        result = vm->singleCall(g_singleCallFunction,noArg);
+		        result = vm->singleCall(g_singleCallFunction,noArg);
                         break;
                     case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
                         assert(!g_singleCall_ImportSpecificationArg.isEmpty());
@@ -1614,25 +1619,25 @@ reinit:
                         break;
                     case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
                         assert(!g_singleCall_StringArg.isEmpty());
-                        result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
-                        break;
+			result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
+			break;
                     }
                     if (vm->exception_msg.size()>0) {
                         send_close(socket, vm->exception_msg); socket.close();
                         goto error;
                     }
+
                     if (vm->calledUndefinedSingleCall.size()>0) {
-                        send_undefined_call(socket, vm->calledUndefinedSingleCall);
-                    } else {
-                        send_return(socket,result);
-                    }
+                         send_undefined_call(socket, vm->calledUndefinedSingleCall);
+                     } else {
+		       send_return(socket,result);
+                     }
+
                     if (!send_done(socket)) {
                         break;
                     }
-                //} 
-                //catch (const swig_undefined_single_call_exception& ex) {
-                //    send_undefined_call(socket,ex.fn());
-                //}
+		} catch(...) {
+		}
             }
         } else {
             for(;;) {

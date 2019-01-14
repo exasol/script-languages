@@ -67,7 +67,7 @@ class SWIGVMContainers::PythonVMImpl {
         PythonVMImpl(bool checkOnly);
         ~PythonVMImpl() {}
         bool run();
-        std::string singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
+        const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
         void shutdown();
     private:
         string script_code;
@@ -122,14 +122,16 @@ bool PythonVM::run() {
     }
     return false;
 }
-std::string PythonVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
+
+
+const char* PythonVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args) {
     try {
         return m_impl->singleCall(fn, args,calledUndefinedSingleCall);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
     }
-    return "<this is an error>";
+    return strdup("<this is an error>");
 }
 
 
@@ -283,7 +285,10 @@ bool PythonVMImpl::run() {
     return true;
 }
 
-std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args , string& calledUndefinedSingleCall) {
+
+static string singleCallResult;
+
+const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args , string& calledUndefinedSingleCall) {
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode (singleCall)"); // @@@@ TODO: better exception text
     //{
 #ifndef DISABLE_PYTHON_SUBINTERP
@@ -471,7 +476,7 @@ std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
         PyObject* funcToCall = PyDict_GetItemString(globals, func); check();
         if (funcToCall == NULL) {
             calledUndefinedSingleCall = func;
-            return "<error>";
+            return strdup("<error>");
             //throw swig_undefined_single_call_exception(func);  // no such call is defined.
         }
         if (fn==SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL) {
@@ -504,16 +509,16 @@ std::string PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
             sb << " did not return string type (singleCall)";
             throw PythonVM::exception(sb.str().c_str());
         }
-	string result("");
+	
 #ifdef ENABLE_PYTHON3
 	  PyObject* repr = PyObject_Str(retvalue);
 	  PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "ignore");
 	  const char *bytes = PyBytes_AS_STRING(p3str);
-	  result = string(bytes);
+	  singleCallResult = string(bytes);
 #else
         const char * s = PyString_AsString(retvalue);
-        result = string(s);
+        singleCallResult = string(s);
 #endif
         Py_XDECREF(retvalue); retvalue = NULL;
-        return result;
+	return singleCallResult.c_str();
 }

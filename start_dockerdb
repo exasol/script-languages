@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 
@@ -7,15 +6,18 @@ set -eu
 cd "$(dirname "$0")"
 
 die() { echo "ERROR:" "$@" >&2; exit 1; }
-
-optarr=$(getopt -o 'h' --long 'help,no-cleanup,no-import,db-port:,bucketfs-port:' -- "$@")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+        optarr=$(getopt hp:b: "$@")
+else
+	optarr=$(getopt -o 'hp:b:' --long 'help,no-cleanup,no-import,db-port:,bucketfs-port:' -- "$@")
+fi
 eval set -- "$optarr"
 
 while true; do
     case "$1" in
         --no-import) NOIMPORT="yes"; shift;;
-	--db-port) DB_PORT="$2"; shift 2;;
-	--bucketfs-port) BUCKETFS_PORT="$2"; shift 2;;
+	-p|--db-port) DB_PORT="$2"; shift 2;;
+	-b|--bucketfs-port) BUCKETFS_PORT="$2"; shift 2;;
         -h|--help) echo "Usage: $0"
        echo "Options:"
        echo "  [--no-import]                         Do not import the standard test data called enginedb"
@@ -59,7 +61,7 @@ echo "config files dir for exadb: ${TEST_TMP_DIR}"
 # Setup directory "exa" with pre-configured EXAConf to attach it to the exasoldb docker container
 mkdir -p $TEST_TMP_DIR/exa/{etc,data/storage}
 cp ext/EXAConf $TEST_TMP_DIR/exa/etc/EXAConf
-dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4G
+dd if=/dev/zero of=$TEST_TMP_DIR/exa/data/storage/dev.1.data bs=1 count=1 seek=4294967296
 touch $TEST_TMP_DIR/exa/data/storage/dev.1.meta
 
 DB_HOST=localhost

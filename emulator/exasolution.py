@@ -4,8 +4,10 @@ locale.setlocale(locale.LC_ALL, "")
 
 SWIG_MAX_VAR_DATASIZE = 6000000
 
-if len(sys.argv) != 5:
-    sys.stderr.write("Usage: %s <target> <csvinput> <csvoutput> <script>\n" % sys.argv[0])
+if len(sys.argv) not in [4,5]:
+    sys.stderr.write("Usage 1: %s <target> <csvinput> <csvoutput> <script>\n" % sys.argv[0])
+    sys.stderr.write("Usage 2: %s <target> --single-call-testcase <test-case> <script>\n" % sys.argv[0])
+
     sys.stderr.write("""
 Target can be:
     unix:/file/path.socket        - path to UNIX socket of ZMQContainerClient
@@ -25,10 +27,23 @@ def lp(typ):
         time.asctime(),
         traffic['send']/1048576.0, traffic['recv']/1048576.0)
 
+
 target_name = sys.argv[1]
-input_file_name = sys.argv[2]
-output_file_name = sys.argv[3]
+
+single_call_iterations_left = 12
+if sys.argv[2] == "--single-call-testcase":
+    single_call_mode = True
+    single_call_testcase_number = sys.argv[3]
+    input_file_name = None
+    output_file_name = None
+else:
+    single_call_mode = False
+    input_file_name = sys.argv[2]
+    output_file_name = sys.argv[3]
+
 script_name = sys.argv[4]
+
+
 script_schema = "TEST_SCHEMA"
 current_user = "sys"
 current_schema = "TEST_SCHEMA"
@@ -50,6 +65,8 @@ socket_name = None
 redirector_name = None
 redir_thread = None
 
+
+
 if target_name.startswith("unix:"):
     socket_name = "ipc://" + target_name[len("unix:"):]
 elif target_name.startswith("redir:"):
@@ -66,6 +83,17 @@ finished = False
 request = exascript_request()
 response = exascript_response()
 meta_info = ''
+
+
+
+def make_single_call_response():
+    import json
+    response.type=MT_CALL
+    response.call.fn = SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL
+    query = {"type": "createVirtualSchema"}
+    response.call.json_arg = json.dumps(query).encode('utf-8')
+
+
 
 def parse_coltype(coltype):
     coltype = coltype.upper()
@@ -86,89 +114,96 @@ input_type = 'SCALAR'
 output_type = 'RETURNS'
 input_columns = []
 output_columns = []
-input_file = csv.reader(open(input_file_name), skipinitialspace = True)
-output_file_fd = open(output_file_name, 'w')
-output_file = csv.writer(output_file_fd)
-script_lines = [x.strip().lower() for x in script_code.split('\n')]
-script_input_defs = []
-script_output_defs = []
-if script_name.endswith('.java'): comment = '//'
-else: comment = '#'
-for line in script_lines:
-    if line.startswith(comment + 'input_column:'):
-        script_input_defs.append(line[len(comment + 'input_column:'):])
-    elif line.startswith(comment + 'output_column:'):
-        script_output_defs.append(line[len(comment + 'output_column:'):])
-    elif line.startswith(comment + 'input_type:'):
-        input_type = line[len(comment + 'input_type:'):].strip().upper()
-    elif line.startswith(comment + 'output_type:'):
-        output_type = line[len(comment + 'output_type:'):].strip().upper()
-input_columns_count = len(script_input_defs)
-output_columns_count = len(script_output_defs)
+if not single_call_mode:
+    input_file = csv.reader(open(input_file_name), skipinitialspace = True)
+    output_file_fd = open(output_file_name, 'w')
+    output_file = csv.writer(output_file_fd)
+    script_lines = [x.strip().lower() for x in script_code.split('\n')]
+    script_input_defs = []
+    script_output_defs = []
+else:
+    input_file = output_file_fd = output_file = script_lines = script_input_defs = script_output_defs = None
 
-if input_type not in ('SCALAR', 'SET'):
-    raise SystemError("Input type sholud be 'SCALAR' or 'SET', but given value is: " + repr(input_type))
-if output_type not in ('RETURNS', 'EMITS'):
-    raise SystemError("Output type sholud be 'RETURNS' or 'EMITS', but given value is: " + repr(output_type))
+if not single_call_mode:
+    if script_name.endswith('.java'): comment = '//'
+    else: comment = '#'
+    for line in script_lines:
+        if line.startswith(comment + 'input_column:'):
+            script_input_defs.append(line[len(comment + 'input_column:'):])
+        elif line.startswith(comment + 'output_column:'):
+            script_output_defs.append(line[len(comment + 'output_column:'):])
+        elif line.startswith(comment + 'input_type:'):
+            input_type = line[len(comment + 'input_type:'):].strip().upper()
+        elif line.startswith(comment + 'output_type:'):
+            output_type = line[len(comment + 'output_type:'):].strip().upper()
+    input_columns_count = len(script_input_defs)
+    output_columns_count = len(script_output_defs)
 
-for xic, cols, defs in [(input_columns_count, input_columns, script_input_defs),
-                        (output_columns_count, output_columns, script_output_defs)]:
-    col_defs = csv.reader(defs, skipinitialspace = True)
-    for col in range(xic):
-        colname, coltype, coltypename, colsize, colprec, colscale = col_defs.next()
-        coltype, colread = parse_coltype(coltype)
-        colsize = parse_number(colsize)
-        colprec = parse_number(colprec)
-        colscale = parse_number(colscale)
-        cols.append((col, colname, coltype, colread, coltypename, colsize, colprec, colscale))
+    if input_type not in ('SCALAR', 'SET'):
+        raise SystemError("Input type sholud be 'SCALAR' or 'SET', but given value is: " + repr(input_type))
+        if output_type not in ('RETURNS', 'EMITS'):
+            raise SystemError("Output type sholud be 'RETURNS' or 'EMITS', but given value is: " + repr(output_type))
 
-next_functions = []
-def generate_next(colid, colread, valattr, msgsizefun):
-    def next_fun(row, values):
-        val = row[colid]
-        if val == '': response.next.table.data_nulls.append(True)
-        else:
-            getattr(values, valattr).append(colread(val))
-            response.next.table.data_nulls.append(False)
-        response.next.table.row_number.append(0)
-        return msgsizefun(val)
-    next_functions.append(next_fun)
-for colid, colname, coltype, colread, coltypename, colsize, colprec, colscale in input_columns:
-    if coltype == PB_DOUBLE: generate_next(colid, colread, 'data_double', lambda v: 12)
-    elif coltype == PB_INT32: generate_next(colid, colread, 'data_int32', lambda v: 4)
-    elif coltype == PB_INT64: generate_next(colid, colread, 'data_int64', lambda v: 4)
-    elif coltype == PB_BOOLEAN: generate_next(colid, colread, 'data_bool', lambda v: 1)
-    elif coltype in (PB_NUMERIC, PB_TIMESTAMP, PB_DATE, PB_STRING):
-        generate_next(colid, colread, 'data_string', lambda v: len(v))
-    else: raise RuntimeError("Unuspported column type")
+    for xic, cols, defs in [(input_columns_count, input_columns, script_input_defs),
+                            (output_columns_count, output_columns, script_output_defs)]:
+        col_defs = csv.reader(defs, skipinitialspace = True)
+        for col in range(xic):
+            colname, coltype, coltypename, colsize, colprec, colscale = col_defs.next()
+            coltype, colread = parse_coltype(coltype)
+            colsize = parse_number(colsize)
+            colprec = parse_number(colprec)
+            colscale = parse_number(colscale)
+            cols.append((col, colname, coltype, colread, coltypename, colsize, colprec, colscale))
 
-emit_functions = []
-def generate_emit(typ, enc):
-    def emit_enc(cur, row):
-        cn, ct = cur['null'], cur[typ]
-        if request.emit.table.data_nulls[cn[0]] == True:
-            row.append('')
-        else:
-            row.append(unicode(ct[1][ct[0]]).encode('utf-8'))
-            ct[0] += 1
-        cn[0] += 1
-    def emit_raw(cur, row):
-        cn, ct = cur['null'], cur[typ]
-        if request.emit.table.data_nulls[cn[0]] == True:
-            row.append('')
-        else:
-            row.append(ct[1][ct[0]])
-            ct[0] += 1
-        cn[0] += 1
-    if enc: emit_functions.append(emit_enc)
-    else: emit_functions.append(emit_raw)
-for colid, colname, coltype, colread, coltypename, colsize, colprec, colscale in output_columns:
-    if coltype == PB_DOUBLE: generate_emit('double', False)
-    elif coltype == PB_INT32: generate_emit('int32', False)
-    elif coltype == PB_INT64: generate_emit('int64', False)
-    elif coltype == PB_BOOLEAN: generate_emit('bool', False)
-    elif coltype in (PB_NUMERIC, PB_TIMESTAMP, PB_DATE, PB_STRING):
-        generate_emit('string', True)
+if not single_call_mode:
+    next_functions = []
+    def generate_next(colid, colread, valattr, msgsizefun):
+        def next_fun(row, values):
+            val = row[colid]
+            if val == '': response.next.table.data_nulls.append(True)
+            else:
+                getattr(values, valattr).append(colread(val))
+                response.next.table.data_nulls.append(False)
+            response.next.table.row_number.append(0)
+            return msgsizefun(val)
+        next_functions.append(next_fun)
+    for colid, colname, coltype, colread, coltypename, colsize, colprec, colscale in input_columns:
+        if coltype == PB_DOUBLE: generate_next(colid, colread, 'data_double', lambda v: 12)
+        elif coltype == PB_INT32: generate_next(colid, colread, 'data_int32', lambda v: 4)
+        elif coltype == PB_INT64: generate_next(colid, colread, 'data_int64', lambda v: 4)
+        elif coltype == PB_BOOLEAN: generate_next(colid, colread, 'data_bool', lambda v: 1)
+        elif coltype in (PB_NUMERIC, PB_TIMESTAMP, PB_DATE, PB_STRING):
+            generate_next(colid, colread, 'data_string', lambda v: len(v))
+        else: raise RuntimeError("Unuspported column type")
+
+if not single_call_mode:
+    emit_functions = []
+    def generate_emit(typ, enc):
+        def emit_enc(cur, row):
+            cn, ct = cur['null'], cur[typ]
+            if request.emit.table.data_nulls[cn[0]] == True:
+                row.append('')
+            else:
+                row.append(unicode(ct[1][ct[0]]).encode('utf-8'))
+                ct[0] += 1
+            cn[0] += 1
+        def emit_raw(cur, row):
+            cn, ct = cur['null'], cur[typ]
+            if request.emit.table.data_nulls[cn[0]] == True:
+                row.append('')
+            else:
+                row.append(ct[1][ct[0]])
+                ct[0] += 1
+            cn[0] += 1
+        if enc: emit_functions.append(emit_enc)
+        else: emit_functions.append(emit_raw)
+    for colid, colname, coltype, colread, coltypename, colsize, colprec, colscale in output_columns:
+        if coltype == PB_DOUBLE: generate_emit('double', False)
+        elif coltype == PB_INT32: generate_emit('int32', False)
+        elif coltype == PB_INT64: generate_emit('int64', False)
+        elif coltype == PB_BOOLEAN: generate_emit('bool', False)
+        elif coltype in (PB_NUMERIC, PB_TIMESTAMP, PB_DATE, PB_STRING):
+            generate_emit('string', True)
 
 class ping(threading.Thread):
     def run(self):
@@ -279,7 +314,7 @@ def handle_meta():
     response.Clear()
     response.type = MT_META
     response.connection_id = connection_id
-    response.meta.single_call_mode = False
+    response.meta.single_call_mode = single_call_mode
 
     if input_type == 'SCALAR': response.meta.input_iter_type = PB_EXACTLY_ONCE
     else: response.meta.input_iter_type = PB_MULTIPLE
@@ -410,9 +445,29 @@ def handle_emit():
 def handle_run():
     response.Clear()
     if finished: response.type = MT_CLEANUP
+    elif single_call_mode:
+        make_single_call_response()
     else: response.type = MT_RUN
     response.connection_id = connection_id
     send_message(response.SerializeToString())
+
+
+
+def handle_return():
+    global finished
+    global single_call_iterations_left
+    assert single_call_mode
+    print "single_call result: ", request.call_result.result
+    single_call_iterations_left = single_call_iterations_left-1
+    if single_call_iterations_left <= 0: finished = True
+    response.Clear()
+    response.type = MT_RETURN
+    response.connection_id = connection_id
+    send_message(response.SerializeToString())
+
+def handle_undefined_call():
+    assert single_call_mode
+    print("UNDEFINED SINGLE CALL")
 
 def handle_done():
     response.Clear()
@@ -454,6 +509,8 @@ def main():
             elif request.type == MT_RUN: handle_run()
             elif request.type == MT_DONE: handle_done()
             elif request.type == MT_FINISHED: handle_finished()
+            elif request.type == MT_RETURN: handle_return()
+            elif request.type == MT_UNDEFINED_CALL: handle_undefined_call()
             else: raise RuntimeError("Unknown request type")
     finally:
         closed = True

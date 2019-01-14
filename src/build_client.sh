@@ -2,9 +2,9 @@
 
 ## Defaults
 PYTHON_PREFIX="/usr"
+JAVA_FLAGS=""
 
-
-optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,enable-python3,python-prefix:,python-syspath:,enable-streaming,custom-protobuf-prefix:,release-proto-info' -- "$@")
+optarr=$(getopt -o 'h' --long 'help,src-dir:,build-dir:,output-dir:,enable-r,enable-java,enable-python,enable-python3,python-prefix:,python-syspath:,enable-streaming,custom-protobuf-prefix:,release-sources,java-flags:' -- "$@")
 
 eval set -- "$optarr"
 
@@ -19,9 +19,10 @@ while true; do
         --python-syspath) PYTHON_SYSPATH="$2"; shift 2;;
         --enable-r) ENABLE_R_IMPL="yes"; shift 1;;        
         --enable-java) ENABLE_JAVA_IMPL="yes"; shift 1;;
+	--java-flags) JAVA_FLAGS="$2"; shift 2;;
         --enable-streaming) ENABLE_STREAMING_IMPL="yes"; shift 1;;
         --custom-protobuf-prefix) CUSTOM_PROTOBUF_PREFIX="$2"; shift 2;;
-	--release-proto-info) RELEASE_PROTO_INFO="yes"; shift 1;;
+	--release-sources) RELEASE_SOURCES="yes"; shift 1;;
         -h|--help) echo "Usage: $0 --src-dir=<dir> --build-dir=<dir> --output-dir=<>"
 		   echo "Options:"
 		   echo "  [--enable-python]   Enable support for the Python language in the script language client"
@@ -124,7 +125,8 @@ fi
 #/usr/local/protoc zmqcontainer.proto --python_out=. || die "Failed to create Python proto files."
 
 
-export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O3"
+#export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O3"
+export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O0 -g"
 export CXXFLAGS_UNOPT="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14"
 #LIBS="-lpthread -lcrypto -ldl -lzmq -lprotobuf"
 LIBS="-lpthread -lcrypto -ldl -lzmq"
@@ -181,7 +183,7 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     LDFLAGS="-L$PYTHON_PREFIX/lib -Wl,-rpath,$PYTHON_PREFIX/lib $LDFLAGS" 
 
     echo "Compiling Python specific code"
-    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
+    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS -Wno-unused-but-set-variable || die "Failed to compile exascript_python.o"
     g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
 
     CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"
@@ -218,7 +220,7 @@ if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
     LDFLAGS="-L$($PYTHON3_CONFIG --prefix)/lib -Wl,-rpath,$($PYTHON3_CONFIG --prefix)/lib $LDFLAGS" 
 
     echo "Compiling Python3 specific code with these CXXFLAGS:$CXXFLAGS"
-    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS || die "Failed to compile exascript_python.o"
+    g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS -Wno-unused-but-set-variable || die "Failed to compile exascript_python.o"
     g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
     g++ -shared $CXXFLAGS -I/usr/local/lib/$PYTHON3_VERSION/dist-packages/numpy/core/include $($PYTHON3_CONFIG --libs) -opyextdataframe.so python_ext_dataframe.cc || die "Failed to compile pyextdataframe.so"
 
@@ -257,11 +259,19 @@ if [ "$ENABLE_JAVA_IMPL" = "yes" ]; then
     python ./filter_swig_code.py exascript_java.h exascript_java_tmp.h
 
     LIBS="-ljvm $LIBS"
-    LDFLAGS="-L/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64 -L/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server -Wl,-rpath,/usr/lib/jvm/java-8-openjdk-amd64/lib/amd64 -Wl,-rpath,/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server $LDFLAGS"
+    #LDFLAGS="-L/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64 -L/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server -Wl,-rpath,/usr/lib/jvm/java-8-openjdk-amd64/lib/amd64 -Wl,-rpath,/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server $LDFLAGS"
+    #CXXFLAGS="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux $CXXFLAGS"
+    #CXXFLAGS_UNOPT="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux $CXXFLAGS_UNOPT"
+    LDFLAGS="$JAVA_FLAGS $LDFLAGS"
+    CXXFLAGS="-DENABLE_JAVA_VM $JAVA_FLAGS $CXXFLAGS"
+    CXXFLAGS_UNOPT="-DENABLE_JAVA_VM $JAVA_FLAGS $CXXFLAGS_UNOPT"
+
+    LDFLAGS="-L/usr/lib/jvm/java-9-openjdk-amd64/lib -L/usr/lib/jvm/java-9-openjdk-amd64/lib/amd64 -L/usr/lib/jvm/java-9-openjdk-amd64/lib/amd64/server -Wl,-rpath,/usr/lib/jvm/java-9-openjdk-amd64/lib -Wl,-rpath,/usr/lib/jvm/java-9-openjdk-amd64/lib/amd64 -Wl,-rpath,/usr/lib/jvm/java-9-openjdk-amd64/lib/amd64/server $LDFLAGS"
+    
+    CXXFLAGS="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-9-openjdk-amd64/include -I/usr/lib/jvm/java-9-openjdk-amd64/include/linux $CXXFLAGS"
+    CXXFLAGS_UNOPT="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-9-openjdk-amd64/include -I/usr/lib/jvm/java-9-openjdk-amd64/include/linux $CXXFLAGS_UNOPT"
 
 
-    CXXFLAGS="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux $CXXFLAGS"
-    CXXFLAGS_UNOPT="-DENABLE_JAVA_VM -I/usr/lib/jvm/java-8-openjdk-amd64/include -I/usr/lib/jvm/java-8-openjdk-amd64/include/linux $CXXFLAGS_UNOPT"
 
     g++ -o exascript_java.o -c exascript_java.cc $CXXFLAGS_UNOPT  || die "Failed to compile exascript_java.o"
     g++ -o javacontainer.o -c javacontainer.cc $CXXFLAGS || die "Failed to compile javacontainer.o"
@@ -270,7 +280,8 @@ if [ "$ENABLE_JAVA_IMPL" = "yes" ]; then
 
 # compile java code and create jar file for java container
 mkdir -p udf || die "Failed to create udf directory"
-javac -bootclasspath "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar" -source 1.7 -target 1.7 -classpath udf:java_src -d udf -sourcepath java_src \
+#javac -bootclasspath "/usr/lib/jvm/java-9-openjdk-amd64/jrt-fs.jar" -source 1.8 -target 1.8 -classpath udf:java_src -d udf -sourcepath java_src \
+javac -classpath udf:java_src -d udf -sourcepath java_src \
       java_src/com/exasol/ExaCompilationException.java \
       java_src/com/exasol/ExaConnectionAccessException.java \
       java_src/com/exasol/ExaConnectionInformation.java \
@@ -379,6 +390,7 @@ echo "================================================"
 echo "================================================"
 echo "= compiling exaudfclient.cc with"
 echo "= CXXFLAGS=$CXXFLAGS"
+echo "= LDFLAGS=$LDFLAGS"
 echo "================================================"
 echo "================================================"
 echo "================================================"
@@ -391,9 +403,13 @@ g++ -o scriptDTO.o -c script_data_transfer_objects.cc $CXXFLAGS || die "Failed t
 
 g++ -o exaudflib.o -c exaudflib.cc $CXXFLAGS || die "Failed to compile exaudflib.o"
 
-g++ -shared -o libexaudflib.so exaudflib.o zmqcontainer.pb.o scriptDTOWrapper.o scriptDTO.o -Wl,--no-as-needed -l zmq
+g++ -shared -o libexaudflib.so exaudflib.o zmqcontainer.pb.o scriptDTOWrapper.o scriptDTO.o -Wl,--no-as-needed -l zmq -g
 
-g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS || die "Failed to compile exaudfclient"
+
+
+echo "g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS -g"
+
+g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS -g || die "Failed to compile exaudfclient"
 
 
 # Create output files
@@ -406,11 +422,11 @@ if [ -f pyextdataframe.so ]; then
 fi
 
 
-if [ "$RELEASE_PROTO_INFO" = "yes" ]; then
+if [ "$RELEASE_SOURCES" = "yes" ]; then
     sources_target="$OUTPUTDIR/src"
     mkdir -p $sources_target
     for SRC in \
-        zmqcontainer.proto zmqcontainer.pb.cc zmqcontainer.pb.h
+        zmqcontainer.proto exaudfclient.cc exaudflib.cc exaudflib.h
     do
 	cp "$BUILDDIR/$SRC" "$sources_target/" || die "Failed to copy file $SRC from $BUILDDIR to $sources_target"
     done

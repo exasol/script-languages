@@ -1,7 +1,0 @@
-FROM exaudf/baseimage_python3_60
-
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf
-
-COPY src/ /exaudf_src/
-
-RUN /exaudf_src/build_client.sh --src-dir=/exaudf_src --build-dir=/exaudf_src/build --output-dir=/exaudf --enable-python3 --custom-protobuf-prefix=/usr/local
