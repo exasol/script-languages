@@ -16,3 +16,8 @@ For instance, the flavors for Exasol 6.1.0 support newer Linux distributions as 
 
 So, in order to find the correct version of a flavor for your version of Exasol, simply take the latest container with version less than or equal to your Exasol version.
 So for Exasol 6.1.1, you would use the `*-EXASOL-6.1.0` flavors, while for Exasol 6.0.14 you would use the `*-EXASOL-6.0.0` flavors.
+
+# Flavor-specific features
+## python3-ds
+### Pandas DataFrame support
+The `python3-ds-*` flavors now have direct DataFrame support for accessing and emitting data in Exasol. Please see the [documentation](docs/py_dataframe.md) for more information and example usage.

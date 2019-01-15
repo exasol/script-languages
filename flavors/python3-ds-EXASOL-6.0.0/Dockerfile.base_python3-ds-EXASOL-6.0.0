@@ -19,10 +19,10 @@ RUN apt-get update && \
         scons \
         libssl-dev \
         wget \
-	curl \
+        curl \
         git \
         unzip \
- 	swig \
+        swig \
         python3-pip \
         python3.6-tk \
         libpcre3-dev \

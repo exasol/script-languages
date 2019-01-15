@@ -1,5 +1,9 @@
 import sys
+import numpy as np
+import pandas as pd
+
 isPython3 = False
+
 if sys.version_info[0] == 3:
     unicode = str
     decodeUTF8 = lambda x: x
@@ -8,16 +12,22 @@ if sys.version_info[0] == 3:
 else:
     decodeUTF8 = lambda x: x.decode('utf-8')
 
+if isPython3:
+    sys.path.append('/exaudf')
+    import pyextdataframe
+
 
 class exaiter(object):
     def __init__(self, meta, inp, out):
         self.__meta = meta
         self.__inp = inp
         self.__out = out
+        self.__intype = self.__meta.inputType()
         incount = self.__meta.inputColumnCount()
         data = {}
         self.__cache = [None]*incount
         self.__finished = False
+        self.__dataframe_finished = False
         def rd(get, null, col, postfun = None):
             if postfun == None:
                 newget = lambda: (get(col), null())
@@ -38,25 +48,31 @@ class exaiter(object):
             return datetime.date(val.year, val.month, val.day)
         def convert_timestamp(x):
             return datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f")
+        self.__incoltypes = []
+        for col in range(self.__meta.inputColumnCount()):
+            self.__incoltypes.append(self.__meta.inputColumnType(col))
+        self.__incolnames = []
+        for col in range(self.__meta.inputColumnCount()):
+            self.__incolnames.append(decodeUTF8(self.__meta.inputColumnName(col)))
         for col in range(incount):
-            colname = decodeUTF8(self.__meta.inputColumnName(col))
-            if self.__meta.inputColumnType(col) == DOUBLE:
+            colname = self.__incolnames[col]
+            if self.__incoltypes[col] == DOUBLE:
                 data[colname] = rd(inp.getDouble, inp.wasNull, col)
-            elif self.__meta.inputColumnType(col) == STRING:
+            elif self.__incoltypes[col] == STRING:
                 data[colname] = rd(inp.getString, inp.wasNull, col, lambda x: decodeUTF8(x))
-            elif self.__meta.inputColumnType(col) == INT32:
+            elif self.__incoltypes[col] == INT32:
                 data[colname] = rd(inp.getInt32, inp.wasNull, col)
-            elif self.__meta.inputColumnType(col) == INT64:
+            elif self.__incoltypes[col] == INT64:
                 data[colname] = rd(inp.getInt64, inp.wasNull, col)
-            elif self.__meta.inputColumnType(col) == NUMERIC:
+            elif self.__incoltypes[col] == NUMERIC:
                 if self.__meta.inputColumnScale(col) == 0:
                     data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: int(str(x)))
                 else: data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: decimal.Decimal(str(x)))
-            elif self.__meta.inputColumnType(col) == DATE:
+            elif self.__incoltypes[col] == DATE:
                 data[colname] = rd(inp.getDate, inp.wasNull, col, convert_date)
-            elif self.__meta.inputColumnType(col) == TIMESTAMP:
+            elif self.__incoltypes[col] == TIMESTAMP:
                 data[colname] = rd(inp.getTimestamp, inp.wasNull, col, convert_timestamp)
-            elif self.__meta.inputColumnType(col) == BOOLEAN:
+            elif self.__incoltypes[col] == BOOLEAN:
                 data[colname] = rd(inp.getBoolean, inp.wasNull, col)
             data[col] = data[colname]
         self.__outcoltypes = []
@@ -98,6 +114,15 @@ class exaiter(object):
                 NUMERIC: "decimal.Decimal",
                 DATE: "datetime.date",
                 TIMESTAMP: "datetime.datetime" }
+        if len(output) == 1 and isinstance(output[0], pd.DataFrame):
+            v = output[0]
+            if v.shape[0] == 0:
+                raise RuntimeError("emit DataFrame is empty")
+            if v.shape[1] != len(self.__outcoltypes):
+                exp_num_out = len(self.__outcoltypes)
+                raise TypeError("emit() takes exactly %d argument%s (%d given)" % (exp_num_out, 's' if exp_num_out > 1 else '', v.shape[1]))
+            pyextdataframe.emit_dataframe(self, v)
+            return
         if len(output) != len(self.__outcoltypes):
             if len(self.__outcoltypes) > 1:
                 raise TypeError("emit() takes exactly %d arguments (%d given)" % (len(self.__outcoltypes), len(output)))
@@ -173,6 +198,23 @@ class exaiter(object):
         if not val:
             self.__finished = True
         return val
+    def get_dataframe(self, num_rows=1, start_col=0):
+        if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
+            raise RuntimeError("get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
+        if (type(start_col) not in (int, long) or start_col < 0):
+            raise RuntimeError("get_dataframe() parameter 'start_col' must be an integer >= 0")
+        if (start_col > len(self.__incolnames)):
+            raise RuntimeError("get_dataframe() parameter 'start_col' is %d, but there are only %d input columns" % (start_col, len(self.__incolnames)))
+        if num_rows == "all":
+            num_rows = sys.maxsize
+        if self.__dataframe_finished:
+            # Exception after None already returned
+            raise RuntimeError("Iteration finished")
+        elif self.__finished:
+            # Return None the first time there is no data
+            self.__dataframe_finished = True
+            return None
+        return pyextdataframe.get_dataframe(self, num_rows, start_col)
     def reset(self):
         return self.next(reset = True)
     def size(self):
