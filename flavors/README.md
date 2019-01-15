@@ -29,8 +29,8 @@ The parameters of `get_dataframe` are the following.
 
 | Parameter | Description |
 | ----- | ----- |
-| num_rows | The number of rows to be returned in the DataFrame. Values: 'all' or a positive integer. Default: 1. |
-| start_col | The UDF column (0-based) which specifies the start of the data to be included in the returned DataFrame. The data for `start_col` and all columns thereafter will be included in the DataFrame. Values: a nonnegative integer. Default: 0. |
+| num_rows | 'all' or a positive integer. Default: 1.<br>The number of rows to be returned in the DataFrame. |
+| start_col | A nonnegative integer. Default: 0.<br>The UDF column (0-based) which specifies the start of the data to be included in the returned DataFrame. The data for `start_col` and all columns thereafter will be included in the DataFrame. |
 
 `get_dataframe` will return a DataFrame containing `num_rows` rows or a lesser number if `num_rows` are not available. If there are zero rows available, `get_dataframe` will return `None`. The UDF data iterator will point to the next row (i.e. following the last row in the DataFrame) just as with `next()`.
 
