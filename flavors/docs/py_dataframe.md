@@ -23,7 +23,6 @@ INSERT INTO DF_TEST_TABLE VALUES (0.1, 1, 'a'), (0.2, 2, 'b');
 
 CREATE OR REPLACE PYTHON3 SET SCRIPT DF_TEST(C0 DOUBLE, C1 INT, C2 VARCHAR(50))
 EMITS (C1 INT, C2 VARCHAR(50), C3 BOOL) AS
-import pandas as pd
 def run(ctx):
   df = ctx.get_dataframe(num_rows='all', start_col=1)
   df['BOOLS'] = [True, False]
