@@ -35,4 +35,4 @@ The parameters of `get_dataframe` are the following.
 `get_dataframe` will return a DataFrame containing `num_rows` rows or a lesser number if `num_rows` are not available. If there are zero rows available, `get_dataframe` will return `None`. The UDF data iterator will point to the next row (i.e. following the last row in the DataFrame) just as with `next()`.
 
 #### Emitting data
-`emit()`
+An entire DataFrame can be emitted by passing it to `emit()` just as with single values. Each column of the DataFrame will be  automatically converted to a column in the result set. The result set column names will also be set to the DataFrame column labels.
