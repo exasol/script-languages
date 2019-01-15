@@ -11,7 +11,7 @@ The parameters of `get_dataframe` are the following.
 | num_rows | 'all' or a positive integer. Default 1. | The number of rows to be returned in the DataFrame.<br>Please keep memory usage in mind when setting this value. |
 | start_col | A nonnegative integer. Default 0. | The UDF column (0-based) which specifies the start of the data to be included in the returned DataFrame. The data for `start_col` and all columns thereafter will be included in the DataFrame. |
 
-`get_dataframe` will return a DataFrame containing `num_rows` rows or a lesser number if `num_rows` are not available. If there are zero rows available, `get_dataframe` will return `None`. The DataFrame column labels will be set to the corresponding UDF parameter name for the column. The UDF data iterator will then point to the next row (i.e. following the last row in the DataFrame) just as with `next()`.
+`get_dataframe` will return a DataFrame containing `num_rows` rows or a lesser number if `num_rows` are not available. If there are zero rows available, `get_dataframe` will return `None`. The DataFrame column labels will be set to the corresponding UDF parameter names for the columns. The UDF data iterator will then point to the next row (i.e. following the last row in the DataFrame) just as with `next()`.
 
 ## Emitting data
 An entire DataFrame can be emitted by passing it to `emit()` just as with single values. Each column of the DataFrame will be  automatically converted to a column in the result set.
