@@ -55,7 +55,8 @@ export PATH=$PYTHON_PREFIX/bin:$PATH
 echo "Copying common source files to the build dir"
 for SRC in \
         zmqcontainer.proto exascript.i filter_swig_code.py build_integrated.py exaudfclient.cc exaudflib* \
-        script_data_transfer_objects* LICENSE-exasol-script-api.txt scriptoptionlines.h scriptoptionlines.cc
+        script_data_transfer_objects* LICENSE-exasol-script-api.txt scriptoptionlines.h scriptoptionlines.cc \
+        python_ext_dataframe.cc
 do
     cp "$SRC" "$BUILDDIR/" || die "Failed to copy file $SRC to build dir: $BUILDDIR."
 done
@@ -190,8 +191,9 @@ fi
 
 
 if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
+    PYTHON3_VERSION="python3.6"
     PYTHON3_CONFIG="python3-config"
-    hash python3.6-config && PYTHON3_CONFIG="python3.6-config"
+    hash $PYTHON3_VERSION-config && PYTHON3_CONFIG="$PYTHON3_VERSION-config"
 
     echo "Generating Python3 SWIG code using python3-config: $PYTHON3_CONFIG"
     # create python wrapper from swig files
@@ -220,6 +222,7 @@ if [ "$ENABLE_PYTHON3_IMPL" = "yes" ]; then
     echo "Compiling Python3 specific code with these CXXFLAGS:$CXXFLAGS"
     g++ -o exascript_python.o -c exascript_python.cc $CXXFLAGS -Wno-unused-but-set-variable || die "Failed to compile exascript_python.o"
     g++ -o pythoncontainer.o -c pythoncontainer.cc $CXXFLAGS || die "Failed to compile pythoncontainer.o"
+    g++ -shared $CXXFLAGS -I/usr/local/lib/$PYTHON3_VERSION/dist-packages/numpy/core/include $($PYTHON3_CONFIG --libs) -opyextdataframe.so python_ext_dataframe.cc || die "Failed to compile pyextdataframe.so"
 
     CONTAINER_CLIENT_OBJECT_FILES="exascript_python.o pythoncontainer.o $CONTAINER_CLIENT_OBJECT_FILES"
 fi
@@ -413,6 +416,10 @@ g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionli
 cp -a "$BUILDDIR/exaudfclient" "$OUTPUTDIR/exaudfclient" || die "Failed to create $OUTPUTDIR/exaudfclient"
 cp -a "$BUILDDIR/libexaudflib.so" "$OUTPUTDIR/libexaudflib.so" || die "Failed to create $OUTPUTDIR/libexaudflib.so"
 chmod +x "$OUTPUTDIR/exaudfclient" || die "Failed chmod of $OUTPUTDIR/exaudfclient"
+
+if [ -f pyextdataframe.so ]; then
+    cp -a "$BUILDDIR/pyextdataframe.so" "$OUTPUTDIR/pyextdataframe.so" || die "Failed to create $OUTPUTDIR/pyextdataframe.so"
+fi
 
 if [ "$RELEASE_SOURCES" = "yes" ]; then
     sources_target="$OUTPUTDIR/src"
