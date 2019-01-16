@@ -62,7 +62,7 @@ def getPythonVersionInUDFs(server,script_languages):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT)
         out, _err = exaplus.communicate(sql)
-
+        pythonVersionInUdf = -1
         for line in out.strip().split('\n'):
             m = re.search(r'Python=(\d)',line)
             if m:

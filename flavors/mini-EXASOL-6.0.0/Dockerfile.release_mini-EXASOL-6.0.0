@@ -1,4 +1,4 @@
-FROM exaudf/baseimage_mini
+FROM exaudf/baseimage_mini-exasol-6.0.0
 ARG extract_dir
 COPY $extract_dir/exaudf /exaudf
 
