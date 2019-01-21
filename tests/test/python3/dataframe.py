@@ -52,8 +52,8 @@ class PandasDataFrame(udf.TestCase):
         self.test3_col_tuple = []
         self.test3_num_rows = 10
         for i in range(self.test3_num_rows):
-            col_vals = (str(i),)
-            self.test3_col_tuple.append(col_vals)
+            col_vals = str(i)
+            self.test3_col_tuple.append((col_vals,))
             self.query('INSERT INTO TEST3 (%s) VALUES (%s)' % (self.test3_col_names, col_vals))
 
     def test_dataframe_scalar_emits(self):
