@@ -241,7 +241,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_iter_getattr(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3_60 SET SCRIPT
+            CREATE OR REPLACE PYTHON SET SCRIPT
             foo(%s)
             EMITS(R VARCHAR(1000)) AS
             def run(ctx):
