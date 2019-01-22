@@ -39,11 +39,11 @@ Output:
 | 2 | b | FALSE |
 
 
-### Mixed usage of get_dataframes and iterator
+## Mixed usage of get_dataframe() and iterator
 
-Some special attention needs the case were you mix the usage of get_dataframes and the iterator functions. The defined behavior is as following:
+Some special attention needs to be paid to the case where you mix the usage of `get_dataframe` and the iterator functions. The defined behavior is the following: A `get_dataframe` call consumes as many rows as specified in `num_rows`, and after this the iterator points to next row after the consumed ones.
 
-A get_dataframes call consumes as many rows as specified in num_rows and the after this the iterator points to next row after the consumed ones. The following example iterates over a Table with number from 0 to 9. In each iteration the get_dataframes call consumes exactly one row. It than emits this row and additionally emits the row at which the iterator points at after the call of get_dataframes. 
+The following example iterates over a table with numbers from 0 to 9. In each iteration the `get_dataframe` call consumes exactly one row. It then emits this row and additionally the row to which the iterator points after calling `get_dataframe`.
 
 ```python
 import pyexasol
