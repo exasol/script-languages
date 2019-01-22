@@ -43,41 +43,42 @@ Output:
 
 Some special attention needs to be paid to the case where you mix the usage of `get_dataframe` and the iterator functions. The defined behavior is the following: A `get_dataframe` call consumes as many rows as specified in `num_rows`, and after this the iterator points to next row after the consumed ones.
 
-The following example iterates over a table with numbers from 0 to 9. In each iteration the `get_dataframe` call consumes exactly one row. It then emits this row and additionally the row to which the iterator points after calling `get_dataframe`.
+The following example iterates over a table with numbers from 0 to 3. In each iteration the `get_dataframe` call consumes exactly one row. It then emits this row and additionally the row to which the iterator points after calling `get_dataframe`.
 
 ```python
-import pyexasol
-import textwrap
+CREATE OR REPLACE TABLE TEST3(C0 INT IDENTITY, C1 INTEGER);
+INSERT INTO TEST3 (C1) VALUES (0), (1), (2), (3);
 
-conn = pyexasol.connect(dsn=EXASOL_HOST, user=EXASOL_USER, password=EXASOL_PASSWORD, compression=True)
-conn.execute(f"ALTER SESSION SET SCRIPT_LANGUAGES='{EXASOL_SCRIPT_LANGUAGES}'")
-
-conn.execute('CREATE OR REPLACE TABLE TEST3(C0 INT IDENTITY, C1 INTEGER)')
-for i in range(10):
-    conn.execute('INSERT INTO TEST3 (C1) VALUES (%s)' % i)
-
-conn.execute(textwrap.dedent('''
-    CREATE OR REPLACE PYTHON3 SET SCRIPT foo(C1 INTEGER) EMITS(R VARCHAR(1000)) AS
-    def run(ctx):
-        BATCH_ROWS = 1
-        while True:
-            df = ctx.get_dataframe(num_rows=BATCH_ROWS)
-            if df is None:
-                break
-            ctx.emit(df.applymap(lambda x: "df_"+str(x)))
-            try:
-                ctx.emit("getattr_"+str(ctx.C1))
-                ctx.emit("eob") # end of batch
-            except:
-                ctx.emit("eoi") # end of iteration
-    /
-    '''))
-rows = conn.execute('SELECT foo(C1) FROM TEST3').fetchall()
-print(rows)
-conn.close()
-
-# Expected Output
-# [('df_0',), ('getattr_1',), ('eob',), ('df_1',), ('getattr_2',), ('eob',), ('df_2',), ('getattr_3',), ('eob',), ('df_3',), ('getattr_4',), ('eob',), ('df_4',), ('getattr_5',), ('eob',), ('df_5',), ('getattr_6',), ('eob',), ('df_6',), ('getattr_7',), ('eob',), ('df_7',), ('getattr_8',), ('eob',), ('df_8',), ('getattr_9',), ('eob',), ('df_9',), ('eoi',)]
+CREATE OR REPLACE PYTHON3 SET SCRIPT foo(C1 INTEGER) EMITS(R VARCHAR(1000)) AS
+def run(ctx):
+    BATCH_ROWS = 1
+    while True:
+        df = ctx.get_dataframe(num_rows=BATCH_ROWS)
+        if df is None:
+            break
+        ctx.emit(df.applymap(lambda x: "df_"+str(x)))
+        try:
+            ctx.emit("getattr_"+str(ctx.C1))
+            ctx.emit("eob") # end of batch
+        except:
+            ctx.emit("eoi") # end of iteration
+/
+SELECT foo(C1) FROM TEST3;
 ```
 
+Output:
 
+
+| C1<br>(Type: INT) |
+| --- |
+| df_0 |
+| getattr_1 |
+| eob |
+| df_1 |
+| getattr_2 |
+| eob |
+| df_2 |
+| getattr_3 |
+| eob |
+|  df_3 |
+| eoi |
