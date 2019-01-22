@@ -216,7 +216,6 @@ class exaiter(object):
             return None
         self.__cache = [None] * len(self.__cache)
         df = pyextdataframe.get_dataframe(self, num_rows, start_col)
-
         return df 
     def reset(self):
         return self.next(reset = True)
