@@ -37,3 +37,48 @@ Output:
 | --- | --- | --- |
 | 1 | a | TRUE |
 | 2 | b | FALSE |
+
+
+## Mixed usage of get_dataframe() and iterator
+
+Some special attention needs to be paid to the case where you mix the usage of `get_dataframe` and the iterator functions. The defined behavior is the following: A `get_dataframe` call consumes as many rows as specified in `num_rows`, and after this the iterator points to next row after the consumed ones.
+
+The following example iterates over a table with numbers from 0 to 3. In each iteration the `get_dataframe` call consumes exactly one row. It then emits this row and additionally the row to which the iterator points after calling `get_dataframe`.
+
+```python
+CREATE OR REPLACE TABLE TEST3(C0 INT IDENTITY, C1 INTEGER);
+INSERT INTO TEST3 (C1) VALUES (0), (1), (2), (3);
+
+CREATE OR REPLACE PYTHON3 SET SCRIPT foo(C1 INTEGER) EMITS(R VARCHAR(1000)) AS
+def run(ctx):
+    BATCH_ROWS = 1
+    while True:
+        df = ctx.get_dataframe(num_rows=BATCH_ROWS)
+        if df is None:
+            break
+        ctx.emit(df.applymap(lambda x: "df_"+str(x)))
+        try:
+            ctx.emit("getattr_"+str(ctx.C1))
+            ctx.emit("eob") # end of batch
+        except:
+            ctx.emit("eoi") # end of iteration
+/
+SELECT foo(C1) FROM TEST3;
+```
+
+Output:
+
+
+| C1<br>(Type: INT) |
+| --- |
+| df_0 |
+| getattr_1 |
+| eob |
+| df_1 |
+| getattr_2 |
+| eob |
+| df_2 |
+| getattr_3 |
+| eob |
+|  df_3 |
+| eoi |
