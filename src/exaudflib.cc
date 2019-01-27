@@ -3,7 +3,7 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #define DONT_EXPOSE_SWIGVM_PARAMS
-#include <exaudflib.h>
+#include "exaudflib.h"
 #undef DONT_EXPOSE_SWIGVM_PARAMS
 #include <iostream>
 #include <sstream>

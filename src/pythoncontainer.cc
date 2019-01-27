@@ -1,4 +1,4 @@
-#include <exaudflib.h>
+#include "exaudflib.h"
 #include <iostream>
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -7,8 +7,8 @@
 #undef _XOPEN_SOURCE
 #endif
 #include <Python.h>
-#include <exascript_python.h>
-#include <exascript_python_int.h>
+#include "exascript_python.h"
+#include "exascript_python_int.h"
 #include "scriptoptionlines.h"
 
 #include "script_data_transfer_objects.h"

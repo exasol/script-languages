@@ -1,0 +1,1 @@
+bazel build --incompatible_remove_native_http_archive=false --incompatible_package_name_is_a_function=false $*

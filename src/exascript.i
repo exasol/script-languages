@@ -3,7 +3,7 @@
 %}
 
 %{
-#include <exaudflib.h>
+#include "exaudflib.h"
 
 using namespace SWIGVMContainers;
 #include "script_data_transfer_objects_wrapper.h"
