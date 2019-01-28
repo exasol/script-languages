@@ -1,4 +1,4 @@
-#include <exaudflib.h>
+#include "exaudflib.h"
 #include <R.h>
 #include <Rdefines.h>
 #include <Rembedded.h>
@@ -6,8 +6,8 @@
 #include <R_ext/Parse.h>
 #include <R_ext/Rdynload.h>
 #include <R_ext/Boolean.h>
-#include <exascript_r.h>
-#include <exascript_r_int.h>
+#include "exascript_r.h"
+#include "exascript_r_int.h"
 
 using namespace SWIGVMContainers;
 using namespace std;

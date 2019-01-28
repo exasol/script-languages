@@ -1,7 +1,8 @@
-#ifndef ENABLE_STREAMING_VM
-#define ENABLE_STREAMING_VM
+#ifndef ENABLE_BENCHMARK_VM
+#define ENABLE_BENCHMARK_VM
 #endif
 
+#include "benchmark_container.h"
 #include "exaudflib.h"
 #include <iostream>
 #include <string>
@@ -33,46 +34,56 @@ BenchmarkVM::BenchmarkVM(bool checkOnly)
 
 void BenchmarkVM::shutdown()
 {
+}
 
 bool BenchmarkVM::run()
 {
     try {
 
         try {
+            bool hasNext = false;
             do {
                 int count = 0;
                 for (unsigned int col = 0; col<meta.inputColumnCount(); col++) {           
                     switch (meta.inputColumnType(col))
                     {
                         case DOUBLE:
-                            auto v=inp.getDouble();
-                            if(v==0.0){
-                                count++;
+                            {
+                                auto v=inp.getDouble(col);
+                                if(v==0.0){
+                                    count++;
+                                }
                             }
                             break;
                         case INT32:
-                            auto v=inp.getInt32();
-                            if(v==0){
-                                count++;
+                            {
+                                auto v=inp.getInt32(col);
+                                if(v==0){
+                                    count++;
+                                }
                             }
                             break;
                         case INT64:
-                            auto v=inp.getInt64();
-                            if(v==0){
-                                count++;
+                            {
+                                auto v=inp.getInt64(col);
+                                if(v==0){
+                                    count++;
+                                }
                             }
                             break;
                         case STRING:
-                            auto v=new string(inp.getString());
-                            if(v.empty()){
-                                count++;
+                            {
+                                auto v=new string(inp.getString(col));
+                                if(v->empty()){
+                                    count++;
+                                }
                             }
                             break;                                                
                         default:
                             break;
                     }
                 }
-                bool hasNext = inp.next();
+                hasNext = inp.next();
             } while (hasNext);
         } catch (std::exception& err) {
             lock_guard<mutex> lock(exception_msg_mtx);
@@ -80,9 +91,9 @@ bool BenchmarkVM::run()
         }
 
         try {
-            outp.setString(0,"")
+            outp.setString(0,"",0);
             outp.next();
-            outp.setString(0,"")
+            outp.setString(0,"",0);
             outp.flush();
         } catch (std::exception& err) {
             lock_guard<mutex> lock(exception_msg_mtx);
@@ -100,7 +111,7 @@ bool BenchmarkVM::run()
     return true;  // done
 }
 
-std::string BenchmarkVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args)
+const char* BenchmarkVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args)
 {
     throw SWIGVM::exception("singleCall not supported for the STREAMING language container");
 }
