@@ -125,10 +125,9 @@ fi
 #/usr/local/protoc zmqcontainer.proto --python_out=. || die "Failed to create Python proto files."
 
 
-#export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O3"
-export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O0 -g"
+export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O3"
+#export CXXFLAGS="-I. -I/usr/include -I/usr/local -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14 -O0 -g"
 export CXXFLAGS_UNOPT="-I. -Wall -Werror -fPIC -pthread -DNDEBUG -std=c++14"
-#LIBS="-lpthread -lcrypto -ldl -lzmq -lprotobuf"
 LIBS="-lpthread -lcrypto -ldl -lzmq"
 LDFLAGS=""
 
@@ -403,13 +402,13 @@ g++ -o scriptDTO.o -c script_data_transfer_objects.cc $CXXFLAGS || die "Failed t
 
 g++ -o exaudflib.o -c exaudflib.cc $CXXFLAGS || die "Failed to compile exaudflib.o"
 
-g++ -shared -o libexaudflib.so exaudflib.o zmqcontainer.pb.o scriptDTOWrapper.o scriptDTO.o -Wl,--no-as-needed -l zmq -g
+g++ -shared -o libexaudflib.so exaudflib.o zmqcontainer.pb.o scriptDTOWrapper.o scriptDTO.o -Wl,--no-as-needed -l zmq
 
 
 
-echo "g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS -g"
+echo "g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS"
 
-g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS -g || die "Failed to compile exaudfclient"
+g++ -o exaudfclient exaudfclient.o $CONTAINER_CLIENT_OBJECT_FILES scriptoptionlines.o -Wl,--no-as-needed scriptDTOWrapper.o scriptDTO.o $LDFLAGS $LIBS || die "Failed to compile exaudfclient"
 
 
 # Create output files

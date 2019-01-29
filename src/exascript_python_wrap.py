@@ -1,7 +1,4 @@
 import sys
-import numpy as np
-import pandas as pd
-
 isPython3 = False
 
 if sys.version_info[0] == 3:
@@ -114,7 +111,8 @@ class exaiter(object):
                 NUMERIC: "decimal.Decimal",
                 DATE: "datetime.date",
                 TIMESTAMP: "datetime.datetime" }
-        if len(output) == 1 and isinstance(output[0], pd.DataFrame):
+        if len(output) == 1 and output[0].__class__.__name__ == 'DataFrame':
+            import pandas as pd
             v = output[0]
             if v.shape[0] == 0:
                 raise RuntimeError("emit DataFrame is empty")
@@ -199,6 +197,7 @@ class exaiter(object):
             self.__finished = True
         return val
     def get_dataframe(self, num_rows=1, start_col=0):
+        import pandas
         if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
             raise RuntimeError("get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
         if (type(start_col) not in (int, long) or start_col < 0):

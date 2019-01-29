@@ -152,7 +152,7 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 //    cerr << "VALUE of nosite: |" << nosite << "|" << endl;
 
 
-    int noSiteFlag = 0;
+    int noSiteFlag = 1;
     //if (nosite == "yes") {noSiteFlag=1;}
     //else if (nosite == "" || nosite == "no") {noSiteFlag=0;}
     //else throw PythonVM::exception("Invalid value for %nosite option, must be yes or no");

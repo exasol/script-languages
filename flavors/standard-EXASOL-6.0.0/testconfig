@@ -1,5 +1,5 @@
 language_definition=PYTHON=localzmq+protobuf:///bfsdefault/myudfs/standard-EXASOL-6.0.0?lang=python#buckets/bfsdefault/myudfs/standard-EXASOL-6.0.0/exaudf/exaudfclient JAVA=localzmq+protobuf:///bfsdefault/myudfs/standard-EXASOL-6.0.0?lang=java#buckets/bfsdefault/myudfs/standard-EXASOL-6.0.0/exaudf/exaudfclient R=localzmq+protobuf:///bfsdefault/myudfs/standard-EXASOL-6.0.0?lang=r#buckets/bfsdefault/myudfs/standard-EXASOL-6.0.0/exaudf/exaudfclient
 generic_language_tests=python java r
-test_folders=python java r
+test_folders=python java r standard-flavor
 #test_folders=mixed
 # ending new line required!
