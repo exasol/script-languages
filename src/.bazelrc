@@ -1,2 +1,2 @@
 startup --expand_configs_in_place
-build --cxxopt='-std=c++14' --incompatible_remove_native_http_archive=false --incompatible_package_name_is_a_function=false 
+build --subcommands --cxxopt='-std=c++14' --incompatible_remove_native_http_archive=false --incompatible_package_name_is_a_function=false 

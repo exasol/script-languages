@@ -2,7 +2,6 @@
 #load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-
 git_repository(
   name = "org_pubref_rules_protobuf",
   remote = "https://github.com/pubref/rules_protobuf",
@@ -12,19 +11,8 @@ git_repository(
 load("@org_pubref_rules_protobuf//cpp:rules.bzl", "cpp_proto_repositories")
 cpp_proto_repositories()
 
-new_local_repository(
-    name = "python_2_7_linux",
-    path = "/usr",
-    build_file_content = """
-cc_library(
-    name = "python27-lib",
-    srcs = ["lib/python2.7/config-x86_64-linux-gnu/libpython2.7.so"],
-    hdrs = glob(["include/python2.7/*.h"]),
-    includes = ["include/python2.7"],
-    visibility = ["//visibility:public"]
-)
-    """
-)
+load("//:repositories.bzl", "python27_local_repository")
+python27_local_repository(name = "python_2_7_linux")
 
 new_local_repository(
     name = "R_linux",

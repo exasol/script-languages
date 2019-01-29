@@ -7,8 +7,9 @@
 #undef _XOPEN_SOURCE
 #endif
 #include <Python.h>
-#include "exascript_python.h"
 #include "exascript_python_int.h"
+#include "exascript_python.h"
+
 #include "scriptoptionlines.h"
 
 #include "script_data_transfer_objects.h"
