@@ -23,11 +23,11 @@ done
 
 [ "X$FLAVOR" = "X" ] && die "Missing mandatory argument --flavor"
 
-docker build . --tag exaudf/test_$FLAVOR -f flavors/$FLAVOR/Dockerfile.test_$FLAVOR
+docker build . --tag exaudf/debug_container -f flavors/$FLAVOR/Dockerfile.test_$FLAVOR
 
-docker run --detach --security-opt seccomp=unconfined --name test_container_$FLAVOR exaudf/test_$FLAVOR sleep 1000000
-docker exec test_container_$FLAVOR mkfifo /tmp/fff
-docker exec -it test_container_$FLAVOR /bin/bash
+docker run --detach --security-opt seccomp=unconfined --name debug_container exaudf/debug_container sleep 1000000
+docker exec debug_container mkfifo /tmp/fff
+docker exec -it debug_container /bin/bash
 
 
 ### python exasol_emulator/exasolution.py unix:/tmp/fff --single-call-testcase 12 exasol_emulator/sc_script.py&
@@ -42,7 +42,7 @@ docker exec -it test_container_$FLAVOR /bin/bash
 ### python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.r&
 ### /exaudf/exaudfclient ipc:///tmp/fff lang=r
 
-docker rm -f test_container_$FLAVOR
+docker rm -f debug_container
 
 #docker run --detach --security-opt seccomp=unconfined --name test_container_$FLAVOR exaudf/test_$FLAVOR sleep 1000000
 #docker exec test_container_$FLAVOR mkfifo /tmp/fff

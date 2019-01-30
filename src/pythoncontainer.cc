@@ -143,28 +143,6 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 {
     script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);    // Magic-Number of UTF-8 files
 
-    //const string nositeKeyword = "%nosite";
-    //const string whitespace = " \t\f\v";
-    //const string lineEnd = ";";
-    //size_t pos;
-    //string nosite = ExecutionGraph::extractOptionLine(script_code, nositeKeyword, whitespace, lineEnd, pos, [&](const char* msg){throw PythonVM::exception(msg);});
-
-//    cerr << "VALUE of nosite: |" << nosite << "|" << endl;
-
-
-    int noSiteFlag = 1;
-    //if (nosite == "yes") {noSiteFlag=1;}
-    //else if (nosite == "" || nosite == "no") {noSiteFlag=0;}
-    //else throw PythonVM::exception("Invalid value for %nosite option, must be yes or no");
-
-//    cerr << "Value of noSiteFlag: |" << noSiteFlag << "|" << endl;
-
-    //script_code = string("\xEF\xBB\xBF") + script_code;
-
-//    cerr << "Script code after extract option line: " << endl << script_code << endl;
-
-    //SWIGVM_params->script_code = strdup(script_code.c_str());
-
     script = exatable = globals = retvalue = NULL;
 #ifndef DISABLE_PYTHON_SUBINTERP
     pythread = NULL;
@@ -172,7 +150,7 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 
     if (!Py_IsInitialized()) {
         ::setlocale(LC_ALL, "en_US.utf8");
-        Py_NoSiteFlag = noSiteFlag;
+        Py_NoSiteFlag = 1;
 #ifdef ENABLE_PYTHON3
         PyImport_AppendInittab("_exascript_python",PyInit__exascript_python);
 #endif
