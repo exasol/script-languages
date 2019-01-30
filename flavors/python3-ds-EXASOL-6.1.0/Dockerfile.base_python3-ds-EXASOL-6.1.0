@@ -50,26 +50,3 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en  
 ENV LC_ALL en_US.UTF-8  
 
-
-
-
-# RUN wget https://files.pythonhosted.org/packages/85/d1/69ee7e757f657e7f527cbf500ec2d295396e5bcec873cf4eb68962c41024/statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
-#     pip3 install statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
-#     rm -f statsmodels-0.9.0-cp36-cp36m-manylinux1_x86_64.whl && \
-#     pip3 install keras tensorflow kmodes seaborn matplotlib imbalanced-learn lifelines nltk gensim lxml ujson && \
-#     locale-gen en_US.UTF-8 && \
-#     update-locale LC_ALL=en_US.UTF-8 && \
-#     apt-get -y clean && \
-#     apt-get -y autoremove && \
-#     ldconfig
-# RUN apt-get --yes  remove python3-pycurl
-# RUN python3.6 -m pip install --ignore-installed pycurl
-# RUN addgroup --gid 1000 exasolution
-# RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution
-
-# ENV LANG en_US.UTF-8  
-# ENV LANGUAGE en_US:en  
-# ENV LC_ALL en_US.UTF-8  
-
-
-

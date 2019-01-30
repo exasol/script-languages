@@ -46,6 +46,15 @@ class PandasDataFrame(udf.TestCase):
         self.col_tuple_null = (None, None, None, None, None, None, None, None, None, None, None)
 
 
+        self.test3_col_names = 'C1'
+        self.test3_col_defs = 'C1 INTEGER'
+        self.query('CREATE TABLE TEST3(C0 INT IDENTITY, %s)' % (self.test3_col_defs))
+        self.test3_col_tuple = []
+        self.test3_num_rows = 10
+        for i in range(self.test3_num_rows):
+            col_vals = str(i)
+            self.test3_col_tuple.append((col_vals,))
+            self.query('INSERT INTO TEST3 (%s) VALUES (%s)' % (self.test3_col_names, col_vals))
 
     def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
@@ -229,6 +238,34 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs, self.col_defs)))
         rows = self.query('SELECT foo(%s) FROM FN2.TEST1' % (self.col_names))
         self.assertRowsEqual([self.col_tuple]*self.num_rows, rows)
+
+    def test_dataframe_set_emits_iter_getattr(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON SET SCRIPT
+            foo(%s)
+            EMITS(R VARCHAR(1000)) AS
+            def run(ctx):
+                BATCH_ROWS = 1
+                while True:
+                    df = ctx.get_dataframe(num_rows=BATCH_ROWS)
+                    if df is None:
+                        break
+                    ctx.emit(df.applymap(lambda x: "df_"+str(x)))
+                    try:
+                        ctx.emit("getattr_"+str(ctx.C1))
+                        ctx.emit("eob") # end of batch
+                    except:
+                        ctx.emit("eoi") # end of iteration
+            /
+            ''' % (self.test3_col_defs)))
+        rows = self.query('SELECT foo(%s) FROM FN2.TEST3' % (self.test3_col_names))
+        expected_result = [("df_"+str(self.test3_col_tuple[0][0]),)]
+        for i in range(1,self.test3_num_rows):
+            expected_result.append(("getattr_"+str(self.test3_col_tuple[i][0]),))
+            expected_result.append(("eob",))
+            expected_result.append(("df_"+str(self.test3_col_tuple[i][0]),))
+        expected_result.append(("eoi",))
+        self.assertRowsEqual(expected_result, rows)
 
     def test_dataframe_set_emits_iter_exception(self):
         self.query(udf.fixindent('''
