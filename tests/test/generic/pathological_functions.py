@@ -7,6 +7,8 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 
 import udf
 from udf import requires
+from exatest.testcase import skipIf
+running_in_travis = 'TRAVIS' in os.environ
 
 class Test(udf.TestCase):
 
@@ -18,8 +20,9 @@ class Test(udf.TestCase):
                 self.query('SELECT fn1.sleep(100) FROM dual')
         finally:
             self.query('ALTER SESSION SET QUERY_TIMEOUT = 0')
-
+        
     @requires('MEM_HOG')
+    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_kill_mem_hog(self):
         self.query('SELECT fn1.mem_hog(100) FROM dual')
         err_text = {
