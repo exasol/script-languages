@@ -148,6 +148,7 @@ fi
 
 if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     PYTHON_CONFIG="${PYTHON_VERSION}-config"
+    ACTUAL_PYTHON_VERSION=`${PYTHON_PREFIX}/bin/${PYTHON_VERSION} -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
    
     hash "${PYTHON_VERSION}-config" && PYTHON_CONFIG="${PYTHON_VERSION}-config"
 
@@ -168,11 +169,17 @@ if [ "$ENABLE_PYTHON_IMPL" = "yes" ]; then
     cat exascript_python_preset.py_orig >> exascript_python_preset.py
     
     python ./build_integrated.py exascript_python_int.h exascript_python.py exascript_python_wrap.py exascript_python_preset.py || die "Failed build_integrated"
+
+       
+    if [[ $ACTUAL_PYTHON_VERSION == 2* ]] ; then
+        python ./filter_swig_code.py exascript_python.h exascript_python_tmp.h || die "Failed: filter_swig_code.py exascript_python.h exascript_python_tmp.h"
+        python ./filter_swig_code.py exascript_python.cc exascript_python_tmp.cc || die "exascript_python.cc exascript_python_tmp.cc"
+    fi
+
     cp exascript_python_tmp.h exascript_python.h || die "Failed: filter_swig_code.py exascript_python.h exascript_python_tmp.h"
     cp exascript_python_tmp.cc exascript_python.cc || die "exascript_python.cc exascript_python_tmp.cc"
 
     CXXFLAGS="-DENABLE_PYTHON_VM $($PYTHON_CONFIG --includes) $CXXFLAGS"
-    ACTUAL_PYTHON_VERSION=`${PYTHON_PREFIX}/bin/${PYTHON_VERSION} -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
     if [[ $ACTUAL_PYTHON_VERSION == 3* ]] ; then
         CXXFLAGS="-DENABLE_PYTHON3 $CXXFLAGS"
     fi

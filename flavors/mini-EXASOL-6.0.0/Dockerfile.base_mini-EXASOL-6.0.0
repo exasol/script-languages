@@ -18,7 +18,6 @@ RUN apt-get -y update && \
         libssl-dev \
         wget \
         unzip \
-        swig \
         python-pip \
         python-lxml \
         python-cjson \
@@ -28,6 +27,10 @@ RUN apt-get -y update && \
     pip install pytz && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
+    wget prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
+    tar zxf swig-2.0.4.tar.gz && \
+    (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
+    rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
     apt-get -y clean && \
     apt-get -y autoremove && \
     ldconfig
