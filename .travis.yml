@@ -16,7 +16,7 @@ install:
 
 matrix:
   include:
-  - name: miniEXASOL-6.0.0-python-python
+  - name: mini-EXASOL-6.0.0-python
     env: MATRIX_FLAVOR=mini-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
   - name: standard-EXASOL-6.0.0-python
     env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python

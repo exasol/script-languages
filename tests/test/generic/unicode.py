@@ -53,7 +53,7 @@ def getPythonVersionInUDFs(server,script_languages):
 			        'conn': server
 			        }
         env = os.environ.copy()
-        env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
+        #env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
         exaplus = subprocess.Popen(
                 cmd.split(),
                 env=env,
@@ -71,7 +71,7 @@ def getPythonVersionInUDFs(server,script_languages):
 
                 
         if pythonVersionInUdf not in [2,3]:
-            print('cannot set pythonVersionInUdf: '+pythonVersionInUdf)
+            print('cannot set pythonVersionInUdf: %s' % pythonVersionInUdf)
             sys.exit(1)
 
         return pythonVersionInUdf
