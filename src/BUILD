@@ -1,24 +1,31 @@
 package(default_visibility = ["//visibility:public"])
-load("@org_pubref_rules_protobuf//cpp:rules.bzl", "cc_proto_library")
+# load("@org_pubref_rules_protobuf//cpp:rules.bzl", "cc_proto_library")
 
-
-cc_proto_library(
-    name = "zmqcontainer",
-    protos = ["zmqcontainer.proto"],
-    with_grpc = False
+proto_library(
+    name = "zmqcontainer_proto",
+    srcs = ["zmqcontainer.proto"],
+    deps = ["@com_google_protobuf//:any_proto"],
 )
+
+load("@build_stack_rules_proto//cpp:cpp_proto_compile.bzl", "cpp_proto_compile")
+load("@build_stack_rules_proto//cpp:cpp_proto_library.bzl", "cpp_proto_library")
+cpp_proto_library(
+    name = "zmqcontainer",
+    deps = [":zmqcontainer_proto"]
+)
+
 
 cc_library(
     name = "scriptoptionlines",
     hdrs = ["scriptoptionlines.h"],
-    srcs = ["scriptoptionlines.cc","scriptoptionlines.h"]
+    srcs = ["scriptoptionlines.cc","scriptoptionlines.h"],
 )
 
 
 cc_library(
     name = "script_data_transfer_objects",
     srcs = ["script_data_transfer_objects.cc","script_data_transfer_objects.h"],
-    hdrs = ["script_data_transfer_objects.h"]
+    hdrs = ["script_data_transfer_objects.h"],
 )
 
 cc_library(
@@ -28,25 +35,28 @@ cc_library(
     hdrs = ["script_data_transfer_objects_wrapper.h"]
 )
 
+CUSTOM_PROTOBUF_PREFIX='$$CUSTOM_PROTOBUF_PREFIX'
 
 cc_library(
     name = "exaudflib",
     srcs = ["exaudflib.cc","exaudflib.h"],
     hdrs = ["exaudflib.h"],
-    deps = [":script_data_transfer_objects_wrapper", ":zmqcontainer"]
+    deps = [":script_data_transfer_objects_wrapper", ":zmqcontainer"],
+    defines = ["CUSTOM_PROTOBUF_PREFIX=\"%s\""%CUSTOM_PROTOBUF_PREFIX]
 )
 
 cc_library(
     name = "exaudfclient",
     srcs = ["exaudfclient.cc"],
-    deps = [":exaudflib"]
+    deps = [":exaudflib"],
+    defines = ["CUSTOM_PROTOBUF_PREFIX=\"%s\""%CUSTOM_PROTOBUF_PREFIX]
 )
 
 cc_library(
     name = "streamingcontainer",
     srcs = ["streamingcontainer.cc","streamingcontainer.h"],
-    
     deps = [":exaudflib"]
+
 )
 
 cc_library(
