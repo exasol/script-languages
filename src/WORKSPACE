@@ -20,9 +20,9 @@ http_archive(
     strip_prefix = "rules_proto-d86ca6bc56b1589677ec59abfa0bed784d6b7767",
 )
 
-load("@build_stack_rules_proto//cpp:deps.bzl", "cpp_proto_compile")
+#load("@build_stack_rules_proto//cpp:deps.bzl", "cpp_proto_compile")
 
-cpp_proto_compile()
+#cpp_proto_compile()
 
 load("@build_stack_rules_proto//cpp:deps.bzl", "cpp_proto_library")
 
@@ -45,3 +45,16 @@ cc_library(
     """
 )
 
+new_local_repository(
+    name = "zmq",
+    path = "/",
+    build_file_content = """
+cc_library(
+    name = "zmqlib",
+    srcs = ["usr/lib/x86_64-linux-gnu/libzmq.so"],
+    hdrs = glob(["usr/include/zmq*"]),
+    includes = ["usr/include/"],
+    visibility = ["//visibility:public"]
+)
+    """
+)

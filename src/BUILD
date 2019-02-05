@@ -1,19 +1,33 @@
 package(default_visibility = ["//visibility:public"])
 # load("@org_pubref_rules_protobuf//cpp:rules.bzl", "cc_proto_library")
 
-proto_library(
+# proto_library(
+#     name = "zmqcontainer_proto",
+#     srcs = ["zmqcontainer.proto"],
+#     deps = ["@com_google_protobuf//:any_proto"],
+# )
+
+#load("@build_stack_rules_proto//cpp:cpp_proto_compile.bzl", "cpp_proto_compile")
+# load("@build_stack_rules_proto//cpp:cpp_proto_library.bzl", "cpp_proto_library")
+# cpp_proto_library(
+#     name = "zmqcontainer",
+#     deps = [":zmqcontainer_proto"]
+# )
+
+genrule(
     name = "zmqcontainer_proto",
-    srcs = ["zmqcontainer.proto"],
-    deps = ["@com_google_protobuf//:any_proto"],
+    cmd = """$$CUSTOM_PROTOBUF_BIN -I. $< --cpp_out=. &&
+            cp zmqcontainer.pb.cc $(location zmqcontainer.pb.cc) &&
+            cp zmqcontainer.pb.h $(location zmqcontainer.pb.h)""",
+    outs = ["zmqcontainer.pb.cc","zmqcontainer.pb.h"],
+    srcs = ["zmqcontainer.proto"]
 )
 
-load("@build_stack_rules_proto//cpp:cpp_proto_compile.bzl", "cpp_proto_compile")
-load("@build_stack_rules_proto//cpp:cpp_proto_library.bzl", "cpp_proto_library")
-cpp_proto_library(
+cc_library(
     name = "zmqcontainer",
-    deps = [":zmqcontainer_proto"]
+    hdrs = [":zmqcontainer_proto"],
+    srcs = [":zmqcontainer_proto"],
 )
-
 
 cc_library(
     name = "scriptoptionlines",
@@ -41,15 +55,24 @@ cc_library(
     name = "exaudflib",
     srcs = ["exaudflib.cc","exaudflib.h"],
     hdrs = ["exaudflib.h"],
-    deps = [":script_data_transfer_objects_wrapper", ":zmqcontainer"],
-    defines = ["CUSTOM_PROTOBUF_PREFIX=\"%s\""%CUSTOM_PROTOBUF_PREFIX]
+    linkstatic = 1,
+    deps = [":script_data_transfer_objects_wrapper", ":zmqcontainer", "@zmq//:zmqlib"],
+    #defines = ["CUSTOM_PROTOBUF_PREFIX=\"%s\""%CUSTOM_PROTOBUF_PREFIX]
 )
 
-cc_library(
+cc_binary(
+    name = "libexaudflib_complete.so",
+    linkshared = 1,
+    srcs = [":exaudflib", ":zmqcontainer", ":script_data_transfer_objects_wrapper", ":script_data_transfer_objects"],
+    deps = [ "@zmq//:zmqlib"]
+)
+
+cc_binary(
     name = "exaudfclient",
-    srcs = ["exaudfclient.cc"],
-    deps = [":exaudflib"],
-    defines = ["CUSTOM_PROTOBUF_PREFIX=\"%s\""%CUSTOM_PROTOBUF_PREFIX]
+    srcs = ["exaudfclient.cc","exaudflib.h","script_data_transfer_objects_wrapper.h", "script_data_transfer_objects.h"],
+    linkopts = ["-ldl"],
+    deps = [":benchmark_container"]
+    #defines = ["CUSTOM_PROTOBUF_PREFIX=\"%s\""%CUSTOM_PROTOBUF_PREFIX]
 )
 
 cc_library(

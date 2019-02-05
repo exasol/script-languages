@@ -14,6 +14,7 @@
 #endif
 #include <exception>
 #include "exaudflib.h"
+#include "benchmark_container.h"
 #include <functional>
 
 
@@ -68,15 +69,20 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 
 int main(int argc, char **argv) {
 #ifdef CUSTOM_PROTOBUF_PREFIX
-    string libProtobufPath= string(CUSTOM_PROTOBUF_PREFIX) + "/lib/libprotobuf.so";
+    string libProtobufPath= string(CUSTOM_PROTOBUF_PREFIX) + "/libprotobuf.so";
 #else
     string libProtobufPath = "/usr/lib/x86_64-linux-gnu/libprotobuf.so";
 #endif
-
+#ifdef CUSTOM_LIBEXAUDFLIB_PATH
+    string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
+#else
+    string libexaudflibPath = "/exaudf/libexaudflib_complete.so"
+#endif
 #ifndef PROTEGRITY_PLUGIN_CLIENT
 #if 1
 
     Lmid_t  my_namespace_id;
+    cerr << "Load libprotobuf from " << libProtobufPath << endl;
     handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
     if (!handle) {
         cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
@@ -86,10 +92,8 @@ int main(int argc, char **argv) {
         cerr << "Error when getting namespace id " << dlerror() << endl;
         exit(EXIT_FAILURE);
     }
-    
-    string libexaudf_path = string("/exaudf/") + string(LIBEXAUDF_NAME) + string(".so"); 
-    handle = dlmopen(my_namespace_id, libexaudf_path.c_str(),RTLD_NOW);
-    //handle = dlmopen(LM_ID_NEWLM, "/exaudf/libexaudflib.so",RTLD_NOW);
+    cerr << "Load libexaudflib from " << libexaudflibPath << endl;
+    handle = dlmopen(my_namespace_id, libexaudflibPath.c_str() ,RTLD_NOW);
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);
@@ -121,7 +125,7 @@ int main(int argc, char **argv) {
     }
 #else
     if (argc != 3) {
-        cerr << "Usage: " << argv[0] << " <socket> lang=python|lang=r|lang=java|lang=streaming" << endl;
+        cerr << "Usage: " << argv[0] << " <socket> lang=python|lang=r|lang=java|lang=streaming|lang=benchmark" << endl;
         return 1;
     }
 #endif
@@ -173,6 +177,12 @@ int main(int argc, char **argv) {
             vmMaker = [](){return new StreamingVM(false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Streaming support");
+#endif
+    } else if (strcmp(argv[2], "lang=benchmark")==0){
+#ifdef ENABLE_BENCHMARK_VM
+        vmMaker = [](){return new BenchmarkVM(false);};
+#else
+        throw SWIGVM::exception("this exaudfclient has been compilied without Benchmark support");
 #endif
     }
 #endif

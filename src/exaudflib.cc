@@ -1492,13 +1492,15 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
         if (! ((strcmp(argv[2], "lang=python") == 0)
                || (strcmp(argv[2], "lang=r") == 0)
                || (strcmp(argv[2], "lang=java") == 0)
-               || (strcmp(argv[2], "lang=streaming") == 0)) )
+               || (strcmp(argv[2], "lang=streaming") == 0)
+               || (strcmp(argv[2], "lang=benchmark") == 0)) )
         {
             cerr << "Remote VM type '" << argv[3] << "' not supported." << endl;
             return 2;
         }
 #endif
     } else {
+        cerr << "socket name '" << socket_name << "' is invalid." << endl;
         abort();
     }
 

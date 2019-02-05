@@ -1,0 +1,2 @@
+PYTHON_PREFIX=/usr CUSTOM_PROTOBUF_BIN=/usr/bin/protoc bash build.sh --copt="-DENABLE_BENCHMARK_VM" --copt="-DCUSTOM_PROTOBUF_PREFIX=\"/usr/lib/x86_64-linux-gnu\"" --verbose_failures  //:libexaudflib_complete.so //:benchmark_container //:exaudfclient
+#PYTHON_PREFIX=/usr CUSTOM_PROTOBUF_BIN=/usr/local/bin/protoc bash build.sh --copt="-DCUSTOM_PROTOBUF_PREFIX=\"/usr/lib/x86_64-linux-gnu\"" --verbose_failures  //:libexaudflib_complete.so //:benchmark_container //:exaudfclient
