@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 genrule(
     name = "python2_7_exascript_python_tmp_cc",
     cmd = 'swig -v -I$$PYTHON_PREFIX/include/python2.7 -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //:exascript.i)"',
@@ -55,7 +57,7 @@ cc_library(
 cc_library(
     name = "python2_7_pythoncontainer",
     srcs = ["//python:pythoncontainer.cc"],
-    data = [":python2_7_extend_exascript_python_preset_py"],
+    data = [":python2_7_extend_exascript_python_preset_py"], 
     copts = ["-DENABLE_PYTHON_VM"],
     hdrs = [":python2_7_exascript_python_int", ":python2_7_filter_swig_code_exascript_python_h"],
     include_prefix = ".",

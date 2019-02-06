@@ -16,8 +16,7 @@
 #include "exaudflib.h"
 #include "benchmark_container.h"
 #include <functional>
-
-
+#include "debug_message.h"
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -76,13 +75,14 @@ int main(int argc, char **argv) {
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
     string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
-    string libexaudflibPath = "/exaudf/libexaudflib_complete.so"
+    string libexaudflibPath = "/exaudf/libexaudflib_complete.so";
 #endif
 #ifndef PROTEGRITY_PLUGIN_CLIENT
 #if 1
 
     Lmid_t  my_namespace_id;
-    cerr << "Load libprotobuf from " << libProtobufPath << endl;
+    DBGMSG(cerr, "Load libprotobuf into new namespace");
+    DBGVAR(cerr, libProtobufPath);
     handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
     if (!handle) {
         cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
@@ -92,8 +92,9 @@ int main(int argc, char **argv) {
         cerr << "Error when getting namespace id " << dlerror() << endl;
         exit(EXIT_FAILURE);
     }
-    cerr << "Load libexaudflib from " << libexaudflibPath << endl;
-    handle = dlmopen(my_namespace_id, libexaudflibPath.c_str() ,RTLD_NOW);
+    DBGMSG(cerr, "Load libexaudflib");
+    DBGVAR(cerr, libexaudflibPath);
+    handle = dlmopen(my_namespace_id, libexaudflibPath.c_str(), RTLD_NOW);
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);

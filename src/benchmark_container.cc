@@ -2,6 +2,7 @@
 #define ENABLE_BENCHMARK_VM
 #endif
 
+#include "debug_message.h"
 #include "benchmark_container.h"
 #include "exaudflib.h"
 #include <iostream>
@@ -38,12 +39,20 @@ void BenchmarkVM::shutdown()
 
 bool BenchmarkVM::run()
 {
+    DBG_FUNC_BEGIN(cerr);
+    cerr << "Input Columns:" << endl;
+    for (unsigned int col = 0; col<meta.inputColumnCount(); col++) {
+        cerr << "Column " << col << ": " << meta.inputColumnName(col) << " " << meta.inputColumnTypeName(col) << endl;
+    }
     try {
-
         try {
+            cerr << "Begin fetch" << endl;
             bool hasNext = false;
+            int iteration = 0;
             do {
                 int count = 0;
+                //cerr << "Begin iteration " << iteration << endl;
+                iteration++;
                 for (unsigned int col = 0; col<meta.inputColumnCount(); col++) {           
                     switch (meta.inputColumnType(col))
                     {
@@ -85,19 +94,27 @@ bool BenchmarkVM::run()
                 }
                 hasNext = inp.next();
             } while (hasNext);
+            cerr << "End fetch" << endl;
         } catch (std::exception& err) {
             lock_guard<mutex> lock(exception_msg_mtx);
             exception_msg = err.what();
+            cerr << "Exception BenchmarkVM::run " << exception_msg << endl;
         }
 
         try {
-            outp.setString(0,"",0);
+            cerr << "Begin emit" << endl;
+            string str1 = string("test1");
+            outp.setString(0,str1.c_str(),strlen(str1.c_str()));
             outp.next();
-            outp.setString(0,"",0);
+            string str2 = string("test2");
+            outp.setString(0,str2.c_str(),strlen(str2.c_str()));
+            outp.next();
             outp.flush();
+            cerr << "End emit" << endl;
         } catch (std::exception& err) {
             lock_guard<mutex> lock(exception_msg_mtx);
             exception_msg = err.what();
+            cerr << "Exception BenchmarkVM::run " << exception_msg << endl;
         }
         
         if (exception_msg.size() > 0) {
@@ -107,7 +124,9 @@ bool BenchmarkVM::run()
     } catch (std::exception& ex) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = ex.what();
+        cerr << "Exception BenchmarkVM::run " << exception_msg << endl;
     }
+    DBG_FUNC_END(cerr);
     return true;  // done
 }
 

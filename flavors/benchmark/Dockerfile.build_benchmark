@@ -8,4 +8,4 @@ RUN mkdir /exaudf_src /exaudf_src/build /exaudf
 
 COPY src/ /exaudf_src/
 
-RUN cd /exaudf_src/ && bash build_commandline && cp -r -L bazel-bin/* /exaudf
+RUN cd /exaudf_src/ && bash build_in_container.sh && cp -r -L bazel-bin/* /exaudf
