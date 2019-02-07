@@ -1,5 +1,7 @@
-load("//:repositories.bzl", "python_local_repository")
+load("//:python_repository.bzl", "python_local_repository")
 python_local_repository(name = "python_linux")
+load("//:java_repository.bzl", "java_local_repository")
+java_local_repository(name = "java_linux")
 
 new_local_repository(
     name = "R_linux",
@@ -24,6 +26,20 @@ cc_library(
     srcs = ["usr/lib/x86_64-linux-gnu/libzmq.so"],
     hdrs = glob(["usr/include/zmq*"]),
     includes = ["usr/include/"],
+    visibility = ["//visibility:public"]
+)
+    """
+)
+
+new_local_repository(
+    name = "ssl",
+    path = "/",
+    build_file_content = """
+cc_library(
+    name = "ssl",
+    srcs = ["usr/lib/x86_64-linux-gnu/libssl.so","usr/lib/x86_64-linux-gnu/libcrypto.so"],
+    hdrs = glob(["usr/include/openssl/*.h"]),
+    includes = ["usr/include/openssl"],
     visibility = ["//visibility:public"]
 )
     """

@@ -4,8 +4,8 @@
 #include <openssl/md5.h>
 #include <set>
 #include <jni.h>
-#include <exaudflib.h>
-#include <exascript_java_jni_decl.h>
+#include "exaudflib.h"
+#include "exascript_java_jni_decl.h"
 #include <unistd.h>
 
 #include "scriptoptionlines.h"

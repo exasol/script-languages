@@ -29,6 +29,7 @@ def _get_config_dir(config_binary,repository_ctx):
     if config_dir_command_result.return_code != 0:
         fail("Could not acquire config_dir for python, got return code %s stderr: \n %s"
             % (config_dir_command_result.return_code, config_dir_command_result.stderr))
+    #print(config_dir_command_result.stdout,config_dir_command_result.stderr)
     config_dir = config_dir_command_result.stdout.strip("\n")[1:]
     print("python config_dir: %s"%config_dir)
     return config_dir
@@ -39,7 +40,6 @@ def _python_local_repository_impl(repository_ctx):
         prefix = repository_ctx.os.environ['PYTHON_PREFIX']
     print("python prefix in environment specified; %s"%prefix)
 
-    print(repository_ctx.os.environ['PYTHON_VERSION'])
     version = "python2.7"
     if 'PYTHON_VERSION' in repository_ctx.os.environ:
         version = repository_ctx.os.environ['PYTHON_VERSION']
@@ -52,9 +52,9 @@ def _python_local_repository_impl(repository_ctx):
     includes, hdrs = _get_includes_and_hdrs(config_binary,repository_ctx)
     config_dir = _get_config_dir(config_binary,repository_ctx)
 
-    defines=""
+    defines='"ENABLE_PYTHON"'
     if actual_version[0]=="3":
-        defines = '"ENABLE_PYTHON3"'
+        defines = defines+',"ENABLE_PYTHON3"'
 
     build_file_content = """
 cc_library(

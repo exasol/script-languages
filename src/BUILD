@@ -54,7 +54,7 @@ cc_binary(
     name = "exaudfclient",
     srcs = ["exaudfclient.cc","exaudflib.h","script_data_transfer_objects_wrapper.h", "script_data_transfer_objects.h", "debug_message.h"],
     linkopts = ["-ldl"],
-    deps = [":benchmark_container", ":streamingcontainer", "//python:pythoncontainer", "//rcontainer:rcontainer"],
+    deps = ["@ssl//:ssl",":benchmark_container", ":streamingcontainer", "//python:pythoncontainer", "//rcontainer:rcontainer", "//javacontainer:javacontainer"],
     data = [":libexaudflib_complete.so"]
 )
 
