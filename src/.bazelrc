@@ -1,2 +1,2 @@
 startup --expand_configs_in_place
-build --action_env=PYTHON_PREFIX --action_env=CUSTOM_PROTOBUF_BIN --cxxopt='-std=c++14' 
+build --action_env=PYTHON_PREFIX --action_env=PYTHON_VERSION --action_env=PYTHON_SYSPATH --action_env=CUSTOM_PROTOBUF_BIN --cxxopt='-std=c++14'

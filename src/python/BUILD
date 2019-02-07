@@ -1,2 +1,84 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["exascript_python_preset_core.py","extend_exascript_python_preset_py.sh","exascript_python.py","exascript_python_wrap.py","pythoncontainer.cc"])
+
+genrule(
+    name = "exascript_python_tmp_cc",
+    cmd = """
+        INCLUDES=`$$PYTHON_PREFIX/bin/$$PYTHON_VERSION-config --includes`
+        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //:exascript.i)"
+        """,
+    outs = ["exascript_python_tmp.cc"],
+    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h"]
+)
+
+genrule(
+    name = "exascript_python_tmp_h",
+    cmd = """
+        INCLUDES=`$$PYTHON_PREFIX/bin/$$PYTHON_VERSION-config --includes`
+        swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -py3 -external-runtime "$(location exascript_python_tmp.h)"
+        """,
+    outs = ["exascript_python_tmp.h"],
+    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp_cc"]
+)
+
+genrule(
+    name = "extend_exascript_python_preset_py",
+    cmd = 'bash $(location :extend_exascript_python_preset_py.sh) "$(location :exascript_python_preset_core.py)" "$(location exascript_python_preset.py)" "$$PYTHON_PREFIX" "$$PYTHON_VERSION" ""',
+    outs = ["exascript_python_preset.py"],
+    srcs = [":exascript_python_preset_core.py"],
+    tools = [":extend_exascript_python_preset_py.sh"]
+)
+
+genrule(
+    name = "exascript_python_int",
+    cmd = 'cp $(SRCS) . && python build_integrated.py "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"',
+    outs = ["exascript_python_int.h"],
+    srcs = [":exascript_python.py", ":exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
+    tools = ["//:build_integrated.py"]
+)
+
+genrule(
+    name = "filter_swig_code_exascript_python_h",
+    cmd = """
+        ACTUAL_PYTHON_VERSION=`$$PYTHON_PREFIX/bin/$$PYTHON_VERSION -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
+        if [[ $$ACTUAL_PYTHON_VERSION == 2* ]] ; then
+            python ./filter_swig_code.py "$@" "$<"
+        else
+            cp "$<" "$@" 
+        fi
+    """,
+    outs = ["exascript_python.h"],
+    srcs = [":exascript_python_tmp_h"],
+    tools = ["//:filter_swig_code.py"]
+)
+
+genrule(
+    name = "filter_swig_code_exascript_python_cc",
+    cmd = """
+        ACTUAL_PYTHON_VERSION=`$$PYTHON_PREFIX/bin/$$PYTHON_VERSION -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
+        if [[ $$ACTUAL_PYTHON_VERSION == 2* ]] ; then
+            python ./filter_swig_code.py "$@" "$<"
+        else
+            cp "$<" "$@" 
+        fi
+    """,
+    outs = ["exascript_python.cc"],
+    srcs = [":exascript_python_tmp_cc"],
+    tools = ["//:filter_swig_code.py"]
+)
+
+cc_library(
+    name = "exascript_python",
+    srcs = [":filter_swig_code_exascript_python_cc"],
+    copts = ["-DENABLE_PYTHON_VM"],
+    deps = ["@python_linux//:python_linux","//:exaudflib"]
+)
+
+cc_library(
+    name = "pythoncontainer",
+    srcs = [":pythoncontainer.cc"],
+    data = [":extend_exascript_python_preset_py"], 
+    copts = ["-DENABLE_PYTHON_VM"],
+    hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
+    include_prefix = ".",
+    deps = ["@python_linux//:python_linux","//:exaudflib","//:scriptoptionlines",":exascript_python"]
+)
