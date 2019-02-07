@@ -67,3 +67,26 @@ cc_library(
     include_prefix = ".",
     deps = ["@ssl//:ssl","@java_linux//:java_linux","//:exaudflib","//:scriptoptionlines",":exascript_java"]
 )
+
+java_library(
+    name = "exaudf",
+    srcs = glob([":exascript_java_tmp_cc/java_src/com/exasol/swig/*.java",":Exa*.java"])
+)
+
+java_library(
+    name = "exaudf-api",
+    srcs = [
+            ":ExaCompilationException.java",
+            ":ExaConnectionAccessException.java",
+            ":ExaConnectionInformation.java",
+            ":ExaDataTypeException.java",
+            ":ExaImportSpecification.java",
+            ":ExaExportSpecification.java",
+            ":ExaIterationException.java",
+            ":ExaIterator.java",
+            ":ExaMetadata.java"
+            ],
+    resources = ["//:LICENSE-exasol-script-api.txt"],
+    deps = [":exaudf"]
+)
+
