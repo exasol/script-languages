@@ -1,6 +1,46 @@
 package(default_visibility = ["//visibility:public"])
 exports_files(["filter_swig_code.py", "build_integrated.py", "exascript.i","LICENSE-exasol-script-api.txt"])
 
+config_setting(
+    name = "benchmark",
+    define_values = {"benchmark": "true"},
+)
+
+config_setting(
+    name = "python",
+    define_values = {"python": "true"},
+)
+
+config_setting(
+    name = "r",
+    define_values = {"r": "true"},
+)
+
+config_setting(
+    name = "java",
+    define_values = {"java": "true"},
+)
+
+
+BENCHMARK_VM_ENABLED_DEFINE=select({
+        ":benchmark": ["ENABLE_BENCHMARK_VM"],
+        "//conditions:default": []
+    }) 
+PYTHON_VM_ENABLED_DEFINE=select({
+        ":python": ["ENABLE_PYTHON_VM"],
+        "//conditions:default": []
+    })
+R_VM_ENABLED_DEFINE=select({
+        ":r": ["ENABLE_R_VM"],
+        "//conditions:default": []
+    })
+JAVA_VM_ENABLED_DEFINE=select({
+        ":java": ["ENABLE_JAVA_VM"],
+        "//conditions:default": []
+    })
+
+VM_ENABLED_DEFINES=BENCHMARK_VM_ENABLED_DEFINE+PYTHON_VM_ENABLED_DEFINE+R_VM_ENABLED_DEFINE+JAVA_VM_ENABLED_DEFINE
+
 genrule(
     name = "zmqcontainer_proto",
     cmd = """$$CUSTOM_PROTOBUF_BIN -I. $< --cpp_out=. &&
@@ -40,6 +80,7 @@ cc_library(
     srcs = ["exaudflib.cc","exaudflib.h"],
     hdrs = ["exaudflib.h"],
     linkstatic = 1,
+    defines = VM_ENABLED_DEFINES,
     deps = [":script_data_transfer_objects_wrapper", ":zmqcontainer", "@zmq//:zmqlib"],
 )
 
@@ -48,6 +89,7 @@ cc_binary(
     linkshared = 1,
     srcs = [":exaudflib", ":zmqcontainer", ":script_data_transfer_objects_wrapper", ":script_data_transfer_objects"],
     deps = [ "@zmq//:zmqlib"],
+    defines = VM_ENABLED_DEFINES
 )
 
 cc_binary(
@@ -67,6 +109,7 @@ cc_binary(
         ":java": ["//javacontainer:javacontainer"],
         "//conditions:default": []
     }),
+    defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
 
@@ -81,24 +124,4 @@ cc_library(
     srcs = ["benchmark_container.cc","benchmark_container.h", "debug_message.h"],
     hdrs = ["benchmark_container.h"],
     deps = [":exaudflib"]
-)
-
-config_setting(
-    name = "benchmark",
-    define_values = {"benchmark": "true"},
-)
-
-config_setting(
-    name = "python",
-    define_values = {"python": "true"},
-)
-
-config_setting(
-    name = "r",
-    define_values = {"r": "true"},
-)
-
-config_setting(
-    name = "java",
-    define_values = {"java": "true"},
 )

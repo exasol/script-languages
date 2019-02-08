@@ -24,7 +24,6 @@ genrule(
     cmd = """
         cp -r $(locations :exascript_java_tmp_cc) . &&
         FILES=`ls java_src/com/exasol/swig/*.java`
-        echo "FOUND FOLLOWING SOURCE FILES: $$FILES"
         python build_integrated.py "$(location exascript_java_int.h)" $$FILES
     """,
     outs = ["exascript_java_int.h"],

@@ -1,1 +1,0 @@
-PYTHON_PREFIX=/usr CUSTOM_PROTOBUF_BIN=/usr/bin/protoc bazel build --copt="-DENABLE_BENCHMARK_VM" --copt="-DCUSTOM_PROTOBUF_PREFIX=\"/usr/lib/x86_64-linux-gnu\"" //:libexaudflib_complete.so //:benchmark_container //:exaudfclient
