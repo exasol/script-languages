@@ -14,7 +14,9 @@
 #endif
 #include <exception>
 #include "exaudflib.h"
+#ifdef ENABLE_BENCHMARK_VM
 #include "benchmark_container.h"
+#endif
 #include <functional>
 #include "debug_message.h"
 #include <stdio.h>

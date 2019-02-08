@@ -65,6 +65,7 @@ cc_library(
     srcs = [":javacontainer.cc"],
     hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h"],
     include_prefix = ".",
+    data = [":exaudf-api", ":exaudf"],
     deps = ["@ssl//:ssl","@java_linux//:java_linux","//:exaudflib","//:scriptoptionlines",":exascript_java"]
 )
 

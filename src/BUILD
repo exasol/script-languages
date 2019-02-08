@@ -54,7 +54,19 @@ cc_binary(
     name = "exaudfclient",
     srcs = ["exaudfclient.cc","exaudflib.h","script_data_transfer_objects_wrapper.h", "script_data_transfer_objects.h", "debug_message.h"],
     linkopts = ["-ldl"],
-    deps = ["@ssl//:ssl",":benchmark_container", ":streamingcontainer", "//python:pythoncontainer", "//rcontainer:rcontainer", "//javacontainer:javacontainer"],
+    deps = select({
+        ":benchmark": [":benchmark_container"],
+        "//conditions:default": []
+    }) + select({
+        ":python": ["//python:pythoncontainer"],
+        "//conditions:default": []
+    }) + select({
+        ":r": ["//rcontainer:rcontainer"],
+        "//conditions:default": []
+    }) + select({
+        ":java": ["//javacontainer:javacontainer"],
+        "//conditions:default": []
+    }),
     data = [":libexaudflib_complete.so"]
 )
 
@@ -69,4 +81,24 @@ cc_library(
     srcs = ["benchmark_container.cc","benchmark_container.h", "debug_message.h"],
     hdrs = ["benchmark_container.h"],
     deps = [":exaudflib"]
+)
+
+config_setting(
+    name = "benchmark",
+    define_values = {"benchmark": "true"},
+)
+
+config_setting(
+    name = "python",
+    define_values = {"python": "true"},
+)
+
+config_setting(
+    name = "r",
+    define_values = {"r": "true"},
+)
+
+config_setting(
+    name = "java",
+    define_values = {"java": "true"},
 )
