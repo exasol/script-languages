@@ -10,7 +10,7 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 import udf
 
 class EnvDirective(udf.TestCase):
-    ### Basic Functionality Test of %env directive in Python UDF Scripts
+    ### Basic Functionality Test of %env directive in Python3 UDF Scripts
 
     def setUp(self):
         self.query('DROP SCHEMA EnvDirectiveSchema CASCADE', ignore_errors=True)
@@ -19,7 +19,7 @@ class EnvDirective(udf.TestCase):
     # Set and Retrieve ENVIRONMENT_VARIABLE_VALUE.
     def test_env_set_and_use_env_var(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT env_var_test() returns varchar(1000) AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT env_var_test() returns varchar(1000) AS
             %env ENV_VAR=ENVIRONMENT_VARIABLE_VALUE;
             import os
             def run(ctx):
@@ -33,7 +33,7 @@ class EnvDirective(udf.TestCase):
     def test_env_set_env_var_without_semicolon(self):
         with self.assertRaisesRegexp(Exception, r'Error while parsing %env option line'):
             self.query(udf.fixindent('''
-                CREATE OR REPLACE PYTHON SCALAR SCRIPT env_var_test() returns varchar(1000) AS
+                CREATE OR REPLACE PYTHON3 SCALAR SCRIPT env_var_test() returns varchar(1000) AS
                 %env ENV_VAR="ENVIRONMENT_VARIABLE_VALUE"
                 import os
                 def run(ctx):
@@ -41,10 +41,10 @@ class EnvDirective(udf.TestCase):
                 /
                 '''))
 
-    # %env directive is commented out in Python style. KeyError expected.
-    def test_env_set_env_var_python_comment(self):
+    # %env directive is commented out in Python3 style. KeyError expected.
+    def test_env_set_env_var_python3_comment(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT env_var_test() returns varchar(1000) AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT env_var_test() returns varchar(1000) AS
             # %env ENV_VAR=ENVIRONMENT_VARIABLE_VALUE;
             import os
             def run(ctx):
@@ -54,10 +54,10 @@ class EnvDirective(udf.TestCase):
         with self.assertRaisesRegexp(Exception, 'KeyError'):
             rows = self.query('''select EnvDirectiveSchema.env_var_test()''')
 
-    # %env directive is commented out NOT in Python style. Python SyntaxError expected.
+    # %env directive is commented out NOT in Python3 style. Python3 SyntaxError expected.
     def test_env_set_env_var_not_python_comment(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT env_var_test() returns varchar(1000) AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT env_var_test() returns varchar(1000) AS
             // %env ENV_VAR=ENVIRONMENT_VARIABLE_VALUE;
             import os
             def run(ctx):
@@ -67,10 +67,10 @@ class EnvDirective(udf.TestCase):
         with self.assertRaisesRegexp(Exception, 'invalid syntax'):
             rows = self.query('''select EnvDirectiveSchema.env_var_test()''')
 
-    # %env directive is appended after a source code line. Python SyntaxError expected.
+    # %env directive is appended after a source code line. Python3 SyntaxError expected.
     def test_env_set_env_var_after_code(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT env_var_test() returns varchar(1000) AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT env_var_test() returns varchar(1000) AS
             import os     %env ENV_VAR=ENVIRONMENT_VARIABLE_VALUE;
             def run(ctx):
                 return os.environ["ENV_VAR"]
@@ -82,7 +82,7 @@ class EnvDirective(udf.TestCase):
     # %env directive is Python comment and appended after a source code line. KeyError expected.
     def test_env_set_env_var_python_comment_after_code(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT env_var_test() returns varchar(1000) AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT env_var_test() returns varchar(1000) AS
             import os    # %env ENV_VAR=ENVIRONMENT_VARIABLE_VALUE;
             def run(ctx):
                 return os.environ["ENV_VAR"]

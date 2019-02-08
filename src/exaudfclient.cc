@@ -87,7 +87,8 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
     
-    handle = dlmopen(my_namespace_id, "/exaudf/libexaudflib.so",RTLD_NOW);
+    string libexaudf_path = string("/exaudf/") + string(LIBEXAUDF_NAME) + string(".so"); 
+    handle = dlmopen(my_namespace_id, libexaudf_path.c_str(),RTLD_NOW);
     //handle = dlmopen(LM_ID_NEWLM, "/exaudf/libexaudflib.so",RTLD_NOW);
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());

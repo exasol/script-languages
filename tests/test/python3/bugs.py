@@ -13,7 +13,7 @@ class SUP7256(udf.TestCase):
     def setUp(self):
         self.query('create schema sup7256', ignore_errors=True)
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python scalar SCRIPT pandas_babies(x int)
+                CREATE OR REPLACE python3 scalar SCRIPT pandas_babies(x int)
                 returns int as
                 import pandas as pd
                 def run(ctx):
@@ -35,7 +35,7 @@ class DWA19106(udf.TestCase):
     def setUp(self):
         self.query('CREATE SCHEMA DWA19106', ignore_errors=True)
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python SET SCRIPT blow_up(x varchar(15000))
+                CREATE OR REPLACE python3 SET SCRIPT blow_up(x varchar(15000))
                 EMITS (x varchar(15000)) AS
                 def run(ctx):
                     #ctx.emit(str(len(ctx.x)))
@@ -54,7 +54,7 @@ class SPOT_XYZ(udf.TestCase):
     def setUp(self):
         self.query('CREATE SCHEMA SPOT_XYZ', ignore_errors=True)
         self.query(udf.fixindent('''
-                create or replace python scalar script large_exception(n int)
+                create or replace python3 scalar script large_exception(n int)
                 returns int as
 
                 def run(ctx):

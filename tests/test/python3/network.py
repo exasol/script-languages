@@ -80,7 +80,7 @@ class XMLProcessingTest(udf.TestCase):
     @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xml_processing(self):
         self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 process_users(url VARCHAR(200))
                 EMITS (firstname VARCHAR(100), lastname VARCHAR(100)) AS
 
@@ -116,7 +116,7 @@ class XMLProcessingTest(udf.TestCase):
     @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xml_processing_using_pycurl(self):
         self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 process_users(url VARCHAR(200))
                 EMITS (firstname VARCHAR(100), lastname VARCHAR(100)) AS
 
@@ -159,7 +159,7 @@ class XMLProcessingTest(udf.TestCase):
     @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xmlns_processing(self):
         self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 process_users(url VARCHAR(200))
                 EMITS (firstname VARCHAR(100), lastname VARCHAR(100)) AS
 
@@ -203,7 +203,7 @@ class CleanupTest(udf.TestCase):
             host, port = mb.address
 
             self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 sendmail(host VARCHAR(200), port INT, msg VARCHAR(200))
                 RETURNS INT AS
 
@@ -239,7 +239,7 @@ class CleanupTest(udf.TestCase):
             print('test: host {}, port {}'.format(host, port))
 
             self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 sendmail(dummy DOUBLE)
                 RETURNS INT AS
 
@@ -281,7 +281,7 @@ class CleanupTest(udf.TestCase):
             host, port = mb.address
 
             self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 sendmail(dummy DOUBLE)
                 RETURNS INT AS
 

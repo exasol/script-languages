@@ -29,6 +29,7 @@ class Test(udf.TestCase):
             'lua': 'Connection lost after session running out of memory.',
             'ext-python': 'MemoryError:',
             'python': '(Connection lost after system running out of memory)|(Query terminated because system running out of memory)',
+            'python3': '(Connection lost after system running out of memory)|(Query terminated because system running out of memory)',
             'r': 'Connection lost after system running out of memory.',
             'java': 'java.lang.OutOfMemoryError: Java heap space',
             }

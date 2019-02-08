@@ -15,7 +15,7 @@ class TensorflowBasics(udf.TestCase):
 
     def test_import_keras(self):
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python scalar SCRIPT tfbasic.import_keras()
+                CREATE OR REPLACE python3 scalar SCRIPT tfbasic.import_keras()
                 returns varchar(1000) as
                 import keras
                 

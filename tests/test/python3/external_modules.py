@@ -21,7 +21,7 @@ class UJSON(udf.TestCase):
         self.query('CREATE SCHEMA t1')
    
         self.query(dedent('''\
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 ujson_decode(json VARCHAR(10000))
                 RETURNS VARCHAR(10000) AS
                 import json
@@ -31,7 +31,7 @@ class UJSON(udf.TestCase):
                 '''))
     
         self.query(dedent('''\
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 ujson_encode(json VARCHAR(10000))
                 RETURNS VARCHAR(10000) AS
 
@@ -82,7 +82,7 @@ class Numpy(udf.TestCase):
     @useData((x,) for x in (3, 30, 300))
     def test_numpy_inverse(self, dim):
         self.query(dedent('''\
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 numpy(dim INTEGER)
                 RETURNS boolean AS
 
@@ -118,7 +118,7 @@ class Pytz(udf.TestCase):
     @useData((tz,) for tz in timezones)
     def test_convert(self, tz):
         self.query(dedent('''\
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 tz_convert_py(dt TIMESTAMP, tz VARCHAR(100))
                 RETURNS TIMESTAMP as
         

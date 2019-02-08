@@ -13,7 +13,7 @@ class AvailablePythonPackages(udf.TestCase):
 
     def import_test(self, pkg, fail=False, alternative=None):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
             import %s
             def run(ctx): return 1
             /

@@ -4,11 +4,13 @@ isPython3 = False
 if sys.version_info[0] == 3:
     unicode = str
     decodeUTF8 = lambda x: x
+    encodeUTF8 = lambda x: x
     long = int
     isPython3 = True
 else:
     decodeUTF8 = lambda x: x.decode('utf-8')
-
+    encodeUTF8 = lambda x: x.encode('utf-8')
+    
 if isPython3:
     sys.path.append('/exaudf')
     import pyextdataframe
@@ -150,8 +152,9 @@ class exaiter(object):
                 self.__out.setBoolean(k, bool(v))
             elif type(v) in (str, unicode):
 #                vl = len(v)
-                if not isPython3 and type(v) == unicode: v = v.encode('utf-8')
+#                if not isPython3 and type(v) == unicode: v = v.encode('utf-8')
 #                if isPython3 or type(v) == unicode: v = v.encode('utf-8')
+                v = encodeUTF8(v)
                 vl = len(v)
                 if self.__outcoltypes[k] != STRING:
                     raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
