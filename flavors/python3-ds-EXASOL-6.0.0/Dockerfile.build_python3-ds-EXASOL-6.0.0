@@ -1,7 +1,17 @@
 FROM exaudf/baseimage_python3-ds-exasol-6.0.0
 
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk && \
+	echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
+	curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
+	apt-get update && apt-get install -y bazel
 
+RUN mkdir /exaudf_src /exaudf_src/build /exaudf
 COPY src/ /exaudf_src/
 
-RUN /exaudf_src/build_client.sh --src-dir=/exaudf_src --build-dir=/exaudf_src/build --output-dir=/exaudf --enable-python --custom-protobuf-prefix=/usr/local --python-version=python3.6 --executable-name=exaudfclient_py3
+ENV PYTHON_PREFIX /usr 
+ENV PYTHON_VERSION python3.6
+ENV CUSTOM_PROTOBUF_BIN /usr/local/bin/protoc
+ENV CUSTOM_PROTOBUF_PREFIX /usr/local/lib
+ENV VERBOSE_BUILD "--subcommands --verbose_failures"
+
+RUN cd /exaudf_src/ && bash build.sh --define benchmark=true //:exaudfclient && cp -r -L bazel-bin/* /exaudf
