@@ -194,6 +194,7 @@ class DynamicInputErrors(Test):
         err_text = {
             'lua': 'out of range',
             'python': 'does not exist',
+            'python3': 'does not exist',
             'ext-python': 'does not exist',
             'java': 'does not exist',
             }
@@ -206,6 +207,7 @@ class DynamicInputErrors(Test):
             'lua': 'attempt to perform arithmetic on field',
             'r': 'non-numeric argument to binary operator',
             'python': 'multiply sequence by non-int of type',
+            'python3': 'multiply sequence by non-int of type',
             'ext-python': 'multiply sequence by non-int of type',
             'java': 'bad operand types for binary operator',
             }

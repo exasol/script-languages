@@ -12,6 +12,7 @@ RUN apt-get -y update && \
         locales \
         openjdk-11-jdk-headless \
         python2.7-dev  \
+        python3-dev  \
         r-base \
         r-base-dev \
         libnss-db \
@@ -65,6 +66,28 @@ RUN apt-get -y update && \
         python-boto \
 	python-pycurl \
         python-requests \
+	python3-pycurl \
+	python3-redis \
+	python3-smbc \
+	python3-roman \
+	python3-ldap \
+	python3-leveldb \
+	python3-openssl \
+	python3-pyodbc \
+        python3-numpy \
+        python3-lxml \
+        python3-sklearn \
+        python3-scipy \
+        python3-pandas \
+	python3-pygments \
+	python3-pyftpdlib \
+	python3-pycparser \
+	python3-jinja2 \
+	python3-cffi \
+        python3-docutils \
+        python3-requests \
+        python3-boto \
+        python3-ujson \
         r-cran-rcurl \
         r-cran-xml \
         r-cran-formula \
@@ -117,12 +140,15 @@ RUN apt-get -y update && \
     Rscript -e 'install.packages("data.table",repos = "http://cran.r-project.org")' && \
     Rscript -e 'install.packages("htmltools",repos = "http://cran.r-project.org")' && \
     Rscript -e 'install.packages("flashClust",repos = "http://cran.r-project.org")' && \
+    pip3 install pykickstart martian && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
     apt-get -y autoremove && \
     echo /usr/lib/jvm/java-11-openjdk-amd64/lib/server/ >> /etc/ld.so.conf && \
     ldconfig
+
+RUN pip3 install pyexasol
 
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution

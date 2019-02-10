@@ -38,6 +38,7 @@ class Vectorsize(udf.TestCase):
             'lua':      100000,
             'ext-python':   8000,
             'python':   8000,
+            'python3':   8000,
             'r':        3000,
             'java':     3000
             }

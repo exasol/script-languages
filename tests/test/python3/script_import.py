@@ -20,7 +20,7 @@ class ScriptImport(udf.TestCase):
         self.query('OPEN SCHEMA FN2')
     
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             bottom()
             RETURNS INT AS
 
@@ -31,7 +31,7 @@ class ScriptImport(udf.TestCase):
 
     def test_import_works(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -47,7 +47,7 @@ class ScriptImport(udf.TestCase):
     def test_import_is_semi_case_sensitive(self):
         def check(name, n):
             self.query(udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 foo()
                 RETURNS INT AS
 
@@ -60,7 +60,7 @@ class ScriptImport(udf.TestCase):
 
         for name in 'bar', 'Bar', 'BAR':
             self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 "%s"()
                 RETURNS INT AS
 
@@ -77,7 +77,7 @@ class ScriptImport(udf.TestCase):
 
     def test_import_error_is_catchable(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -93,7 +93,7 @@ class ScriptImport(udf.TestCase):
 
     def test_import_fails_for_lua_script(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -119,7 +119,7 @@ class ScriptImport(udf.TestCase):
     
     def test_import_fails_for_r_script(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -145,7 +145,7 @@ class ScriptImport(udf.TestCase):
 
     def test_imported_scripts_are_cached(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS BOOLEAN AS
 
@@ -169,7 +169,7 @@ class ScriptImport(udf.TestCase):
     def test_import_works_with_qualified_names(self, schema, name): 
         self.query('OPEN SCHEMA %s' % schema)
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -184,7 +184,7 @@ class ScriptImport(udf.TestCase):
     
     def test_chained_import_works_via_function_call(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -195,7 +195,7 @@ class ScriptImport(udf.TestCase):
             /
             '''))
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             bar()
             RETURNS INT AS
 
@@ -210,7 +210,7 @@ class ScriptImport(udf.TestCase):
 
     def test_chained_import_works_via_chained_call(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -221,7 +221,7 @@ class ScriptImport(udf.TestCase):
             /
             '''))
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             bar()
             RETURNS INT AS
 
@@ -233,7 +233,7 @@ class ScriptImport(udf.TestCase):
 
     def test_mutual_import_works(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             ping()
             RETURNS INT AS
 
@@ -250,7 +250,7 @@ class ScriptImport(udf.TestCase):
             /
             '''))
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             pong()
             RETURNS INT AS
 
@@ -270,7 +270,7 @@ class ScriptImport(udf.TestCase):
         self.createUser("foo", "foo")
         self.commit()
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             spot42542script()
             RETURNS INT AS
 

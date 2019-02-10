@@ -336,6 +336,7 @@ RVMImpl::RVMImpl(bool checkOnly): m_checkOnly(checkOnly) {
     DllInfo *info = NULL;
 
     setenv("R_HOME", "/usr/lib/R", 1);
+    setenv("R_ENABLE_JIT", "0", 1);
     Rf_initEmbeddedR(argc, const_cast<char**>(argv));
     R_Interactive = (Rboolean)0; /* 0 has problems with Exceptions -> needs options(error = ...) ? */
     info = R_getEmbeddingDllInfo();

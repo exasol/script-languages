@@ -58,7 +58,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -73,7 +73,7 @@ class PandasDataFrame(udf.TestCase):
     def test_dataframe_scalar_returns(self):
         from decimal import Decimal
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             RETURNS DECIMAL(10,5) AS
 
@@ -89,7 +89,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_no_iter(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
             
@@ -105,7 +105,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_col_names(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -119,7 +119,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_unique(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(C0 INT)
             EMITS(C0 INT) AS
             import numpy as np
@@ -134,7 +134,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_all_unique(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(C0 INT)
             EMITS(C0 INT) AS
             import numpy as np
@@ -149,7 +149,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_empty(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
             import pandas as pd
@@ -164,7 +164,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_wrong_args0(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
             import pandas as pd
@@ -179,7 +179,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_wrong_args7(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -194,7 +194,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
             
@@ -209,7 +209,7 @@ class PandasDataFrame(udf.TestCase):
     def test_dataframe_set_returns(self):
         from decimal import Decimal
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             RETURNS DECIMAL(10,5) AS
             import numpy as np
@@ -224,7 +224,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_iter(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
             
@@ -241,7 +241,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_iter_getattr(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(R VARCHAR(1000)) AS
             def run(ctx):
@@ -269,7 +269,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_iter_exception(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
             
@@ -287,7 +287,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_col_names(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -304,7 +304,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_unique(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(C0 INT)
             EMITS(C0 INT) AS
             import numpy as np
@@ -322,7 +322,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_all_unique(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(C0 INT)
             EMITS(C0 INT) AS
             import numpy as np
@@ -341,7 +341,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_empty(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
             import pandas as pd
@@ -356,7 +356,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_wrong_args0(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
             import pandas as pd
@@ -371,7 +371,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_wrong_args7(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -386,7 +386,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_numrows_not_all(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -400,7 +400,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_numrows_not_int(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -414,7 +414,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_numrows_zero(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -428,7 +428,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_numrows_negative(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -442,7 +442,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_null(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -456,7 +456,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_null(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -470,7 +470,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_scalar_emits_start_col(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -484,7 +484,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_null_start_col(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -498,7 +498,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_null_start_col_negative(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 
@@ -512,7 +512,7 @@ class PandasDataFrame(udf.TestCase):
 
     def test_dataframe_set_emits_null_start_col_too_large(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SET SCRIPT
+            CREATE OR REPLACE PYTHON3 SET SCRIPT
             foo(%s)
             EMITS(%s) AS
 

@@ -116,6 +116,7 @@ class DynamicOutputTest(Test):
         stringType = {
             'ext-python': ["<type 'unicode'>", "<class 'str'>"],
             'python': ["<type 'unicode'>", "<class 'str'>"],
+            'python3': ["<type 'unicode'>", "<class 'str'>"],
             'r': ["character"],
             'lua': ["string"],
             'java': ["java.lang.String"]
@@ -123,6 +124,7 @@ class DynamicOutputTest(Test):
         numType = {
             'ext-python': ["<type 'float'>","<class 'float'>"],
             'python': ["<type 'float'>", "<class 'float'>"],
+            'python3': ["<type 'float'>", "<class 'float'>"],
             'r': ["double"],
             'lua': ["number"],
             'java': ["java.lang.Double"]
@@ -386,6 +388,7 @@ class DefaultDynamicOutputTest(Test):
         stringType = {
             'ext-python': ["<type 'unicode'>", "<class 'str'>"],
             'python': ["<type 'unicode'>", "<class 'str'>"],
+            'python3': ["<type 'unicode'>", "<class 'str'>"],
             'r': ["character"],
             'lua': ["string"],
             'java': ["java.lang.String"]
@@ -393,6 +396,7 @@ class DefaultDynamicOutputTest(Test):
         numType = {
             'ext-python': ["<type 'float'>", "<class 'float'>"],
             'python': ["<type 'float'>", "<class 'float'>"],
+            'python3': ["<type 'float'>", "<class 'float'>"],
             'r': ["double"],
             'lua': ["number"],
             'java': ["java.lang.Double"]

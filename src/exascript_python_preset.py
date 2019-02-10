@@ -1,7 +1,3 @@
-#import sys, os
-
-#sys.path.append("/usr/lib/python2.7/dist-packages")
-
 import sys
 if sys.version_info[0] >= 3:
     unicode = str

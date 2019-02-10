@@ -1,6 +1,6 @@
 FROM exaudf/baseimage_standard-exasol-6.1.0
 
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf
+RUN mkdir /exaudf_src /exaudf_src/build /exaudf_src/build2 /exaudf
 
 COPY src/ /exaudf_src/
 
@@ -13,3 +13,12 @@ RUN /exaudf_src/build_client.sh \
     --enable-java \
     --release-sources \
     --java-flags="-L/usr/lib/jvm/java-11-openjdk-amd64/lib/ -L/usr/lib/jvm/java-11-openjdk-amd64/lib/server -Wl,-rpath,/usr/lib/jvm/java-11-openjdk-amd64/lib -Wl,-rpath,/usr/lib/jvm/java-11-openjdk-amd64/lib/server -I/usr/lib/jvm/java-11-openjdk-amd64/include -I/usr/lib/jvm/java-11-openjdk-amd64/include/linux"
+
+RUN /exaudf_src/build_client.sh \
+    --src-dir=/exaudf_src \
+    --build-dir=/exaudf_src/build2 \
+    --output-dir=/exaudf \
+    --enable-python \
+    --python-version=python3.6 \
+    --libexaudf-name=libexaudf_py3 \
+    --executable-name=exaudfclient_py3

@@ -15,7 +15,7 @@ class PythonInterpreter(udf.TestCase):
 
     def test_body_is_not_executed_at_creation_time(self):
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 sleep()
                 RETURNS int AS
 
@@ -28,7 +28,7 @@ class PythonInterpreter(udf.TestCase):
 
     def test_syntax_errors_not_caught_at_creation_time(self):
         sql = udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 syntax_error()
                 RETURNS int AS
 
@@ -40,7 +40,7 @@ class PythonInterpreter(udf.TestCase):
 
     def test_methods_have_access_to_global_context(self):
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 global_fn()
                 RETURNS int AS
 
@@ -59,7 +59,7 @@ class PythonInterpreter(udf.TestCase):
 
     def test_exception_in_cleanup_is_propagated(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE python SCALAR SCRIPT
+            CREATE OR REPLACE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -74,7 +74,7 @@ class PythonInterpreter(udf.TestCase):
 
     def test_cleanup_has_global_context(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE python SCALAR SCRIPT
+            CREATE OR REPLACE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -128,7 +128,7 @@ class PythonImport(udf.TestCase):
     @useData((x,) for x in modules)
     def test_stdlib_modules_are_importable(self, module):
         sql = udf.fixindent('''
-            CREATE OR REPLACE python SCALAR SCRIPT
+            CREATE OR REPLACE python3 SCALAR SCRIPT
             i()
             RETURNS VARCHAR(1024) AS
 
@@ -153,7 +153,7 @@ class PythonImport(udf.TestCase):
     @useData((x,) for x in modules)
     def test_3rdparty_modules_are_importable(self, module):
         sql = udf.fixindent('''
-            CREATE OR REPLACE python SCALAR SCRIPT
+            CREATE OR REPLACE python3 SCALAR SCRIPT
             i()
             RETURNS VARCHAR(1024) AS
             import %(module)s
@@ -173,7 +173,7 @@ class PythonImport(udf.TestCase):
     # def test_3rdparty_modules_are_importable_negative_list(self, module):
     #     '''DWA-13850'''
     #     sql = udf.fixindent('''
-    #         CREATE OR REPLACE python SCALAR SCRIPT
+    #         CREATE OR REPLACE python3 SCALAR SCRIPT
     #         i()
     #         RETURNS VARCHAR(1024) AS
     #         import %(module)s
@@ -188,7 +188,7 @@ class PythonImport(udf.TestCase):
 
     def test_ImportError_is_catchable(self):
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 catch_import_error()
                 RETURNS int AS
 
@@ -205,7 +205,7 @@ class PythonImport(udf.TestCase):
 
     def test_import_error_message_is_case_sensitive(self):
         sql = udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 import_error()
                 RETURNS int AS
 
@@ -223,7 +223,7 @@ class PythonImport(udf.TestCase):
                 ('MY_MODULE', 1234),
                 ]
         sql = udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 "%s"()
                 RETURNS int AS
 
@@ -236,7 +236,7 @@ class PythonImport(udf.TestCase):
             self.query(sql % pair)
 
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python SCALAR SCRIPT
+                CREATE OR REPLACE python3 SCALAR SCRIPT
                 import_case_sensitive()
                 RETURNS int AS
 
@@ -259,7 +259,7 @@ class PythonSyntax(udf.TestCase):
 
     def test_sql_comments_are_ignored(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             sql_comments()
             RETURNS INT AS
 
@@ -273,7 +273,7 @@ class PythonSyntax(udf.TestCase):
 
     def test_python_comments_are_ignored_in_functions(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             python_comments()
             RETURNS INT AS
 
@@ -288,7 +288,7 @@ class PythonSyntax(udf.TestCase):
 
     def test_python_comments_are_ignored_in_body(self):
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             python_comments()
             RETURNS INT AS
 
@@ -308,7 +308,7 @@ class PythonErrors(udf.TestCase):
 
     def create_and_execute(self, body):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE python SCALAR SCRIPT
+            CREATE OR REPLACE python3 SCALAR SCRIPT
             foo()
             RETURNS INT AS
 
@@ -363,7 +363,7 @@ class Robustness(udf.TestCase):
             UDF: Python: no exception when importing unknown module + wrong result (DWA-13666)
         '''
         sql = udf.fixindent('''
-            CREATE OR REPLACE python SET SCRIPT
+            CREATE OR REPLACE python3 SET SCRIPT
             foo(x double)
             RETURNS int AS
 

@@ -15,7 +15,7 @@ class PythonTypes(udf.TestCase):
 
     def test_not_convert_string_to_double(self):
         self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 wrong_type() RETURNS DOUBLE AS
                 def run(ctx):
                     return "one point five"
@@ -25,7 +25,7 @@ class PythonTypes(udf.TestCase):
 
     def test_raises_with_incompatible_type(self):
         self.query(udf.fixindent('''
-                CREATE python SCALAR SCRIPT
+                CREATE python3 SCALAR SCRIPT
                 wrong_type() RETURNS DOUBLE AS
                 def run(ctx):
                     return "one point five"

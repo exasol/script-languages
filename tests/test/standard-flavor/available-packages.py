@@ -69,6 +69,71 @@ class AvailablePythonPackages(udf.TestCase):
     def test_34(self): self.import_test('requests')
 
 
+class AvailablePython3Packages(udf.TestCase):
+    def setUp(self): 
+        self.query('create schema available_packages', ignore_errors=True) 
+
+    def import_test(self, pkg, fail=False, alternative=None):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
+            import %s
+            def run(ctx): return 1
+            /
+            ''' % (pkg)))
+        try:
+            rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
+            if not fail:
+                self.assertRowsEqual([(1,)], rows)
+            else:
+                assert 'Expected Failure' == 'not found'
+        except:
+            if fail:
+                return
+            if alternative:
+                self.import_test(alternative,fail)
+            else:
+                raise
+
+    def test_00(self): self.import_test('unknown_package',True)
+    def test_01(self): self.import_test('cffi')
+    def test_02(self): self.import_test('cryptography')
+    def test_03(self): self.import_test('docutils')
+    def test_04(self): self.import_test('enum')
+    def test_05(self): self.import_test('idna')
+    def test_06(self): self.import_test('ipaddress')
+    def test_07(self): self.import_test('jinja2')
+    def test_08(self): self.import_test('martian')
+    def test_09(self): self.import_test('google.protobuf')
+    def test_10(self): self.import_test('pyasn1')
+    def test_11(self): self.import_test('pycparser')
+    #def test_12(self): self.import_test('pycryptopp')  # this one does not seem to be available for python3
+    def test_13(self): self.import_test('pyftpdlib')
+    def test_14(self): self.import_test('pygments')
+    def test_15(self): self.import_test('pykickstart')
+    def test_16(self): self.import_test('pyodbc')
+    def test_17(self): self.import_test('OpenSSL')
+    def test_18(self): self.import_test('pyPdf','PyPDF2')
+    #def test_19(self): self.import_test('ldb')         # is there a python3 version of it?
+    def test_20(self): self.import_test('ldap')
+    def test_21(self): self.import_test('roman')
+    #def test_22(self): self.import_test('samba')       # we include smbc now
+    def test_22(self): self.import_test('smbc')
+    def test_23(self): self.import_test('sklearn')
+    #def test_24(self): self.import_test('talloc')      # talloc doesn't seem to be available in python3
+    #def test_25(self): self.import_test('cjson')       # cjson seems to be not supported in python3, we include ujson now
+    def test_25(self): self.import_test('ujson')
+    def test_26(self): self.import_test('lxml')
+    def test_27(self): self.import_test('numpy')
+    def test_28(self): self.import_test('setuptools')
+    def test_29(self): self.import_test('pandas')
+    def test_30(self): self.import_test('redis')
+    def test_31(self): self.import_test('scipy')
+    def test_32(self): self.import_test('boto')
+    def test_33(self): self.import_test('pycurl')
+    def test_34(self): self.import_test('requests')
+    def test_35(self): self.import_test('pyexasol')
+
+
 class AvailableRPackages(udf.TestCase):
     def setUp(self): 
         self.query('create schema available_packages', ignore_errors=True) 
