@@ -48,9 +48,14 @@ function waitForLine {
 
 if [ ! -d "./downloads" ]; then
     mkdir -p downloads/{ODBC,JDBC,EXAplus}
-    curl https://www.exasol.com/support/secure/attachment/65437/EXASOL_ODBC-6.0.11.tar.gz | tar -C downloads/ODBC --strip-components 1 -zxf -
-    curl https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz | tar -C downloads/JDBC --strip-components 1 -zxf -
-    curl https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
+    wget -P downloads/ODBC https://www.exasol.com/support/secure/attachment/65437/EXASOL_ODBC-6.0.11.tar.gz
+    tar zxf downloads/ODBC/EXASOL_ODBC-6.0.11.tar.gz -C downloads/ODBC --strip-components 1
+
+    wget -P downloads/JDBC https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6.0.8.tar.gz
+    tar zxf downloads/JDBC/EXASOL_JDBC-6.0.8.tar.gz -C downloads/JDBC --strip-components 1
+
+    wget -P downloads/EXAplus https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz
+    tar zxf downloads/EXAplus/EXAplus-6.0.10.tar.gz -C downloads/EXAplus --strip-components 1
 fi
 
 
