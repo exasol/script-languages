@@ -8,11 +8,11 @@ services:
     - docker
 
 install:
-  #- sudo apt-get -y update
-  #- sudo apt-get -u upgrade
   - sudo apt-get -y install unixodbc unixodbc-dev
   - sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
 
+before_script:
+  - docker pull exasol/docker-db:6.0.12-d1
 
 matrix:
   include:
