@@ -1,5 +1,5 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["filter_swig_code.py", "build_integrated.py", "exascript.i","LICENSE-exasol-script-api.txt"])
+exports_files(["filter_swig_code.py", "build_integrated.py", "exascript.i","LICENSE-exasol-script-api.txt", "debug_message.h"])
 
 config_setting(
     name = "benchmark",
@@ -9,6 +9,14 @@ config_setting(
 config_setting(
     name = "python",
     define_values = {"python": "true"},
+)
+
+config_setting(
+    name = "python3",
+    define_values = {
+        "python": "true",
+        "python3": "true"
+    },
 )
 
 config_setting(
@@ -77,7 +85,7 @@ cc_library(
 
 cc_library(
     name = "exaudflib",
-    srcs = ["exaudflib.cc","exaudflib.h"],
+    srcs = ["exaudflib.cc","exaudflib.h","debug_message.h"],
     hdrs = ["exaudflib.h"],
     linkstatic = 1,
     defines = VM_ENABLED_DEFINES,
@@ -94,7 +102,10 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient",
-    srcs = ["exaudfclient.cc","exaudflib.h","script_data_transfer_objects_wrapper.h", "script_data_transfer_objects.h", "debug_message.h"],
+    srcs = ["exaudfclient.cc","exaudflib.h",
+            "script_data_transfer_objects_wrapper.h", 
+            "script_data_transfer_objects.h", 
+            "debug_message.h"],
     linkopts = ["-ldl"],
     deps = select({
         ":benchmark": [":benchmark_container"],
@@ -110,7 +121,10 @@ cc_binary(
         "//conditions:default": []
     }),
     defines = VM_ENABLED_DEFINES,
-    data = [":libexaudflib_complete.so"]
+    data = [":libexaudflib_complete.so"] + select({
+            "python3": ["//python:pyextdataframe.so"],
+            "//conditions:default": []
+        })
 )
 
 cc_library(

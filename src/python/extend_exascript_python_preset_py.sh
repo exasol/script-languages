@@ -5,7 +5,12 @@ PYTHON_PREFIX=$3
 PYTHON_VERSION=$4
 PYTHON_SYSPATH=$5
 echo "import sys, os" > extension
-CURRENT_SYSPATH=$($PYTHON_PREFIX/bin/$PYTHON_VERSION -c 'import sys; import site; print sys.path')
+if ["PYTHON_VERSION" == "2*"]
+then
+    CURRENT_SYSPATH=$($PYTHON_PREFIX/bin/$PYTHON_VERSION -c 'import sys; import site; print sys.path')
+else
+    CURRENT_SYSPATH=$($PYTHON_PREFIX/bin/$PYTHON_VERSION -c 'import sys; import site; print(sys.path)')
+fi
 echo "PYTHON_CURRENT_SYSPATH=$CURRENT_SYSPATH"
 
 echo "sys.path.extend($CURRENT_SYSPATH)" >> extension

@@ -15,6 +15,8 @@
 #include "script_data_transfer_objects.h"
 #include <functional>
 
+#include "debug_message.h"
+
 // swig lib
 #include <limits>
 #include "zmqcontainer.pb.h"
@@ -69,6 +71,7 @@ static ExecutionGraph::ExportSpecification g_singleCall_ExportSpecificationArg;
 static ExecutionGraph::StringDTO g_singleCall_StringArg;
 static bool remote_client;
 
+
 #ifndef NDEBUG
 #define SWIGVM_LOG_CLIENT
 #endif
@@ -89,6 +92,7 @@ void init_socket_name(const char* the_socket_name) {
 
 static void external_process_check()
 {
+    DBG_FUNC_BEGIN(std::cerr);
     if (remote_client) return;
     if (::access(&(socket_name_str[6]), F_OK) != 0) {
         ::sleep(1); // give me a chance to die with my parent process
@@ -116,10 +120,12 @@ static bool keep_checking = true;
 
 void *check_thread_routine(void* data)
 {
+    DBG_FUNC_BEGIN(std::cerr);
     while(keep_checking) {
         external_process_check();
         ::usleep(100000);
     }
+    DBG_FUNC_END(std::cerr);
     return NULL;
 
 }
@@ -143,6 +149,7 @@ static bool use_zmq_socket_locks = false;
 
 void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 {
+    DBG_FUNC_BEGIN(std::cerr);
 #ifdef LOG_COMMUNICATION
     stringstream sb;
     uint32_t len = zmsg.size();
@@ -183,6 +190,7 @@ void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 
 bool socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_error=false)
 {
+    DBG_FUNC_BEGIN(std::cerr);
     for (;;) {
         try {
             if (use_zmq_socket_locks) {

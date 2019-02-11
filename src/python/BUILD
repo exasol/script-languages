@@ -68,17 +68,26 @@ genrule(
 
 cc_library(
     name = "exascript_python",
-    srcs = [":filter_swig_code_exascript_python_cc"],
-    copts = ["-DENABLE_PYTHON_VM"],
+    srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
+    hdrs = [":filter_swig_code_exascript_python_h"],
+    copts = ["-DENABLE_PYTHON3"],
     deps = ["@python_linux//:python_linux","//:exaudflib"]
 )
 
 cc_library(
     name = "pythoncontainer",
-    srcs = [":pythoncontainer.cc"],
+    srcs = [":pythoncontainer.cc","//:debug_message.h"],
     data = [":extend_exascript_python_preset_py"], 
-    copts = ["-DENABLE_PYTHON_VM"],
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
     deps = ["@python_linux//:python_linux","//:exaudflib","//:scriptoptionlines",":exascript_python"]
+)
+
+cc_binary(
+    name = "pyextdataframe.so",
+    linkshared = 1,
+    srcs = [":python_ext_dataframe.cc","//:debug_message.h",
+            "//:exaudflib.h","//:script_data_transfer_objects_wrapper.h",
+            "//:script_data_transfer_objects.h"],
+    deps = ["@python_linux//:python_linux","@numpy_linux//:numpy_linux"]
 )

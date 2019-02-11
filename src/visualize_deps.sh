@@ -1,9 +1,14 @@
-DEPS="deps($1)"
-shift 1
-for I in $*
+DEPS=""
+for I in "$1"
 do
-    DEPS="$DEPS union deps($I)" 
+    if [ "$DEPS" == "" ]
+    then
+        DEPS="deps($I)"
+    else
+        DEPS="$DEPS union deps($I)" 
+    fi 
 done
 DEPS="($DEPS)"
-bazel query --noimplicit_deps "$DEPS except (filter('@bazel_tools', $DEPS) union filter('@local_config',$DEPS))" --output graph > graph.in
+shift 1
+bazel query $* --noimplicit_deps "$DEPS except (filter('@bazel_tools', $DEPS) union filter('@local_config',$DEPS))" --output graph > graph.in
 dot -Tpng < graph.in > graph.png

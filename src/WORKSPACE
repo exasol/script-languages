@@ -1,5 +1,9 @@
 load("//:python_repository.bzl", "python_local_repository")
 python_local_repository(name = "python_linux")
+
+load("//:python_repository.bzl", "numpy_local_repository")
+numpy_local_repository(name = "numpy_linux")
+
 load("//:java_repository.bzl", "java_local_repository")
 java_local_repository(name = "java_linux")
 
