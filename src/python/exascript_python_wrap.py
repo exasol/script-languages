@@ -12,7 +12,7 @@ else:
     encodeUTF8 = lambda x: x.encode('utf-8')
     
 if isPython3:
-    sys.path.append('/exaudf')
+    sys.path.append('/exaudf/python/')
     import pyextdataframe
 
 

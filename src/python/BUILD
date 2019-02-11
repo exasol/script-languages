@@ -6,7 +6,7 @@ genrule(
         INCLUDES=`$$PYTHON_PREFIX/bin/$$PYTHON_VERSION-config --includes`
         swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //:exascript.i)"
         """,
-    outs = ["exascript_python_tmp.cc"],
+    outs = ["exascript_python_tmp.cc", "exascript_python.py"],
     srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h"]
 )
 
@@ -32,7 +32,7 @@ genrule(
     name = "exascript_python_int",
     cmd = 'cp $(SRCS) . && python build_integrated.py "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"',
     outs = ["exascript_python_int.h"],
-    srcs = [":exascript_python.py", ":exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
+    srcs = [":exascript_python_tmp_cc", ":exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
     tools = ["//:build_integrated.py"]
 )
 
@@ -55,10 +55,11 @@ genrule(
     name = "filter_swig_code_exascript_python_cc",
     cmd = """
         ACTUAL_PYTHON_VERSION=`$$PYTHON_PREFIX/bin/$$PYTHON_VERSION -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
+        cp $(locations exascript_python_tmp_cc) .
         if [[ $$ACTUAL_PYTHON_VERSION == 2* ]] ; then
-            python ./filter_swig_code.py "$@" "$<"
+            python ./filter_swig_code.py "$@" exascript_python_tmp.cc
         else
-            cp "$<" "$@" 
+            cp exascript_python_tmp.cc "$@" 
         fi
     """,
     outs = ["exascript_python.cc"],
