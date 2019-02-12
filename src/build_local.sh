@@ -1,3 +1,4 @@
+export JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64
 export PYTHON_PREFIX=/usr 
 export PYTHON_VERSION=python3
 export CUSTOM_PROTOBUF_BIN=/usr/local/bin/protoc 

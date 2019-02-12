@@ -5,7 +5,7 @@ PYTHON_PREFIX=$3
 PYTHON_VERSION=$4
 PYTHON_SYSPATH=$5
 echo "import sys, os" > extension
-if ["PYTHON_VERSION" == "2*"]
+if [ "$PYTHON_VERSION" == "2*" ]
 then
     CURRENT_SYSPATH=$($PYTHON_PREFIX/bin/$PYTHON_VERSION -c 'import sys; import site; print sys.path')
 else

@@ -100,14 +100,7 @@ cc_binary(
     defines = VM_ENABLED_DEFINES
 )
 
-cc_binary(
-    name = "exaudfclient",
-    srcs = ["exaudfclient.cc","exaudflib.h",
-            "script_data_transfer_objects_wrapper.h", 
-            "script_data_transfer_objects.h", 
-            "debug_message.h"],
-    linkopts = ["-ldl"],
-    deps = select({
+VM_ENABLED_DEPS=select({
         ":benchmark": [":benchmark_container"],
         "//conditions:default": []
     }) + select({
@@ -119,7 +112,16 @@ cc_binary(
     }) + select({
         ":java": ["//javacontainer:javacontainer"],
         "//conditions:default": []
-    }),
+    })
+
+cc_binary(
+    name = "exaudfclient",
+    srcs = ["exaudfclient.cc","exaudflib.h",
+            "script_data_transfer_objects_wrapper.h", 
+            "script_data_transfer_objects.h", 
+            "debug_message.h"],
+    linkopts = ["-ldl"],
+    deps = VM_ENABLED_DEPS,
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"] + select({
             "python3": ["//python:pyextdataframe.so"],
