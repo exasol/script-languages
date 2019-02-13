@@ -53,9 +53,9 @@ docker rmi -f exaudf/debug_container
 #docker exec test_container_$FLAVOR cat exasol_emulator/output.csv
 #docker rm -f test_container_$FLAVOR
 
-mkfifo /tmp/fff
-python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py &
-/exaudf/exaudfclient ipc:///tmp/fff lang=python
+#mkfifo /tmp/fff
+#python exasol_emulator/exasolution.py unix:/tmp/fff exasol_emulator/input2.csv exasol_emulator/output.csv exasol_emulator/script.py &
+#/exaudf/exaudfclient ipc:///tmp/fff lang=python
 
 
 

@@ -8,6 +8,7 @@
 #include "exascript_java_jni_decl.h"
 #include <unistd.h>
 
+#include "debug_message.h"
 #include "scriptoptionlines.h"
 
 using namespace SWIGVMContainers;
@@ -106,17 +107,17 @@ JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""
                                         m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL) {
 
     stringstream ss;
-    m_exaJavaPath = "/exaudf";
-    setClasspath();
-    getScriptClassName();  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
-    importScripts();
-    addPackageToScript();
-    addExternalJarPaths();
-    getExternalJvmOptions();
-    setJvmOptions();
-    createJvm();
-    registerFunctions();
-    compileScript();
+    m_exaJavaPath = "/exaudf/javacontainer";
+    DBG_FUNC_CALL(cerr,setClasspath());
+    DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
+    DBG_FUNC_CALL(cerr,importScripts());
+    DBG_FUNC_CALL(cerr,addPackageToScript());
+    DBG_FUNC_CALL(cerr,addExternalJarPaths());
+    DBG_FUNC_CALL(cerr,getExternalJvmOptions());
+    DBG_FUNC_CALL(cerr,setJvmOptions());
+    DBG_FUNC_CALL(cerr,createJvm());
+    DBG_FUNC_CALL(cerr,registerFunctions());
+    DBG_FUNC_CALL(cerr,compileScript());
 }
 
 void JavaVMImpl::shutdown() {
@@ -241,6 +242,7 @@ void JavaVMImpl::createJvm() {
     JavaVMOption *options = new JavaVMOption[numJvmOptions];
     for (size_t i = 0; i < numJvmOptions; ++i) {
       options[i].optionString = strdup((char*)(m_jvmOptions[i].c_str()));
+      DBGVAR(cerr,options[i].optionString);
         options[i].extraInfo = NULL;
     }
 
@@ -250,7 +252,9 @@ void JavaVMImpl::createJvm() {
     vm_args.options = options;
     vm_args.ignoreUnrecognized = JNI_FALSE;
     //vm_args.ignoreUnrecognized = JNI_TRUE;
-    int rc = JNI_CreateJavaVM(&m_jvm, (void**)&m_env, &vm_args);
+    DBGVAR(cerr,m_env);
+    
+    DBG_FUNC_CALL(cerr,int rc = JNI_CreateJavaVM(&m_jvm, (void**)&m_env, &vm_args));
     if (rc != JNI_OK) {
         stringstream ss;
         ss << "Cannot start the JVM: ";
@@ -473,7 +477,7 @@ void JavaVMImpl::registerFunctions() {
 }
 
 void JavaVMImpl::setClasspath() {
-    m_exaJarPath = m_exaJavaPath + "/exaudf.jar";
+    m_exaJarPath = m_exaJavaPath + "/libexaudf.jar";
     m_classpath = m_localClasspath + ":" + m_exaJarPath;
 }
 

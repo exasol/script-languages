@@ -1,11 +1,9 @@
-FROM exaudf/release_standard-exasol-6.0.0
+FROM exaudf/build_standard-exasol-6.0.0
+RUN apt-get -y install vim python-protobuf python-zmq gdb
 
 RUN mkdir /exasol_emulator
-
 COPY emulator/ /exasol_emulator
 COPY src/zmqcontainer.proto /exasol_emulator
-
-RUN     apt-get -y install python-protobuf python-zmq gdb
-
 RUN cd /exasol_emulator && protoc zmqcontainer.proto --python_out=.
 RUN ls /exasol_emulator
+RUN cp /exasol_emulator/start_test.sh /

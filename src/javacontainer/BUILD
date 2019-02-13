@@ -22,7 +22,7 @@ genrule(
 genrule(
     name = "exascript_java_int",
     cmd = """
-        cp -r $(locations :exascript_java_tmp_cc) . &&
+        cp -r $(locations :exascript_java_tmp_cc) .
         FILES=`ls java_src/com/exasol/swig/*.java`
         python build_integrated.py "$(location exascript_java_int.h)" $$FILES
     """,
@@ -43,13 +43,39 @@ genrule(
     name = "filter_swig_code_exascript_java_cc",
     cmd = """
             TMPDIR=`mktemp -d`
-            cp -r -L filter_swig_code.py $(locations :exascript_java_tmp_cc) $$TMPDIR && 
+            cp -r -L filter_swig_code.py $(locations :exascript_java_tmp_cc) $$TMPDIR
             (cd $$TMPDIR &&
-            python ./filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc") &&
-            cp $$TMPDIR/exascript_java.cc "$@" &&
+            python ./filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
+            cp $$TMPDIR/exascript_java.cc "$(location exascript_java.cc)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/ConnectionInformationWrapper.java "$(location ConnectionInformationWrapper.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/exascript_java.java "$(location exascript_java.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/exascript_javaJNI.java "$(location exascript_javaJNI.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/ExportSpecificationWrapper.java "$(location ExportSpecificationWrapper.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/ImportSpecificationWrapper.java "$(location ImportSpecificationWrapper.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/Metadata.java "$(location Metadata.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/ResultHandler.java "$(location ResultHandler.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/SWIGTYPE_p_ExecutionGraph__ExportSpecification.java "$(location SWIGTYPE_p_ExecutionGraph__ExportSpecification.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/SWIGTYPE_p_ExecutionGraph__ImportSpecification.java "$(location SWIGTYPE_p_ExecutionGraph__ImportSpecification.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/SWIGVM_datatype_e.java "$(location SWIGVM_datatype_e.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/SWIGVM_itertype_e.java "$(location SWIGVM_itertype_e.java)"
+            cp -r $$TMPDIR/java_src/com/exasol/swig/TableIterator.java "$(location TableIterator.java)"
             rm -rf $$TMPDIR
             """,
-    outs = ["exascript_java.cc"],
+    outs = [
+            "exascript_java.cc",
+            "ConnectionInformationWrapper.java",
+            "exascript_java.java",
+            "exascript_javaJNI.java",
+            "ExportSpecificationWrapper.java",
+            "ImportSpecificationWrapper.java",
+            "Metadata.java",
+            "ResultHandler.java",
+            "SWIGTYPE_p_ExecutionGraph__ExportSpecification.java",
+            "SWIGTYPE_p_ExecutionGraph__ImportSpecification.java",
+            "SWIGVM_datatype_e.java",
+            "SWIGVM_itertype_e.java",
+            "TableIterator.java",
+            ],
     srcs = [":exascript_java_tmp_cc"],
     tools = ["//:filter_swig_code.py"]
 )
@@ -62,15 +88,28 @@ cc_library(
 cc_library(
     name = "javacontainer",
     srcs = [":javacontainer.cc"],
-    hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h"],
-    include_prefix = ".",
-    data = [":exaudf-api", ":exaudf"],
+    hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h","//:debug_message.h"],
+    data = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
     deps = ["@ssl//:ssl","@java_linux//:java_linux","//:exaudflib","//:scriptoptionlines",":exascript_java"]
 )
 
 java_library(
     name = "exaudf",
-    srcs = glob([":exascript_java_tmp_cc/java_src/com/exasol/swig/*.java",":Exa*.java"])
+    srcs = glob(["*.java"])+
+                [
+                "ConnectionInformationWrapper.java",
+                "exascript_java.java",
+                "exascript_javaJNI.java",
+                "ExportSpecificationWrapper.java",
+                "ImportSpecificationWrapper.java",
+                "Metadata.java",
+                "ResultHandler.java",
+                "SWIGTYPE_p_ExecutionGraph__ExportSpecification.java",
+                "SWIGTYPE_p_ExecutionGraph__ImportSpecification.java",
+                "SWIGVM_datatype_e.java",
+                "SWIGVM_itertype_e.java",
+                "TableIterator.java"
+                ]
 )
 
 java_library(

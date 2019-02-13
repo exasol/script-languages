@@ -92,7 +92,6 @@ void init_socket_name(const char* the_socket_name) {
 
 static void external_process_check()
 {
-    DBG_FUNC_BEGIN(std::cerr);
     if (remote_client) return;
     if (::access(&(socket_name_str[6]), F_OK) != 0) {
         ::sleep(1); // give me a chance to die with my parent process
@@ -120,12 +119,10 @@ static bool keep_checking = true;
 
 void *check_thread_routine(void* data)
 {
-    DBG_FUNC_BEGIN(std::cerr);
     while(keep_checking) {
         external_process_check();
         ::usleep(100000);
     }
-    DBG_FUNC_END(std::cerr);
     return NULL;
 
 }
@@ -1549,6 +1546,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
     }
 
 reinit:
+    DBGMSG(cerr,"Reinit");
     zmq::socket_t socket(context, ZMQ_REQ);
 
     socket.setsockopt(ZMQ_LINGER, &linger_timeout, sizeof(linger_timeout));
