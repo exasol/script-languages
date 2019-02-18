@@ -15,7 +15,6 @@ config_setting(
     name = "python3",
     define_values = {
         "python": "true",
-        "python3": "true"
     },
 )
 
@@ -104,9 +103,6 @@ VM_ENABLED_DEPS=select({
         ":benchmark": [":benchmark_container"],
         "//conditions:default": []
     }) + select({
-        ":python": ["//python:pythoncontainer"],
-        "//conditions:default": []
-    }) + select({
         ":r": ["//rcontainer:rcontainer"],
         "//conditions:default": []
     }) + select({
@@ -114,19 +110,76 @@ VM_ENABLED_DEPS=select({
         "//conditions:default": []
     })
 
+VM_PYTHON2_DEPS=select({
+        ":python": ["//python/python2:pythoncontainer"],
+        "//conditions:default": []
+    }) 
+
+VM_PYTHON3_DEPS=select({
+        ":python": ["//python/python3:pythoncontainer"],
+        "//conditions:default": []
+    }) 
+
 cc_binary(
-    name = "exaudfclient_wrong_rpath",
+    name = "exaudfclient_wrong_rpath_py2",
     srcs = ["exaudfclient.cc","exaudflib.h",
             "script_data_transfer_objects_wrapper.h", 
             "script_data_transfer_objects.h", 
             "debug_message.h"],
     linkopts = ["-ldl"],
-    deps = VM_ENABLED_DEPS,
+    deps = VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
     defines = VM_ENABLED_DEFINES,
-    data = [":libexaudflib_complete.so"] + select({
-            "python3": ["//python:pyextdataframe.so"],
-            "//conditions:default": []
-        })
+    data = [":libexaudflib_complete.so"]
+)
+
+cc_binary(
+    name = "exaudfclient_wrong_rpath_py3",
+    srcs = ["exaudfclient.cc","exaudflib.h",
+            "script_data_transfer_objects_wrapper.h", 
+            "script_data_transfer_objects.h", 
+            "debug_message.h"],
+    linkopts = ["-ldl"],
+    deps = VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
+    defines = VM_ENABLED_DEFINES,
+    data = [":libexaudflib_complete.so","//python/python3:pyextdataframe.so"]
+)
+
+# Workaround for the problems of JNI with rpath used bazel
+genrule(
+    name = "gen-exaudfclient",
+    cmd = """
+        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` > $(location exaudfclient)
+        cat $(location exaudfclient.sh)>> $(location exaudfclient)
+    """,
+    outs = ["exaudfclient"],
+    srcs = [":exaudfclient_wrong_rpath_py2", "libexaudflib_complete.so", "exaudfclient.sh"],
+    #executable = True,
+    output_to_bindir = True
+)
+
+genrule(
+    name = "gen-exaudfclient-py3",
+    cmd = """
+        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` > $(location exaudfclient_py3)
+        cat $(location exaudfclient.sh)>> $(location exaudfclient_py3)
+    """,
+    outs = ["exaudfclient_py3"],
+    srcs = [":exaudfclient_wrong_rpath_py3", "libexaudflib_complete.so", "exaudfclient.sh"],
+    #executable = True,
+    output_to_bindir = True
+)
+
+cc_library(
+    name = "streamingcontainer",
+    srcs = ["streamingcontainer.cc","streamingcontainer.h"],
+    deps = [":exaudflib"]
+)
+
+cc_library(
+    name = "benchmark_container",
+    srcs = ["benchmark_container.cc","benchmark_container.h", "debug_message.h"],
+    hdrs = ["benchmark_container.h"],
+    deps = [":exaudflib"]
 )
 
 # Attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 
@@ -150,29 +203,3 @@ cc_binary(
 #     outs = ["java-lib"],
 #     output_to_bindir = True
 # )
-
-# Workaround for the problems of JNI with rpath used bazel
-genrule(
-    name = "gen-exaudfclient",
-    cmd = """
-        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` > $(location exaudfclient)
-        cat $(location exaudfclient.sh)>> $(location exaudfclient)
-    """,
-    outs = ["exaudfclient"],
-    srcs = [":exaudfclient_wrong_rpath", "libexaudflib_complete.so", "exaudfclient.sh"],
-    #executable = True,
-    output_to_bindir = True
-)
-
-cc_library(
-    name = "streamingcontainer",
-    srcs = ["streamingcontainer.cc","streamingcontainer.h"],
-    deps = [":exaudflib"]
-)
-
-cc_library(
-    name = "benchmark_container",
-    srcs = ["benchmark_container.cc","benchmark_container.h", "debug_message.h"],
-    hdrs = ["benchmark_container.h"],
-    deps = [":exaudflib"]
-)

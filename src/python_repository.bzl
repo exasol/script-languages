@@ -35,14 +35,20 @@ def _get_config_dir(config_binary,repository_ctx):
     return config_dir
 
 def _python_local_repository_impl(repository_ctx):
-    prefix = "/usr"
-    if 'PYTHON_PREFIX' in repository_ctx.os.environ:
-        prefix = repository_ctx.os.environ['PYTHON_PREFIX']
+    python_prefix_env_var = repository_ctx.name.upper() + "_PREFIX"
+    if python_prefix_env_var in repository_ctx.os.environ:
+        prefix = repository_ctx.os.environ[python_prefix_env_var]
+    else:
+        fail("Environment Variable %s not found"%python_prefix_env_var)
     print("python prefix in environment specified; %s"%prefix)
 
-    version = "python2.7"
-    if 'PYTHON_VERSION' in repository_ctx.os.environ:
-        version = repository_ctx.os.environ['PYTHON_VERSION']
+    python_version_env_var = repository_ctx.name.upper() + "_VERSION"
+    if python_version_env_var in repository_ctx.os.environ:
+        version = repository_ctx.os.environ[python_version_env_var]
+        if repository_ctx.name == "python3" and version.startswith("2") or repository_ctx.name == "python2" and version.startswith("3"):
+            fail("Wrong python version specified in environment variable %s, exppected %s, got %s"%(python_version_env_var,repository_ctx.name,version))
+    else:
+        fail("Environment Variable %s not found"%python_version_env_var)
     print("python version in environment specified; %s"%version)
 
     binary = prefix+"/bin/"+version
@@ -73,7 +79,7 @@ cc_library(
 python_local_repository = repository_rule(
     implementation=_python_local_repository_impl,
     local = True,
-    environ = ["PYTHON_PREFIX","PYTHON_VERSION"])
+    environ = ["PYTHON2_PREFIX","PYTHON3_PREFIX","PYTHON2_VERSION", "PYTHON3_VERSION"])
 
 
 def _get_numpy_include_dir(binary,p_repository_ctx):
@@ -87,14 +93,18 @@ def _get_numpy_include_dir(binary,p_repository_ctx):
 
 
 def _numpy_local_repository_impl(repository_ctx):
-    prefix = "/usr"
-    if 'PYTHON_PREFIX' in repository_ctx.os.environ:
-        prefix = repository_ctx.os.environ['PYTHON_PREFIX']
+    python_prefix_env_var = "PYTHON3_PREFIX"
+    if python_prefix_env_var in repository_ctx.os.environ:
+        prefix = repository_ctx.os.environ[python_prefix_env_var]
+    else:
+        fail("Environment Variable %s not found"%python_prefix_env_var)
     print("python prefix in environment specified; %s"%prefix)
 
-    version = "python2.7"
-    if 'PYTHON_VERSION' in repository_ctx.os.environ:
-        version = repository_ctx.os.environ['PYTHON_VERSION']
+    python_version_env_var = "PYTHON3_VERSION"
+    if python_version_env_var in repository_ctx.os.environ:
+        version = repository_ctx.os.environ[python_version_env_var]
+    else:
+        fail("Environment Variable %s not found"%python_version_env_var)
     print("python version in environment specified; %s"%version)
 
     binary = prefix+"/bin/"+version
@@ -123,5 +133,5 @@ cc_library(
 numpy_local_repository = repository_rule(
     implementation=_numpy_local_repository_impl,
     local = True,
-    environ = ["PYTHON_PREFIX","PYTHON_VERSION"])
+    environ = ["PYTHON3_PREFIX","PYTHON3_VERSION"])
 

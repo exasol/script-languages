@@ -1,3 +1,3 @@
 startup --expand_configs_in_place
-build --action_env=PYTHON_PREFIX --action_env=PYTHON_VERSION --action_env=PYTHON_SYSPATH --action_env=CUSTOM_PROTOBUF_BIN --action_env=JAVA_PREFIX --cxxopt='-std=c++14'
+build --action_env=NUMPY_PREFIX --action_env=PYTHON2_PREFIX --action_env=PYTHON2_VERSION --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION --action_env=PYTHON2_SYSPATH --action_env=CUSTOM_PROTOBUF_BIN --action_env=JAVA_PREFIX --cxxopt='-std=c++14'
 #--define python=true --define benchmark=true --define java=true --define r=true
