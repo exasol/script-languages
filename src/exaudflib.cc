@@ -1500,7 +1500,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
                || (strcmp(argv[2], "lang=streaming") == 0)
                || (strcmp(argv[2], "lang=benchmark") == 0)) )
         {
-            cerr << "Remote VM type '" << argv[3] << "' not supported." << endl;
+            cerr << "Remote VM type '" << argv[2] << "' not supported." << endl;
             return 2;
         }
 #endif

@@ -77,7 +77,10 @@ int main(int argc, char **argv) {
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
     string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
-    string libexaudflibPath = "/exaudf/libexaudflib_complete.so";
+    string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
+    //string libexaudflibPath="libexaudflib_complete.so";
+    //string libexaudflibPath = string(argv[3]);
+    //string libexaudflibPath = string("/exaudf/libexaudflib_complete.so");
 #endif
 #ifndef PROTEGRITY_PLUGIN_CLIENT
 #if 1

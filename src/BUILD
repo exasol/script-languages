@@ -115,7 +115,7 @@ VM_ENABLED_DEPS=select({
     })
 
 cc_binary(
-    name = "exaudfclient",
+    name = "exaudfclient_wrong_rpath",
     srcs = ["exaudfclient.cc","exaudflib.h",
             "script_data_transfer_objects_wrapper.h", 
             "script_data_transfer_objects.h", 
@@ -127,6 +127,41 @@ cc_binary(
             "python3": ["//python:pyextdataframe.so"],
             "//conditions:default": []
         })
+)
+
+# Attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 
+# However, JNI has problems with this attempt, too. 
+# Unitl now only the path under /usr/lib/jvm worked.
+#
+# genrule(
+#     name = "gen-java-lib",
+#     cmd = """
+#         mkdir $(location java-lib)
+#         cd $(location java-lib)
+#         LIB_NAMES=`find $$JAVA_PREFIX -name '*.so' | xargs -n 1 basename | sort | uniq`
+#         #echo LIB_NAMES:  $$LIB_NAMES
+#         for I in $$LIB_NAMES
+#         do
+#             FILE_TO_LINK=`find $$JAVA_PREFIX -name $$I -type f | head -n 1`
+#             #echo FILE_TO_LINK: $$FILE_TO_LINK
+#             ln -s $$FILE_TO_LINK
+#         done
+#     """,
+#     outs = ["java-lib"],
+#     output_to_bindir = True
+# )
+
+# Workaround for the problems of JNI with rpath used bazel
+genrule(
+    name = "gen-exaudfclient",
+    cmd = """
+        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` > $(location exaudfclient)
+        cat $(location exaudfclient.sh)>> $(location exaudfclient)
+    """,
+    outs = ["exaudfclient"],
+    srcs = [":exaudfclient_wrong_rpath", "libexaudflib_complete.so", "exaudfclient.sh"],
+    #executable = True,
+    output_to_bindir = True
 )
 
 cc_library(

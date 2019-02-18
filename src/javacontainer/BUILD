@@ -82,7 +82,7 @@ genrule(
 cc_library(
     name = "exascript_java",
     srcs = [":filter_swig_code_exascript_java_cc"],
-    deps = ["@java_linux//:java_linux","//:exaudflib"]
+    deps = ["@java//:java","//:exaudflib"]
 )
 
 cc_library(
@@ -90,7 +90,7 @@ cc_library(
     srcs = [":javacontainer.cc"],
     hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h","//:debug_message.h"],
     data = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
-    deps = ["@ssl//:ssl","@java_linux//:java_linux","//:exaudflib","//:scriptoptionlines",":exascript_java"]
+    deps = ["@ssl//:ssl","@java//:java","//:exaudflib","//:scriptoptionlines",":exascript_java"]
 )
 
 java_library(

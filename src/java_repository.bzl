@@ -16,10 +16,10 @@ cc_library(
     defines = [{defines}],
     copts = ["-ljvm"],
     visibility = ["//visibility:public"]
-)""".format( name=repository_ctx.name, defines=defines, prefix=prefix[1:])
+)""".format( name=repository_ctx.name, defines=defines, prefix="java")
     print(build_file_content)
 
-    repository_ctx.symlink(prefix, "."+prefix)
+    repository_ctx.symlink(prefix, "./java")
     repository_ctx.file("BUILD", build_file_content)
 
 java_local_repository = repository_rule(
