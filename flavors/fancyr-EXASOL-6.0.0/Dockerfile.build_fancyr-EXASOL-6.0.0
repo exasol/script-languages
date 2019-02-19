@@ -14,5 +14,5 @@ ENV CUSTOM_PROTOBUF_PREFIX /usr/lib/x86_64-linux-gnu/
 #ENV VERBOSE_BUILD "--subcommands --verbose_failures"
 
 RUN cd /exaudf_src && pwd && \
-	bash build.sh --define r=true //:exaudfclient //:exaudfclient_py3 && \
+	bash build.sh --define r=true //:exaudfclient && \
 	cp -r -L bazel-bin/* /exaudf

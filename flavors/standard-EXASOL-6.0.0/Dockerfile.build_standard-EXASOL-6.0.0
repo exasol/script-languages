@@ -13,6 +13,7 @@ ENV PYTHON2_PREFIX /usr
 ENV PYTHON2_VERSION python2.7
 ENV CUSTOM_PROTOBUF_BIN /usr/bin/protoc
 ENV CUSTOM_PROTOBUF_PREFIX /usr/lib/x86_64-linux-gnu/
+ENV JAVA_PREFIX /usr/lib/jvm/java-9-openjdk-amd64
 #ENV VERBOSE_BUILD "--subcommands --verbose_failures"
 
 RUN cd /exaudf_src/ && \
