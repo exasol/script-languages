@@ -1,24 +1,23 @@
 FROM exaudf/baseimage_standard-exasol-6.1.0
 
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf_src/build2 /exaudf
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk && \
+	echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
+	curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
+	apt-get update && apt-get install -y bazel
 
+RUN mkdir /exaudf_src /exaudf
 COPY src/ /exaudf_src/
 
-RUN /exaudf_src/build_client.sh \
-    --src-dir=/exaudf_src \
-    --build-dir=/exaudf_src/build \
-    --output-dir=/exaudf \
-    --enable-python \
-    --enable-r \
-    --enable-java \
-    --release-sources \
-    --java-flags="-L/usr/lib/jvm/java-11-openjdk-amd64/lib/ -L/usr/lib/jvm/java-11-openjdk-amd64/lib/server -Wl,-rpath,/usr/lib/jvm/java-11-openjdk-amd64/lib -Wl,-rpath,/usr/lib/jvm/java-11-openjdk-amd64/lib/server -I/usr/lib/jvm/java-11-openjdk-amd64/include -I/usr/lib/jvm/java-11-openjdk-amd64/include/linux"
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64
+ENV PYTHON2_PREFIX /usr 
+ENV PYTHON2_VERSION python2.7
+ENV PYTHON3_PREFIX /usr 
+ENV PYTHON3_VERSION python3.6
+ENV JAVA_PREFIX /usr/lib/jvm/java-11-openjdk-amd64
+ENV CUSTOM_PROTOBUF_BIN /usr/bin/protoc
+ENV CUSTOM_PROTOBUF_PREFIX /usr/lib/x86_64-linux-gnu/
+#ENV VERBOSE_BUILD "--subcommands --verbose_failures"
 
-RUN /exaudf_src/build_client.sh \
-    --src-dir=/exaudf_src \
-    --build-dir=/exaudf_src/build2 \
-    --output-dir=/exaudf \
-    --enable-python \
-    --python-version=python3.6 \
-    --libexaudf-name=libexaudf_py3 \
-    --executable-name=exaudfclient_py3
+RUN cd /exaudf_src && pwd && \
+	bash build.sh --define r=true --define python=true --define java=true //:exaudfclient //:exaudfclient_py3 && \
+	cp -r -L bazel-bin/* /exaudf

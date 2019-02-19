@@ -12,13 +12,6 @@ config_setting(
 )
 
 config_setting(
-    name = "python3",
-    define_values = {
-        "python": "true",
-    },
-)
-
-config_setting(
     name = "r",
     define_values = {"r": "true"},
 )
@@ -139,7 +132,7 @@ cc_binary(
             "script_data_transfer_objects.h", 
             "debug_message.h"],
     linkopts = ["-ldl"],
-    deps = VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
+    deps = VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so","//python/python3:pyextdataframe.so"]
 )

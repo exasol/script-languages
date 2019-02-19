@@ -5,15 +5,16 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk && \
 	curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
 	apt-get update && apt-get install -y bazel
 
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf
+RUN mkdir /exaudf_src /exaudf
 COPY src/ /exaudf_src/
 
-ENV PYTHON_PREFIX /usr 
-ENV PYTHON_VERSION python3.6
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64
+ENV PYTHON3_PREFIX /usr
+ENV PYTHON3_VERSION python3.6
 ENV CUSTOM_PROTOBUF_BIN /usr/local/bin/protoc
 ENV CUSTOM_PROTOBUF_PREFIX /usr/local/lib
-ENV VERBOSE_BUILD "--subcommands --verbose_failures"
+#ENV VERBOSE_BUILD "--subcommands --verbose_failures"
 
 RUN cd /exaudf_src/ && \
-	bash build.sh --define python=true --define python3=true --copt="-DENABLE_PYTHON3" //:exaudfclient && \
+	bash build.sh --define python=true //:exaudfclient_py3 && \
 	cp -r -L bazel-bin/* /exaudf

@@ -1,7 +1,18 @@
 FROM exaudf/baseimage_fancyr-exasol-6.0.0
 
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk && \
+	echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
+	curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
+	apt-get update && apt-get install -y bazel
 
+RUN mkdir /exaudf_src /exaudf
 COPY src/ /exaudf_src/
 
-RUN /exaudf_src/build_client.sh --src-dir=/exaudf_src --build-dir=/exaudf_src/build --output-dir=/exaudf --enable-r
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64
+ENV CUSTOM_PROTOBUF_BIN /usr/bin/protoc
+ENV CUSTOM_PROTOBUF_PREFIX /usr/lib/x86_64-linux-gnu/
+#ENV VERBOSE_BUILD "--subcommands --verbose_failures"
+
+RUN cd /exaudf_src && pwd && \
+	bash build.sh --define r=true //:exaudfclient //:exaudfclient_py3 && \
+	cp -r -L bazel-bin/* /exaudf

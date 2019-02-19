@@ -8,10 +8,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk && \
 RUN mkdir /exaudf_src /exaudf_src/build /exaudf
 COPY src/ /exaudf_src/
 
-ENV PYTHON_PREFIX /usr 
-ENV PYTHON_VERSION python2.7
 ENV CUSTOM_PROTOBUF_BIN /usr/bin/protoc
 ENV CUSTOM_PROTOBUF_PREFIX /usr/lib/x86_64-linux-gnu
 ENV VERBOSE_BUILD "--subcommands --verbose_failures"
 
-RUN cd /exaudf_src/ && bash build.sh --define benchmark=true //:exaudfclient && cp -r -L bazel-bin/* /exaudf
+RUN cd /exaudf_src/ && \
+	bash build.sh --define benchmark=true //:exaudfclient && \
+	cp -r -L bazel-bin/* /exaudf
