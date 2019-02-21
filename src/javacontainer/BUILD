@@ -87,10 +87,18 @@ cc_library(
 
 cc_library(
     name = "javacontainer",
-    srcs = [":javacontainer.cc"],
+    srcs = [":javacontainer.cc", ":dummy"],
     hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h","//:debug_message.h"],
-    data = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
+#    data = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
     deps = ["@ssl//:ssl","@java//:java","//:exaudflib","//:scriptoptionlines",":exascript_java"]
+)
+
+#workaround to build jars together with javacontainer c++ library
+genrule(
+    name = "dummy",
+    cmd = 'touch "$@"',
+    outs = ["dummy.h"],
+    srcs = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
 )
 
 java_library(

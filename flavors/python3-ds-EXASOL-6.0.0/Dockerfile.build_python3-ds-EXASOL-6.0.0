@@ -17,4 +17,5 @@ ENV CUSTOM_PROTOBUF_PREFIX /usr/local/lib
 
 RUN cd /exaudf_src/ && \
 	bash build.sh --define python=true //:exaudfclient_py3 && \
+	mv bazel-bin/exaudfclient_py3 bazel-bin/exaudfclient && \
 	cp -r -L bazel-bin/* /exaudf

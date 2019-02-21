@@ -1,4 +1,5 @@
 import sys
+import os
 isPython3 = False
 
 if sys.version_info[0] == 3:
@@ -12,7 +13,7 @@ else:
     encodeUTF8 = lambda x: x.encode('utf-8')
     
 if isPython3:
-    sys.path.append('/exaudf/python/')
+    sys.path.append(os.environ['LIBPYEXADATAFRAME_DIR'])
     import pyextdataframe
 
 

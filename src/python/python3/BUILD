@@ -76,17 +76,25 @@ cc_library(
 
 cc_library(
     name = "pythoncontainer",
-    srcs = ["//python:pythoncontainer.cc","//:debug_message.h"],
+    srcs = ["//python:pythoncontainer.cc","//:debug_message.h",":dummy.h"],
     data = [":extend_exascript_python_preset_py"], 
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
     deps = ["@python3//:python3","//:exaudflib","//:scriptoptionlines",":exascript_python"]
 )
 
+#workaround to build pyextdataframe.so together with pythoncontainer c++ library
+genrule(
+    name = "dummy",
+    cmd = 'touch "$@"',
+    outs = ["dummy.h"],
+    srcs = [":pyextdataframe.so"],
+)
+
 cc_binary(
     name = "pyextdataframe.so",
     linkshared = 1,
-    srcs = [":python_ext_dataframe.cc","//:debug_message.h",
+    srcs = ["//python:python_ext_dataframe.cc","//:debug_message.h",
             "//:exaudflib.h","//:script_data_transfer_objects_wrapper.h",
             "//:script_data_transfer_objects.h"],
     deps = ["@python3//:python3","@numpy_linux//:numpy_linux"]
