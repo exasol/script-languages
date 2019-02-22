@@ -4,10 +4,10 @@ genrule(
     name = "exascript_python_tmp_cc",
     cmd = """
         INCLUDES=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION-config --includes`
-        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //:exascript.i)"
+        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //exaudflib:exascript.i)"
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
 )
 
 genrule(
@@ -17,7 +17,7 @@ genrule(
         swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -py3 -external-runtime "$(location exascript_python_tmp.h)"
         """,
     outs = ["exascript_python_tmp.h"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp_cc"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp_cc"]
 )
 
 genrule(
@@ -71,7 +71,7 @@ cc_library(
     name = "exascript_python",
     srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
     hdrs = [":filter_swig_code_exascript_python_h"],
-    deps = ["@python2//:python2","//:exaudflib"]
+    deps = ["@python2//:python2","//exaudflib:exaudflib"]
 )
 
 cc_library(
@@ -80,5 +80,5 @@ cc_library(
     data = [":extend_exascript_python_preset_py"], 
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
-    deps = ["@python2//:python2","//:exaudflib","//:scriptoptionlines",":exascript_python"]
+    deps = ["@python2//:python2","//exaudflib:exaudflib","//exaudflib:scriptoptionlines",":exascript_python"]
 )

@@ -2,16 +2,16 @@ package(default_visibility = ["//visibility:public"])
 
 genrule(
     name = "exascript_r_tmp_cc",
-    cmd = 'swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -r -addextern -module exascript_r -o "$(location exascript_r_tmp.cc)" "$(location //:exascript.i)"',
+    cmd = 'swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -r -addextern -module exascript_r -o "$(location exascript_r_tmp.cc)" "$(location //exaudflib:exascript.i)"',
     outs = ["exascript_r_tmp.cc","exascript_r.R"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
 )
 
 genrule(
     name = "exascript_r_tmp_h",
     cmd = 'swig -DEXTERNAL_PROCESS -c++ -r -external-runtime "$(location exascript_r_tmp.h)"',
     outs = ["exascript_r_tmp.h"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h", ":exascript_r_tmp_cc"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_r_tmp_cc"]
 )
 
 genrule(
@@ -49,7 +49,7 @@ cc_library(
     srcs = [":filter_swig_code_exascript_r_cc",":filter_swig_code_exascript_r_h"],
     hdrs = [":filter_swig_code_exascript_r_h"],
     copts = ["-DENABLE_R_VM"],
-    deps = ["@R_linux//:r-lib","//:exaudflib"]
+    deps = ["@R_linux//:r-lib","//exaudflib:exaudflib"]
 )
 
 cc_library(
@@ -59,5 +59,5 @@ cc_library(
     include_prefix = ".",
     data = ["exascript_r_wrap.R", "exascript_r_preset.R"], #TODO do we need this, because build_integreted
     hdrs = ["filter_swig_code_exascript_r_h","exascript_r_int"],
-    deps = ["@R_linux//:r-lib","//:exaudflib",":exascript_r", "//:scriptoptionlines"]
+    deps = ["@R_linux//:r-lib","//exaudflib:exaudflib",":exascript_r", "//exaudflib:scriptoptionlines"]
 )

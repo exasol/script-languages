@@ -4,10 +4,10 @@ genrule(
     name = "exascript_java_tmp_cc",
     cmd = """
         mkdir -p $(location java_src)/com/exasol/swig
-        swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -java -addextern -module exascript_java -package com.exasol.swig -outdir $(location java_src)/com/exasol/swig -o "$(location exascript_java_tmp.cc)" "$(location //:exascript.i)"
+        swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -java -addextern -module exascript_java -package com.exasol.swig -outdir $(location java_src)/com/exasol/swig -o "$(location exascript_java_tmp.cc)" "$(location //exaudflib:exascript.i)"
         """,
     outs = ["exascript_java_tmp.cc","java_src"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
 )
 
 genrule(
@@ -16,7 +16,7 @@ genrule(
         swig -v -DEXTERNAL_PROCESS -c++ -java -external-runtime "$(location exascript_java_tmp.h)"
         """,
     outs = ["exascript_java_tmp.h"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h", ":exascript_java_tmp_cc"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_java_tmp_cc"]
 )
 
 genrule(
@@ -82,7 +82,7 @@ genrule(
 cc_library(
     name = "exascript_java",
     srcs = [":filter_swig_code_exascript_java_cc"],
-    deps = ["@java//:java","//:exaudflib"]
+    deps = ["@java//:java","//exaudflib:exaudflib"]
 )
 
 cc_library(
@@ -90,7 +90,7 @@ cc_library(
     srcs = [":javacontainer.cc", ":dummy"],
     hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h","//:debug_message.h"],
 #    data = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
-    deps = ["@ssl//:ssl","@java//:java","//:exaudflib","//:scriptoptionlines",":exascript_java"]
+    deps = ["@ssl//:ssl","@java//:java","//exaudflib:exaudflib","//exaudflib:scriptoptionlines",":exascript_java"]
 )
 
 #workaround to build jars together with javacontainer c++ library

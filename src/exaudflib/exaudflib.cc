@@ -19,7 +19,7 @@
 
 // swig lib
 #include <limits>
-#include "zmqcontainer.pb.h"
+#include "exaudflib/zmqcontainer.pb.h"
 #include "script_data_transfer_objects_wrapper.h"
 #include <unistd.h>
 

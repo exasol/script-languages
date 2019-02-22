@@ -4,12 +4,12 @@
 #include <openssl/md5.h>
 #include <set>
 #include <jni.h>
-#include "exaudflib.h"
+#include "exaudflib/exaudflib.h"
 #include "exascript_java_jni_decl.h"
 #include <unistd.h>
 
 #include "debug_message.h"
-#include "scriptoptionlines.h"
+#include "exaudflib/scriptoptionlines.h"
 
 using namespace SWIGVMContainers;
 using namespace std;

@@ -1,5 +1,5 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["filter_swig_code.py", "build_integrated.py", "exascript.i","LICENSE-exasol-script-api.txt", "debug_message.h"])
+exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt", "debug_message.h"])
 
 config_setting(
     name = "benchmark",
@@ -21,79 +21,20 @@ config_setting(
     define_values = {"java": "true"},
 )
 
-
-BENCHMARK_VM_ENABLED_DEFINE=select({
-        ":benchmark": ["ENABLE_BENCHMARK_VM"],
-        "//conditions:default": []
-    }) 
-PYTHON_VM_ENABLED_DEFINE=select({
-        ":python": ["ENABLE_PYTHON_VM"],
-        "//conditions:default": []
-    })
-R_VM_ENABLED_DEFINE=select({
-        ":r": ["ENABLE_R_VM"],
-        "//conditions:default": []
-    })
-JAVA_VM_ENABLED_DEFINE=select({
-        ":java": ["ENABLE_JAVA_VM"],
-        "//conditions:default": []
-    })
-
-VM_ENABLED_DEFINES=BENCHMARK_VM_ENABLED_DEFINE+PYTHON_VM_ENABLED_DEFINE+R_VM_ENABLED_DEFINE+JAVA_VM_ENABLED_DEFINE
-
-genrule(
-    name = "zmqcontainer_proto",
-    cmd = """$$CUSTOM_PROTOBUF_BIN -I. $< --cpp_out=. &&
-            cp zmqcontainer.pb.cc $(location zmqcontainer.pb.cc) &&
-            cp zmqcontainer.pb.h $(location zmqcontainer.pb.h)""",
-    outs = ["zmqcontainer.pb.cc","zmqcontainer.pb.h"],
-    srcs = ["zmqcontainer.proto"]
-)
-
-cc_library(
-    name = "zmqcontainer",
-    hdrs = [":zmqcontainer_proto"],
-    srcs = [":zmqcontainer_proto"],
-)
-
-cc_library(
-    name = "scriptoptionlines",
-    hdrs = ["scriptoptionlines.h"],
-    srcs = ["scriptoptionlines.cc","scriptoptionlines.h"],
-)
-
-cc_library(
-    name = "script_data_transfer_objects",
-    srcs = ["script_data_transfer_objects.cc","script_data_transfer_objects.h"],
-    hdrs = ["script_data_transfer_objects.h"],
-)
-
-cc_library(
-    name = "script_data_transfer_objects_wrapper",
-    srcs = ["script_data_transfer_objects_wrapper.cc","script_data_transfer_objects_wrapper.h"],
-    deps = [":script_data_transfer_objects"],
-    hdrs = ["script_data_transfer_objects_wrapper.h"]
-)
-
-cc_library(
-    name = "exaudflib",
-    srcs = ["exaudflib.cc","exaudflib.h","debug_message.h"],
-    hdrs = ["exaudflib.h"],
-    linkstatic = 1,
-    defines = VM_ENABLED_DEFINES,
-    deps = [":script_data_transfer_objects_wrapper", ":zmqcontainer", "@zmq//:zmqlib"],
-)
-
+load("//:variables.bzl", "VM_ENABLED_DEFINES")
 cc_binary(
     name = "libexaudflib_complete.so",
     linkshared = 1,
-    srcs = [":exaudflib", ":zmqcontainer", ":script_data_transfer_objects_wrapper", ":script_data_transfer_objects"],
+    srcs = ["//exaudflib:exaudflib", 
+            "//exaudflib:zmqcontainer", 
+            "//exaudflib:script_data_transfer_objects_wrapper", 
+            "//exaudflib:script_data_transfer_objects"],
     deps = [ "@zmq//:zmqlib"],
     defines = VM_ENABLED_DEFINES
 )
 
 VM_ENABLED_DEPS=select({
-        ":benchmark": [":benchmark_container"],
+        ":benchmark": ["//benchmark_container:benchmark_container"],
         "//conditions:default": []
     }) + select({
         ":r": ["//rcontainer:rcontainer"],
@@ -115,9 +56,9 @@ VM_PYTHON3_DEPS=select({
 
 cc_binary(
     name = "exaudfclient_wrong_rpath_py2",
-    srcs = ["exaudfclient.cc","exaudflib.h",
-            "script_data_transfer_objects_wrapper.h", 
-            "script_data_transfer_objects.h", 
+    srcs = ["exaudfclient.cc","//exaudflib:exaudflib.h",
+            "//exaudflib:script_data_transfer_objects_wrapper.h", 
+            "//exaudflib:script_data_transfer_objects.h", 
             "debug_message.h"],
     linkopts = ["-ldl"],
     deps = VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
@@ -127,9 +68,9 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_wrong_rpath_py3",
-    srcs = ["exaudfclient.cc","exaudflib.h",
-            "script_data_transfer_objects_wrapper.h", 
-            "script_data_transfer_objects.h", 
+    srcs = ["exaudfclient.cc","//exaudflib:exaudflib.h",
+            "//exaudflib:script_data_transfer_objects_wrapper.h", 
+            "//exaudflib:script_data_transfer_objects.h", 
             "debug_message.h"],
     linkopts = ["-ldl"],
     deps = VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
@@ -167,19 +108,6 @@ genrule(
     srcs = [":exaudfclient_wrong_rpath_py3", "libexaudflib_complete.so", "exaudfclient.sh"],
     #executable = True,
     output_to_bindir = True
-)
-
-cc_library(
-    name = "streamingcontainer",
-    srcs = ["streamingcontainer.cc","streamingcontainer.h"],
-    deps = [":exaudflib"]
-)
-
-cc_library(
-    name = "benchmark_container",
-    srcs = ["benchmark_container.cc","benchmark_container.h", "debug_message.h"],
-    hdrs = ["benchmark_container.h"],
-    deps = [":exaudflib"]
 )
 
 # Attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 

@@ -1,4 +1,4 @@
-#include "exaudflib.h"
+#include "exaudflib/exaudflib.h"
 #include <R.h>
 #include <Rdefines.h>
 #include <Rembedded.h>

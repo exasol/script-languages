@@ -4,10 +4,10 @@ genrule(
     name = "exascript_python_tmp_cc",
     cmd = """
         INCLUDES=`$$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION-config --includes`
-        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //:exascript.i)"
+        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //exaudflib:exascript.i)"
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
 )
 
 genrule(
@@ -17,7 +17,7 @@ genrule(
         swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -py3 -external-runtime "$(location exascript_python_tmp.h)"
         """,
     outs = ["exascript_python_tmp.h"],
-    srcs = ["//:exascript.i","//:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp_cc"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp_cc"]
 )
 
 genrule(
@@ -71,7 +71,7 @@ cc_library(
     name = "exascript_python",
     srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
     hdrs = [":filter_swig_code_exascript_python_h"],
-    deps = ["@python3//:python3","//:exaudflib"]
+    deps = ["@python3//:python3","//exaudflib:exaudflib"]
 )
 
 cc_library(
@@ -80,7 +80,7 @@ cc_library(
     data = [":extend_exascript_python_preset_py"], 
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
-    deps = ["@python3//:python3","//:exaudflib","//:scriptoptionlines",":exascript_python"]
+    deps = ["@python3//:python3","//exaudflib:exaudflib","//exaudflib:scriptoptionlines",":exascript_python"]
 )
 
 #workaround to build pyextdataframe.so together with pythoncontainer c++ library
@@ -95,7 +95,7 @@ cc_binary(
     name = "pyextdataframe.so",
     linkshared = 1,
     srcs = ["//python:python_ext_dataframe.cc","//:debug_message.h",
-            "//:exaudflib.h","//:script_data_transfer_objects_wrapper.h",
-            "//:script_data_transfer_objects.h"],
+            "//exaudflib:exaudflib.h","//exaudflib:script_data_transfer_objects_wrapper.h",
+            "//exaudflib:script_data_transfer_objects.h"],
     deps = ["@python3//:python3","@numpy_linux//:numpy_linux"]
 )
