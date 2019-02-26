@@ -69,16 +69,16 @@ genrule(
 
 cc_library(
     name = "exascript_python",
-    srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
+    srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h","//exaudflib:header"],
     hdrs = [":filter_swig_code_exascript_python_h"],
-    deps = ["@python2//:python2","//exaudflib:exaudflib"]
+    deps = ["@python2//:python2","//exaudflib:exaudflib-deps"]
 )
 
 cc_library(
     name = "pythoncontainer",
-    srcs = ["//python:pythoncontainer.cc","//:debug_message.h"],
+    srcs = ["//python:pythoncontainer.cc","//:debug_message.h","//exaudflib:header"],
     data = [":extend_exascript_python_preset_py"], 
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
-    deps = ["@python2//:python2","//exaudflib:exaudflib","//exaudflib:scriptoptionlines",":exascript_python"]
+    deps = ["@python2//:python2",":exascript_python"]
 )

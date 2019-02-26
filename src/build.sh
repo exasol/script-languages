@@ -1,1 +1,1 @@
-bazel build $VERBOSE_BUILD --copt="-DCUSTOM_PROTOBUF_PREFIX=\"$CUSTOM_PROTOBUF_PREFIX\"" $*
+bazel build $VERBOSE_BUILD $*

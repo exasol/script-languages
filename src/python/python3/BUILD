@@ -69,18 +69,18 @@ genrule(
 
 cc_library(
     name = "exascript_python",
-    srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
+    srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h","//exaudflib:header"],
     hdrs = [":filter_swig_code_exascript_python_h"],
-    deps = ["@python3//:python3","//exaudflib:exaudflib"]
+    deps = ["@python3//:python3","//exaudflib:exaudflib-deps"]
 )
 
 cc_library(
     name = "pythoncontainer",
-    srcs = ["//python:pythoncontainer.cc","//:debug_message.h",":dummy.h"],
+    srcs = ["//python:pythoncontainer.cc","//:debug_message.h",":dummy.h","//exaudflib:header"],
     data = [":extend_exascript_python_preset_py"], 
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
-    deps = ["@python3//:python3","//exaudflib:exaudflib","//exaudflib:scriptoptionlines",":exascript_python"]
+    deps = ["@python3//:python3",":exascript_python"]
 )
 
 #workaround to build pyextdataframe.so together with pythoncontainer c++ library
@@ -95,7 +95,6 @@ cc_binary(
     name = "pyextdataframe.so",
     linkshared = 1,
     srcs = ["//python:python_ext_dataframe.cc","//:debug_message.h",
-            "//exaudflib:exaudflib.h","//exaudflib:script_data_transfer_objects_wrapper.h",
-            "//exaudflib:script_data_transfer_objects.h"],
-    deps = ["@python3//:python3","@numpy_linux//:numpy_linux"]
+            "//exaudflib:header"],
+    deps = ["@python3//:python3","@numpy//:numpy","//exaudflib:exaudflib-deps"]
 )

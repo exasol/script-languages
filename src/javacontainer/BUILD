@@ -79,18 +79,19 @@ genrule(
     srcs = [":exascript_java_tmp_cc"],
     tools = ["//:filter_swig_code.py"]
 )
+
 cc_library(
     name = "exascript_java",
-    srcs = [":filter_swig_code_exascript_java_cc"],
-    deps = ["@java//:java","//exaudflib:exaudflib"]
+    srcs = [":filter_swig_code_exascript_java_cc","//exaudflib:header"],
+    deps = ["@java//:java","//exaudflib:exaudflib-deps"]
 )
 
 cc_library(
     name = "javacontainer",
     srcs = [":javacontainer.cc", ":dummy"],
-    hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h","//:debug_message.h"],
+    hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h","//:debug_message.h","//exaudflib:header"],
 #    data = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
-    deps = ["@ssl//:ssl","@java//:java","//exaudflib:exaudflib","//exaudflib:scriptoptionlines",":exascript_java"]
+    deps = ["@ssl//:ssl","@java//:java", ":exascript_java"]
 )
 
 #workaround to build jars together with javacontainer c++ library

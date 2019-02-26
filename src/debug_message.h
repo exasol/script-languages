@@ -39,6 +39,6 @@
 
 #define DBG_FUNC_END( os )
 
-#define DBG_FUNC_CALL( os, call )
+#define DBG_FUNC_CALL( os, call ) call;
 
 #endif

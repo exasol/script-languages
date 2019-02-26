@@ -2,7 +2,8 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "benchmark_container",
-    srcs = ["benchmark_container.cc","benchmark_container.h", "//:debug_message.h"],
+    srcs = ["benchmark_container.cc","benchmark_container.h", "//:debug_message.h",
+            "//exaudflib:header"],
     hdrs = ["benchmark_container.h"],
-    deps = ["//exaudflib:exaudflib"]
+    deps = ["//exaudflib:exaudflib-deps"]
 )

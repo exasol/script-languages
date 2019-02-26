@@ -3,7 +3,7 @@ FROM exaudf/release_tensorflow
 RUN mkdir /exasol_emulator
 
 COPY emulator/ /exasol_emulator
-COPY src/zmqcontainer.proto /exasol_emulator
+COPY src/exaudflib/zmqcontainer.proto /exasol_emulator
 
 #RUN pip install protobuf==3.5.1
 RUN     apt-get -y install python-zmq

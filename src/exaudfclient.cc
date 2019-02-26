@@ -17,6 +17,9 @@
 #ifdef ENABLE_BENCHMARK_VM
 #include "benchmark_container/benchmark_container.h"
 #endif
+#ifdef ENABLE_STREAMING_VM
+#include "streaming_container/streamingcontainer.h"
+#endif
 #include <functional>
 #include "debug_message.h"
 #include <stdio.h>
@@ -86,20 +89,22 @@ int main(int argc, char **argv) {
 #if 1
 
     Lmid_t  my_namespace_id;
-    DBGMSG(cerr, "Load libprotobuf into new namespace");
-    DBGVAR(cerr, libProtobufPath);
-    handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
-    if (!handle) {
-        cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
-        exit(EXIT_FAILURE);
-    }
-    if(dlinfo(handle, RTLD_DI_LMID, &my_namespace_id) != 0) {
-        cerr << "Error when getting namespace id " << dlerror() << endl;
-        exit(EXIT_FAILURE);
-    }
+    // DBGMSG(cerr, "Load libprotobuf into new namespace");
+    // DBGVAR(cerr, libProtobufPath);
+    // handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
+    // if (!handle) {
+    //     cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
+    //     exit(EXIT_FAILURE);
+    // }
+    // if(dlinfo(handle, RTLD_DI_LMID, &my_namespace_id) != 0) {
+    //     cerr << "Error when getting namespace id " << dlerror() << endl;
+    //     exit(EXIT_FAILURE);
+    // }
     DBGMSG(cerr, "Load libexaudflib");
     DBGVAR(cerr, libexaudflibPath);
-    handle = dlmopen(my_namespace_id, libexaudflibPath.c_str(), RTLD_NOW);
+    handle = dlmopen(LM_ID_NEWLM, libexaudflibPath.c_str(), RTLD_NOW);
+//    handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
+
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);

@@ -4,3 +4,4 @@
 downloads/*
 odbc.ini
 .vscode/settings.json
+.env

@@ -14,10 +14,11 @@ ENV PYTHON2_VERSION python2.7
 ENV PYTHON3_PREFIX /usr 
 ENV PYTHON3_VERSION python3.6
 ENV JAVA_PREFIX /usr/lib/jvm/java-11-openjdk-amd64
-ENV CUSTOM_PROTOBUF_BIN /usr/bin/protoc
-ENV CUSTOM_PROTOBUF_PREFIX /usr/lib/x86_64-linux-gnu/
+ENV PROTOBUF_BIN=/usr/bin/protoc 
+ENV PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu
+ENV PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/
 #ENV VERBOSE_BUILD "--subcommands --verbose_failures"
 
 RUN cd /exaudf_src && pwd && \
-	bash build.sh --define r=true --define python=true --define java=true //:exaudfclient //:exaudfclient_py3 && \
+	bash build.sh -c opt --define r=true --define python=true --define java=true //:exaudfclient //:exaudfclient_py3 && \
 	cp -r -L bazel-bin/* /exaudf

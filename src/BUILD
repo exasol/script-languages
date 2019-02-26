@@ -21,15 +21,27 @@ config_setting(
     define_values = {"java": "true"},
 )
 
+config_setting(
+    name = "bash",
+    define_values = {"bash": "true"},
+)
+
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
+
+# Using cc_binary to build a shared library as output target is a workaround, because
+# Bazel's cc_library are only intermediate stage and can be used as output target.
+# It is necessary to include all dependencies of //exaudflib:exaudflib into deps and srcs,
+# otherwise dlmopen won't find the symbols from these dependencies. The target //exaudflib:exaudflib-deps
+# won't work either, because it only contains the libraries only as dependencies.
 cc_binary(
     name = "libexaudflib_complete.so",
     linkshared = 1,
     srcs = ["//exaudflib:exaudflib", 
             "//exaudflib:zmqcontainer", 
             "//exaudflib:script_data_transfer_objects_wrapper", 
-            "//exaudflib:script_data_transfer_objects"],
-    deps = [ "@zmq//:zmqlib"],
+            "//exaudflib:script_data_transfer_objects"
+            ],
+    deps = [ "@zmq//:zmqlib", "@protobuf//:protobuf"],
     defines = VM_ENABLED_DEFINES
 )
 
@@ -41,6 +53,9 @@ VM_ENABLED_DEPS=select({
         "//conditions:default": []
     }) + select({
         ":java": ["//javacontainer:javacontainer"],
+        "//conditions:default": []
+    }) + select({
+        ":bash": ["//streaming_container:streamingcontainer"],
         "//conditions:default": []
     })
 
@@ -56,11 +71,9 @@ VM_PYTHON3_DEPS=select({
 
 cc_binary(
     name = "exaudfclient_wrong_rpath_py2",
-    srcs = ["exaudfclient.cc","//exaudflib:exaudflib.h",
-            "//exaudflib:script_data_transfer_objects_wrapper.h", 
-            "//exaudflib:script_data_transfer_objects.h", 
+    srcs = ["exaudfclient.cc","//exaudflib:header",
             "debug_message.h"],
-    linkopts = ["-ldl"],
+    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
@@ -68,17 +81,23 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_wrong_rpath_py3",
-    srcs = ["exaudfclient.cc","//exaudflib:exaudflib.h",
+    srcs = ["exaudfclient.cc","//exaudflib:header",
             "//exaudflib:script_data_transfer_objects_wrapper.h", 
             "//exaudflib:script_data_transfer_objects.h", 
             "debug_message.h"],
-    linkopts = ["-ldl"],
+    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
 
-# Workaround for the problems of JNI with rpath used bazel
+# Workaround for the problems of JNI with rpath's used by Bazel
+# Bazel creates for all external local repositories symlinks and 
+# the path of these symlinks may contain a @ character.
+# Bazel than write during compilation these paths to the rpath of the binary,
+# but JNI truncates pathes with @ character. In the end, 
+# it was nearly impossible to convince JNI from other pathes for its libraries, 
+# as the original pathes where apt installed the files.
 genrule(
     name = "gen-exaudfclient",
     cmd = """
@@ -110,7 +129,7 @@ genrule(
     output_to_bindir = True
 )
 
-# Attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 
+# Failed attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 
 # However, JNI has problems with this attempt, too. 
 # Unitl now only the path under /usr/lib/jvm worked.
 #

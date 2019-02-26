@@ -4,7 +4,7 @@ RUN apt-get -y install python-protobuf python-zmq gdb protobuf-compiler
 
 RUN mkdir /exasol_emulator
 COPY emulator/ /exasol_emulator
-COPY src/zmqcontainer.proto /exasol_emulator
+COPY src/exaudflib/zmqcontainer.proto /exasol_emulator
 
 RUN cd /exasol_emulator && /usr/bin/protoc zmqcontainer.proto --python_out=.
 RUN ls /exasol_emulator

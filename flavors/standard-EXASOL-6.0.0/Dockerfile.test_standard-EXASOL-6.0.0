@@ -3,7 +3,7 @@ RUN apt-get -y install vim python-protobuf python-zmq gdb
 
 RUN mkdir /exasol_emulator
 COPY emulator/ /exasol_emulator
-COPY src/zmqcontainer.proto /exasol_emulator
+COPY src/exaudflib/zmqcontainer.proto /exasol_emulator
 RUN cd /exasol_emulator && protoc zmqcontainer.proto --python_out=.
 RUN ls /exasol_emulator
 RUN cp /exasol_emulator/start_test.sh /
