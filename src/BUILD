@@ -1,5 +1,5 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt", "debug_message.h"])
+exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt"])
 
 config_setting(
     name = "benchmark",
@@ -27,6 +27,13 @@ config_setting(
 )
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
+
+cc_library(
+    name = "debug_message_h",
+    hdrs = [
+        "debug_message.h"
+    ],
+)
 
 # Using cc_binary to build a shared library as output target is a workaround, because
 # Bazel's cc_library are only intermediate stage and can be used as output target.
@@ -71,22 +78,18 @@ VM_PYTHON3_DEPS=select({
 
 cc_binary(
     name = "exaudfclient_wrong_rpath_py2",
-    srcs = ["exaudfclient.cc","//exaudflib:header",
-            "debug_message.h"],
+    srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
+    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
 
 cc_binary(
     name = "exaudfclient_wrong_rpath_py3",
-    srcs = ["exaudfclient.cc","//exaudflib:header",
-            "//exaudflib:script_data_transfer_objects_wrapper.h", 
-            "//exaudflib:script_data_transfer_objects.h", 
-            "debug_message.h"],
+    srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
+    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )

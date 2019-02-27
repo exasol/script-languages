@@ -1,5 +1,5 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["exaudflib.h","exascript.i"])
+exports_files(["exascript.i"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
 
@@ -23,13 +23,10 @@ cc_library(
 )
 
 # A collection target for the case that language container want to include all public headers of exaudflib
-filegroup(
+cc_library(
     name = "header",
-    srcs = [
-        "exaudflib.h",
-        "script_data_transfer_objects_wrapper.h",
-        "script_data_transfer_objects.h",
-        "scriptoptionlines.h"
+    hdrs = [
+        "exaudflib.h"
     ],
 )
 
@@ -70,8 +67,8 @@ cc_library(
 # depend directly on them
 cc_library(
     name = "exaudflib",
-    srcs = ["exaudflib.cc","//:debug_message.h", ":header"],
+    srcs = ["exaudflib.cc"],
     linkstatic = 1,
     defines = VM_ENABLED_DEFINES,
-    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmqlib"],
+    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmqlib", ":header", "//:debug_message_h"],
 )
