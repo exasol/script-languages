@@ -43,9 +43,35 @@ if [ ! -z "${generic_test_lang-}" ]; then
 fi
 
 
-set -x
-#./build -f $FLAVOR && ./export -f $FLAVOR && ./clean && ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT && ( cmd="./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction" ; $cmd )
-#./build -f $FLAVOR && ./export -f $FLAVOR && ./clean && ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT && ./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction && ./stop_dockerdb
-./build -f $FLAVOR && ./export -f $FLAVOR && ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT && ./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction && ./stop_dockerdb
-RETURN_CODE=$?
-exit $RETURN_CODE
+if ! ./build -f $FLAVOR
+then
+echo "Building the flavor $FLAVOR failed"
+exit 1
+fi
+
+if ! ./export -f $FLAVOR 
+then
+echo "Exporting the flavor $FLAVOR failed"
+exit 1
+fi
+
+if ! ./start_dockerdb -p $DB_PORT -b $BUCKETFS_PORT
+then
+echo "Starting dockerdb on port $DB_PORT with bucketfs port $BUCKETFS_PORT failed"
+exit 1
+fi
+sleep 30
+
+if ! ./test -f $FLAVOR -c localhost:$DB_PORT -b $BUCKETFS_PORT $test_restriction
+then
+echo "Running the tests $test_restrictions failed"
+exit 1
+fi
+
+echo "Tests succeeded"
+
+if ! ./stop_dockerdb
+then
+echo "Stopping dockerdb failed"
+fi
+exit 0

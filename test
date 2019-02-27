@@ -166,13 +166,15 @@ if [ ! -z "${generic_test_lang-}" ]; then
 fi
 
 if [ -z ${NOTESTS+x} ]; then
+    RETURN_CODE=123
     echo "Starting tests with connection $CONNECTION_HOST:$CONNECTION_PORT using test_config: $test_config"
-    ( cd tests/test ; 
-	cmd="./run_locally.sh --server $CONNECTION_HOST:$CONNECTION_PORT --test-config $test_config $test_restriction --";
-	$cmd )
+    cd tests/test
+    ./run_locally.sh --server $CONNECTION_HOST:$CONNECTION_PORT --test-config $test_config $test_restriction --
+    RETURN_CODE=$?
+else
+   RETURN_CODE=0
 fi
 
-RETURN_CODE=$?
 exit $RETURN_CODE
 
 # Extract failed tests:

@@ -23,6 +23,7 @@ from udf import (
     expectedFailureIfLang,
     )
 
+from exatest.testcase import skipIf
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
@@ -214,8 +215,8 @@ class Unicode(udf.TestCase):
 class UnicodeData(udf.TestCase):
 
     @requires('UNICODE_LOWER')
-    @expectedFailureIfLang('java')
-    @expectedFailureIfLang('r')
+    #@expectedFailureIfLang('java')
+    #@expectedFailureIfLang('r')
     def test_unicode_lower_is_subset_of_Unicode520_part1(self):
         if udf.pythonVersionInUdf == 2:
            rows = self.query('''
@@ -238,8 +239,8 @@ class UnicodeData(udf.TestCase):
            self.assertRowsEqual([], rows)
 
     @requires('UNICODE_LOWER')
-    @expectedFailureIfLang('java')
-    @expectedFailureIfLang('r')
+    #@expectedFailureIfLang('java')
+    #@expectedFailureIfLang('r')
     #@skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
     def test_unicode_lower_is_subset_of_Unicode520_part1_on_undefined_block(self):
         '''DWA-19940 (R)'''
@@ -261,9 +262,10 @@ class UnicodeData(udf.TestCase):
             self.assertRowsEqual([], rows)
 
     @requires('UNICODE_LOWER')
-    @expectedFailureIfLang('lua')
-    @expectedFailureIfLang('java')
-    #@skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
+    #@expectedFailureIfLang('lua')
+    #@expectedFailureIfLang('java')
+    #@expectedFailureIfLang('python3')
+    @skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
     def test_unicode_lower_is_subset_of_Unicode520_part2(self):
         '''DWA-13702 (Lua)'''
         if udf.pythonVersionInUdf == 2:
@@ -274,7 +276,7 @@ class UnicodeData(udf.TestCase):
                     unicode(to_lower),
                     unicode(fn1.unicode_lower(uchar))
                 FROM utest.unicodedata
-                WHERE codepoint in (8486, 8490, 8491, 304)
+                WHERE codepoint in (8486, 8490, 8491)
                     and (to_lower != fn1.unicode_lower(uchar))
                     and (uchar != fn1.unicode_lower(uchar))
                 ORDER BY codepoint
@@ -283,8 +285,8 @@ class UnicodeData(udf.TestCase):
             self.assertRowsEqual([], rows)
 
     @requires('UNICODE_UPPER')
-    @expectedFailureIfLang('java')
-    @expectedFailureIfLang('r')
+    #@expectedFailureIfLang('java')
+    #@expectedFailureIfLang('r')
     #@skipIf(udf.pythonVersionInUdf == 3, 'Unicode tests do not work in Python3 ... investigate!')
     def test_unicode_upper_is_subset_of_Unicode520_part1(self):
         if udf.pythonVersionInUdf == 2:
@@ -314,8 +316,8 @@ class UnicodeData(udf.TestCase):
 
 
     @requires('UNICODE_UPPER')
-    @expectedFailureIfLang('java')
-    @expectedFailureIfLang('r')
+    #@expectedFailureIfLang('java')
+    #@expectedFailureIfLang('r')
 #    @skipIf(udf.pythonVersionInUdf == 3, 'Unicode tests do not work in Python3 ... investigate!')
     def test_unicode_upper_is_subset_of_Unicode520_part1_on_undefined_block(self):
         '''DWA-19940 (R)'''
@@ -337,7 +339,7 @@ class UnicodeData(udf.TestCase):
            self.assertRowsEqual([], rows)
 
     @requires('UNICODE_UPPER')
-    @expectedFailureIfLang('lua')
+    #@expectedFailureIfLang('lua')
     def test_unicode_upper_is_subset_of_Unicode520_part2(self):
         '''DWA-13388 (Lua); DWA-13702 (Lua)'''
         rows = self.query('''
@@ -387,7 +389,7 @@ class UnicodeData(udf.TestCase):
         self.assertRowsEqual([], rows)
 
     @requires('UNICODE_LEN')
-    @expectedFailureIfLang('r')
+    #@expectedFailureIfLang('r')
     def test_unicode_len_on_undefined_block(self):
         '''DWA-19940 (R)'''
         if udf.pythonVersionInUdf == 2:

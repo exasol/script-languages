@@ -20,11 +20,13 @@ function run_generic_tests() {
     echo "Run generic language test for $1"
     all_tests_passed=0
     for test in generic/*.py; do
-        cmd=$(run_test "$test" "$2" "$3" --lang "$1")
+        run_test "$test" "$2" "$3" --lang "$1"
         rc=$?
         if [ $rc != 0 ]; then
-            echo "$cmd: failed with $rc" >> /tmp/failed-tests.txt
+            echo "run_test $test $2 $3 --lang $1: failed with $rc" >> /tmp/failed-tests.txt
             all_tests_passed=1;
+            echo "FAILED: $cmd"
+            exit 1
         fi
     done
     return $all_tests_passed
@@ -39,11 +41,13 @@ function run_tests_in_folder() {
     echo "--- Starting all tests in folder: ${folder} ---"
     all_tests_passed=0
     for test in $folder/*.py; do
-        cmd=$(run_test "$test" "$2" "$3")
+        run_test "$test" "$2" "$3"
         rc=$?
         if [ $rc != 0 ]; then
-            echo "$cmd: failed with $rc" >> /tmp/failed-tests.txt
+            echo "run_test $test $2 $3 failed with $rc" >> /tmp/failed-tests.txt
             all_tests_passed=1;
+            echo "FAILED: $cmd"
+            exit 1
         fi
     done
     return $all_tests_passed
