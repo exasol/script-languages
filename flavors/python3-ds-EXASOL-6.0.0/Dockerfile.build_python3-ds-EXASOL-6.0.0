@@ -18,5 +18,4 @@ ENV PROTOBUF_INCLUDE_PREFIX=/usr/local/include/google/protobuf/
 
 RUN cd /exaudf_src/ && \
 	bash build.sh -c opt --define python=true //:exaudfclient_py3 && \
-	mv bazel-bin/exaudfclient_py3 bazel-bin/exaudfclient && \
 	cp -r -L bazel-bin/* /exaudf
