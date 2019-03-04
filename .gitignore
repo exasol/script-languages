@@ -5,3 +5,5 @@ downloads/*
 odbc.ini
 .vscode/settings.json
 .env
+Pipfile.lock
+emulator/zmqcontainer_pb2.py

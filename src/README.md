@@ -1,6 +1,6 @@
 # What is the exaudfclient?
 
-The exaudfclient connects to the database via [ZeroMQ](http://zeromq.org/) and fetches the tuples which then get processed by the user-defined functions (UDFs). Currently, the exaudfclient supports UDFs in the language Python, Java and R. Further languages can be integrated via language binding between C/C++ and the desired langauge. Python, Java and R use [SWIG](http://www.swig.org/) for the language binding.
+The exaudfclient connects to the database via [ZeroMQ](http://zeromq.org/) and fetches the tuples which then get processed by the user-defined functions (UDFs). Currently, the exaudfclient supports UDFs in the language Python, Java and R. Further languages can be integrated via language binding between C/C++ and the desired langauge. Python 2/3, Java and R use [SWIG](http://www.swig.org/) for the language binding.
 
 # How to build the exaudfclient?
 
@@ -22,12 +22,13 @@ The exaudfclient was tested with the following versions of its dependencies:
 For the language support:
 
 - Python 2.7 or Python 3.6 for pythoncontainer
+    - for Python 3 the build requires [Numpy](http://www.numpy.org/) in addition for the [Pandas Dataframe Support](../flavors/docs/py_dataframe.md)
 - OpenJDK 9 or 11 for javacontainer
 - R 3.4 or 3.5 for the rcontainer
 
 ## Start a build
 
-The exaudfclient is a multi-language projects. Therefore, we are using [Bazel](https://docs.bazel.build/versions/master/bazel-overview.html) as build system, because it provide build support for many languages and allows to mix these languages. Because the exaudfclient has language bindings to Python, Java and R, we need specify where Bazel can find the correponding library- and header-files. This is done by Environment Variables.
+The exaudfclient is a multi-language projects. Therefore, we are using [Bazel](https://docs.bazel.build/versions/master/bazel-overview.html) as build system, because it provide build support for many languages and allows to mix these languages. Because the exaudfclient has language bindings to Python 2/3, Java and R, we need specify where Bazel can find the correponding library- and header-files. This is done by Environment Variables.
 
 For executing the build locally, you can use the script 
 
