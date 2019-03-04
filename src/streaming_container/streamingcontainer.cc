@@ -1,8 +1,4 @@
-#ifndef ENABLE_STREAMING_VM
-#define ENABLE_STREAMING_VM
-#endif
-
-#include "exaudflib.h"
+#include "streamingcontainer.h"
 #include <iostream>
 #include <string>
 #include <functional>
@@ -19,6 +15,7 @@
 
 using namespace SWIGVMContainers;
 using namespace std;
+
 
 bool mexec(const std::string& cmd_, std::string& result) {
     char buffer[128];
@@ -341,7 +338,7 @@ bool StreamingVM::run()
     return true;  // done
 }
 
-std::string StreamingVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args)
+const char* StreamingVM::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args)
 {
     throw SWIGVM::exception("singleCall not supported for the STREAMING language container");
 }

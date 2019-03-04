@@ -20,7 +20,8 @@ class Test(udf.TestCase):
                 self.query('SELECT fn1.sleep(100) FROM dual')
         finally:
             self.query('ALTER SESSION SET QUERY_TIMEOUT = 0')
-        
+   
+    # TODO move test to the end of the sequence of tests to prevent a premature test failures 
     @requires('MEM_HOG')
     @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_kill_mem_hog(self):
@@ -33,6 +34,7 @@ class Test(udf.TestCase):
             'r': 'Connection lost after system running out of memory.',
             'java': 'java.lang.OutOfMemoryError: Java heap space',
             }
+        # This test requires at least 10 GB main memory otherwise the databases crashes and all subsequent tests will fail 
         mb = int(9.2 * 1024*1024)
         with self.assertRaisesRegexp(Exception, err_text[udf.opts.lang]):
             if udf.opts.lang == "ext-python":

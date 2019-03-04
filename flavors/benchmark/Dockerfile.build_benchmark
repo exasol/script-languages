@@ -1,0 +1,18 @@
+FROM exaudf/baseimage_benchmark
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk && \
+	echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
+	curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
+	apt-get update && apt-get install -y bazel
+
+RUN mkdir /exaudf_src /exaudf_src/build /exaudf
+COPY src/ /exaudf_src/
+
+ENV PROTOBUF_BIN=/usr/bin/protoc 
+ENV PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu
+ENV PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/
+ENV VERBOSE_BUILD "--subcommands --verbose_failures"
+
+RUN cd /exaudf_src/ && \
+	bash build.sh -c opt --define benchmark=true //:exaudfclient && \
+	cp -r -L bazel-bin/* /exaudf

@@ -3,14 +3,14 @@
 %}
 
 %{
-#include <exaudflib.h>
+#include "exaudflib/exaudflib.h"
 
 using namespace SWIGVMContainers;
-#include "script_data_transfer_objects_wrapper.h"
+#include "exaudflib/script_data_transfer_objects_wrapper.h"
 %}
 
 %ignore ExecutionGraph::ConnectionInformationWrapper::ConnectionInformationWrapper;
-%include "script_data_transfer_objects_wrapper.h"
+%include "exaudflib/script_data_transfer_objects_wrapper.h"
 %newobject SWIGMetadata::connectionInformation(char*);
 %newobject ConnectionInformationWrapper::copyKind();
 %newobject ConnectionInformationWrapper::copyAddress();

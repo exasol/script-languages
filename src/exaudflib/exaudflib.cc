@@ -3,7 +3,7 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #define DONT_EXPOSE_SWIGVM_PARAMS
-#include <exaudflib.h>
+#include "exaudflib.h"
 #undef DONT_EXPOSE_SWIGVM_PARAMS
 #include <iostream>
 #include <sstream>
@@ -15,9 +15,11 @@
 #include "script_data_transfer_objects.h"
 #include <functional>
 
+#include "debug_message.h"
+
 // swig lib
 #include <limits>
-#include "zmqcontainer.pb.h"
+#include "exaudflib/zmqcontainer.pb.h"
 #include "script_data_transfer_objects_wrapper.h"
 #include <unistd.h>
 
@@ -68,6 +70,7 @@ static ExecutionGraph::ImportSpecification g_singleCall_ImportSpecificationArg;
 static ExecutionGraph::ExportSpecification g_singleCall_ExportSpecificationArg;
 static ExecutionGraph::StringDTO g_singleCall_StringArg;
 static bool remote_client;
+
 
 #ifndef NDEBUG
 #define SWIGVM_LOG_CLIENT
@@ -143,6 +146,7 @@ static bool use_zmq_socket_locks = false;
 
 void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 {
+    DBG_FUNC_BEGIN(std::cerr);
 #ifdef LOG_COMMUNICATION
     stringstream sb;
     uint32_t len = zmsg.size();
@@ -183,6 +187,7 @@ void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 
 bool socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_error=false)
 {
+    DBG_FUNC_BEGIN(std::cerr);
     for (;;) {
         try {
             if (use_zmq_socket_locks) {
@@ -1492,13 +1497,15 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
         if (! ((strcmp(argv[2], "lang=python") == 0)
                || (strcmp(argv[2], "lang=r") == 0)
                || (strcmp(argv[2], "lang=java") == 0)
-               || (strcmp(argv[2], "lang=streaming") == 0)) )
+               || (strcmp(argv[2], "lang=streaming") == 0)
+               || (strcmp(argv[2], "lang=benchmark") == 0)) )
         {
-            cerr << "Remote VM type '" << argv[3] << "' not supported." << endl;
+            cerr << "Remote VM type '" << argv[2] << "' not supported." << endl;
             return 2;
         }
 #endif
     } else {
+        cerr << "socket name '" << socket_name << "' is invalid." << endl;
         abort();
     }
 
@@ -1539,6 +1546,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
     }
 
 reinit:
+    DBGMSG(cerr,"Reinit");
     zmq::socket_t socket(context, ZMQ_REQ);
 
     socket.setsockopt(ZMQ_LINGER, &linger_timeout, sizeof(linger_timeout));

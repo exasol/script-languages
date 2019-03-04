@@ -1,4 +1,4 @@
-#include <exaudflib.h>
+#include "exaudflib/exaudflib.h"
 #include <iostream>
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -7,11 +7,12 @@
 #undef _XOPEN_SOURCE
 #endif
 #include <Python.h>
-#include <exascript_python.h>
-#include <exascript_python_int.h>
-#include "scriptoptionlines.h"
+#include "exascript_python_int.h"
+#include "exascript_python.h"
+#include "debug_message.h"
+#include "exaudflib/scriptoptionlines.h"
 
-#include "script_data_transfer_objects.h"
+#include "exaudflib/script_data_transfer_objects.h"
 
 #define DISABLE_PYTHON_SUBINTERP
 
@@ -93,9 +94,10 @@ class PythonThreadBlock {
 
 PythonVM::PythonVM(bool checkOnly) {
     try {
-        m_impl = new PythonVMImpl(checkOnly);
+        DBG_FUNC_CALL(cerr, m_impl = new PythonVMImpl(checkOnly));
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
+        DBG_EXCEPTION(cerr, err);
         exception_msg = err.what();
     }
 
@@ -103,7 +105,7 @@ PythonVM::PythonVM(bool checkOnly) {
 
 void PythonVM::shutdown() {
     try {
-        m_impl->shutdown();
+       DBG_FUNC_CALL(cerr, m_impl->shutdown());
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
@@ -112,7 +114,8 @@ void PythonVM::shutdown() {
 
 bool PythonVM::run() {
     try {
-        return m_impl->run();
+        DBG_FUNC_CALL(cerr, bool result = m_impl->run());
+        return result; 
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = err.what();
@@ -141,6 +144,7 @@ PyThreadState *PythonVMImpl::main_thread = NULL;
 
 PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 {
+    DBG_FUNC_BEGIN( cerr );
     script_code = string("\xEF\xBB\xBF") + string(SWIGVM_params->script_code);    // Magic-Number of UTF-8 files
 
     script = exatable = globals = retvalue = NULL;
@@ -221,6 +225,7 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 
         Py_XDECREF(code); 
     }
+    DBG_FUNC_END( cerr );
 }
 
 void PythonVMImpl::shutdown() {
@@ -245,7 +250,7 @@ void PythonVMImpl::shutdown() {
 }
 
 bool PythonVMImpl::run() {
-
+    DBG_FUNC_BEGIN( cerr );
 
     if (m_checkOnly) throw PythonVM::exception("Python VM in check only mode");
 
@@ -254,8 +259,8 @@ bool PythonVMImpl::run() {
         PythonThreadBlock block;
         PyThreadState_Swap(pythread);
 #endif
-        runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_run"); check();
-        retvalue = PyObject_CallFunction(runobj, NULL); check();
+        DBG_FUNC_CALL(cerr, runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_run")); check();
+        DBG_FUNC_CALL(cerr, retvalue = PyObject_CallFunction(runobj, NULL)); check();
 	if (retvalue == NULL) {
 	  throw PythonVM::exception("Python VM: calling 'run' failed without an exception)");
 	}

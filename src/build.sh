@@ -1,0 +1,1 @@
+bazel build $VERBOSE_BUILD $*

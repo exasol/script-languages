@@ -1,15 +1,23 @@
 FROM exaudf/baseimage_standard-exasol-6.0.0
 
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk && \
+	echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
+	curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
+	apt-get update && apt-get install -y bazel
 
+RUN mkdir /exaudf_src /exaudf
 COPY src/ /exaudf_src/
 
-RUN /exaudf_src/build_client.sh \
-    --src-dir=/exaudf_src \
-    --build-dir=/exaudf_src/build \
-    --output-dir=/exaudf \
-    --enable-python \
-    --enable-r \
-    --enable-java \
-    --release-sources \
-    --java-flags="-L/usr/lib/jvm/java-9-openjdk-amd64/jre/lib/amd64 -L/usr/lib/jvm/java-9-openjdk-amd64/jre/lib/amd64/server -Wl,-rpath,/usr/lib/jvm/java-9-openjdk-amd64/lib/amd64 -Wl,-rpath,/usr/lib/jvm/java-9-openjdk-amd64/jre/lib/amd64/server -I/usr/lib/jvm/java-9-openjdk-amd64/include -I/usr/lib/jvm/java-9-openjdk-amd64/include/linux"
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64
+ENV PYTHON2_PREFIX /usr 
+ENV PYTHON2_VERSION python2.7
+ENV PROTOBUF_BIN=/usr/bin/protoc 
+ENV PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu
+ENV PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/
+
+ENV JAVA_PREFIX /usr/lib/jvm/java-9-openjdk-amd64
+#ENV VERBOSE_BUILD "--subcommands --verbose_failures"
+
+RUN cd /exaudf_src/ && \
+	bash build.sh -c opt --define r=true --define python=true --define java=true //:exaudfclient && \
+	cp -r -L bazel-bin/* /exaudf

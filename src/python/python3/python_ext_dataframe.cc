@@ -1,4 +1,4 @@
-#include "exaudflib.h"
+#include "exaudflib/exaudflib.h"
 
 #include <Python.h>
 
