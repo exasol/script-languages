@@ -1,0 +1,5 @@
+[packages]
+luigi = "*"
+docker = "*"
+jinja2 = "*"
+humanfriendly = "*"
