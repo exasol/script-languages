@@ -8,3 +8,4 @@ odbc.ini
 Pipfile.lock
 emulator/zmqcontainer_pb2.py
 .idea
+.output_build

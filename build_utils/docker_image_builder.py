@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -5,6 +6,7 @@ import tempfile
 from pathlib import Path
 from typing import Dict
 
+import docker
 from docker import APIClient
 from jinja2 import Template
 
@@ -44,16 +46,32 @@ class DockerImageBuilder:
                 self._low_level_client.build(path=temp_directory,
                                              tag=image_target.get_complete_name(),
                                              rm=True)
-            self._write_output_log(output_generator)
+            self._handle_output(output_generator, image_target)
+            # TODO detect errors
         finally:
             shutil.rmtree(temp_directory)
 
-    def _write_output_log(self, output_generator):
+    def _handle_output(self, output_generator, image_target):
         path = self.log_file_path.joinpath("docker-build.log")
         with path.open("wb") as log_file:
-            if output_generator is not None:
-                for log_line in output_generator:
-                    log_file.write(log_line)
+            error = False
+            error_message = None
+            for log_line in output_generator:
+                log_file.write(log_line)
+                log_line = log_line.decode("utf-8")
+                log_line = log_line.strip('\r\n')
+                json_output = json.loads(log_line)
+                if 'errorDetail' in json_output:
+                    error = True
+                    error_message = json_output["errorDetail"]["message"]
+        if error:
+            raise docker.errors.BuildError(
+                "Error occured during the build of the image %s. Received error \"%s\" ."
+                "The whole log can be found in %s"
+                % (image_target.get_complete_name(),
+                   error_message,
+                   self.log_file_path.absolute()),
+                self.log_file_path.absolute())
 
     def _prepare_build_context_to_temp_dir(self, temp_directory, images_names_of_dependencies: Dict[str, str]):
         self._copy_build_directories(temp_directory)
@@ -61,6 +79,7 @@ class DockerImageBuilder:
         self._log_build_context(temp_directory)
 
     def _prepare_dockerfile(self, temp_directory, images_names_of_dependencies: Dict[str, str]):
+        self.log_file_path.mkdir(parents=True)
         with open(self.dockerfile, "rt") as file:
             dockerfile_content = file.read()
         template = Template(dockerfile_content)
