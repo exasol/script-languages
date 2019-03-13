@@ -1,6 +1,6 @@
 #
 language: python
-python: "2.7"
+python: "3.6"
 dist: trusty
 
 sudo:  required
@@ -8,33 +8,12 @@ services:
     - docker
 
 install:
-  - sudo apt-get -y install unixodbc unixodbc-dev
-  - sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
+  - sudo pip install pipenv
 
 before_script:
-  - docker pull exasol/docker-db:6.0.12-d1
-
-matrix:
-  include:
-  - name: mini-EXASOL-6.0.0-python
-    env: MATRIX_FLAVOR=mini-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.0.0-python
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.0.0-r
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard-EXASOL-6.0.0-java
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
-  - name: python3-ds-EXASOL-6.0.0-python3
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
-  - name: python3-ds-EXASOL-6.1.0-python3
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
-  - name: standard-EXASOL-6.1.0-python
-    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.1.0-r
-    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard-EXASOL-6.1.0-java
-    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
+  - pipenv install
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 script:
-  - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
+  - pipenv run python3 build.py
 
