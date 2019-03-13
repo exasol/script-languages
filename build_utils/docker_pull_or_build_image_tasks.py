@@ -1,57 +1,41 @@
-import os
-import pathlib
-import shutil
+import logging
 from typing import Dict
 
 import docker
 import luigi
 
+from build_utils.build_config import build_config
+from build_utils.docker_config import docker_config
 from build_utils.build_context_hasher import BuildContextHasher
+
 from build_utils.docker_image_builder import DockerImageBuilder
 from build_utils.docker_image_target import DockerImageTarget
 
 
-class DockerBuildConfig(luigi.Config):
-    docker_base_url = luigi.Parameter("unix:///var/run/docker.sock")
-    force_pull = luigi.BoolParameter(False)
-    force_build = luigi.BoolParameter(False)
-    log_build_context_content = luigi.BoolParameter(False)
-    dont_remove_build_context = luigi.BoolParameter(False)
-    build_context_base_directory = luigi.OptionalParameter(None)
-    ouput_directory = luigi.Parameter(".build_ouput")
-
-
 class DockerPullOrBuildImageTask(luigi.Task):
+    logger = logging.getLogger('luigi-interface')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._docker_build_config = DockerBuildConfig()
-        self.image_name = self.get_image_name()
-        self.image_tag = self.get_image_tag()
-        self.build_directories_mapping = self.get_build_directories_mapping()
-        self.dockerfile = self.get_dockerfile()
+        self._build_config = build_config()
+        self._docker_config = docker_config()
+        self._image_name = self.get_image_name()
+        self._image_tag = self.get_image_tag()
+        self._build_directories_mapping = self.get_build_directories_mapping()
+        self._dockerfile = self.get_dockerfile()
         self._prepare_outputs()
-        self._build_context_hasher = BuildContextHasher(self.build_directories_mapping, self.dockerfile)
+        self._build_context_hasher = BuildContextHasher(self._build_directories_mapping, self._dockerfile)
         self._image_builder = DockerImageBuilder(
-            self.task_id, self._docker_build_config.docker_base_url,
-            self._docker_build_config.build_context_base_directory,
-            self.build_directories_mapping, self.dockerfile,
-            self._docker_build_config.log_build_context_content, self._log_file_path)
-        self._client = docker.DockerClient(base_url=self._docker_build_config.docker_base_url)
+            self.task_id, self._build_config, self._docker_config,
+            self._build_directories_mapping, self._dockerfile)
+        self._client = docker.DockerClient(base_url=self._docker_config.docker_base_url)
 
     def _prepare_outputs(self):
         self._image_name_target = luigi.LocalTarget(
             "%s/image_names/%s"
-            % (self._docker_build_config.ouput_directory, self.image_tag))
+            % (self._build_config.ouput_directory, self._image_tag))
         if self._image_name_target.exists():
             self._image_name_target.remove()
-        self._log_file_path = pathlib.Path("%s/logs/%s/%s/%s/"
-                                           % (self._docker_build_config.ouput_directory,
-                                              type(self).__name__,
-                                              self.image_name,
-                                              self.image_tag))
-        if self._log_file_path.exists():
-            shutil.rmtree(self._log_file_path)
 
     def __del__(self):
         self._client.close()
@@ -89,7 +73,7 @@ class DockerPullOrBuildImageTask(luigi.Task):
         pass
 
     def _get_complete_name(self):
-        complete_name = f"{self.image_name}:{self.image_tag}"
+        complete_name = f"{self._image_name}:{self._image_tag}"
         return complete_name
 
     def output(self):
@@ -98,16 +82,16 @@ class DockerPullOrBuildImageTask(luigi.Task):
     def run(self):
         images_names_of_dependencies = self._get_image_names_of_dependencies()
         image_hash = self._build_context_hasher.generate_image_hash(images_names_of_dependencies)
-        complete_tag = self.image_tag + "_" + image_hash
-        image_target = DockerImageTarget(self.image_name, complete_tag)
+        complete_tag = self._image_tag + "_" + image_hash
+        image_target = DockerImageTarget(self._image_name, complete_tag)
 
-        if self._docker_build_config.force_build \
-                or self._docker_build_config.force_pull:
+        if self._build_config.force_build \
+                or self._build_config.force_pull:
             if image_target.exists():
                 self._client.images.remove(image=image_target.get_complete_name(), force=True)
-                print(f"Removed docker images {image_target.get_complete_name()}")
+                self.logger.info("Task %s: Removed docker images %s", self.task_id, image_target.get_complete_name())
         if not image_target.exists():
-            if not self._docker_build_config.force_build \
+            if not self._build_config.force_build \
                     and self._is_image_in_registry(image_target):
                 self._pull_image(image_target)
             else:
