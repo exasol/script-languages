@@ -9,6 +9,11 @@ from build_utils.docker_pull_or_build_image_tasks import DockerPullOrBuildImageT
 class flavor(luigi.Config):
     path = luigi.Parameter()
 
+    def get_flavor_name(self):
+        path = pathlib.PurePath(self.path)
+        flavor_name = path.name
+        return flavor_name
+
 
 class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
 
@@ -36,13 +41,8 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         return "tkilias/scripting-language-container"
 
     def get_image_tag(self) -> str:
-        flavor_name = self.get_flavor_name()
+        flavor_name = self._flavor_config.get_flavor_name()
         return "%s-%s" % (flavor_name, self.build_step)
-
-    def get_flavor_name(self):
-        path = pathlib.PurePath(self._flavor_config.path)
-        flavor_name = path.name
-        return flavor_name
 
     def get_build_directories_mapping(self) -> Dict[str, str]:
         result = {self.build_step: "%s/%s" % (self._flavor_config.path, self.build_step)}

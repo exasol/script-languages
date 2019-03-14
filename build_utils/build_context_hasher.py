@@ -3,6 +3,7 @@ import hashlib
 from typing import Dict
 
 from build_utils.directory_hasher import FileDirectoryListHasher
+from build_utils.image_info import ImageInfo
 
 
 class BuildContextHasher:
@@ -11,9 +12,9 @@ class BuildContextHasher:
         self.dockerfile = dockerfile
         self.build_directories_mapping = build_directories_mapping
 
-    def generate_image_hash(self, images_names_of_dependencies: Dict[str, str]):
+    def generate_image_hash(self, image_info_of_dependencies: Dict[str, ImageInfo]):
         hash_of_build_context = self._generate_build_context_hash()
-        final_hash = self._generate_final_hash(hash_of_build_context, images_names_of_dependencies)
+        final_hash = self._generate_final_hash(hash_of_build_context, image_info_of_dependencies)
         return self._encode_hash(final_hash)
 
     def _generate_build_context_hash(self):
@@ -26,9 +27,11 @@ class BuildContextHasher:
         hash_of_build_context = files_directories_list_hasher.hash(files_directories_to_hash)
         return hash_of_build_context
 
-    def _generate_final_hash(self, hash_of_build_context: bytes, images_names_of_dependencies: Dict[str, str]):
+    def _generate_final_hash(self, hash_of_build_context: bytes, image_info_of_dependencies: Dict[str, ImageInfo]):
+        image_names_of_dependencies = \
+            {key:image_info.complete_name for key, image_info in image_info_of_dependencies.items()}
         hasher = hashlib.sha256()
-        for key, image_name in sorted(images_names_of_dependencies.items()):
+        for key, image_name in sorted(image_names_of_dependencies.items()):
             hasher.update(key.encode("utf-8"))
             hasher.update(image_name.encode("utf-8"))
         hasher.update(hash_of_build_context)

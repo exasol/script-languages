@@ -11,3 +11,6 @@ RUN apt-get -y update && \
     apt-get -y clean && \
     apt-get -y autoremove && \
     ldconfig
+
+ENV PYTHON2_PREFIX /usr
+ENV PYTHON2_VERSION python2.7

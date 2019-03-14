@@ -28,3 +28,7 @@ RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First La
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
+
+ENV PROTOBUF_BIN=/usr/bin/protoc
+ENV PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu
+ENV PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/
