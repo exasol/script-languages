@@ -3,8 +3,8 @@ from typing import Dict
 
 import luigi
 
+from build_utils.docker_config import docker_config
 from build_utils.docker_pull_or_build_image_tasks import DockerPullOrBuildImageTask
-
 
 class flavor(luigi.Config):
     path = luigi.Parameter()
@@ -13,6 +13,8 @@ class flavor(luigi.Config):
         path = pathlib.PurePath(self.path)
         flavor_name = path.name
         return flavor_name
+
+
 
 
 class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
@@ -38,7 +40,7 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         return {}
 
     def get_image_name(self) -> str:
-        return "tkilias/scripting-language-container"
+        return str(docker_config().repository)
 
     def get_image_tag(self) -> str:
         flavor_name = self._flavor_config.get_flavor_name()

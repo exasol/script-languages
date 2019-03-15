@@ -11,11 +11,11 @@ import humanfriendly
 import luigi
 
 from build_utils.build_config import build_config
+from build_utils.docker_build import DockerBuild_Release
 from build_utils.docker_config import docker_config
 from build_utils.docker_pull_or_build_flavor_image_task import flavor
 from build_utils.image_dependency_collector import ImageDependencyCollector
 from build_utils.image_info import ImageInfo
-from build_utils.docker_build import DockerBuild_Release
 
 
 class ReleaseContainer(luigi.Task):
@@ -42,7 +42,7 @@ class ReleaseContainer(luigi.Task):
         return {"release": DockerBuild_Release()}
 
     def run(self):
-        image_info_of_dependencies = ImageDependencyCollector().get_image_info_of_dependencies(self.input())
+        image_info_of_dependencies = ImageDependencyCollector().get_dict_of_image_info_of_dependencies(self.input())
         with self.output().open("w") as file:
             json.dump(ImageInfo.merge_dependencies(image_info_of_dependencies), file)
         image_info_of_release_image = image_info_of_dependencies["release"]

@@ -4,12 +4,12 @@ import luigi
 
 class DockerImageTarget(luigi.Target):
     def __init__(self, image_name: str, image_tag: str):
-        self._image_name = image_name
-        self._image_tag = image_tag
+        self.image_name = image_name
+        self.image_tag = image_tag
         self._client = docker.from_env()
 
     def get_complete_name(self):
-        return f"{self._image_name}:{self._image_tag}"
+        return f"{self.image_name}:{self.image_tag}"
 
     def exists(self) -> bool:
         try:

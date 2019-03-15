@@ -77,15 +77,11 @@ class DockerPullOrBuildImageTask(luigi.Task):
     def get_additional_docker_build_options(self) -> Dict[str, Any]:
         return {}
 
-    def _get_complete_name(self):
-        complete_name = f"{self._image_name}:{self._image_tag}"
-        return complete_name
-
     def output(self):
         return {"image_info": self._image_info_target}
 
     def run(self):
-        image_info_of_dependencies = ImageDependencyCollector().get_image_info_of_dependencies(self.input())
+        image_info_of_dependencies = ImageDependencyCollector().get_dict_of_image_info_of_dependencies(self.input())
         image_hash = self._build_context_hasher.generate_image_hash(image_info_of_dependencies)
         complete_tag = self._image_tag + "_" + image_hash
         image_target = DockerImageTarget(self._image_name, complete_tag)
@@ -94,20 +90,22 @@ class DockerPullOrBuildImageTask(luigi.Task):
 
     def pull_or_build(self, image_info_of_dependencies, image_target):
         is_new = False
-        if self._build_config.force_build \
-                or self._build_config.force_pull:
-            if image_target.exists():
-                self._client.images.remove(image=image_target.get_complete_name(), force=True)
-                self.logger.info("Task %s: Removed docker images %s", self.task_id, image_target.get_complete_name())
+        self.remove_image_if_required(image_target)
         if not image_target.exists():
-            if not self._build_config.force_build \
-                    and self._is_image_in_registry(image_target):
+            if not self._build_config.force_build and self._is_image_in_registry(image_target):
                 self._pull_image(image_target)
                 is_new = True
             else:
                 self._image_builder.build(image_target, image_info_of_dependencies)
                 is_new = True
         return is_new
+
+    def remove_image_if_required(self, image_target):
+        if self._build_config.force_build \
+                or self._build_config.force_pull:
+            if image_target.exists():
+                self._client.images.remove(image=image_target.get_complete_name(), force=True)
+                self.logger.info("Task %s: Removed docker images %s", self.task_id, image_target.get_complete_name())
 
     def write_image_info_to_output(self, image_hash, image_info_of_dependencies, image_target, is_new):
         image_info_file = self.output()["image_info"]
@@ -120,13 +118,12 @@ class DockerPullOrBuildImageTask(luigi.Task):
 
     def _pull_image(self, image_target: DockerImageTarget):
         self.logger.info("Task %s: Pull docker image %s", self.task_id, image_target.get_complete_name())
-        self._client.images.pull(image_target.get_complete_name())
+        self._client.images.pull(repository=image_target.image_name,tag=image_target.image_tag)
 
     def _is_image_in_registry(self, image_target: DockerImageTarget):
         try:
             registry_data = self._client.images.get_registry_data(image_target.get_complete_name())
             return True
         except docker.errors.APIError as e:
-            print("Exception while checking if image exists in registry",
-                  image_target.get_complete_name(), e)
+            self.logger.error("Task %s: Image %s not in registry, got exception %s", self.task_id, image_target.get_complete_name(),e)
             return False
