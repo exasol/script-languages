@@ -1,5 +1,3 @@
-import luigi
-
 from build_utils.docker_build import *
 from build_utils.docker_push_task import DockerPushImageTask
 
@@ -7,80 +5,91 @@ class DockerPush_UDFClientDeps(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_UDFClientDeps()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_UDFClientDeps(flavor_path=flavor_path)
+
 
 class DockerPush_LanguageDeps(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_LanguageDeps()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_LanguageDeps(flavor_path=flavor_path)
+
 
 class DockerPush_BuildDeps(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_BuildDeps()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_BuildDeps(flavor_path=flavor_path)
+
 
 class DockerPush_BuildRun(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_BuildRun()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_BuildRun(flavor_path=flavor_path)
+
 
 class DockerPush_BaseTestDeps(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_BaseTestDeps()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_BaseTestDeps(flavor_path=flavor_path)
+
 
 class DockerPush_BaseTestBuildRun(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_BaseTestBuildRun()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_BaseTestBuildRun(flavor_path=flavor_path)
 
 class DockerPush_FlavorBaseDeps(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_FlavorBaseDeps()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_FlavorBaseDeps(flavor_path=flavor_path)
+
 
 class DockerPush_FlavorCustomization(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_FlavorCustomization()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_FlavorCustomization(flavor_path=flavor_path)
 
 
 class DockerPush_FlavorTestBuildRun(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_FlavorTestBuildRun()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_FlavorTestBuildRun(flavor_path=flavor_path)
+
 
 class DockerPush_Release(DockerPushImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def requires(self):
-        return DockerBuild_Release()
+    def get_docker_image_task(self, flavor_path):
+        return DockerBuild_Release(flavor_path=flavor_path)
 
-class DockerPush(luigi.WrapperTask):
+
+class DockerPush(FlavorWrapperTask):
 
     def requires(self):
-        return [DockerPush_UDFClientDeps(),
-                DockerPush_LanguageDeps(),
-                DockerPush_BuildDeps(),
-                DockerPush_BuildRun(),
-                DockerPush_BaseTestDeps(),
-                DockerPush_BaseTestBuildRun(),
-                DockerPush_FlavorBaseDeps()]
+        return [self.generate_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
+
+    def generate_tasks_for_flavor(self, flavor_path):
+        return [DockerPush_UDFClientDeps(flavor_path=flavor_path),
+                DockerPush_LanguageDeps(flavor_path=flavor_path),
+                DockerPush_BuildDeps(flavor_path=flavor_path),
+                DockerPush_BuildRun(flavor_path=flavor_path),
+                DockerPush_BaseTestDeps(flavor_path=flavor_path),
+                DockerPush_BaseTestBuildRun(flavor_path=flavor_path),
+                DockerPush_FlavorBaseDeps(flavor_path=flavor_path)]

@@ -1,5 +1,4 @@
 import logging
-import random
 from collections import deque
 
 import docker
@@ -7,18 +6,22 @@ import luigi
 
 from build_utils.build_config import build_config
 from build_utils.docker_config import docker_config
-from build_utils.docker_pull_or_build_flavor_image_task import flavor
+from build_utils.flavor import flavor
 
 
-class CleanContainer(luigi.Task):
+class CleanImages(luigi.Task):
     logger = logging.getLogger('luigi-interface')
+    flavor_path = luigi.OptionalParameter(None)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
         self._client = docker.DockerClient(base_url=self._docker_config.base_url)
         self._low_level_client = docker.APIClient(base_url=self._docker_config.base_url)
-        self._flavor_config = flavor()
+        if self.flavor_path is None:
+            self.flavor_name = None
+        else:
+            self.flavor_name = flavor.get_name_from_path(self.flavor_path)
         self._build_config = build_config()
         self._prepare_outputs()
 
@@ -40,11 +43,15 @@ class CleanContainer(luigi.Task):
             if self._docker_config.repository == "":
                 raise Exception("docker repository must not be an empty string")
             images = self._client.images.list()
+            if self.flavor_name is not None:
+                flavor_name_extension = ":%s" % self.flavor_name
+            else:
+                flavor_name_extension = ""
             filter_images = [image for image in images
                              if len(image.tags) == 1 is not None and
-                             image.tags[0].startswith(self._docker_config.repository)]
+                             image.tags[0].startswith(self._docker_config.repository + flavor_name_extension)]
             queue = deque(filter_images)
-            while len(queue)!=0:
+            while len(queue) != 0:
                 image = queue.pop()
                 image_id = image.id
                 try:
@@ -62,7 +69,6 @@ class CleanContainer(luigi.Task):
                         nb_childs = 0
                         for possible_child in self._client.images.list(all=True):
                             inspect = self._low_level_client.inspect_image(image=possible_child.id)
-                            if inspect["Parent"]==image_id:
+                            if inspect["Parent"] == image_id:
                                 queue.append(possible_child)
-                                nb_childs=nb_childs+1
-
+                                nb_childs = nb_childs + 1
