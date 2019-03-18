@@ -55,7 +55,6 @@ class CleanContainer(luigi.Task):
                     file.write("\n")
                     self.logger.info("Removed image %s" % image_id)
                 except Exception as e:
-                    print(e)
                     if not "No such image" in str(e):
                         file.write(str(e))
                         file.write("\n")
@@ -64,8 +63,6 @@ class CleanContainer(luigi.Task):
                         for possible_child in self._client.images.list(all=True):
                             inspect = self._low_level_client.inspect_image(image=possible_child.id)
                             if inspect["Parent"]==image_id:
-                                print("append child", possible_child.id)
                                 queue.append(possible_child)
                                 nb_childs=nb_childs+1
-                        print("nb_childs",nb_childs)
 

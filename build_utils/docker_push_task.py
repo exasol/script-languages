@@ -52,6 +52,7 @@ class DockerPushImageTask(luigi.Task):
                 if "status" in json_output and json_output["status"] != "Pushing":
                     complete_log.append(log_line)
                     log_file.write(log_line)
+                    log_file.write("\n")
                 if 'errorDetail' in json_output:
                     error = True
                     error_message = json_output["errorDetail"]["message"]

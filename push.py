@@ -1,7 +1,7 @@
 import subprocess
 
 if __name__ == '__main__':
-    command = "luigi --log-level INFO --local-scheduler --workers 3 " \
+    command = "luigi --log-level INFO --local-scheduler --workers 5 " \
               "--module build_utils DockerPush " \
               "--docker-config-repository exasol/script-language-container " \
               "--docker-config-username user " \

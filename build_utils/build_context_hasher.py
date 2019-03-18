@@ -28,10 +28,10 @@ class BuildContextHasher:
         return hash_of_build_context
 
     def _generate_final_hash(self, hash_of_build_context: bytes, image_info_of_dependencies: Dict[str, ImageInfo]):
-        image_names_of_dependencies = \
-            {key:image_info.complete_name for key, image_info in image_info_of_dependencies.items()}
+        hashes_of_dependencies = \
+            {key:image_info.hash for key, image_info in image_info_of_dependencies.items()}
         hasher = hashlib.sha256()
-        for key, image_name in sorted(image_names_of_dependencies.items()):
+        for key, image_name in sorted(hashes_of_dependencies.items()):
             hasher.update(key.encode("utf-8"))
             hasher.update(image_name.encode("utf-8"))
         hasher.update(hash_of_build_context)

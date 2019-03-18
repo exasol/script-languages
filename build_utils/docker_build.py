@@ -69,9 +69,8 @@ class DockerBuild_FlavorBaseDeps(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "flavor_base_deps"
 
-    def requires(self):
-        return {"language_deps": DockerBuild_LanguageDeps()}
-
+    def get_additional_build_directories_mapping(self):
+        return {"ext": "ext"}
 
 class DockerBuild_FlavorCustomization(DockerPullOrBuildFlavorImageTask):
 
@@ -111,4 +110,5 @@ class DockerBuild(luigi.WrapperTask):
                 DockerBuild_BaseTestBuildRun(),
                 DockerBuild_FlavorBaseDeps(),
                 DockerBuild_FlavorCustomization(),
+                DockerBuild_FlavorTestBuildRun(),
                 DockerBuild_Release()]
