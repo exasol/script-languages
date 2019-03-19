@@ -2,8 +2,8 @@ import base64
 import hashlib
 from typing import Dict
 
-from build_utils.directory_hasher import FileDirectoryListHasher
-from build_utils.image_info import ImageInfo
+from build_utils.lib.utils.directory_hasher import FileDirectoryListHasher
+from build_utils.lib.data.image_info import ImageInfo
 
 
 class BuildContextHasher:

@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 import unittest
-from build_utils.directory_hasher import FileDirectoryListHasher
+from build_utils.lib.utils.directory_hasher import FileDirectoryListHasher
 
 
 class MyTestCase(unittest.TestCase):

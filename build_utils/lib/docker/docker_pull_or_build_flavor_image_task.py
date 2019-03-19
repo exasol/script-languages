@@ -2,9 +2,9 @@ from typing import Dict
 
 import luigi
 
-from build_utils.docker_config import docker_config
-from build_utils.docker_pull_or_build_image_tasks import DockerPullOrBuildImageTask
-from build_utils.flavor import flavor
+from build_utils.lib.docker_config import docker_config
+from build_utils.lib.docker.docker_pull_or_build_image_tasks import DockerPullOrBuildImageTask
+from build_utils.lib.flavor import flavor
 
 
 class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
@@ -14,6 +14,7 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         self.build_step = self.get_build_step()
         self.additional_build_directories_mapping = self.get_additional_build_directories_mapping()
         super().__init__(*args, **kwargs)
+        self._docker_config = docker_config()
 
     def get_build_step(self) -> str:
         pass
@@ -30,7 +31,8 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         return {}
 
     def get_image_name(self) -> str:
-        return str(docker_config().repository)
+
+        return f"""{self._docker_config.repository_user}/{self._docker_config.repository_name}"""
 
     def get_image_tag(self) -> str:
         flavor_name = flavor.get_name_from_path(self.flavor_path)

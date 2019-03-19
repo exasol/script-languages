@@ -1,0 +1,4 @@
+language_definition=PYTHON=localzmq+protobuf:///bfsdefault/myudfs/test-flavor?lang=python#buckets/bfsdefault/myudfs/test-flavor/exaudf/exaudfclient JAVA=builtin_java R=builtin_r
+generic_language_tests=python
+test_folders=python
+# ending new line required!

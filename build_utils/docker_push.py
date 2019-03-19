@@ -1,5 +1,5 @@
 from build_utils.docker_build import *
-from build_utils.docker_push_task import DockerPushImageTask
+from build_utils.lib.docker.docker_push_task import DockerPushImageTask
 
 class DockerPush_UDFClientDeps(DockerPushImageTask):
     def __init__(self, *args, **kwargs):

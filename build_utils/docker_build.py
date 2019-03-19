@@ -1,10 +1,8 @@
-import pathlib
 from typing import Dict
 
-import luigi
-
-from build_utils.docker_pull_or_build_flavor_image_task import DockerPullOrBuildFlavorImageTask
-from build_utils.flavor_task import FlavorTask, FlavorWrapperTask
+from build_utils.lib.build_config import build_config
+from build_utils.lib.docker.docker_pull_or_build_flavor_image_task import DockerPullOrBuildFlavorImageTask
+from build_utils.lib.flavor_task import FlavorWrapperTask
 
 
 class DockerBuild_UDFClientDeps(DockerPullOrBuildFlavorImageTask):
@@ -105,6 +103,10 @@ class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
 
 
 class DockerBuild(FlavorWrapperTask):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._build_config = build_config()
 
     def requires(self):
         return [self.generate_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]

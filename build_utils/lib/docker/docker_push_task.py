@@ -1,11 +1,14 @@
+import datetime
 import json
+import pathlib
 
 import docker
 import luigi
 
-from build_utils.build_config import build_config
-from build_utils.docker_config import docker_config
-from build_utils.image_dependency_collector import ImageDependencyCollector
+from build_utils.lib.build_config import build_config
+from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
+from build_utils.lib.data.image_info import ImageInfo
+from build_utils.lib.docker_config import docker_config
 
 
 class DockerPushImageTask(luigi.Task):
@@ -22,14 +25,14 @@ class DockerPushImageTask(luigi.Task):
         self._client.close()
 
     def _prepare_outputs(self):
-        self._log_target = luigi.LocalTarget(
-            "%s/logs/docker-push/%s"
+        self._push_info_target = luigi.LocalTarget(
+            "%s/push_info/%s"
             % (self._build_config.ouput_directory, self.task_id))
-        if self._log_target.exists():
-            self._log_target.remove()
+        if self._push_info_target.exists():
+            self._push_info_target.remove()
 
     def output(self):
-        return self._log_target
+        return self._push_info_target
 
     def requires(self):
         return self.get_docker_image_task(self.flavor_path)
@@ -38,17 +41,23 @@ class DockerPushImageTask(luigi.Task):
         pass
 
     def run(self):
-        image_info = ImageDependencyCollector().get_image_info_of_dependency(self.input())
+        image_info = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
         generator = self._client.images.push(repository=image_info.name, tag=image_info.tag + "_" + image_info.hash,
                                              auth_config={
                                                  "username": self._docker_config.username,
                                                  "password": self._docker_config.password
                                              },
                                              stream=True)
-        self._handle_output(generator, image_info.complete_name)
+        self._handle_output(generator, image_info)
+        self.write_output(image_info)
 
-    def _handle_output(self, output_generator, complete_name):
-        with self._log_target.open("w") as log_file:
+    def write_output(self, image_info):
+        with self._push_info_target.open("w") as file:
+            file.write(image_info.complete_name)
+
+    def _handle_output(self, output_generator, image_info: ImageInfo):
+        log_target = self.prepate_log_file_path(image_info)
+        with log_target.open("w") as log_file:
             error = False
             error_message = None
             complete_log = []
@@ -57,13 +66,23 @@ class DockerPushImageTask(luigi.Task):
         if self._build_config.log_to_stdout:
             self.logger.info("Task %s: Build Log of image %s\n%s",
                              self._task_id,
-                             complete_name,
+                             image_info.complete_name,
                              "\n".join(complete_log))
         if error:
             raise Exception(
                 "Error occured during the push of the image %s. Received error \"%s\" ."
                 "The whole log can be found in %s"
-                % (complete_name, error_message, self._log_target.path))
+                % (image_info.complete_name, error_message, self._push_info_target.path))
+
+    def prepate_log_file_path(self, image_info: ImageInfo):
+        log_file_path = pathlib.Path("%s/logs/docker-push/%s/%s/%s"
+                                     % (self._build_config.ouput_directory,
+                                        image_info.name, image_info.tag,
+                                        datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
+        log_file_target = luigi.LocalTarget(str(log_file_path))
+        if log_file_target.exists():
+            log_file_target.remove()
+        return log_file_target
 
     def handle_log_line(self, complete_log, error, error_message, log_file, log_line):
         log_line = log_line.decode("utf-8")

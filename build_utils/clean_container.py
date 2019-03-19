@@ -1,12 +1,13 @@
+import datetime
 import logging
 from collections import deque
 
 import docker
 import luigi
 
-from build_utils.build_config import build_config
-from build_utils.docker_config import docker_config
-from build_utils.flavor import flavor
+from build_utils.lib.build_config import build_config
+from build_utils.lib.docker_config import docker_config
+from build_utils.lib.flavor import flavor
 
 
 class CleanImages(luigi.Task):
@@ -27,8 +28,10 @@ class CleanImages(luigi.Task):
 
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
-            "%s/logs/clean-container/%s"
-            % (self._build_config.ouput_directory, self.task_id))
+            "%s/logs/clean-container/%s_%s"
+            % (self._build_config.ouput_directory,
+               datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
+               self.task_id))
         if self._log_target.exists():
             self._log_target.remove()
 
@@ -40,16 +43,21 @@ class CleanImages(luigi.Task):
 
     def run(self):
         with self._log_target.open("w") as file:
-            if self._docker_config.repository == "":
+            if self._docker_config.repository_user == "":
                 raise Exception("docker repository must not be an empty string")
             images = self._client.images.list()
             if self.flavor_name is not None:
                 flavor_name_extension = ":%s" % self.flavor_name
             else:
                 flavor_name_extension = ""
+            starts_with_pattern = self._docker_config.repository_user + "/" + \
+                                  self._docker_config.repository_name + \
+                                  flavor_name_extension
+            self.logger.info("Going to remove all images starting with %s"%starts_with_pattern)
             filter_images = [image for image in images
-                             if len(image.tags) == 1 is not None and
-                             image.tags[0].startswith(self._docker_config.repository + flavor_name_extension)]
+                             if len(image.tags) >= 1 is not None and
+                             any([tag.startswith(starts_with_pattern) for tag in image.tags])]
+            self.logger.info("Going to remove following images %s" % filter_images)
             queue = deque(filter_images)
             while len(queue) != 0:
                 image = queue.pop()

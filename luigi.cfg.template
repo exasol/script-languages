@@ -1,0 +1,4 @@
+[docker_config]
+repository_user = exasol
+username = exasol
+password = password

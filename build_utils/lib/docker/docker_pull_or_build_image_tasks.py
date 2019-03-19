@@ -4,14 +4,14 @@ from typing import Dict, Any
 import docker
 import luigi
 
-from build_utils.build_config import build_config
-from build_utils.docker_config import docker_config
-from build_utils.build_context_hasher import BuildContextHasher
+from build_utils.lib.build_config import build_config
+from build_utils.lib.utils.build_context_hasher import BuildContextHasher
+from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector, IMAGE_INFO
+from build_utils.lib.docker_config import docker_config
+from build_utils.lib.docker.docker_image_builder import DockerImageBuilder
+from build_utils.lib.docker.docker_image_target import DockerImageTarget
+from build_utils.lib.data.image_info import ImageInfo
 
-from build_utils.docker_image_builder import DockerImageBuilder
-from build_utils.docker_image_target import DockerImageTarget
-from build_utils.image_dependency_collector import ImageDependencyCollector
-from build_utils.image_info import ImageInfo
 
 class DockerPullOrBuildImageTask(luigi.Task):
     logger = logging.getLogger('luigi-interface')
@@ -34,8 +34,9 @@ class DockerPullOrBuildImageTask(luigi.Task):
 
     def _prepare_outputs(self):
         self._image_info_target = luigi.LocalTarget(
-            "%s/image_info/%s"
-            % (self._build_config.ouput_directory, self._image_tag))
+            "%s/image_info/%s/%s"
+            % (self._build_config.ouput_directory,
+               self._image_name, self._image_tag))
         if self._image_info_target.exists():
             self._image_info_target.remove()
 
@@ -54,7 +55,7 @@ class DockerPullOrBuildImageTask(luigi.Task):
         Called by the constructor to get the image tag. Sub classes need to implement this method.
         :return: image tag
         """
-        pass
+        return "latest"
 
     def get_build_directories_mapping(self) -> Dict[str, str]:
         """
@@ -78,17 +79,25 @@ class DockerPullOrBuildImageTask(luigi.Task):
         return {}
 
     def output(self):
-        return {"image_info": self._image_info_target}
+        return {IMAGE_INFO: self._image_info_target}
 
     def run(self):
-        image_info_of_dependencies = ImageDependencyCollector().get_dict_of_image_info_of_dependencies(self.input())
+        image_info_of_dependencies = DependencyImageInfoCollector().get_from_dict_of_inputs(self.input())
         image_hash = self._build_context_hasher.generate_image_hash(image_info_of_dependencies)
         complete_tag = self._image_tag + "_" + image_hash
         image_target = DockerImageTarget(self._image_name, complete_tag)
-        is_new = self.pull_or_build(image_info_of_dependencies, image_target)
-        self.write_image_info_to_output(image_hash, image_info_of_dependencies, image_target, is_new)
+        image_info = ImageInfo(
+            complete_name=image_target.get_complete_name(),
+            name=self._image_name, tag=self._image_tag, hash=image_hash,
+            is_new=None, depends_on_images=list(image_info_of_dependencies.values()))
+        is_new = self.pull_or_build(image_info_of_dependencies, image_target, image_info)
+        image_info.is_new = is_new
+        self.write_image_info_to_output(image_info)
 
-    def pull_or_build(self, image_info_of_dependencies, image_target):
+    def pull_or_build(self,
+                      image_info_of_dependencies: Dict[str, ImageInfo],
+                      image_target: DockerImageTarget,
+                      image_info: ImageInfo):
         is_new = False
         self.remove_image_if_required(image_target)
         if not image_target.exists():
@@ -96,7 +105,7 @@ class DockerPullOrBuildImageTask(luigi.Task):
                 self._pull_image(image_target)
                 is_new = True
             else:
-                self._image_builder.build(image_target, image_info_of_dependencies)
+                self._image_builder.build(image_info, image_info_of_dependencies)
                 is_new = True
         return is_new
 
@@ -105,25 +114,22 @@ class DockerPullOrBuildImageTask(luigi.Task):
                 or self._build_config.force_pull:
             if image_target.exists():
                 self._client.images.remove(image=image_target.get_complete_name(), force=True)
-                self.logger.info("Task %s: Removed docker images %s", self.task_id, image_target.get_complete_name())
+                self.logger.info("Task %s: Removed docker images %s",
+                                 self.task_id, image_target.get_complete_name())
 
-    def write_image_info_to_output(self, image_hash, image_info_of_dependencies, image_target, is_new):
-        image_info_file = self.output()["image_info"]
-        with image_info_file.open("wt") as file:
-            image_info = ImageInfo.create(
-                complete_name=image_target.get_complete_name(),
-                name=self._image_name, tag=self._image_tag, hash=image_hash,
-                is_new=is_new, dependencies=image_info_of_dependencies)
+    def write_image_info_to_output(self, image_info: ImageInfo):
+        with  self.output()[IMAGE_INFO].open("wt") as file:
             file.write(image_info.to_json())
 
     def _pull_image(self, image_target: DockerImageTarget):
         self.logger.info("Task %s: Pull docker image %s", self.task_id, image_target.get_complete_name())
-        self._client.images.pull(repository=image_target.image_name,tag=image_target.image_tag)
+        self._client.images.pull(repository=image_target.image_name, tag=image_target.image_tag)
 
     def _is_image_in_registry(self, image_target: DockerImageTarget):
         try:
             registry_data = self._client.images.get_registry_data(image_target.get_complete_name())
             return True
         except docker.errors.APIError as e:
-            self.logger.error("Task %s: Image %s not in registry, got exception %s", self.task_id, image_target.get_complete_name(),e)
+            self.logger.error("Task %s: Image %s not in registry, got exception %s", self.task_id,
+                              image_target.get_complete_name(), e)
             return False

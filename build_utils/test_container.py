@@ -1,12 +1,12 @@
 import luigi
 
-from build_utils.lib.release_container_task import ReleaseContainerTask
 from build_utils.docker_build import DockerBuild_Release, DockerBuild_BaseTestBuildRun, DockerBuild_FlavorTestBuildRun
 from build_utils.lib.flavor_task import FlavorWrapperTask
+from build_utils.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
 from build_utils.release_type import ReleaseType
 
 
-class ReleaseContainer_Release(ReleaseContainerTask):
+class TestContainer_Release(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
         return DockerBuild_Release(flavor_path)
 
@@ -14,7 +14,7 @@ class ReleaseContainer_Release(ReleaseContainerTask):
         return ReleaseType.Release
 
 
-class ReleaseContainer_BaseTest(ReleaseContainerTask):
+class TestContainer_BaseTest(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
         return DockerBuild_BaseTestBuildRun(flavor_path)
 
@@ -22,15 +22,14 @@ class ReleaseContainer_BaseTest(ReleaseContainerTask):
         return ReleaseType.BaseTest
 
 
-class ReleaseContainer_FlavorTest(ReleaseContainerTask):
+class TestContainer_FlavorTest(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
         return DockerBuild_FlavorTestBuildRun(flavor_path)
 
     def get_release_type(self):
         return ReleaseType.FlavorTest
 
-
-class ReleaseContainer(FlavorWrapperTask):
+class TestContainer(FlavorWrapperTask):
     release_types = luigi.ListParameter(["Release"])
 
     def __init__(self, *args, **kwargs):
@@ -43,9 +42,9 @@ class ReleaseContainer(FlavorWrapperTask):
     def generate_tasks_for_flavor(self, flavor_path):
         result = []
         if ReleaseType.Release in self.actual_release_types:
-            result.append(ReleaseContainer_Release(flavor_path=flavor_path))
+            result.append(TestContainer_Release(flavor_path=flavor_path))
         if ReleaseType.BaseTest in self.actual_release_types:
-            result.append(ReleaseContainer_BaseTest(flavor_path=flavor_path))
+            result.append(TestContainer_BaseTest(flavor_path=flavor_path))
         if ReleaseType.FlavorTest in self.actual_release_types:
-            result.append(ReleaseContainer_FlavorTest(flavor_path=flavor_path))
+            result.append(TestContainer_FlavorTest(flavor_path=flavor_path))
         return result

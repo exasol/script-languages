@@ -1,7 +1,5 @@
 import pathlib
 
-import luigi
-
 
 class flavor():
 

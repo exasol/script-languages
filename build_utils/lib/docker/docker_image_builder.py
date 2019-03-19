@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import os
@@ -8,13 +9,13 @@ from pathlib import Path
 from typing import Dict, Any
 
 import docker
+import luigi
 from docker import APIClient
 from jinja2 import Template
 
-from build_utils.build_config import build_config
-from build_utils.docker_config import docker_config
-from build_utils.docker_image_target import DockerImageTarget
-from build_utils.image_info import ImageInfo
+from build_utils.lib.build_config import build_config
+from build_utils.lib.docker_config import docker_config
+from build_utils.lib.data.image_info import ImageInfo
 
 
 class DockerImageBuilder:
@@ -25,7 +26,7 @@ class DockerImageBuilder:
                  docker_condig: docker_config,
                  build_directories_mapping: Dict[str, str],
                  dockerfile: str,
-                 additional_docker_build_options:Dict[str,Any]):
+                 additional_docker_build_options: Dict[str, Any]):
         self._additional_docker_build_options = additional_docker_build_options
         self._docker_condig = docker_condig
         self._build_config = build_config
@@ -37,10 +38,11 @@ class DockerImageBuilder:
     def __del__(self):
         self._low_level_client.close()
 
-    def build(self, image_target: DockerImageTarget, image_info_of_dependencies: Dict[str, ImageInfo]):
-        log_file_path = self.prepate_log_file_path(image_target)
+    def build(self, image_info: ImageInfo,
+              image_info_of_dependencies: Dict[str, ImageInfo]):
+        log_file_path = self.prepate_log_file_path(image_info)
         self.logger.info("Task %s: Build docker image %s, config file can be found here %s",
-                         self._task_id, image_target.get_complete_name(), log_file_path)
+                         self._task_id, image_info.complete_name, log_file_path)
         try:
             temp_directory = tempfile.mkdtemp(prefix="script_langauge_container_tmp_dir",
                                               dir=self._build_config.temporary_base_directory)
@@ -48,14 +50,15 @@ class DockerImageBuilder:
 
             output_generator = \
                 self._low_level_client.build(path=temp_directory,
-                                             tag=image_target.get_complete_name(),
+                                             tag=image_info.complete_name,
                                              rm=True,
                                              **self._additional_docker_build_options)
-            self._handle_output(output_generator, image_target, log_file_path)
+            self._handle_output(output_generator, image_info, log_file_path)
         finally:
             shutil.rmtree(temp_directory)
 
-    def _handle_output(self, output_generator, image_target, log_file_path):
+    def _handle_output(self, output_generator,
+                       image_info: ImageInfo, log_file_path: luigi.LocalTarget):
         log_file_path = log_file_path.joinpath("docker-build.log")
         with log_file_path.open("wb") as log_file:
             error = False
@@ -73,21 +76,24 @@ class DockerImageBuilder:
         if self._build_config.log_to_stdout:
             self.logger.info("Task %s: Build Log of image %s\n%s",
                              self._task_id,
-                             image_target.get_complete_name(),
+                             image_info.complete_name,
                              "\n".join(complete_log))
         if error:
             raise docker.errors.BuildError(
                 "Error occured during the build of the image %s. Received error \"%s\" ."
                 "The whole log can be found in %s"
-                % (image_target.get_complete_name(),
+                % (image_info.complete_name,
                    error_message,
                    log_file_path.absolute()),
                 log_file_path.absolute())
 
-    def prepate_log_file_path(self, image_target):
-        log_file_path = pathlib.Path("%s/logs/docker-build/%s/"
+    def prepate_log_file_path(self, image_info: ImageInfo):
+        log_file_path = pathlib.Path("%s/logs/docker-build/%s/%s/%s_%s"
                                      % (self._build_config.ouput_directory,
-                                        image_target.get_complete_name()))
+                                        image_info.name, image_info.tag,
+                                        datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
+                                        image_info.hash
+                                        ))
         if log_file_path.exists():
             shutil.rmtree(log_file_path)
         log_file_path.mkdir(parents=True)
@@ -104,7 +110,7 @@ class DockerImageBuilder:
             dockerfile_content = file.read()
         template = Template(dockerfile_content)
         image_names_of_dependencies = \
-            {key:image_info.complete_name for key, image_info in image_info_of_dependencies.items()}
+            {key: image_info.complete_name for key, image_info in image_info_of_dependencies.items()}
         final_dockerfile = template.render(**image_names_of_dependencies)
         with open(temp_directory + "/Dockerfile", "wt") as file:
             file.write(final_dockerfile)
