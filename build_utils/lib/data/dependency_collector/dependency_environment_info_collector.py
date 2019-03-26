@@ -12,7 +12,7 @@ class DependencyEnvironmentInfoCollector(DependencyInfoCollector[EnvironmentInfo
 
     def read_info(self, value) -> EnvironmentInfo:
         with value[ENVIRONMENT_INFO].open("r") as file:
-            return ReleaseInfo.from_json(file.read())
+            return EnvironmentInfo.from_json(file.read())
 
 
 ENVIRONMENT_INFO = "environment_info"

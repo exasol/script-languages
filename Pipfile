@@ -1,7 +1,10 @@
 [packages]
 luigi = "*"
-docker = "*"
 jinja2 = "*"
 humanfriendly = "*"
 jsonpickle = "*"
 simplejson = "*"
+docker = ">=3.7.1"
+ipaddr = ">=2.1.11"
+configobj = ">=5.0.6"
+netaddr = "*"

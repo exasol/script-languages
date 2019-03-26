@@ -1,8 +1,8 @@
 import luigi
 
-from build_utils.lib.release_container_task import ReleaseContainerTask
 from build_utils.docker_build import DockerBuild_Release, DockerBuild_BaseTestBuildRun, DockerBuild_FlavorTestBuildRun
 from build_utils.lib.flavor_task import FlavorWrapperTask
+from build_utils.lib.release_container_task import ReleaseContainerTask
 from build_utils.release_type import ReleaseType
 
 

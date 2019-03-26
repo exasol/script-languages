@@ -1,14 +1,17 @@
 import luigi
 
+from build_utils import ReleaseContainer
 from build_utils.docker_build import DockerBuild_Release, DockerBuild_BaseTestBuildRun, DockerBuild_FlavorTestBuildRun
 from build_utils.lib.flavor_task import FlavorWrapperTask
 from build_utils.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
+from build_utils.release_container import ReleaseContainer_BaseTest, ReleaseContainer_FlavorTest, \
+    ReleaseContainer_Release
 from build_utils.release_type import ReleaseType
 
 
 class TestContainer_Release(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
-        return DockerBuild_Release(flavor_path)
+        return ReleaseContainer_Release(flavor_path=flavor_path)
 
     def get_release_type(self):
         return ReleaseType.Release
@@ -16,7 +19,7 @@ class TestContainer_Release(TestRunnerDBTestTask):
 
 class TestContainer_BaseTest(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
-        return DockerBuild_BaseTestBuildRun(flavor_path)
+        return ReleaseContainer_BaseTest(flavor_path=flavor_path)
 
     def get_release_type(self):
         return ReleaseType.BaseTest
@@ -24,12 +27,14 @@ class TestContainer_BaseTest(TestRunnerDBTestTask):
 
 class TestContainer_FlavorTest(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
-        return DockerBuild_FlavorTestBuildRun(flavor_path)
+        return ReleaseContainer_FlavorTest(flavor_path=flavor_path)
 
     def get_release_type(self):
         return ReleaseType.FlavorTest
 
+
 class TestContainer(FlavorWrapperTask):
+
     release_types = luigi.ListParameter(["Release"])
 
     def __init__(self, *args, **kwargs):

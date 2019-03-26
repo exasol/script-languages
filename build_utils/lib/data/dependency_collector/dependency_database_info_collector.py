@@ -12,7 +12,7 @@ class DependencyDatabaseInfoCollector(DependencyInfoCollector[DatabaseInfo]):
 
     def read_info(self, value) -> DatabaseInfo:
         with value[DATABASE_INFO].open("r") as file:
-            return ReleaseInfo.from_json(file.read())
+            return DatabaseInfo.from_json(file.read())
 
 
 DATABASE_INFO = "database_info"

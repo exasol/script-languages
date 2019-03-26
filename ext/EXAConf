@@ -33,7 +33,7 @@
     DeviceType = file
 
 [Node : 11]
-    PrivateNet = 172.17.0.2/16
+    PrivateNet = {{private_network}}
     PublicNet =
     Name = n11
     UUID = 5D11CDFCDEA74475833F1892426428873D4BEB66

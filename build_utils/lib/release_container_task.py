@@ -11,11 +11,11 @@ import humanfriendly
 import luigi
 
 from build_utils.lib.build_config import build_config
+from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
+from build_utils.lib.data.dependency_collector.dependency_release_info_collector import RELEASE_INFO
+from build_utils.lib.data.release_info import ReleaseInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.flavor import flavor
-from build_utils.lib.data.release_info import ReleaseInfo
-from build_utils.lib.data.dependency_collector.dependency_release_info_collector import RELEASE_INFO
-from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from build_utils.release_type import ReleaseType
 
 
@@ -71,9 +71,9 @@ class ReleaseContainerTask(luigi.Task):
 
         with self.output()[RELEASE_INFO].open("w") as file:
             release_info = ReleaseInfo(
-                path=release_file,
+                path=str(release_file),
                 complete_name=release_name,
-                name=image_info_of_release_image.tag,
+                name=flavor.get_name_from_path(self.flavor_path),
                 hash=image_info_of_release_image.hash,
                 is_new=is_new,
                 depends_on_image=image_info_of_release_image,
