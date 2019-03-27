@@ -1,7 +1,13 @@
+import pathlib
+import time
+from typing import Dict, List
+
 import docker
 import luigi
+from docker.models.containers import Container
 
 from build_utils.lib.build_config import build_config
+from build_utils.lib.data.database_info import DatabaseInfo
 from build_utils.lib.data.dependency_collector.dependency_environment_info_collector import \
     DependencyEnvironmentInfoCollector
 from build_utils.lib.data.dependency_collector.dependency_release_info_collector import DependencyReleaseInfoCollector
@@ -61,11 +67,46 @@ class TestRunnerDBTestTask(luigi.Task):
             DependencyEnvironmentInfoCollector().get_from_dict_of_inputs(self.input())
         test_environment_info = test_environment_info_of_dependencies["test_environment"]
 
-        yield UploadReleaseContainer(test_container_info_dict=test_environment_info.test_container_info.to_dict(),
-                                     database_info_dict=test_environment_info.database_info.to_dict(),
+        test_container_info = test_environment_info.test_container_info
+        database_info = test_environment_info.database_info
+        yield UploadReleaseContainer(test_container_info_dict=test_container_info.to_dict(),
+                                     database_info_dict=database_info.to_dict(),
                                      release_info_dict=release_info.to_dict())
+
+        test_container = self._client.containers.get(test_container_info.container_name)
+
+        test_config = self.read_test_config()
         with self._log_target.open("w") as file:
-            file.write("")
+            self.execute_test(test_container, database_info, test_config,
+                              test_config["generic_language_tests"] + "/general.py",
+                              ["PythonInterpreter.test_body_is_not_executed_at_creation_time"],
+                              file)
+
+    def execute_test(self, test_container: Container, database_info: DatabaseInfo,
+                     test_config: Dict[str, str], test: str, tests: List[str], output_file):
+        options = "--loglevel=critical " \
+                  "--driver=/downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so  " \
+                  "--jdbc-path /downloads/JDBC/exajdbc.jar"
+        cmd = 'python -tt "{test}" --server "{host}:{port}" --script-languages \'{language}\' {options} {tests}' \
+            .format(
+            test=test,
+            host=database_info.host,
+            port=database_info.db_port,
+            language=test_config["language_definition"],
+            options=options,
+            tests=" ".join(tests)
+        )
+        exit_code, output = test_container.exec_run(cmd=cmd, workdir="/tests/test/", environment={"TRAVIS": ""})
+        output_file.write(output.decode("utf-8"))
 
     def read_test_config(self):
-        pass
+        with pathlib.Path(self.flavor_path).joinpath("testconfig").open("r") as file:
+            test_config_str = file.read()
+            test_config = {}
+            for line in test_config_str.splitlines():
+                if not line.startswith("#") and not line == "":
+                    split = line.split("=")
+                    key = split[0]
+                    value = "=".join(split[1:])
+                    test_config[key] = value
+        return test_config

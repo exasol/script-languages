@@ -44,16 +44,16 @@ class UploadFileToDB(luigi.Task):
         self.wait_for_upload(pattern_to_wait_for=pattern_to_wait_for, log_file=log_file)
         self.write_logs("Done".encode("utf-8"))
 
-    def get_log_file(self)->str:
+    def get_log_file(self) -> str:
         pass
 
-    def get_pattern_to_wait_for(self)->str:
+    def get_pattern_to_wait_for(self) -> str:
         pass
 
-    def get_file_to_upload(self)->str:
+    def get_file_to_upload(self) -> str:
         pass
 
-    def get_upload_target(self)->str:
+    def get_upload_target(self) -> str:
         pass
 
     def upload_file(self, file_to_upload: str, upload_target: str):
@@ -69,16 +69,14 @@ class UploadFileToDB(luigi.Task):
 
     def wait_for_upload(self, pattern_to_wait_for: str, log_file: str):
         database_container = self._client.containers.get(self.database_info.container_info.container_name)
-        exit_code = 0
-        while exit_code == 0:
-            cmd = "grep {pattern} {log_file}" \
-                .format(pattern=pattern_to_wait_for,
-                        log_file=log_file)
-            exit_code, output = database_container.exec_run(
-                cmd=cmd, stream=True)
-            if exit_code == 2:
-                self.write_logs(output)
-                raise Exception("grep error")
+        exit_code = 1
+        i = 0
+        while exit_code != 0:
+            cmd = f"""grep '{pattern_to_wait_for}' {log_file} """
+            bash_cmd = f"""bash -c "{cmd}" """
+            exit_code, output = \
+                database_container.exec_run(cmd=bash_cmd)
+            i += 1
             time.sleep(1)
 
     def write_logs(self, output):

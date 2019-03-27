@@ -11,7 +11,6 @@ RUN apt-get -y update && \
         protobuf-compiler \
         libprotobuf-dev \
         libssl-dev \
-        swig \
         unzip \
         libpcre3-dev \
         curl \
