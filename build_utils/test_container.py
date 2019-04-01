@@ -34,8 +34,11 @@ class TestContainer_FlavorTest(TestRunnerDBTestTask):
 
 
 class TestContainer(FlavorWrapperTask):
-
     release_types = luigi.ListParameter(["Release"])
+    reuse_database = luigi.BoolParameter(False)
+    tests_to_execute = luigi.ListParameter([])
+    test_log_level = luigi.Parameter("critical")
+    environment = luigi.DictParameter({"TRAVIS": ""})
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,10 +49,15 @@ class TestContainer(FlavorWrapperTask):
 
     def generate_tasks_for_flavor(self, flavor_path):
         result = []
+        args = dict(flavor_path=flavor_path,
+                    reuse_database=self.reuse_database,
+                    tests_to_execute=self.tests_to_execute,
+                    log_level=self.test_log_level,
+                    environment=self.environment)
         if ReleaseType.Release in self.actual_release_types:
-            result.append(TestContainer_Release(flavor_path=flavor_path))
+            result.append(TestContainer_Release(**args))
         if ReleaseType.BaseTest in self.actual_release_types:
-            result.append(TestContainer_BaseTest(flavor_path=flavor_path))
+            result.append(TestContainer_BaseTest(**args))
         if ReleaseType.FlavorTest in self.actual_release_types:
-            result.append(TestContainer_FlavorTest(flavor_path=flavor_path))
+            result.append(TestContainer_FlavorTest(**args))
         return result

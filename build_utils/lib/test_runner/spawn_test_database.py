@@ -32,7 +32,7 @@ DB_PORT = "8888"
 
 class SpawnTestDockerDatabase(luigi.Task):
     logger = logging.getLogger('luigi-interface')
-
+    reuse_database = luigi.BoolParameter(False)
     db_container_name = luigi.Parameter()
     db_startup_timeout_in_seconds = luigi.IntParameter(60 * 2, significant=False)
     remove_container_after_startup_failure = luigi.BoolParameter(True, significant=False)
@@ -65,51 +65,79 @@ class SpawnTestDockerDatabase(luigi.Task):
         subnet = netaddr.IPNetwork(network_info.subnet)
         db_ip_address = str(subnet[2])
         db_private_network = "{ip}/{prefix}".format(ip=db_ip_address, prefix=subnet.prefixlen)
+        database_info = None
+        if network_info.reused:
+            try:
+                database_info = self.get_database_info(db_ip_address, network_info)
+            except Exception as e:
+                self.logger.warning("Tried to reuse database container %s, but got Exeception %s. "
+                                    "Fallback to create new database.", self.db_container_name, e)
+        if database_info is None:
+            database_info = self.create_database_container(db_ip_address, db_private_network, network_info)
+        self.write_output(database_info)
+
+    def write_output(self, database_info):
+        with self.output()[DATABASE_INFO].open("w") as file:
+            file.write(database_info.to_json())
+
+    def get_database_info(self, db_ip_address: str,
+                               network_info: DockerNetworkInfo):
+        self._client.containers.get(self.db_container_name)
+        container_info = \
+            ContainerInfo(self.db_container_name, network_info=network_info,
+                          volume_name=self.get_db_volume_name())
+        database_info = \
+            DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,
+                         container_info=container_info)
+        return database_info
+
+    def create_database_container(self, db_ip_address: str, db_private_network: str,
+                                  network_info: DockerNetworkInfo):
         db_volume = self.prepare_db_volume(db_private_network)
-        db_container = self._client.containers.run(image="exasol/docker-db:6.0.12-d1",
-                                                   name=self.db_container_name,
-                                                   detach=True,
-                                                   privileged=True,
-                                                   volumes={db_volume.name: {"bind": "/exa", "mode": "rw"}},
-                                                   network=network_info.network_name)
+        db_container = \
+            self._client.containers.run(
+                image="exasol/docker-db:6.0.12-d1",
+                name=self.db_container_name,
+                detach=True,
+                privileged=True,
+                volumes={db_volume.name: {"bind": "/exa", "mode": "rw"}},
+                network=network_info.network_name)
         database_log_path = \
             pathlib.Path("%s/test-runner/db-test/database/%s/logs/"
                          % (self._build_config.ouput_directory,
                             self.db_container_name))
+        is_database_ready = self.wait_for_database_startup(database_log_path, db_container)
+        after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
+        self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
+        if is_database_ready:
+            container_info = \
+                ContainerInfo(db_container.name, network_info=network_info,
+                              volume_name=db_volume.name)
+            database_info = \
+                DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,
+                             container_info=container_info)
+            return database_info
+        else:
+            if self.remove_container_after_startup_failure:
+                db_container.remove(v=True, force=True)
+            raise Exception("Startup of database in container %s failed" % db_container.name)
+
+    def wait_for_database_startup(self, database_log_path, db_container):
         if database_log_path.exists():
             shutil.rmtree(database_log_path)
         database_log_path.mkdir(parents=True)
         startup_log_file = database_log_path.joinpath("startup.log")
-
         thread = ContainerLogThread(db_container,
                                     startup_log_file)
         thread.start()
         is_database_ready = self.is_database_ready(db_container, self.db_startup_timeout_in_seconds)
         thread.stop()
         thread.join()
-
-        after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
-        self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
-
-        if is_database_ready:
-            with self.output()[DATABASE_INFO].open("w") as file:
-                database_info = \
-                    DatabaseInfo(
-                        host=db_ip_address,
-                        db_port=DB_PORT,
-                        bucketfs_port=BUCKETFS_PORT,
-                        container_info=ContainerInfo(db_container.name,
-                                                     network_info=network_info,
-                                                     volume_name=db_volume.name))
-                file.write(database_info.to_json())
-        else:
-            if self.remove_container_after_startup_failure:
-                db_container.remove(v=True, force=True)
-            raise Exception("Startup of database in container %s failed" % db_container.name)
+        return is_database_ready
 
     def prepare_db_volume(self, db_private_network: str) -> Volume:
         db_volume_preperation_container_name = f"""{self.db_container_name}_preparation"""
-        db_volume_name = f"""{self.db_container_name}_volume"""
+        db_volume_name = self.get_db_volume_name()
         self.remove_container(db_volume_preperation_container_name)
         self.remove_volume(db_volume_name)
         db_volume, volume_preperation_container = \
@@ -122,6 +150,10 @@ class SpawnTestDockerDatabase(luigi.Task):
             return db_volume
         finally:
             volume_preperation_container.remove(force=True)
+
+    def get_db_volume_name(self):
+        db_volume_name = f"""{self.db_container_name}_volume"""
+        return db_volume_name
 
     def remove_container(self, db_volume_preperation_container_name):
         try:
