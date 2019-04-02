@@ -1,8 +1,6 @@
 import gzip
 import io
-import json
 import logging
-import os
 import pathlib
 import shutil
 import tarfile
@@ -13,10 +11,8 @@ import docker
 import luigi
 import netaddr
 from docker.models.containers import Container
-from docker.models.networks import Network
 from docker.models.volumes import Volume
 from jinja2 import Template
-from netaddr import IPNetwork
 
 from build_utils.lib.build_config import build_config
 from build_utils.lib.data.container_info import ContainerInfo
@@ -32,6 +28,7 @@ DB_PORT = "8888"
 
 class SpawnTestDockerDatabase(luigi.Task):
     logger = logging.getLogger('luigi-interface')
+
     reuse_database = luigi.BoolParameter(False)
     db_container_name = luigi.Parameter()
     db_startup_timeout_in_seconds = luigi.IntParameter(60 * 2, significant=False)
@@ -67,6 +64,7 @@ class SpawnTestDockerDatabase(luigi.Task):
         db_private_network = "{ip}/{prefix}".format(ip=db_ip_address, prefix=subnet.prefixlen)
         database_info = None
         if network_info.reused:
+            self.logger.info("Try to reuse database container %s", self.db_container_name)
             try:
                 database_info = self.get_database_info(db_ip_address, network_info)
             except Exception as e:
@@ -82,7 +80,9 @@ class SpawnTestDockerDatabase(luigi.Task):
 
     def get_database_info(self, db_ip_address: str,
                                network_info: DockerNetworkInfo):
-        self._client.containers.get(self.db_container_name)
+        db_container = self._client.containers.get(self.db_container_name)
+        if db_container.status != "running":
+            raise Exception("Container not running")
         container_info = \
             ContainerInfo(self.db_container_name, network_info=network_info,
                           volume_name=self.get_db_volume_name())
@@ -93,6 +93,10 @@ class SpawnTestDockerDatabase(luigi.Task):
 
     def create_database_container(self, db_ip_address: str, db_private_network: str,
                                   network_info: DockerNetworkInfo):
+        try:
+            self._client.containers.get(self.db_container_name).remove(force=True, v=True)
+        except:
+            pass
         db_volume = self.prepare_db_volume(db_private_network)
         db_container = \
             self._client.containers.run(
@@ -103,7 +107,7 @@ class SpawnTestDockerDatabase(luigi.Task):
                 volumes={db_volume.name: {"bind": "/exa", "mode": "rw"}},
                 network=network_info.network_name)
         database_log_path = \
-            pathlib.Path("%s/test-runner/db-test/database/%s/logs/"
+            pathlib.Path("%s/logs/test-runner/db-test/database/%s/"
                          % (self._build_config.ouput_directory,
                             self.db_container_name))
         is_database_ready = self.wait_for_database_startup(database_log_path, db_container)

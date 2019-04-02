@@ -41,6 +41,7 @@ class PrepareDockerNetworkForTestEnvironment(luigi.Task):
     def run(self):
         self.network_info = None
         if self.reuse:
+            self.logger.info("Try to reuse network %s", self.network_name)
             try:
                 self.network_info = self.get_docker_network_info()
             except Exception as e:

@@ -15,5 +15,5 @@ before_script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 script:
-  - pipenv run python3 build.py
+  - pipenv run python3 test.py
 

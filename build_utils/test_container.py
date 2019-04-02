@@ -34,11 +34,19 @@ class TestContainer_FlavorTest(TestRunnerDBTestTask):
 
 
 class TestContainer(FlavorWrapperTask):
+
     release_types = luigi.ListParameter(["Release"])
-    reuse_database = luigi.BoolParameter(False)
+    flavor_path = luigi.Parameter()
+    generic_language_tests = luigi.ListParameter([])
+    test_folders = luigi.ListParameter([])
     tests_to_execute = luigi.ListParameter([])
-    test_log_level = luigi.Parameter("critical")
     environment = luigi.DictParameter({"TRAVIS": ""})
+
+    test_log_level = luigi.Parameter("critical")
+    reuse_database = luigi.BoolParameter(False)
+    reuse_uploaded_release_container = luigi.BoolParameter(False)
+    docker_subnet = luigi.Parameter("12.12.12.0/24")
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,6 +59,9 @@ class TestContainer(FlavorWrapperTask):
         result = []
         args = dict(flavor_path=flavor_path,
                     reuse_database=self.reuse_database,
+                    reuse_uploaded_release_container=self.reuse_uploaded_release_container,
+                    generic_language_tests=self.generic_language_tests,
+                    test_folders=self.test_folders,
                     tests_to_execute=self.tests_to_execute,
                     log_level=self.test_log_level,
                     environment=self.environment)

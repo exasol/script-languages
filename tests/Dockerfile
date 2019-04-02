@@ -24,4 +24,7 @@ RUN curl -s https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.1
 COPY ext/virtualschema-jdbc-adapter.jar downloads/virtualschema-jdbc-adapter
 
 COPY tests /tests
-RUN pip install -r "tests/requirements.txt"
+
+RUN pip install -r "/tests/requirements.txt"
+
+ENV EXAPLUS=/downloads/EXAplus/exaplus

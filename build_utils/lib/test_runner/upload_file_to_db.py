@@ -1,17 +1,21 @@
+import logging
 import time
+from datetime import datetime
 
 import docker
 import luigi
+from docker.models.containers import Container
 
 from build_utils.lib.build_config import build_config
-from build_utils.lib.data.container_info import ContainerInfo
-from build_utils.lib.data.database_info import DatabaseInfo
 from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.docker_config import docker_config
 
 
 class UploadFileToDB(luigi.Task):
-    test_environment_info_dict=luigi.DictParameter()
+    logger = logging.getLogger('luigi-interface')
+
+    test_environment_info_dict = luigi.DictParameter()
+    reuse_uploaded = luigi.BoolParameter(False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,10 +44,31 @@ class UploadFileToDB(luigi.Task):
         upload_target = self.get_upload_target()
         pattern_to_wait_for = self.get_pattern_to_wait_for()
         log_file = self.get_log_file()
-
-        self.upload_file(file_to_upload=file_to_upload, upload_target=upload_target)
-        self.wait_for_upload(pattern_to_wait_for=pattern_to_wait_for, log_file=log_file)
+        database_container = self._client.containers.get(self._database_info.container_info.container_name)
+        if not self.should_be_reused(database_container, log_file, pattern_to_wait_for):
+            self.upload_and_wait(database_container, file_to_upload, log_file, pattern_to_wait_for, upload_target)
+        else:
+            self.logger.warning("Reusing uploaded target %s instead of file %s", upload_target, file_to_upload)
         self.write_logs("Done".encode("utf-8"))
+
+    def should_be_reused(self, database_container: Container, log_file: str, pattern_to_wait_for: str):
+        if self.reuse_uploaded:
+            exit_code, output = self.find_pattern_in_logfile(
+                database_container=database_container,
+                log_file=log_file,
+                pattern_to_wait_for=pattern_to_wait_for)
+            return exit_code == 0
+        else:
+            return False
+
+    def upload_and_wait(self, database_container: Container, file_to_upload: str,
+                        log_file: str, pattern_to_wait_for: str, upload_target: str):
+        utc_now = datetime.utcnow()
+        self.upload_file(file_to_upload=file_to_upload, upload_target=upload_target)
+        self.wait_for_upload(
+            database_container=database_container,
+            pattern_to_wait_for=pattern_to_wait_for,
+            log_file=log_file, start_time=utc_now)
 
     def get_log_file(self) -> str:
         pass
@@ -68,17 +93,32 @@ class UploadFileToDB(luigi.Task):
             self.write_logs(output)
             raise Exception("Upload of %s failed" % file_to_upload)
 
-    def wait_for_upload(self, pattern_to_wait_for: str, log_file: str):
-        database_container = self._client.containers.get(self._database_info.container_info.container_name)
-        exit_code = 1
+    def wait_for_upload(self,
+                        database_container: Container,
+                        pattern_to_wait_for: str,
+                        log_file: str,
+                        start_time: datetime):
+        ready = False
         i = 0
-        while exit_code != 0:
-            cmd = f"""grep '{pattern_to_wait_for}' {log_file} """
-            bash_cmd = f"""bash -c "{cmd}" """
-            exit_code, output = \
-                database_container.exec_run(cmd=bash_cmd)
+        while not ready:
+            exit_code, output = self.find_pattern_in_logfile(database_container, log_file, pattern_to_wait_for)
+            if exit_code == 0:
+                ready = self.output_happend_after_start_time(output, start_time)
             i += 1
             time.sleep(1)
+
+    def find_pattern_in_logfile(self, database_container: Container, log_file: str, pattern_to_wait_for: str):
+        cmd = f"""grep -B 0 -A 0 '{pattern_to_wait_for}' {log_file} | tail -1 """
+        bash_cmd = f"""bash -c "{cmd}" """
+        exit_code, output = \
+            database_container.exec_run(cmd=bash_cmd)
+        return exit_code, output
+
+    def output_happend_after_start_time(self, output, start_time):
+        time_str_from_output = " ".join(output.decode("utf-8").split(" ")[1:3])
+        time_from_output = datetime.strptime(time_str_from_output, "%y%m%d %H:%M:%S")
+        happend_after = time_from_output > start_time
+        return happend_after
 
     def write_logs(self, output):
         with self._log_target.open("w") as file:

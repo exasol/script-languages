@@ -1,10 +1,12 @@
-FROM {{flavor_customization}}
+FROM {{base_test_build_run}}
 
-COPY --from={{base_test_build_run}} /usr /usr
-COPY --from={{base_test_build_run}} /opt /opt
-COPY --from={{base_test_build_run}} /lib /lib
-COPY --from={{base_test_build_run}} /bin /bin
-COPY --from={{base_test_build_run}} /exasol_emulator /exasol_emulator
-COPY --from={{base_test_build_run}} /exaudf /exaudf
-COPY --from={{base_test_build_run}} /exaudf_src /exaudf_src
-COPY --from={{base_test_build_run}} /root/.cache/bazel /root/.cache/bazel
+RUN mkdir /conf /buckets
+
+COPY --from={{flavor_customization}} /usr /usr
+COPY --from={{flavor_customization}} /opt /opt
+COPY --from={{flavor_customization}} /lib /lib
+COPY --from={{flavor_customization}} /bin /bin
+COPY --from={{flavor_customization}} /etc /etc
+
+RUN ldconfig
+

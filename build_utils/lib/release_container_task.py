@@ -127,3 +127,4 @@ class ReleaseContainerTask(luigi.Task):
     def run_tar(self, tar):
         tar_status = subprocess.run(tar.split(" "))
         tar_status.check_returncode()
+
