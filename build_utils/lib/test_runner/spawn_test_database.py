@@ -20,6 +20,7 @@ from build_utils.lib.data.database_info import DatabaseInfo
 from build_utils.lib.data.dependency_collector.dependency_database_info_collector import DATABASE_INFO
 from build_utils.lib.data.docker_network_info import DockerNetworkInfo
 from build_utils.lib.docker_config import docker_config
+from build_utils.lib.log_config import WriteLogFilesToConsole, log_config
 from build_utils.lib.test_runner.container_log_thread import ContainerLogThread
 
 BUCKETFS_PORT = "6583"
@@ -31,7 +32,7 @@ class SpawnTestDockerDatabase(luigi.Task):
 
     reuse_database = luigi.BoolParameter(False)
     db_container_name = luigi.Parameter()
-    db_startup_timeout_in_seconds = luigi.IntParameter(60 * 2, significant=False)
+    db_startup_timeout_in_seconds = luigi.IntParameter(5*60, significant=False)
     remove_container_after_startup_failure = luigi.BoolParameter(True, significant=False)
     network_info_dict = luigi.DictParameter()
 
@@ -141,6 +142,12 @@ class SpawnTestDockerDatabase(luigi.Task):
         is_database_ready = self.is_database_ready(db_container, self.db_startup_timeout_in_seconds)
         thread.stop()
         thread.join()
+        if not is_database_ready:
+            if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error:
+                self.logger.error("Task %s: Database startup failed %s failed\nStartup Log:\n%s",
+                                  self.task_id,
+                                  self.db_container_name,
+                                  "\n".join(thread.complete_log))
         return is_database_ready
 
     def prepare_db_volume(self, db_private_network: str) -> Volume:

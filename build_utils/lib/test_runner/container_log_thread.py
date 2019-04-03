@@ -12,6 +12,7 @@ from build_utils.lib.container_log_handler import ContainerLogHandler
 class ContainerLogThread(Thread):
     def __init__(self, container: Container, task_id, logger, log_file: pathlib.Path, description:str):
         super().__init__()
+        self.complete_log = []
         self.description = description
         self.logger = logger
         self.task_id = task_id
@@ -36,3 +37,4 @@ class ContainerLogThread(Thread):
                     log_handler.handle_log_line(log)
                 self.previous_timestamp = self.current_timestamp
                 time.sleep(1)
+            self.complete_log = log_handler.get_complete_log()

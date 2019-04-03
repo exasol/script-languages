@@ -6,7 +6,7 @@ if __name__ == '__main__':
         "--execution-summary-summary-length","0",
         "--log-level", "INFO",
         "--local-scheduler",
-        "--workers", "5",
+        "--workers", "2",
         "--module", "build_utils", "TestContainer",
         "--flavor-path", "build_utils/test/resources/test-flavor/",
         "--log-config-log-task-is-still-running",

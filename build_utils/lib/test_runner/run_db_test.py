@@ -8,7 +8,7 @@ from build_utils.lib.build_config import build_config
 from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.data.info import FrozenDictToDict
 from build_utils.lib.docker_config import docker_config
-from build_utils.lib.log_config import log_config
+from build_utils.lib.log_config import log_config, WriteLogFilesToConsole
 from build_utils.lib.still_running_logger import StillRunningLogger, StillRunningLoggerThread
 
 
@@ -89,9 +89,13 @@ class RunDBTest(luigi.Task):
         thread.join()
         self._log_target.parent.mkdir(parents=True, exist_ok=True)
         log_output = cmd + "\n" + output.decode("utf-8")
-        if log_config().write_log_files_to_console:
-            self.logger.info("Task %s: Test result for db tests of flavor %s and release %s in %s\n%s"
+        if log_config().write_log_files_to_console == WriteLogFilesToConsole.all:
+            self.logger.info("Task %s: Test results for db tests of flavor %s and release %s in %s\n%s"
                              % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
+        if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error and exit_code != 0:
+            self.logger.error("Task %s: db tests of flavor %s and release %s in %s failed\nTest results:\n%s"
+                             % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
+
         with self._log_target.open("w") as file:
             file.write(log_output)
         with self.output().open("w") as file:

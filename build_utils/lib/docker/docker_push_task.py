@@ -11,7 +11,7 @@ from build_utils.lib.data.dependency_collector.dependency_image_info_collector i
 from build_utils.lib.data.image_info import ImageInfo
 from build_utils.lib.abstract_log_handler import AbstractLogHandler
 from build_utils.lib.docker_config import docker_config
-from build_utils.lib.log_config import log_config
+from build_utils.lib.log_config import log_config, WriteLogFilesToConsole
 from build_utils.lib.still_running_logger import StillRunningLogger
 
 
@@ -99,12 +99,17 @@ class PushLogHandler(AbstractLogHandler):
             self._error_message = json_output["errorDetail"]["message"]
 
     def finish(self):
-        if self._log_config.write_log_files_to_console:
-            self._logger.info("Task %s: Build Log of image %s\n%s",
+        if self._log_config.write_log_files_to_console==WriteLogFilesToConsole.all:
+            self._logger.info("Task %s: Push Log of image %s\n%s",
                               self._task_id,
                               self._image_info.complete_name,
                               "\n".join(self._complete_log))
         if self._error_message is not None:
+            if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
+                self._logger.error("Task %s: Push of image %s failed\nPush Log:\n%s",
+                                  self._task_id,
+                                  self._image_info.complete_name,
+                                  "\n".join(self._complete_log))
             raise Exception(
                 "Error occured during the push of the image %s. Received error \"%s\" ."
                 "The whole log can be found in %s"

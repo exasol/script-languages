@@ -40,7 +40,7 @@ class PopulateData(luigi.Task):
         exit_code, output = test_container.exec_run(cmd=bash_cmd, workdir="/tests/test/enginedb_small")
         self.write_logs(output)
         if exit_code != 0:
-            raise Exception("Failed to populate the database with data. Wrote log to %s" % self._log_target.path)
+            raise Exception("Failed to populate the database with data.\nLog: %s" % output.decode("utf-8"))
 
     def write_logs(self, output):
         with self._log_target.open("w") as file:

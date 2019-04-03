@@ -17,6 +17,7 @@ from build_utils.lib.data.dependency_collector.dependency_release_info_collector
 from build_utils.lib.data.release_info import ReleaseInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.flavor import flavor
+from build_utils.lib.log_config import WriteLogFilesToConsole
 from build_utils.lib.still_running_logger import StillRunningLogger
 from build_utils.release_type import ReleaseType
 
@@ -176,12 +177,17 @@ class CommandLogHandler(AbstractLogHandler):
         self._complete_log.append(log_line)
 
     def finish(self):
-        if self._log_config.write_log_files_to_console:
-            self._logger.info("Task %s: Tar log for %s \n%s",
+        if self._log_config.write_log_files_to_console==WriteLogFilesToConsole.all:
+            self._logger.info("Task %s: Command log for %s \n%s",
                               self._task_id,
                               self._description,
                               "".join(self._complete_log))
         if self._error_message is not None:
+            if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
+                self._logger.error("Task %s: Command failed %s failed\nCommand Log:\n%s",
+                                  self._task_id,
+                                  self._description,
+                                  "\n".join(self._complete_log))
             raise Exception(
                 "Error occured during %s. Received error \"%s\" ."
                 "The whole log can be found in %s"
