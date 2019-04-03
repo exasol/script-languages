@@ -10,7 +10,7 @@ if __name__ == '__main__':
         "--module", "build_utils", "TestContainer",
         "--flavor-path", "build_utils/test/resources/test-flavor/",
         "--log-config-log-task-is-still-running",
-        "--log-config-write-log-files-to-console"
+        "--SpawnTestDockerDatabase-db-startup-timeout-in-seconds",str(60*10)
 #        "--reuse-database",
 #        "--reuse-uploaded-release-container",
 #        "--test-folders", '["python"]',
