@@ -4,18 +4,17 @@ import docker
 import luigi
 from docker.models.containers import Container
 
-from build_utils.lib.build_config import build_config
 from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.docker_config import docker_config
-from build_utils.lib.flavor import flavor
 from build_utils.lib.test_runner.run_db_test import RunDBTest
 
 
 class RunDBTestsInDirectory(luigi.Task):
-
     directory = luigi.Parameter()
-    tests_to_execute = luigi.ListParameter([])
+    flavor_name = luigi.Parameter()
+    release_type = luigi.Parameter()
     language = luigi.OptionalParameter(None)
+    tests_to_execute = luigi.ListParameter([])
     environment = luigi.DictParameter({"TRAVIS": ""})
     language_definition = luigi.Parameter()
 
@@ -63,7 +62,9 @@ class RunDBTestsInDirectory(luigi.Task):
         test_files = ls_output.decode("utf-8").split("\n")
         for test_file in test_files:
             if test_file != "":
-                config = dict(test_evironment_info_dict=self.test_environment_info_dict,
+                config = dict(flavor_name=self.flavor_name,
+                              release_type=self.release_type,
+                              test_environment_info_dict=self.test_environment_info_dict,
                               language_definition=self.language_definition,
                               log_level=self.log_level,
                               environment=self.environment,
@@ -71,4 +72,3 @@ class RunDBTestsInDirectory(luigi.Task):
                               tests_to_execute=self.tests_to_execute,
                               test_file=directory + "/" + test_file)
                 yield test_file, config
-

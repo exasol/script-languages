@@ -3,10 +3,10 @@ import pathlib
 import luigi
 
 from build_utils.lib.data.release_info import ReleaseInfo
-from build_utils.lib.test_runner.upload_file_to_db import UploadFileToDB
+from build_utils.lib.test_runner.upload_file_to_db import UploadFileToBucketFS
 
 
-class UploadReleaseContainer(UploadFileToDB):
+class UploadReleaseContainer(UploadFileToBucketFS):
     release_info_dict = luigi.DictParameter()
 
     def __init__(self, *args, **kwargs):

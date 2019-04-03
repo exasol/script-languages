@@ -64,22 +64,23 @@ class SpawnTestDockerDatabase(luigi.Task):
         db_private_network = "{ip}/{prefix}".format(ip=db_ip_address, prefix=subnet.prefixlen)
         database_info = None
         if network_info.reused:
-            self.logger.info("Try to reuse database container %s", self.db_container_name)
+            self.logger.info("Task %s: Try to reuse database container %s",
+                             self.task_id, self.db_container_name)
             try:
                 database_info = self.get_database_info(db_ip_address, network_info)
             except Exception as e:
-                self.logger.warning("Tried to reuse database container %s, but got Exeception %s. "
-                                    "Fallback to create new database.", self.db_container_name, e)
+                self.logger.warning("Task %s: Tried to reuse database container %s, but got Exeception %s. "
+                                    "Fallback to create new database.", self.task_id, self.db_container_name, e)
         if database_info is None:
             database_info = self.create_database_container(db_ip_address, db_private_network, network_info)
         self.write_output(database_info)
 
-    def write_output(self, database_info):
+    def write_output(self, database_info: DatabaseInfo):
         with self.output()[DATABASE_INFO].open("w") as file:
             file.write(database_info.to_json())
 
     def get_database_info(self, db_ip_address: str,
-                               network_info: DockerNetworkInfo):
+                          network_info: DockerNetworkInfo):
         db_container = self._client.containers.get(self.db_container_name)
         if db_container.status != "running":
             raise Exception("Container not running")
@@ -132,7 +133,10 @@ class SpawnTestDockerDatabase(luigi.Task):
         database_log_path.mkdir(parents=True)
         startup_log_file = database_log_path.joinpath("startup.log")
         thread = ContainerLogThread(db_container,
-                                    startup_log_file)
+                                    self.task_id,
+                                    self.logger,
+                                    startup_log_file,
+                                    "Database Startup %s" % self.db_container_name)
         thread.start()
         is_database_ready = self.is_database_ready(db_container, self.db_startup_timeout_in_seconds)
         thread.stop()
@@ -144,16 +148,16 @@ class SpawnTestDockerDatabase(luigi.Task):
         db_volume_name = self.get_db_volume_name()
         self.remove_container(db_volume_preperation_container_name)
         self.remove_volume(db_volume_name)
-        db_volume, volume_preperation_container = \
-            volume_preperation_container, volume_preperation_container = \
+        db_volume, volume_preparation_container = \
+            volume_preparation_container, volume_preparation_container = \
             self.create_volume_and_container(db_volume_name,
                                              db_volume_preperation_container_name)
         try:
-            self.upload_init_db_files(volume_preperation_container, db_private_network)
-            self.execute_init_db(db_volume, volume_preperation_container)
+            self.upload_init_db_files(volume_preparation_container, db_private_network)
+            self.execute_init_db(db_volume, volume_preparation_container)
             return db_volume
         finally:
-            volume_preperation_container.remove(force=True)
+            volume_preparation_container.remove(force=True)
 
     def get_db_volume_name(self):
         db_volume_name = f"""{self.db_container_name}_volume"""
@@ -162,21 +166,21 @@ class SpawnTestDockerDatabase(luigi.Task):
     def remove_container(self, db_volume_preperation_container_name):
         try:
             self._client.containers.get(db_volume_preperation_container_name).remove(force=True)
-            self.logger.info("Removed container %s" % db_volume_preperation_container_name)
+            self.logger.info("Task %s: Removed container %s", self.task_id, db_volume_preperation_container_name)
         except docker.errors.NotFound:
             pass
 
     def remove_volume(self, db_volume_name):
         try:
             self._client.volumes.get(db_volume_name).remove(force=True)
-            self.logger.info("Removed volume %s" % db_volume_name)
+            self.logger.info("Task %s: Removed volume %s", self.task_id, db_volume_name)
         except docker.errors.NotFound:
             pass
 
     def create_volume_and_container(self, db_volume_name, db_volume_preperation_container_name) \
             -> Tuple[Volume, Container]:
         db_volume = self._client.volumes.create(db_volume_name)
-        volume_preperation_container = \
+        volume_preparation_container = \
             self._client.containers.run(
                 image="ubuntu:18.04",
                 name=db_volume_preperation_container_name,
@@ -185,7 +189,7 @@ class SpawnTestDockerDatabase(luigi.Task):
                 detach=True,
                 volumes={
                     db_volume.name: {"bind": "/exa", "mode": "rw"}})
-        return db_volume, volume_preperation_container
+        return db_volume, volume_preparation_container
 
     def upload_init_db_files(self, volume_preperation_container: Container, db_private_network: str):
         file_like_object = io.BytesIO()

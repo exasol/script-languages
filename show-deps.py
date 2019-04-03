@@ -2,17 +2,12 @@ import subprocess
 
 if __name__ == '__main__':
     command = [
-        "luigi",
-        "--execution-summary-summary-length","0",
-        "--log-level", "INFO",
+        "luigi-deps-tree",
         "--local-scheduler",
-        "--workers", "5",
         "--module", "build_utils", "TestContainer",
         "--flavor-path", "build_utils/test/resources/test-flavor/",
-        "--log-config-log-task-is-still-running",
-        "--log-config-write-log-files-to-console"
-#        "--reuse-database",
-#        "--reuse-uploaded-release-container",
+        "--reuse-database",
+        "--reuse-uploaded-release-container",
 #        "--test-folders", '["python"]',
 #        "--tests-to-execute", '["test_unicode_umlaute"]',
     ]

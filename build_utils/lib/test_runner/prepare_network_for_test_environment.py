@@ -41,12 +41,12 @@ class PrepareDockerNetworkForTestEnvironment(luigi.Task):
     def run(self):
         self.network_info = None
         if self.reuse:
-            self.logger.info("Try to reuse network %s", self.network_name)
+            self.logger.info("Task %s: Try to reuse network %s", self.task_id, self.network_name)
             try:
                 self.network_info = self.get_docker_network_info()
             except Exception as e:
-                self.logger.warning("Tried to reuse network %s, but got Exeception %s. "
-                                    "Fallback to create new network.", self.network_name, e)
+                self.logger.warning("Task %s: Tried to reuse network %s, but got Exeception %s. "
+                                    "Fallback to create new network.", self.task_id, self.network_name, e)
         if self.network_info is None:
             self.network_info = self.create_docker_network()
         self.write_output(self.network_info)
@@ -86,7 +86,7 @@ class PrepareDockerNetworkForTestEnvironment(luigi.Task):
     def remove_network(self, network_name):
         try:
             self._client.networks.get(network_name).remove()
-            self.logger.info("Remove network %s" % network_name)
+            self.logger.info("Task %s: Removed network %s", self.task_id, network_name)
         except docker.errors.NotFound:
             pass
 
@@ -94,6 +94,6 @@ class PrepareDockerNetworkForTestEnvironment(luigi.Task):
         try:
             container = self._client.containers.get(container_name)
             container.remove(force=True)
-            self.logger.info("Removed container %s" % container_name)
+            self.logger.info("Task %s: Removed container %s", self.task_id, container_name)
         except docker.errors.NotFound:
             pass

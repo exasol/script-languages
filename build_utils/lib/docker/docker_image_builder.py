@@ -14,23 +14,25 @@ from docker import APIClient
 from jinja2 import Template
 
 from build_utils.lib.build_config import build_config
-from build_utils.lib.docker_config import docker_config
 from build_utils.lib.data.image_info import ImageInfo
+from build_utils.lib.abstract_log_handler import AbstractLogHandler
+from build_utils.lib.docker_config import docker_config
+from build_utils.lib.log_config import log_config
+from build_utils.lib.still_running_logger import StillRunningLogger
 
 
 class DockerImageBuilder:
     logger = logging.getLogger('luigi-interface')
 
     def __init__(self, task_id: str,
-                 build_config: build_config,
-                 docker_condig: docker_config,
                  build_directories_mapping: Dict[str, str],
                  dockerfile: str,
                  additional_docker_build_options: Dict[str, Any]):
         self._additional_docker_build_options = additional_docker_build_options
-        self._docker_condig = docker_condig
-        self._build_config = build_config
-        self._low_level_client = APIClient(base_url=self._docker_condig.base_url)
+        self._docker_config = docker_config()
+        self._build_config = build_config()
+        self._log_config = log_config()
+        self._low_level_client = APIClient(base_url=self._docker_config.base_url)
         self._task_id = task_id
         self._build_directories_mapping = build_directories_mapping
         self._dockerfile = dockerfile
@@ -58,34 +60,15 @@ class DockerImageBuilder:
             shutil.rmtree(temp_directory)
 
     def _handle_output(self, output_generator,
-                       image_info: ImageInfo, log_file_path: luigi.LocalTarget):
+                       image_info: ImageInfo,
+                       log_file_path: luigi.LocalTarget):
         log_file_path = log_file_path.joinpath("docker-build.log")
-        with log_file_path.open("wb") as log_file:
-            error = False
-            error_message = None
-            complete_log = []
+        with BuildLogHandler(log_file_path, self.logger, self._task_id, image_info) as log_hanlder:
+            still_running_logger = StillRunningLogger(
+                self.logger, self._task_id, "build image %s" % image_info.complete_name)
             for log_line in output_generator:
-                log_file.write(log_line)
-                log_line = log_line.decode("utf-8")
-                log_line = log_line.strip('\r\n')
-                complete_log.append(log_line)
-                json_output = json.loads(log_line)
-                if 'errorDetail' in json_output:
-                    error = True
-                    error_message = json_output["errorDetail"]["message"]
-        if self._build_config.log_to_stdout:
-            self.logger.info("Task %s: Build Log of image %s\n%s",
-                             self._task_id,
-                             image_info.complete_name,
-                             "\n".join(complete_log))
-        if error:
-            raise docker.errors.BuildError(
-                "Error occured during the build of the image %s. Received error \"%s\" ."
-                "The whole log can be found in %s"
-                % (image_info.complete_name,
-                   error_message,
-                   log_file_path.absolute()),
-                log_file_path.absolute())
+                still_running_logger.log()
+                log_hanlder.handle_log_line(log_line)
 
     def prepate_log_file_path(self, image_info: ImageInfo):
         log_file_path = pathlib.Path("%s/logs/docker-build/%s/%s/%s_%s"
@@ -131,3 +114,34 @@ class DockerImageBuilder:
 
     def _get_files_in_build_context(self, temp_directory):
         return [os.path.join(r, file) for r, d, f in os.walk(temp_directory) for file in f]
+
+
+class BuildLogHandler(AbstractLogHandler):
+
+    def __init__(self, log_file_path, logger, task_id, image_info: ImageInfo):
+        super().__init__(log_file_path, logger, task_id)
+        self._image_info = image_info
+
+    def handle_log_line(self, log_line, error:bool=False):
+        log_line = log_line.decode("utf-8")
+        self._log_file.write(log_line)
+        log_line = log_line.strip('\r\n')
+        self._complete_log.append(log_line)
+        json_output = json.loads(log_line)
+        if 'errorDetail' in json_output:
+            self._error_message = json_output["errorDetail"]["message"]
+
+    def finish(self):
+        if self._log_config.write_log_files_to_console:
+            self._logger.info("Task %s: Build Log of image %s\n%s",
+                              self._task_id,
+                              self._image_info.complete_name,
+                              "\n".join(self._complete_log))
+        if self._error_message is not None:
+            raise docker.errors.BuildError(
+                "Error occured during the build of the image %s. Received error \"%s\" ."
+                "The whole log can be found in %s"
+                % (self._image_info.complete_name,
+                   self._error_message,
+                   self._log_file_path.absolute()),
+                self._log_file_path.absolute())

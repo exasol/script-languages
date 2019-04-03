@@ -6,6 +6,8 @@ from build_utils.lib.test_runner.run_db_test_in_directory import RunDBTestsInDir
 
 
 class RunDBTestsInTestConfig(luigi.Task):
+    flavor_name = luigi.Parameter()
+    release_type = luigi.Parameter()
     generic_language_tests = luigi.ListParameter()
     test_folders = luigi.ListParameter()
     tests_to_execute = luigi.ListParameter([])
@@ -38,6 +40,8 @@ class RunDBTestsInTestConfig(luigi.Task):
     def run_generic_tests(self, file):
         for generic_language in self.generic_language_tests:
             test_output = yield RunDBTestsInDirectory(
+                flavor_name=self.flavor_name,
+                release_type=self.release_type,
                 log_path=str(pathlib.Path(self.log_path).joinpath("generic").joinpath(generic_language)),
                 log_file_name="summary.log",
                 language_definition=self.language_definition,
@@ -60,6 +64,8 @@ class RunDBTestsInTestConfig(luigi.Task):
     def run_test_folders(self, file):
         for directory in self.test_folders:
             test_output = yield RunDBTestsInDirectory(
+                flavor_name=self.flavor_name,
+                release_type=self.release_type,
                 log_path=str(pathlib.Path(self.log_path).joinpath(directory)),
                 log_file_name="summary.log",
                 language_definition=self.language_definition,

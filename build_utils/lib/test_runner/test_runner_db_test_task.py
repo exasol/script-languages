@@ -34,10 +34,11 @@ class TestRunnerDBTestTask(luigi.Task):
         self._prepare_outputs()
 
     def _prepare_outputs(self):
-        flavor_name = flavor.get_name_from_path(str(self.flavor_path))
+        self.flavor_name = flavor.get_name_from_path(str(self.flavor_path))
+        self.release_type = self.get_release_type().name
         self.log_path = "%s/logs/test-runner/db-test/tests/%s/%s/%s/" % (
             self._build_config.ouput_directory,
-            flavor_name, self.get_release_type().name,
+            self.flavor_name, self.release_type,
             datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
         self.log_file_name = "summary.log"
         self._log_target = luigi.LocalTarget(self.log_path + self.log_file_name)
@@ -48,7 +49,7 @@ class TestRunnerDBTestTask(luigi.Task):
         return self._log_target
 
     def requires(self):
-        test_environment_name = f"""{flavor.get_name_from_path(self.flavor_path)}_{self.get_release_type().name}"""
+        test_environment_name = f"""{self.flavor_name}_{self.release_type}"""
         return {
             "release": self.get_release_task(self.flavor_path),
             "test_environment": SpawnTestDockerEnvironment(environment_name=test_environment_name,
@@ -80,6 +81,8 @@ class TestRunnerDBTestTask(luigi.Task):
         generic_language_tests = self.get_generic_language_tests(test_config)
         test_folders = self.get_test_folders(test_config)
         yield RunDBTestsInTestConfig(
+            flavor_name=self.flavor_name,
+            release_type=self.release_type,
             log_path=self.log_path,
             log_file_name=self.log_file_name,
             log_level=self.log_level,

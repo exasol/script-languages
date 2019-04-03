@@ -6,7 +6,8 @@ import luigi
 
 from build_utils.lib.build_config import build_config
 from build_utils.lib.utils.build_context_hasher import BuildContextHasher
-from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector, IMAGE_INFO
+from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector, \
+    IMAGE_INFO
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.docker.docker_image_builder import DockerImageBuilder
 from build_utils.lib.docker.docker_image_target import DockerImageTarget
@@ -26,10 +27,12 @@ class DockerPullOrBuildImageTask(luigi.Task):
         self._dockerfile = self.get_dockerfile()
         self._prepare_outputs()
         self._build_context_hasher = BuildContextHasher(self._build_directories_mapping, self._dockerfile)
-        self._image_builder = DockerImageBuilder(
-            self.task_id, self._build_config, self._docker_config,
-            self._build_directories_mapping, self._dockerfile,
-            self.get_additional_docker_build_options())
+        self._image_builder = \
+            DockerImageBuilder(
+                self.task_id,
+                self._build_directories_mapping,
+                self._dockerfile,
+                self.get_additional_docker_build_options())
         self._client = docker.DockerClient(base_url=self._docker_config.base_url)
 
     def _prepare_outputs(self):
