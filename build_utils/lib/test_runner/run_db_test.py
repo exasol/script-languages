@@ -59,7 +59,7 @@ class RunDBTest(luigi.Task):
                          % (self.task_id, self.flavor_name, self.release_type, self.test_file))
         test_container = self._client.containers.get(self._test_container_info.container_name)
         log_level = "--loglevel=%s" % self.log_level
-        server = '--server "%s:%s"' % (self._database_info.host, self._database_info.db_port)
+        server = "--server '%s:%s'" % (self._database_info.host, self._database_info.db_port)
         environment = "--driver=/downloads/ODBC/lib/linux/x86_64/libexaodbc-uo2214lv2.so  " \
                       "--jdbc-path /downloads/JDBC/exajdbc.jar"
         language_definition = "--script-languages '%s'" % self.language_definition
@@ -76,19 +76,20 @@ class RunDBTest(luigi.Task):
             language=language,
             tests=" ".join(self.tests_to_execute)
         )
-        cmd = 'python -tt %s' % args
+        cmd = 'cd /tests/test/; python -tt %s' % args
+        bash_cmd = f"""bash -c "{cmd}" """
         still_running_logger = StillRunningLogger(self.logger, self.task_id,
                                                   "db tests of flavor %s and release %s in %s"
                                                   % (self.flavor_name, self.release_type, self.test_file))
         thread = StillRunningLoggerThread(still_running_logger)
         thread.start()
         environment = FrozenDictToDict().convert(self.environment)
-        exit_code, output = test_container.exec_run(cmd=cmd, workdir="/tests/test/",
+        exit_code, output = test_container.exec_run(cmd=bash_cmd,
                                                     environment=environment)
         thread.stop()
         thread.join()
         self._log_target.parent.mkdir(parents=True, exist_ok=True)
-        log_output = cmd + "\n" + output.decode("utf-8")
+        log_output = bash_cmd + "\n" + output.decode("utf-8")
         if log_config().write_log_files_to_console == WriteLogFilesToConsole.all:
             self.logger.info("Task %s: Test results for db tests of flavor %s and release %s in %s\n%s"
                              % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))

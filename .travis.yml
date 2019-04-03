@@ -1,7 +1,7 @@
 #
 language: python
 python: "3.6"
-dist: trusty
+dist: xenial # trusty fails with weird FileNotFoundError in ReleaseContainerTask
 
 sudo:  required
 services:
