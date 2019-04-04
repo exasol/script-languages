@@ -20,12 +20,12 @@ class TestRunnerDBTestTask(luigi.Task):
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
     tests_to_execute = luigi.ListParameter([])
-    environment = luigi.DictParameter({"TRAVIS": ""})
+    environment = luigi.DictParameter({"TRAVIS": ""}, significant=False)
 
-    docker_subnet = luigi.Parameter("12.12.12.0/24")
-    log_level = luigi.Parameter("critical")
-    reuse_database = luigi.BoolParameter(False)
-    reuse_uploaded_release_container = luigi.BoolParameter(False)
+    docker_subnet = luigi.Parameter("12.12.12.0/24", significant=False)
+    log_level = luigi.Parameter("critical", significant=False)
+    reuse_database = luigi.BoolParameter(False, significant=False)
+    reuse_uploaded_release_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -65,11 +65,14 @@ class TestRunnerDBTestTask(luigi.Task):
 
     def run(self):
         release_info = self.get_release_info()
-        test_environment_info_dict = self.get_test_environment_info()
+        test_environment_info, test_environment_info_dict = self.get_test_environment_info()
         reuse_release_container = self.reuse_database and \
                                   self.reuse_uploaded_release_container and \
                                   not release_info.is_new
         yield UploadReleaseContainer(
+            environment_name=test_environment_info.name,
+            release_name=release_info.name,
+            release_type=release_info.release_type.name,
             test_environment_info_dict=test_environment_info_dict,
             release_info_dict=release_info.to_dict(),
             reuse_uploaded=reuse_release_container)
@@ -121,7 +124,7 @@ class TestRunnerDBTestTask(luigi.Task):
             DependencyEnvironmentInfoCollector().get_from_dict_of_inputs(self.input())
         test_environment_info = test_environment_info_of_dependencies["test_environment"]
         test_environment_info_dict = test_environment_info.to_dict()
-        return test_environment_info_dict
+        return test_environment_info, test_environment_info_dict
 
     def read_test_config(self):
         with pathlib.Path(self.flavor_path).joinpath("testconfig").open("r") as file:

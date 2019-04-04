@@ -6,8 +6,9 @@ from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.docker_config import docker_config
 
 
-class PopulateData(luigi.Task):
-    test_environment_info_dict = luigi.DictParameter()
+class PopulateEngineSmallTestDataToDatabase(luigi.Task):
+    environment_name = luigi.Parameter()
+    test_environment_info_dict = luigi.DictParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

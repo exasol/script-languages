@@ -133,6 +133,6 @@ class DockerPullOrBuildImageTask(luigi.Task):
             registry_data = self._client.images.get_registry_data(image_target.get_complete_name())
             return True
         except docker.errors.APIError as e:
-            self.logger.error("Task %s: Image %s not in registry, got exception %s", self.task_id,
+            self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.task_id,
                               image_target.get_complete_name(), e)
             return False

@@ -20,12 +20,12 @@ class RunDBTest(luigi.Task):
     release_type = luigi.Parameter()
     language = luigi.OptionalParameter("")
     tests_to_execute = luigi.ListParameter([])
-    environment = luigi.DictParameter({"TRAVIS": ""})
-    language_definition = luigi.Parameter()
+    environment = luigi.DictParameter({"TRAVIS": ""}, significant=False)
+    language_definition = luigi.Parameter(significant=False)
 
-    log_path = luigi.Parameter()
-    log_level = luigi.Parameter()
-    test_environment_info_dict = luigi.DictParameter()
+    log_path = luigi.Parameter(significant=False)
+    log_level = luigi.Parameter(significant=False)
+    test_environment_info_dict = luigi.DictParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -94,7 +94,7 @@ class RunDBTest(luigi.Task):
                              % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
         if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error and exit_code != 0:
             self.logger.error("Task %s: db tests of flavor %s and release %s in %s failed\nTest results:\n%s"
-                             % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
+                              % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
 
         with self._log_target.open("w") as file:
             file.write(log_output)

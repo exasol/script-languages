@@ -12,9 +12,9 @@ from build_utils.lib.docker_config import docker_config
 
 
 class SpawnTestContainer(luigi.Task):
-    db_test_image_info_dict = luigi.DictParameter()
     test_container_name = luigi.Parameter()
-    network_info_dict = luigi.DictParameter()
+    db_test_image_info_dict = luigi.DictParameter(significant=False)
+    network_info_dict = luigi.DictParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

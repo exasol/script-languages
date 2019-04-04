@@ -7,7 +7,9 @@ from build_utils.lib.test_runner.upload_file_to_db import UploadFileToBucketFS
 
 
 class UploadReleaseContainer(UploadFileToBucketFS):
-    release_info_dict = luigi.DictParameter()
+    release_name = luigi.Parameter()
+    release_type = luigi.Parameter()
+    release_info_dict = luigi.DictParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

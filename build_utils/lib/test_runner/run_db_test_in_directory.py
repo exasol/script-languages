@@ -15,13 +15,13 @@ class RunDBTestsInDirectory(luigi.Task):
     release_type = luigi.Parameter()
     language = luigi.OptionalParameter(None)
     tests_to_execute = luigi.ListParameter([])
-    environment = luigi.DictParameter({"TRAVIS": ""})
-    language_definition = luigi.Parameter()
+    environment = luigi.DictParameter({"TRAVIS": ""},significant=False)
+    language_definition = luigi.Parameter(significant=False)
 
-    log_path = luigi.Parameter()
-    log_file_name = luigi.Parameter()
-    log_level = luigi.Parameter("critical")
-    test_environment_info_dict = luigi.DictParameter()
+    log_path = luigi.Parameter(significant=False)
+    log_file_name = luigi.Parameter(significant=False)
+    log_level = luigi.Parameter("critical",significant=False)
+    test_environment_info_dict = luigi.DictParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -30,11 +30,11 @@ DB_PORT = "8888"
 class SpawnTestDockerDatabase(luigi.Task):
     logger = logging.getLogger('luigi-interface')
 
-    reuse_database = luigi.BoolParameter(False)
     db_container_name = luigi.Parameter()
+    reuse_database = luigi.BoolParameter(False, significant=False)
     db_startup_timeout_in_seconds = luigi.IntParameter(5*60, significant=False)
     remove_container_after_startup_failure = luigi.BoolParameter(True, significant=False)
-    network_info_dict = luigi.DictParameter()
+    network_info_dict = luigi.DictParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

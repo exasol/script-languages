@@ -2,7 +2,7 @@ from build_utils.lib.docker.docker_pull_or_build_image_tasks import DockerPullOr
 from build_utils.lib.docker_config import docker_config
 
 
-class BuildOrPullDBTestImage(DockerPullOrBuildImageTask):
+class BuildOrPullDBTestContainerImage(DockerPullOrBuildImageTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

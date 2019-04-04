@@ -13,11 +13,11 @@ from build_utils.lib.docker_config import docker_config
 class PrepareDockerNetworkForTestEnvironment(luigi.Task):
     logger = logging.getLogger('luigi-interface')
 
-    test_container_name = luigi.Parameter()
-    db_container_name = luigi.Parameter()
     network_name = luigi.Parameter()
-    reuse = luigi.BoolParameter(False)
-    docker_subnet = luigi.Parameter()
+    test_container_name = luigi.Parameter(significant=False)
+    db_container_name = luigi.Parameter(significant=False)
+    reuse = luigi.BoolParameter(False, significant=False)
+    docker_subnet = luigi.Parameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

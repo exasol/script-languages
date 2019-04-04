@@ -15,8 +15,9 @@ from build_utils.lib.still_running_logger import StillRunningLoggerThread, Still
 class UploadFileToBucketFS(luigi.Task):
     logger = logging.getLogger('luigi-interface')
 
-    test_environment_info_dict = luigi.DictParameter()
-    reuse_uploaded = luigi.BoolParameter(False)
+    environment_name = luigi.Parameter()
+    test_environment_info_dict = luigi.DictParameter(significant=False)
+    reuse_uploaded = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
