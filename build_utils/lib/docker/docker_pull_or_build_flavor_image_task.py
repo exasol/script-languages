@@ -38,7 +38,7 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         flavor_name = flavor.get_name_from_path(self.flavor_path)
         return "%s-%s" % (flavor_name, self.build_step)
 
-    def get_build_directories_mapping(self) -> Dict[str, str]:
+    def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:
         result = {self.build_step: "%s/%s" % (self.flavor_path, self.build_step)}
         result.update(self.additional_build_directories_mapping)
         return result

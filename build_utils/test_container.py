@@ -1,7 +1,5 @@
 import luigi
 
-from build_utils import ReleaseContainer
-from build_utils.docker_build import DockerBuild_Release, DockerBuild_BaseTestBuildRun, DockerBuild_FlavorTestBuildRun
 from build_utils.lib.flavor_task import FlavorWrapperTask
 from build_utils.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
 from build_utils.release_container import ReleaseContainer_BaseTest, ReleaseContainer_FlavorTest, \
@@ -34,19 +32,19 @@ class TestContainer_FlavorTest(TestRunnerDBTestTask):
 
 
 class TestContainer(FlavorWrapperTask):
-
     release_types = luigi.ListParameter(["Release"])
-    flavor_path = luigi.Parameter()
+    dont_use_flavor_test_config = luigi.BoolParameter(False)
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
+    test_files = luigi.ListParameter([])
     tests_to_execute = luigi.ListParameter([])
+    languages = luigi.ListParameter([None])
     environment = luigi.DictParameter({"TRAVIS": ""})
 
     test_log_level = luigi.Parameter("critical")
     reuse_database = luigi.BoolParameter(False)
     reuse_uploaded_release_container = luigi.BoolParameter(False)
     docker_subnet = luigi.Parameter("12.12.12.0/24")
-
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,7 +62,10 @@ class TestContainer(FlavorWrapperTask):
                     test_folders=self.test_folders,
                     tests_to_execute=self.tests_to_execute,
                     log_level=self.test_log_level,
-                    environment=self.environment)
+                    environment=self.environment,
+                    dont_use_flavor_test_config=self.dont_use_flavor_test_config,
+                    languages=self.languages,
+                    test_files=self.test_files)
         if ReleaseType.Release in self.actual_release_types:
             result.append(TestContainer_Release(**args))
         if ReleaseType.BaseTest in self.actual_release_types:

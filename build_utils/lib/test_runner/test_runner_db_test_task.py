@@ -17,9 +17,12 @@ from build_utils.release_type import ReleaseType
 
 class TestRunnerDBTestTask(luigi.Task):
     flavor_path = luigi.Parameter()
+    dont_use_flavor_test_config = luigi.BoolParameter(False)
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
+    test_files = luigi.ListParameter([])
     tests_to_execute = luigi.ListParameter([])
+    languages = luigi.ListParameter([None])
     environment = luigi.DictParameter({"TRAVIS": ""}, significant=False)
 
     docker_subnet = luigi.Parameter("12.12.12.0/24", significant=False)
@@ -94,14 +97,16 @@ class TestRunnerDBTestTask(luigi.Task):
             tests_to_execute=self.tests_to_execute,
             generic_language_tests=generic_language_tests,
             test_folders=test_folders,
-            language_definition=test_config["language_definition"]
+            language_definition=test_config["language_definition"],
+            test_files=self.test_files,
+            languages=self.languages
         )
 
     def get_test_folders(self, test_config):
         test_folders = []
         if test_config["test_folders"] != "":
             test_folders = test_config["test_folders"].split(" ")
-        if len(self.test_folders) != 0:
+        if self.dont_use_flavor_test_config or len(self.test_folders) != 0:
             test_folders = self.test_folders
         return test_folders
 
@@ -109,7 +114,7 @@ class TestRunnerDBTestTask(luigi.Task):
         generic_language_tests = []
         if test_config["generic_language_tests"] != "":
             generic_language_tests = test_config["generic_language_tests"].split(" ")
-        if len(self.generic_language_tests) != 0:
+        if self.dont_use_flavor_test_config or len(self.generic_language_tests) != 0:
             generic_language_tests = self.generic_language_tests
         return generic_language_tests
 

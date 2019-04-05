@@ -38,6 +38,7 @@ class SpawnTestContainer(luigi.Task):
         db_test_image_info = ImageInfo.from_dict(self.db_test_image_info_dict)
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         release_host_path = pathlib.Path(self._build_config.ouput_directory + "/releases").absolute()
+        tests_host_path = pathlib.Path("./tests").absolute()
         test_container = \
             self._client.containers.run(
                 image=db_test_image_info.complete_name,
@@ -49,8 +50,13 @@ class SpawnTestContainer(luigi.Task):
                     release_host_path: {
                         "bind": "/releases",
                         "mode": "ro"
+                    },
+                    tests_host_path: {
+                        "bind": "/tests_src",
+                        "mode": "ro"
                     }
                 })
+        test_container.exec_run(cmd="cp -r /tests_src /tests")
         with self.output()[CONTAINER_INFO].open("w") as file:
             container_info = ContainerInfo(self.test_container_name, network_info=network_info)
             file.write(container_info.to_json())

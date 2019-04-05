@@ -51,10 +51,11 @@ class UploadFileToBucketFS(luigi.Task):
         if not self.should_be_reused(database_container, log_file, pattern_to_wait_for):
             output = self.upload_and_wait(database_container, file_to_upload, log_file,
                                           pattern_to_wait_for, upload_target)
+            self.write_logs(output)
         else:
             self.logger.warning("Task %s: Reusing uploaded target %s instead of file %s",
                                 self.task_id, upload_target, file_to_upload)
-        self.write_logs(output)
+            self.write_logs("Reusing")
 
     def should_be_reused(self, database_container: Container, log_file: str,
                          pattern_to_wait_for: str):

@@ -25,7 +25,7 @@ class DockerImageBuilder:
     logger = logging.getLogger('luigi-interface')
 
     def __init__(self, task_id: str,
-                 build_directories_mapping: Dict[str, str],
+                 mapping_of_build_files_and_directories: Dict[str, str],
                  dockerfile: str,
                  additional_docker_build_options: Dict[str, Any]):
         self._additional_docker_build_options = additional_docker_build_options
@@ -34,7 +34,7 @@ class DockerImageBuilder:
         self._log_config = log_config()
         self._low_level_client = APIClient(base_url=self._docker_config.base_url)
         self._task_id = task_id
-        self._build_directories_mapping = build_directories_mapping
+        self._mapping_of_build_files_and_directories = mapping_of_build_files_and_directories
         self._dockerfile = dockerfile
 
     def __del__(self):
@@ -43,7 +43,7 @@ class DockerImageBuilder:
     def build(self, image_info: ImageInfo,
               image_info_of_dependencies: Dict[str, ImageInfo]):
         log_file_path = self.prepate_log_file_path(image_info)
-        self.logger.info("Task %s: Build docker image %s, config file can be found here %s",
+        self.logger.info("Task %s: Build docker image %s, log file can be found here %s",
                          self._task_id, image_info.complete_name, log_file_path)
         try:
             temp_directory = tempfile.mkdtemp(prefix="script_langauge_container_tmp_dir",
@@ -84,7 +84,7 @@ class DockerImageBuilder:
 
     def _prepare_build_context_to_temp_dir(
             self, temp_directory, image_info_of_dependencies: Dict[str, ImageInfo], log_file_path: Path):
-        self._copy_build_directories(temp_directory)
+        self._copy_build_files_and_directories(temp_directory)
         self._prepare_dockerfile(temp_directory, image_info_of_dependencies)
         self._log_build_context(temp_directory, log_file_path)
 
@@ -98,9 +98,16 @@ class DockerImageBuilder:
         with open(temp_directory + "/Dockerfile", "wt") as file:
             file.write(final_dockerfile)
 
-    def _copy_build_directories(self, temp_directory):
-        for dest, src in self._build_directories_mapping.items():
-            shutil.copytree(src, temp_directory + "/" + dest)
+    def _copy_build_files_and_directories(self, temp_directory):
+        for dest, src in self._mapping_of_build_files_and_directories.items():
+            src_path = pathlib.Path(src)
+            dest_path = temp_directory + "/" + dest
+            if src_path.is_dir():
+                shutil.copytree(src, dest_path)
+            elif src_path.is_file():
+                shutil.copy2(src, dest_path)
+            else:
+                raise Exception("Source path %s is neither a file or a directory" % src)
 
     def _log_build_context(self, temp_directory, log_file_path: Path):
         if self._build_config.log_build_context_content:

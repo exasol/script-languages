@@ -80,11 +80,17 @@ class SpawnTestDockerEnvironment(luigi.Task):
                             test_container_info=test_container_info)
         test_environment_info_dict = test_environment_info.to_dict()
         yield [UploadExaJDBC(environment_name=self.environment_name,
-                             test_environment_info_dict=test_environment_info_dict),
-               UploadVirtualSchemaJDBCAdapter(environment_name=self.environment_name,
-                                              test_environment_info_dict=test_environment_info_dict),
-               PopulateEngineSmallTestDataToDatabase(environment_name=self.environment_name,
-                                                     test_environment_info_dict=test_environment_info_dict)]
+                             test_environment_info_dict=test_environment_info_dict,
+                             reuse_uploaded=self.reuse_database),
+               UploadVirtualSchemaJDBCAdapter(
+                   environment_name=self.environment_name,
+                   test_environment_info_dict=test_environment_info_dict,
+                   reuse_uploaded=self.reuse_database),
+               PopulateEngineSmallTestDataToDatabase(
+                   environment_name=self.environment_name,
+                   test_environment_info_dict=test_environment_info_dict,
+                   reuse_data=self.reuse_database
+                )]
 
         self.write_output(test_environment_info)
 

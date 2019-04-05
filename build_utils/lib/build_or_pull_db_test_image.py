@@ -14,8 +14,8 @@ class BuildOrPullDBTestContainerImage(DockerPullOrBuildImageTask):
     def get_image_tag(self):
         return "latest"
 
-    def get_build_directories_mapping(self):
-        return {"tests": "tests", "ext":"ext"}
+    def get_mapping_of_build_files_and_directories(self):
+        return {"requirements.txt": "tests/requirements.txt", "ext":"ext"}
 
     def get_dockerfile(self):
         return "tests/Dockerfile"

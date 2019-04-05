@@ -23,14 +23,17 @@ class DockerPullOrBuildImageTask(luigi.Task):
         self._docker_config = docker_config()
         self._image_name = self.get_image_name()
         self._image_tag = self.get_image_tag()
-        self._build_directories_mapping = self.get_build_directories_mapping()
+        self._mapping_of_build_files_and_directories = \
+            self.get_mapping_of_build_files_and_directories()
         self._dockerfile = self.get_dockerfile()
         self._prepare_outputs()
-        self._build_context_hasher = BuildContextHasher(self._build_directories_mapping, self._dockerfile)
+        self._build_context_hasher = \
+            BuildContextHasher(self._mapping_of_build_files_and_directories,
+                               self._dockerfile)
         self._image_builder = \
             DockerImageBuilder(
                 self.task_id,
-                self._build_directories_mapping,
+                self._mapping_of_build_files_and_directories,
                 self._dockerfile,
                 self.get_additional_docker_build_options())
         self._client = docker.DockerClient(base_url=self._docker_config.base_url)
@@ -60,9 +63,9 @@ class DockerPullOrBuildImageTask(luigi.Task):
         """
         return "latest"
 
-    def get_build_directories_mapping(self) -> Dict[str, str]:
+    def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:
         """
-        Called by the constructor to get the build directories mapping.
+        Called by the constructor to get the build files and directories mapping.
         The keys are the relative paths to the destination in build context and
         the values are the paths to the source directories or files.
         Sub classes need to implement this method.
@@ -134,5 +137,5 @@ class DockerPullOrBuildImageTask(luigi.Task):
             return True
         except docker.errors.APIError as e:
             self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.task_id,
-                              image_target.get_complete_name(), e)
+                                image_target.get_complete_name(), e)
             return False

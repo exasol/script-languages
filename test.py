@@ -10,11 +10,11 @@ if __name__ == '__main__':
         "--module", "build_utils", "TestContainer",
         "--flavor-path", "build_utils/test/resources/test-flavor/",
         "--log-config-log-task-is-still-running",
-        "--SpawnTestDockerDatabase-db-startup-timeout-in-seconds",str(60*10)
-#        "--reuse-database",
-#        "--reuse-uploaded-release-container",
-#        "--test-folders", '["python"]',
-#        "--tests-to-execute", '["test_unicode_umlaute"]',
+        "--SpawnTestDockerDatabase-db-startup-timeout-in-seconds",str(60*10),
+        # "--reuse-database",
+        # "--reuse-uploaded-release-container",
+        # "--dont-use-flavor-test-config",
+        # "--test-files", '["python/unicode.py"]'
     ]
     p = subprocess.Popen(args=command)
     p.communicate()
