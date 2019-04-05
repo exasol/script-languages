@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-import json
 import pathlib
 
 import docker
@@ -9,9 +8,9 @@ import luigi
 from build_utils.lib.build_config import build_config
 from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from build_utils.lib.data.image_info import ImageInfo
-from build_utils.lib.abstract_log_handler import AbstractLogHandler
+from build_utils.lib.docker.push_log_handler import PushLogHandler
 from build_utils.lib.docker_config import docker_config
-from build_utils.lib.log_config import log_config, WriteLogFilesToConsole
+from build_utils.lib.log_config import log_config
 from build_utils.lib.still_running_logger import StillRunningLogger
 
 
@@ -79,38 +78,3 @@ class DockerPushImageTask(luigi.Task):
         if log_file_path.exists():
             log_file_path.remove()
         return log_file_path
-
-
-class PushLogHandler(AbstractLogHandler):
-
-    def __init__(self, log_file_path, logger, task_id, image_info: ImageInfo):
-        super().__init__(log_file_path, logger, task_id)
-        self._image_info = image_info
-
-    def handle_log_line(self, log_line, error:bool=False):
-        log_line = log_line.decode("utf-8")
-        log_line = log_line.strip('\r\n')
-        json_output = json.loads(log_line)
-        if "status" in json_output and json_output["status"] != "Pushing":
-            self._complete_log.append(log_line)
-            self._log_file.write(log_line)
-            self._log_file.write("\n")
-        if 'errorDetail' in json_output:
-            self._error_message = json_output["errorDetail"]["message"]
-
-    def finish(self):
-        if self._log_config.write_log_files_to_console==WriteLogFilesToConsole.all:
-            self._logger.info("Task %s: Push Log of image %s\n%s",
-                              self._task_id,
-                              self._image_info.complete_name,
-                              "\n".join(self._complete_log))
-        if self._error_message is not None:
-            if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
-                self._logger.error("Task %s: Push of image %s failed\nPush Log:\n%s",
-                                  self._task_id,
-                                  self._image_info.complete_name,
-                                  "\n".join(self._complete_log))
-            raise Exception(
-                "Error occured during the push of the image %s. Received error \"%s\" ."
-                "The whole log can be found in %s"
-                % (self._image_info.complete_name, self._error_message, self._log_file_path.path))

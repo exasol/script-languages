@@ -100,18 +100,22 @@ class UploadFileToBucketFS(luigi.Task):
     def upload_file(self, file_to_upload: str, upload_target: str):
         self.logger.info("Task %s: upload file %s to %s", self.task_id,
                          file_to_upload, upload_target)
+        exit_code, log_output = self.run_upload_command(file_to_upload, upload_target)
+        if exit_code != 0:
+            self.write_logs(log_output)
+            raise Exception("Upload of %s failed, got following output %s"
+                            % file_to_upload, log_output)
+        return log_output
+
+    def run_upload_command(self, file_to_upload, upload_target):
         test_container = self._client.containers.get(self._test_container_info.container_name)
         url = "http://w:write@{host}:{port}/{target}".format(
             host=self._database_info.host, port=self._database_info.bucketfs_port,
             target=upload_target)
         cmd = "curl -v -X PUT -T {jar} {url}".format(jar=file_to_upload, url=url)
         exit_code, output = test_container.exec_run(cmd=cmd)
-        log_output=cmd+"\n\n"+output.decode("utf-8")
-        if exit_code != 0:
-            self.write_logs(log_output)
-            raise Exception("Upload of %s failed, got following output %s"
-                            % file_to_upload, output.decode("utf-8"))
-        return log_output
+        log_output = cmd + "\n\n" + output.decode("utf-8")
+        return exit_code, log_output
 
     def wait_for_upload(self,
                         database_container: Container,
@@ -120,13 +124,11 @@ class UploadFileToBucketFS(luigi.Task):
                         start_time: datetime):
         self.logger.info("Task %s: wait for upload of file", self.task_id)
         ready = False
-        i = 0
         while not ready:
             exit_code, output = self.find_pattern_in_logfile(
                 database_container, log_file, pattern_to_wait_for)
             if exit_code == 0 and output != b'':
                 ready = self.output_happend_after_start_time(output, start_time)
-            i += 1
             time.sleep(1)
 
     def find_pattern_in_logfile(self, database_container: Container,

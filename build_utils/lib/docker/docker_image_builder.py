@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 import os
 import pathlib
@@ -8,16 +7,15 @@ import tempfile
 from pathlib import Path
 from typing import Dict, Any
 
-import docker
 import luigi
 from docker import APIClient
 from jinja2 import Template
 
 from build_utils.lib.build_config import build_config
 from build_utils.lib.data.image_info import ImageInfo
-from build_utils.lib.abstract_log_handler import AbstractLogHandler
+from build_utils.lib.docker.build_log_handler import BuildLogHandler
 from build_utils.lib.docker_config import docker_config
-from build_utils.lib.log_config import log_config, WriteLogFilesToConsole
+from build_utils.lib.log_config import log_config
 from build_utils.lib.still_running_logger import StillRunningLogger
 
 
@@ -121,39 +119,3 @@ class DockerImageBuilder:
 
     def _get_files_in_build_context(self, temp_directory):
         return [os.path.join(r, file) for r, d, f in os.walk(temp_directory) for file in f]
-
-
-class BuildLogHandler(AbstractLogHandler):
-
-    def __init__(self, log_file_path, logger, task_id, image_info: ImageInfo):
-        super().__init__(log_file_path, logger, task_id)
-        self._image_info = image_info
-
-    def handle_log_line(self, log_line, error: bool = False):
-        log_line = log_line.decode("utf-8")
-        self._log_file.write(log_line)
-        log_line = log_line.strip('\r\n')
-        self._complete_log.append(log_line)
-        json_output = json.loads(log_line)
-        if 'errorDetail' in json_output:
-            self._error_message = json_output["errorDetail"]["message"]
-
-    def finish(self):
-        if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.all:
-            self._logger.info("Task %s: Build Log of image %s\n%s",
-                              self._task_id,
-                              self._image_info.complete_name,
-                              "\n".join(self._complete_log))
-        if self._error_message is not None:
-            if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
-                self._logger.error("Task %s: Build of image %s failed\nBuild Log:\n%s",
-                                   self._task_id,
-                                   self._image_info.complete_name,
-                                   "\n".join(self._complete_log))
-            raise docker.errors.BuildError(
-                "Error occured during the build of the image %s. Received error \"%s\" ."
-                "The whole log can be found in %s"
-                % (self._image_info.complete_name,
-                   self._error_message,
-                   self._log_file_path.absolute()),
-                self._log_file_path.absolute())

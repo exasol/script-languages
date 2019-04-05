@@ -32,9 +32,10 @@ class SpawnTestDockerDatabase(luigi.Task):
 
     db_container_name = luigi.Parameter()
     reuse_database = luigi.BoolParameter(False, significant=False)
-    db_startup_timeout_in_seconds = luigi.IntParameter(5*60, significant=False)
+    db_startup_timeout_in_seconds = luigi.IntParameter(5 * 60, significant=False)
     remove_container_after_startup_failure = luigi.BoolParameter(True, significant=False)
     network_info_dict = luigi.DictParameter(significant=False)
+    ip_address_index_in_subnet = luigi.IntParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,6 +43,10 @@ class SpawnTestDockerDatabase(luigi.Task):
         self._docker_config = docker_config()
         self._client = docker.DockerClient(base_url=self._docker_config.base_url)
         self._low_level_client = docker.APIClient(base_url=self._docker_config.base_url)
+        if self.ip_address_index_in_subnet < 0:
+            raise Exception(
+                "ip_address_index_in_subnet needs to be greater than 0 got %s"
+                % self.ip_address_index_in_subnet)
         self._prepare_outputs()
 
     def __del__(self):
@@ -61,39 +66,47 @@ class SpawnTestDockerDatabase(luigi.Task):
     def run(self):
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         subnet = netaddr.IPNetwork(network_info.subnet)
-        db_ip_address = str(subnet[2])
+        db_ip_address = str(subnet[2 + self.ip_address_index_in_subnet])
         db_private_network = "{ip}/{prefix}".format(ip=db_ip_address, prefix=subnet.prefixlen)
         database_info = None
         if network_info.reused:
-            self.logger.info("Task %s: Try to reuse database container %s",
-                             self.task_id, self.db_container_name)
-            try:
-                database_info = self.get_database_info(db_ip_address, network_info)
-            except Exception as e:
-                self.logger.warning("Task %s: Tried to reuse database container %s, but got Exeception %s. "
-                                    "Fallback to create new database.", self.task_id, self.db_container_name, e)
+            database_info = self.try_to_reuse_database(db_ip_address, network_info)
         if database_info is None:
             database_info = self.create_database_container(db_ip_address, db_private_network, network_info)
         self.write_output(database_info)
+
+    def try_to_reuse_database(self, db_ip_address: str, network_info: DockerNetworkInfo) -> DatabaseInfo:
+        self.logger.info("Task %s: Try to reuse database container %s",
+                         self.task_id, self.db_container_name)
+        database_info = None
+        try:
+            database_info = self.get_database_info(db_ip_address, network_info)
+        except Exception as e:
+            self.logger.warning("Task %s: Tried to reuse database container %s, but got Exeception %s. "
+                                "Fallback to create new database.", self.task_id, self.db_container_name, e)
+        return database_info
 
     def write_output(self, database_info: DatabaseInfo):
         with self.output()[DATABASE_INFO].open("w") as file:
             file.write(database_info.to_json())
 
     def get_database_info(self, db_ip_address: str,
-                          network_info: DockerNetworkInfo):
+                          network_info: DockerNetworkInfo) -> DatabaseInfo:
         db_container = self._client.containers.get(self.db_container_name)
         if db_container.status != "running":
             raise Exception("Container not running")
         container_info = \
-            ContainerInfo(self.db_container_name, network_info=network_info,
+            ContainerInfo(container_name=self.db_container_name,
+                          ip_address=db_ip_address,
+                          network_info=network_info,
                           volume_name=self.get_db_volume_name())
         database_info = \
             DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,
                          container_info=container_info)
         return database_info
 
-    def create_database_container(self, db_ip_address: str, db_private_network: str,
+    def create_database_container(self,
+                                  db_ip_address: str, db_private_network: str,
                                   network_info: DockerNetworkInfo):
         try:
             self._client.containers.get(self.db_container_name).remove(force=True, v=True)
@@ -101,13 +114,15 @@ class SpawnTestDockerDatabase(luigi.Task):
             pass
         db_volume = self.prepare_db_volume(db_private_network)
         db_container = \
-            self._client.containers.run(
+            self._client.containers.create(
                 image="exasol/docker-db:6.0.12-d1",
                 name=self.db_container_name,
                 detach=True,
                 privileged=True,
                 volumes={db_volume.name: {"bind": "/exa", "mode": "rw"}},
-                network=network_info.network_name)
+                network_mode=None)
+        self._client.networks.get(network_info.network_name).connect(db_container, ipv4_address=db_ip_address)
+        db_container.start()
         database_log_path = \
             pathlib.Path("%s/logs/test-runner/db-test/database/%s/"
                          % (self._build_config.ouput_directory,
@@ -117,7 +132,9 @@ class SpawnTestDockerDatabase(luigi.Task):
         self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
         if is_database_ready:
             container_info = \
-                ContainerInfo(db_container.name, network_info=network_info,
+                ContainerInfo(container_name=db_container.name,
+                              ip_address=db_ip_address,
+                              network_info=network_info,
                               volume_name=db_volume.name)
             database_info = \
                 DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,

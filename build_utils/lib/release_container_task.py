@@ -10,14 +10,14 @@ import docker
 import humanfriendly
 import luigi
 
-from build_utils.lib.abstract_log_handler import AbstractLogHandler
 from build_utils.lib.build_config import build_config
+from build_utils.lib.command_log_handler import CommandLogHandler
 from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from build_utils.lib.data.dependency_collector.dependency_release_info_collector import RELEASE_INFO
+from build_utils.lib.data.image_info import ImageInfo
 from build_utils.lib.data.release_info import ReleaseInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.flavor import flavor
-from build_utils.lib.log_config import WriteLogFilesToConsole
 from build_utils.lib.still_running_logger import StillRunningLogger
 from build_utils.release_type import ReleaseType
 
@@ -61,17 +61,24 @@ class ReleaseContainerTask(luigi.Task):
         release_path.mkdir(parents=True, exist_ok=True)
         release_name = f"""{image_info_of_release_image.tag}-{image_info_of_release_image.hash}"""
         release_file = release_path.joinpath(release_name + ".tar.gz")
-        if release_file.exists() and \
-                (self._build_config.force_build or
-                 self._build_config.force_pull):
-            self.logger.info("Task %s: Removed release file %s", self.task_id, release_file)
-            os.remove(release_file)
+        self.remove_release_file_if_requested(release_file)
 
         is_new = False
         if not release_file.exists():
             self.create_release(release_image_name, release_file)
             is_new = True
 
+        self.write_release_info(image_info_of_release_image, is_new, release_file, release_name)
+
+    def remove_release_file_if_requested(self, release_file):
+        if release_file.exists() and \
+                (self._build_config.force_build or
+                 self._build_config.force_pull):
+            self.logger.info("Task %s: Removed release file %s", self.task_id, release_file)
+            os.remove(release_file)
+
+    def write_release_info(self, image_info_of_release_image: ImageInfo, is_new: bool,
+                           release_file: pathlib.Path, release_name: str):
         with self.output()[RELEASE_INFO].open("w") as file:
             release_info = ReleaseInfo(
                 path=str(release_file),
@@ -108,7 +115,7 @@ class ReleaseContainerTask(luigi.Task):
         finally:
             client.close()
 
-    def export_container(self, container, release_image_name:str, temp_directory:str):
+    def export_container(self, container, release_image_name: str, temp_directory: str):
         generator = container.export(chunk_size=humanfriendly.parse_size("10mb"))
         export_file = temp_directory + "/export.tar"
         with open(export_file, "wb") as file:
@@ -160,38 +167,6 @@ class ReleaseContainerTask(luigi.Task):
                 for line in iter(process.stdout.readline, b''):
                     still_running_logger.log()
                     log_handler.handle_log_line(line)
-                process.wait(timeout=60*2)
+                process.wait(timeout=60 * 2)
                 return_code_log_line = "return code %s" % process.returncode
                 log_handler.handle_log_line(return_code_log_line.encode("utf-8"), process.returncode != 0)
-
-
-class CommandLogHandler(AbstractLogHandler):
-
-    def __init__(self, log_file_path: pathlib.Path, logger, task_id, description: str):
-        super().__init__(log_file_path, logger, task_id)
-        self._description = description
-
-    def handle_log_line(self, log_line, error: bool = False):
-        log_line = log_line.decode("utf-8")
-        self._log_file.write(log_line)
-        self._complete_log.append(log_line)
-
-    def finish(self):
-        if self._log_config.write_log_files_to_console==WriteLogFilesToConsole.all:
-            self._logger.info("Task %s: Command log for %s \n%s",
-                              self._task_id,
-                              self._description,
-                              "".join(self._complete_log))
-        if self._error_message is not None:
-            if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
-                self._logger.error("Task %s: Command failed %s failed\nCommand Log:\n%s",
-                                  self._task_id,
-                                  self._description,
-                                  "\n".join(self._complete_log))
-            raise Exception(
-                "Error occured during %s. Received error \"%s\" ."
-                "The whole log can be found in %s"
-                % (self._description,
-                   self._error_message,
-                   self._log_file_path.absolute()),
-                self._log_file_path.absolute())

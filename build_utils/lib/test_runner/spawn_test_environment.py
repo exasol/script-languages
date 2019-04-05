@@ -58,22 +58,10 @@ class SpawnTestDockerEnvironment(luigi.Task):
             reuse=self.reuse_database,
             docker_subnet=self.docker_subnet
         )
-        network_info, network_info_dict = self.get_network_container_info(docker_network_output)
-        database_and_db_test_image_output = \
-            yield {
-                "database": SpawnTestDockerDatabase(db_container_name=self.db_container_name,
-                                                    network_info_dict=network_info_dict),
-                "db_test_image": BuildOrPullDBTestContainerImage()
-            }
-        database_info, database_info_dict = self.get_database_info(database_and_db_test_image_output)
-        db_test_image_info_dict = self.get_db_test_image_info(database_and_db_test_image_output)
-
-        test_container_info_target = \
-            yield SpawnTestContainer(db_test_image_info_dict=db_test_image_info_dict,
-                                     test_container_name=self.test_container_name,
-                                     network_info_dict=network_info_dict)
-        test_container_info, test_container_info_dict = \
-            self.get_test_container_info(test_container_info_target)
+        network_info, network_info_dict = \
+            self.get_network_container_info(docker_network_output)
+        database_info, test_container_info = \
+            yield from self.spawn_database_and_test_container(network_info_dict)
         test_environment_info = \
             EnvironmentInfo(name=self.environment_name,
                             database_info=database_info,
@@ -90,13 +78,25 @@ class SpawnTestDockerEnvironment(luigi.Task):
                    environment_name=self.environment_name,
                    test_environment_info_dict=test_environment_info_dict,
                    reuse_data=self.reuse_database
-                )]
+               )]
 
         self.write_output(test_environment_info)
 
-    def write_output(self, environment_info: EnvironmentInfo):
-        with self.output()[ENVIRONMENT_INFO].open("w") as file:
-            file.write(environment_info.to_json())
+    def spawn_database_and_test_container(self, network_info_dict):
+        database_and_test_container_output = \
+            yield {
+                "database": SpawnTestDockerDatabase(db_container_name=self.db_container_name,
+                                                    network_info_dict=network_info_dict,
+                                                    ip_address_index_in_subnet=0),
+                "test_container": SpawnTestContainer(test_container_name=self.test_container_name,
+                                                     network_info_dict=network_info_dict,
+                                                     ip_address_index_in_subnet=1)
+            }
+        database_info, database_info_dict = \
+            self.get_database_info(database_and_test_container_output)
+        test_container_info, test_container_info_dict = \
+            self.get_test_container_info(database_and_test_container_output)
+        return database_info, test_container_info
 
     def get_network_container_info(self, network_info_target):
         network_info = \
@@ -104,9 +104,10 @@ class SpawnTestDockerEnvironment(luigi.Task):
         network_info_dict = network_info.to_dict()
         return network_info, network_info_dict
 
-    def get_test_container_info(self, test_container_info_target):
-        test_container_info = \
-            DependencyContainerInfoCollector().get_from_sinlge_input(test_container_info_target)
+    def get_test_container_info(self, input: Dict[str, Dict[str, LocalTarget]]):
+        container_info_of_dependencies = \
+            DependencyContainerInfoCollector().get_from_dict_of_inputs(input)
+        test_container_info = container_info_of_dependencies["test_container"]
         test_container_info_dict = test_container_info.to_dict()
         return test_container_info, test_container_info_dict
 
@@ -117,9 +118,6 @@ class SpawnTestDockerEnvironment(luigi.Task):
         database_info_dict = database_info.to_dict()
         return database_info, database_info_dict
 
-    def get_db_test_image_info(self, input: Dict[str, Dict[str, LocalTarget]]):
-        image_info_of_dependencies = \
-            DependencyImageInfoCollector().get_from_dict_of_inputs(input)
-        db_image_info = image_info_of_dependencies["db_test_image"]
-        db_test_image_info_dict = db_image_info.to_dict()
-        return db_test_image_info_dict
+    def write_output(self, environment_info: EnvironmentInfo):
+        with self.output()[ENVIRONMENT_INFO].open("w") as file:
+            file.write(environment_info.to_json())
