@@ -9,7 +9,7 @@ class BuildOrPullDBTestContainerImage(DockerPullOrBuildImageTask):
         self._docker_config = docker_config()
 
     def get_image_name(self):
-        return f"""{self._docker_config.repository_user}/{self._docker_config.repository_name}-db-test-container"""
+        return f"""{self._docker_config.repository_name}-db-test-container"""
 
     def get_image_tag(self):
         return "latest"

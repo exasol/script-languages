@@ -2,10 +2,10 @@ import luigi
 
 from build_utils.lib.flavor_task import FlavorWrapperTask
 from build_utils.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
+from build_utils.stoppable_task import StoppableTask
 from build_utils.release_container import ReleaseContainer_BaseTest, ReleaseContainer_FlavorTest, \
     ReleaseContainer_Release
 from build_utils.release_type import ReleaseType
-
 
 class TestContainer_Release(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
@@ -48,6 +48,9 @@ class TestContainer(FlavorWrapperTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if StoppableTask.failed_target.exists():
+            print("removed failed target")
+            StoppableTask.failed_target.remove()
         self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
 
     def requires(self):

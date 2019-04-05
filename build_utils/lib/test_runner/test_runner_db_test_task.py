@@ -12,10 +12,11 @@ from build_utils.lib.flavor import flavor
 from build_utils.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
 from build_utils.lib.test_runner.spawn_test_environment import SpawnTestDockerEnvironment
 from build_utils.lib.test_runner.upload_release_container import UploadReleaseContainer
+from build_utils.stoppable_task import StoppableTask
 from build_utils.release_type import ReleaseType
 
 
-class TestRunnerDBTestTask(luigi.Task):
+class TestRunnerDBTestTask(StoppableTask):
     flavor_path = luigi.Parameter()
     dont_use_flavor_test_config = luigi.BoolParameter(False)
     generic_language_tests = luigi.ListParameter([])
@@ -40,7 +41,7 @@ class TestRunnerDBTestTask(luigi.Task):
         self.flavor_name = flavor.get_name_from_path(str(self.flavor_path))
         self.release_type = self.get_release_type().name
         self.log_path = "%s/logs/test-runner/db-test/tests/%s/%s/%s/" % (
-            self._build_config.ouput_directory,
+            self._build_config.output_directory,
             self.flavor_name, self.release_type,
             datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
         self.log_file_name = "summary.log"
@@ -66,7 +67,7 @@ class TestRunnerDBTestTask(luigi.Task):
     def get_release_type(self) -> ReleaseType:
         pass
 
-    def run(self):
+    def my_run(self):
         release_info = self.get_release_info()
         test_environment_info, test_environment_info_dict = self.get_test_environment_info()
         reuse_release_container = self.reuse_database and \

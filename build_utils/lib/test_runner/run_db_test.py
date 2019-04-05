@@ -10,9 +10,10 @@ from build_utils.lib.data.info import FrozenDictToDict
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.log_config import log_config, WriteLogFilesToConsole
 from build_utils.lib.still_running_logger import StillRunningLogger, StillRunningLoggerThread
+from build_utils.stoppable_task import StoppableTask
 
 
-class RunDBTest(luigi.Task):
+class RunDBTest(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     test_file = luigi.Parameter()
@@ -54,7 +55,7 @@ class RunDBTest(luigi.Task):
     def output(self):
         return self._exit_code_target
 
-    def run(self):
+    def my_run(self):
         self.logger.info("Task %s: Running db tests of flavor %s and release %s in %s"
                          % (self.task_id, self.flavor_name, self.release_type, self.test_file))
         test_container = self._client.containers.get(self._test_container_info.container_name)

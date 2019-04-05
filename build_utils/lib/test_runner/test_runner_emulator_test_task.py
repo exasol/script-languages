@@ -7,7 +7,7 @@ from build_utils.lib.docker_config import docker_config
 from build_utils.lib.flavor import flavor
 
 
-class TestRunnerEmulatorTestTask(luigi.Task):
+class TestRunnerEmulatorTestTask(MyTask):
     flavor_path = luigi.Parameter()
 
     def __init__(self, *args, **kwargs):
@@ -23,7 +23,7 @@ class TestRunnerEmulatorTestTask(luigi.Task):
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
             "%s/logs/test-runner/emulator-test/%s"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                flavor.get_name_from_path(self.flavor_path)))
         if self._log_target.exists():
             self._log_target.remove()
@@ -37,6 +37,6 @@ class TestRunnerEmulatorTestTask(luigi.Task):
     def get_build_run_task(self, flavor_path):
         pass
 
-    def run(self):
+    def my_run(self):
         image_info_of_dependencies = DependencyCollector().get_from_sinlge_input(self.input())
 

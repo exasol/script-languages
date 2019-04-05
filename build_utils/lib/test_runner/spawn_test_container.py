@@ -14,9 +14,10 @@ from build_utils.lib.data.dependency_collector.dependency_image_info_collector i
 from build_utils.lib.data.docker_network_info import DockerNetworkInfo
 from build_utils.lib.data.image_info import ImageInfo
 from build_utils.lib.docker_config import docker_config
+from build_utils.stoppable_task import StoppableTask
 
 
-class SpawnTestContainer(luigi.Task):
+class SpawnTestContainer(StoppableTask):
     test_container_name = luigi.Parameter()
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
@@ -35,7 +36,7 @@ class SpawnTestContainer(luigi.Task):
     def _prepare_outputs(self):
         self._test_container_info_target = luigi.LocalTarget(
             "%s/test-runner/db-test/test-container/%s/info"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                self.test_container_name))
         if self._test_container_info_target.exists():
             self._test_container_info_target.remove()
@@ -46,12 +47,12 @@ class SpawnTestContainer(luigi.Task):
     def requires(self):
         return {"test_container_image": BuildOrPullDBTestContainerImage()}
 
-    def run(self):
+    def my_run(self):
         test_container_image_info = self.get_test_container_image_info(self.input())
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         subnet = netaddr.IPNetwork(network_info.subnet)
         ip_address = str(subnet[2+self.ip_address_index_in_subnet])
-        release_host_path = pathlib.Path(self._build_config.ouput_directory + "/releases").absolute()
+        release_host_path = pathlib.Path(self._build_config.output_directory + "/releases").absolute()
         tests_host_path = pathlib.Path("./tests").absolute()
         test_container = \
             self._client.containers.create(

@@ -8,9 +8,10 @@ from build_utils.lib.build_config import build_config
 from build_utils.lib.data.dependency_collector.dependency_docker_network_info_collector import DOCKER_NETWORK_INFO
 from build_utils.lib.data.docker_network_info import DockerNetworkInfo
 from build_utils.lib.docker_config import docker_config
+from build_utils.stoppable_task import StoppableTask
 
 
-class PrepareDockerNetworkForTestEnvironment(luigi.Task):
+class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     network_name = luigi.Parameter()
@@ -30,7 +31,7 @@ class PrepareDockerNetworkForTestEnvironment(luigi.Task):
     def _prepare_outputs(self):
         self._network_info_target = luigi.LocalTarget(
             "%s/test-runner/db-test/network/%s/network_info"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                self.network_name))
         if self._network_info_target.exists():
             self._network_info_target.remove()
@@ -38,7 +39,7 @@ class PrepareDockerNetworkForTestEnvironment(luigi.Task):
     def output(self):
         return {DOCKER_NETWORK_INFO: self._network_info_target}
 
-    def run(self):
+    def my_run(self):
         self.network_info = None
         if self.reuse:
             self.logger.info("Task %s: Try to reuse network %s", self.task_id, self.network_name)

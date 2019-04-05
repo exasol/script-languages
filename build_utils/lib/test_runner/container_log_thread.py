@@ -25,7 +25,7 @@ class ContainerLogThread(Thread):
     def stop(self):
         self.finish = True
 
-    def run(self):
+    def my_run(self):
         with ContainerLogHandler(self.log_file, self.logger, self.task_id, self.description) as log_handler:
             still_running_logger = StillRunningLogger(
                 self.logger, self.task_id, self.description)

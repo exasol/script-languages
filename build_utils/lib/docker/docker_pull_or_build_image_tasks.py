@@ -12,9 +12,10 @@ from build_utils.lib.docker_config import docker_config
 from build_utils.lib.docker.docker_image_builder import DockerImageBuilder
 from build_utils.lib.docker.docker_image_target import DockerImageTarget
 from build_utils.lib.data.image_info import ImageInfo
+from build_utils.stoppable_task import StoppableTask
 
 
-class DockerPullOrBuildImageTask(luigi.Task):
+class DockerPullOrBuildImageTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     def __init__(self, *args, **kwargs):
@@ -41,7 +42,7 @@ class DockerPullOrBuildImageTask(luigi.Task):
     def _prepare_outputs(self):
         self._image_info_target = luigi.LocalTarget(
             "%s/image_info/%s/%s"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                self._image_name, self._image_tag))
         if self._image_info_target.exists():
             self._image_info_target.remove()
@@ -87,7 +88,7 @@ class DockerPullOrBuildImageTask(luigi.Task):
     def output(self):
         return {IMAGE_INFO: self._image_info_target}
 
-    def run(self):
+    def my_run(self):
         image_info_of_dependencies = DependencyImageInfoCollector().get_from_dict_of_inputs(self.input())
         image_hash = self._build_context_hasher.generate_image_hash(image_info_of_dependencies)
         complete_tag = self._image_tag + "_" + image_hash
@@ -104,8 +105,7 @@ class DockerPullOrBuildImageTask(luigi.Task):
                       image_info_of_dependencies: Dict[str, ImageInfo],
                       image_target: DockerImageTarget,
                       image_info: ImageInfo):
-        is_new = False
-        self.remove_image_if_required(image_target)
+        self.remove_image_if_requested(image_target)
         if not image_target.exists():
             if not self._build_config.force_build and self._is_image_in_registry(image_target):
                 self._pull_image(image_target)
@@ -113,15 +113,19 @@ class DockerPullOrBuildImageTask(luigi.Task):
             else:
                 self._image_builder.build(image_info, image_info_of_dependencies)
                 is_new = True
+        else:
+            self.logger.info("Task %s: Used locally existing docker images %s",
+                             self.task_id, image_target.get_complete_name())
+            is_new = False
         return is_new
 
-    def remove_image_if_required(self, image_target):
+    def remove_image_if_requested(self, image_target):
         if self._build_config.force_build \
                 or self._build_config.force_pull:
             if image_target.exists():
                 self._client.images.remove(image=image_target.get_complete_name(), force=True)
-                self.logger.info("Task %s: Removed docker images %s",
-                                 self.task_id, image_target.get_complete_name())
+                self.logger.warning("Task %s: Removed docker images %s",
+                                    self.task_id, image_target.get_complete_name())
 
     def write_image_info_to_output(self, image_info: ImageInfo):
         with  self.output()[IMAGE_INFO].open("wt") as file:
@@ -129,10 +133,21 @@ class DockerPullOrBuildImageTask(luigi.Task):
 
     def _pull_image(self, image_target: DockerImageTarget):
         self.logger.info("Task %s: Pull docker image %s", self.task_id, image_target.get_complete_name())
-        self._client.images.pull(repository=image_target.image_name, tag=image_target.image_tag)
+        if self._docker_config.username is not None and \
+                self._docker_config.password is not None:
+            auth_config = {
+                "username": self._docker_config.username,
+                "password": self._docker_config.password
+            }
+        else:
+            auth_config = None
+        self._client.images.pull(repository=image_target.image_name, tag=image_target.image_tag,
+                                 auth_config=auth_config)
 
     def _is_image_in_registry(self, image_target: DockerImageTarget):
         try:
+            self.logger.info("Task %s: Try to pull image %s", self.task_id,
+                             image_target.get_complete_name())
             registry_data = self._client.images.get_registry_data(image_target.get_complete_name())
             return True
         except docker.errors.APIError as e:

@@ -7,9 +7,10 @@ from luigi import LocalTarget
 from build_utils.lib.build_config import build_config
 from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.docker_config import docker_config
+from build_utils.stoppable_task import StoppableTask
 
 
-class PopulateEngineSmallTestDataToDatabase(luigi.Task):
+class PopulateEngineSmallTestDataToDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
@@ -30,7 +31,7 @@ class PopulateEngineSmallTestDataToDatabase(luigi.Task):
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
             "%s/logs/test-runner/db-test/populate_data/%s/%s"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                self._test_container_info.container_name,
                self.task_id))
         if self._log_target.exists():
@@ -39,7 +40,7 @@ class PopulateEngineSmallTestDataToDatabase(luigi.Task):
     def output(self):
         return self._log_target
 
-    def run(self):
+    def my_run(self):
         if not self.reuse_data:
             self.populate_data()
         else:

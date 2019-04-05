@@ -6,9 +6,10 @@ from luigi import LocalTarget
 
 from build_utils.lib.test_runner.run_db_test import RunDBTest
 from build_utils.lib.test_runner.run_db_test_in_directory import RunDBTestsInDirectory
+from build_utils.stoppable_task import StoppableTask
 
 
-class RunDBTestsInTestConfig(luigi.Task):
+class RunDBTestsInTestConfig(StoppableTask):
     flavor_name = luigi.Parameter()
     release_type = luigi.Parameter()
     generic_language_tests = luigi.ListParameter()
@@ -37,7 +38,7 @@ class RunDBTestsInTestConfig(luigi.Task):
     def output(self):
         return self._log_target
 
-    def run(self):
+    def my_run(self):
         with self.output().open("w") as output_file:
             yield from self.run_generic_tests(output_file)
             yield from self.run_test_folders(output_file)

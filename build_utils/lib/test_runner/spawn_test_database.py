@@ -22,12 +22,13 @@ from build_utils.lib.data.docker_network_info import DockerNetworkInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.log_config import WriteLogFilesToConsole, log_config
 from build_utils.lib.test_runner.container_log_thread import ContainerLogThread
+from build_utils.stoppable_task import StoppableTask
 
 BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
 
 
-class SpawnTestDockerDatabase(luigi.Task):
+class SpawnTestDockerDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     db_container_name = luigi.Parameter()
@@ -55,7 +56,7 @@ class SpawnTestDockerDatabase(luigi.Task):
     def _prepare_outputs(self):
         self._database_info_target = luigi.LocalTarget(
             "%s/test-runner/db-test/database/%s/info"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                self.db_container_name))
         if self._database_info_target.exists():
             self._database_info_target.remove()
@@ -63,7 +64,8 @@ class SpawnTestDockerDatabase(luigi.Task):
     def output(self):
         return {DATABASE_INFO: self._database_info_target}
 
-    def run(self):
+    def my_run(self):
+        raise Exception()
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         subnet = netaddr.IPNetwork(network_info.subnet)
         db_ip_address = str(subnet[2 + self.ip_address_index_in_subnet])
@@ -108,6 +110,8 @@ class SpawnTestDockerDatabase(luigi.Task):
     def create_database_container(self,
                                   db_ip_address: str, db_private_network: str,
                                   network_info: DockerNetworkInfo):
+        self.logger.info("Task %s: Starting database container %s",
+                         self.task_id, self.db_container_name)
         try:
             self._client.containers.get(self.db_container_name).remove(force=True, v=True)
         except:
@@ -125,7 +129,7 @@ class SpawnTestDockerDatabase(luigi.Task):
         db_container.start()
         database_log_path = \
             pathlib.Path("%s/logs/test-runner/db-test/database/%s/"
-                         % (self._build_config.ouput_directory,
+                         % (self._build_config.output_directory,
                             self.db_container_name))
         is_database_ready = self.wait_for_database_startup(database_log_path, db_container)
         after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")

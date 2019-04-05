@@ -7,9 +7,10 @@ from docker.models.containers import Container
 from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.test_runner.run_db_test import RunDBTest
+from build_utils.stoppable_task import StoppableTask
 
 
-class RunDBTestsInDirectory(luigi.Task):
+class RunDBTestsInDirectory(StoppableTask):
     directory = luigi.Parameter()
     flavor_name = luigi.Parameter()
     release_type = luigi.Parameter()
@@ -43,7 +44,7 @@ class RunDBTestsInDirectory(luigi.Task):
     def output(self):
         return self._log_target
 
-    def run(self):
+    def my_run(self):
         test_container = self._client.containers.get(self._test_container_info.container_name)
         with self.output().open("w") as file:
             for test_file, test_task_config in \

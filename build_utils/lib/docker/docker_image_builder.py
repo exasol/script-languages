@@ -70,7 +70,7 @@ class DockerImageBuilder:
 
     def prepate_log_file_path(self, image_info: ImageInfo):
         log_file_path = pathlib.Path("%s/logs/docker-build/%s/%s/%s_%s"
-                                     % (self._build_config.ouput_directory,
+                                     % (self._build_config.output_directory,
                                         image_info.name, image_info.tag,
                                         datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
                                         image_info.hash

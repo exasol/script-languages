@@ -12,9 +12,10 @@ from build_utils.lib.docker.push_log_handler import PushLogHandler
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.log_config import log_config
 from build_utils.lib.still_running_logger import StillRunningLogger
+from build_utils.stoppable_task import StoppableTask
 
 
-class DockerPushImageTask(luigi.Task):
+class DockerPushImageTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()
 
@@ -32,7 +33,7 @@ class DockerPushImageTask(luigi.Task):
     def _prepare_outputs(self):
         self._push_info_target = luigi.LocalTarget(
             "%s/push_info/%s"
-            % (self._build_config.ouput_directory, self.task_id))
+            % (self._build_config.output_directory, self.task_id))
         if self._push_info_target.exists():
             self._push_info_target.remove()
 
@@ -45,7 +46,7 @@ class DockerPushImageTask(luigi.Task):
     def get_docker_image_task(self, flavor_path):
         pass
 
-    def run(self):
+    def my_run(self):
         image_info = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
         generator = self._client.images.push(repository=image_info.name, tag=image_info.tag + "_" + image_info.hash,
                                              auth_config={
@@ -71,7 +72,7 @@ class DockerPushImageTask(luigi.Task):
 
     def prepate_log_file_path(self, image_info: ImageInfo):
         log_file_path = pathlib.Path("%s/logs/docker-push/%s/%s/%s"
-                                     % (self._build_config.ouput_directory,
+                                     % (self._build_config.output_directory,
                                         image_info.name, image_info.tag,
                                         datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
         log_file_path = luigi.LocalTarget(str(log_file_path))

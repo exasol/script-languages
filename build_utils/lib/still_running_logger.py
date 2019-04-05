@@ -15,7 +15,7 @@ class StillRunningLoggerThread(threading.Thread):
     def stop(self):
         self.finish = True
 
-    def run(self):
+    def my_run(self):
         while not self.finish:
             self.still_running_logger.log()
             time.sleep(1)

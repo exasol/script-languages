@@ -2,10 +2,12 @@ import pathlib
 
 import luigi
 
+from build_utils.stoppable_task import StoppableTask
 
-class FlavorTask(luigi.Task):
+
+class FlavorTask(StoppableTask):
     flavor_paths = luigi.ListParameter(None)
-    flavor_path = luigi.Parameter(None)
+    flavor_path = luigi.OptionalParameter(None)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

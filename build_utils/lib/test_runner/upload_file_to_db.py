@@ -10,9 +10,10 @@ from build_utils.lib.build_config import build_config
 from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.still_running_logger import StillRunningLoggerThread, StillRunningLogger
+from build_utils.stoppable_task import StoppableTask
 
 
-class UploadFileToBucketFS(luigi.Task):
+class UploadFileToBucketFS(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
@@ -32,7 +33,7 @@ class UploadFileToBucketFS(luigi.Task):
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
             "%s/logs/test-runner/db-test/bucketfs-upload/%s/%s"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                self._test_container_info.container_name,
                self.task_id))
         if self._log_target.exists():
@@ -41,7 +42,7 @@ class UploadFileToBucketFS(luigi.Task):
     def output(self):
         return self._log_target
 
-    def run(self):
+    def my_run(self):
         file_to_upload = self.get_file_to_upload()
         upload_target = self.get_upload_target()
         pattern_to_wait_for = self.get_pattern_to_wait_for()

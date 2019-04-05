@@ -20,9 +20,10 @@ from build_utils.lib.test_runner.spawn_test_container import SpawnTestContainer
 from build_utils.lib.test_runner.spawn_test_database import SpawnTestDockerDatabase
 from build_utils.lib.test_runner.upload_exa_jdbc import UploadExaJDBC
 from build_utils.lib.test_runner.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
+from build_utils.stoppable_task import StoppableTask
 
 
-class SpawnTestDockerEnvironment(luigi.Task):
+class SpawnTestDockerEnvironment(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
@@ -40,7 +41,7 @@ class SpawnTestDockerEnvironment(luigi.Task):
     def _prepare_outputs(self):
         self._environment_info_target = luigi.LocalTarget(
             "%s/test-runner/db-test/test-environment/%s/environment_info"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                self.environment_name))
         if self._environment_info_target.exists():
             self._environment_info_target.remove()
@@ -50,7 +51,7 @@ class SpawnTestDockerEnvironment(luigi.Task):
             ENVIRONMENT_INFO: self._environment_info_target,
         }
 
-    def run(self):
+    def my_run(self):
         docker_network_output = yield PrepareDockerNetworkForTestEnvironment(
             test_container_name=self.test_container_name,
             db_container_name=self.db_container_name,

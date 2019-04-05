@@ -31,8 +31,7 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         return {}
 
     def get_image_name(self) -> str:
-
-        return f"""{self._docker_config.repository_user}/{self._docker_config.repository_name}"""
+        return self._docker_config.repository_name
 
     def get_image_tag(self) -> str:
         flavor_name = flavor.get_name_from_path(self.flavor_path)

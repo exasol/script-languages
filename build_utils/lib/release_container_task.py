@@ -19,10 +19,11 @@ from build_utils.lib.data.release_info import ReleaseInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.flavor import flavor
 from build_utils.lib.still_running_logger import StillRunningLogger
+from build_utils.stoppable_task import StoppableTask
 from build_utils.release_type import ReleaseType
 
 
-class ReleaseContainerTask(luigi.Task):
+class ReleaseContainerTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()
 
@@ -35,7 +36,7 @@ class ReleaseContainerTask(luigi.Task):
     def _prepare_outputs(self):
         self._target = luigi.LocalTarget(
             "%s/releases/%s/%s/%s"
-            % (self._build_config.ouput_directory,
+            % (self._build_config.output_directory,
                flavor.get_name_from_path(self.flavor_path),
                self.get_release_type().name,
                datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
@@ -54,10 +55,10 @@ class ReleaseContainerTask(luigi.Task):
     def get_release_type(self) -> ReleaseType:
         pass
 
-    def run(self):
+    def my_run(self):
         image_info_of_release_image = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
         release_image_name = image_info_of_release_image.complete_name
-        release_path = pathlib.Path(self._build_config.ouput_directory).joinpath("releases")
+        release_path = pathlib.Path(self._build_config.output_directory).joinpath("releases")
         release_path.mkdir(parents=True, exist_ok=True)
         release_name = f"""{image_info_of_release_image.tag}-{image_info_of_release_image.hash}"""
         release_file = release_path.joinpath(release_name + ".tar.gz")
@@ -150,7 +151,7 @@ class ReleaseContainerTask(luigi.Task):
 
     def prepare_log_dir(self, release_image_name: str):
         log_dir = pathlib.Path("%s/logs/release/%s/%s/"
-                               % (self._build_config.ouput_directory,
+                               % (self._build_config.output_directory,
                                   release_image_name,
                                   datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
         if log_dir.exists():
