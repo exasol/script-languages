@@ -116,9 +116,16 @@ class SpawnTestDockerDatabase(StoppableTask):
         except:
             pass
         db_volume = self.prepare_db_volume(db_private_network)
+        image_name = "exasol/docker-db"
+        image_tag = "6.1.2-d1"
+        try:
+            self._client.images.get("%s:%s" % (image_name, image_tag))
+        except docker.errors.ImageNotFound as e:
+            self.logger.info("Pulling docker-db image %s:%s", image_name, image_tag)
+            self._client.images.pull(image_name, tag=image_tag)
         db_container = \
             self._client.containers.create(
-                image="exasol/docker-db:6.0.12-d1",
+                image="%s:%s" % (image_name, image_tag),
                 name=self.db_container_name,
                 detach=True,
                 privileged=True,
