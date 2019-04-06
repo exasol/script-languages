@@ -18,7 +18,6 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     test_container_name = luigi.Parameter(significant=False)
     db_container_name = luigi.Parameter(significant=False)
     reuse = luigi.BoolParameter(False, significant=False)
-    docker_subnet = luigi.Parameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,7 +43,7 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         if self.reuse:
             self.logger.info("Task %s: Try to reuse network %s", self.task_id, self.network_name)
             try:
-                self.network_info = self.get_docker_network_info()
+                self.network_info = self.reuse_network()
             except Exception as e:
                 self.logger.warning("Task %s: Tried to reuse network %s, but got Exeception %s. "
                                     "Fallback to create new network.", self.task_id, self.network_name, e)
@@ -56,20 +55,27 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         with self.output()[DOCKER_NETWORK_INFO].open("w") as file:
             file.write(network_info.to_json())
 
-    def get_docker_network_info(self) -> DockerNetworkInfo:
+    def reuse_network(self) -> DockerNetworkInfo:
         self.remove_container(self.test_container_name)
+        return self.get_network_info(reused=True)
+
+    def get_network_info(self, reused: bool):
         network_properties = self._low_level_client.inspect_network(self.network_name)
         network_config = network_properties["IPAM"]["Config"][0]
         return DockerNetworkInfo(network_name=self.network_name, subnet=network_config["Subnet"],
-                                 gateway=network_config["Gateway"], reused=True)
+                                 gateway=network_config["Gateway"], reused=reused)
 
     def create_docker_network(self) -> DockerNetworkInfo:
         self.remove_container(self.test_container_name)
         self.remove_container(self.db_container_name)
-        ip_network = netaddr.IPNetwork(self.docker_subnet)
-        subnet = str(ip_network)
-        gateway = str(ip_network[1])
         self.remove_network(self.network_name)
+        network = self._client.networks.create(
+            name=self.network_name,
+            driver="bridge",
+        )
+        network_info = self.get_network_info(reused=False)
+        subnet = network_info.subnet
+        gateway = network_info.gateway
         ipam_pool = docker.types.IPAMPool(
             subnet=subnet,
             gateway=gateway
@@ -77,12 +83,14 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         ipam_config = docker.types.IPAMConfig(
             pool_configs=[ipam_pool]
         )
+        self.remove_network(self.network_name) #TODO race condition possible
         network = self._client.networks.create(
             name=self.network_name,
             driver="bridge",
             ipam=ipam_config
         )
-        return DockerNetworkInfo(network_name=self.network_name, subnet=subnet, gateway=gateway)
+        return network_info
+
 
     def remove_network(self, network_name):
         try:

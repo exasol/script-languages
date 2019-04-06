@@ -28,7 +28,6 @@ class SpawnTestDockerEnvironment(StoppableTask):
 
     environment_name = luigi.Parameter()
     reuse_database = luigi.BoolParameter(False, significant=False)
-    docker_subnet = luigi.Parameter(significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,7 +56,6 @@ class SpawnTestDockerEnvironment(StoppableTask):
             db_container_name=self.db_container_name,
             network_name=self.network_name,
             reuse=self.reuse_database,
-            docker_subnet=self.docker_subnet
         )
         network_info, network_info_dict = \
             self.get_network_container_info(docker_network_output)

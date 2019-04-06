@@ -15,8 +15,8 @@ class RunDBTestsInDirectory(StoppableTask):
     flavor_name = luigi.Parameter()
     release_type = luigi.Parameter()
     language = luigi.OptionalParameter(None)
-    tests_to_execute = luigi.ListParameter([])
-    environment = luigi.DictParameter({"TRAVIS": ""},significant=False)
+    test_restrictions = luigi.ListParameter([])
+    test_environment_vars = luigi.DictParameter({"TRAVIS": ""},significant=False)
     language_definition = luigi.Parameter(significant=False)
 
     log_path = luigi.Parameter(significant=False)
@@ -67,8 +67,8 @@ class RunDBTestsInDirectory(StoppableTask):
                               test_environment_info_dict=self.test_environment_info_dict,
                               language_definition=self.language_definition,
                               log_level=self.log_level,
-                              environment=self.environment,
+                              test_environment_vars=self.test_environment_vars,
                               log_path=self.log_path,
-                              tests_to_execute=self.tests_to_execute,
+                              test_restrictions=self.test_restrictions,
                               test_file=directory + "/" + test_file)
                 yield test_file, config

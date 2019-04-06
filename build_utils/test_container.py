@@ -3,13 +3,13 @@ import luigi
 from build_utils.lib.flavor_task import FlavorWrapperTask
 from build_utils.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
 from build_utils.stoppable_task import StoppableTask
-from build_utils.release_container import ReleaseContainer_BaseTest, ReleaseContainer_FlavorTest, \
-    ReleaseContainer_Release
+from build_utils.export_container import ExportContainer_BaseTest, ExportContainer_FlavorTest, \
+    ExportContainer_Release
 from build_utils.release_type import ReleaseType
 
 class TestContainer_Release(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
-        return ReleaseContainer_Release(flavor_path=flavor_path)
+        return ExportContainer_Release(flavor_path=flavor_path)
 
     def get_release_type(self):
         return ReleaseType.Release
@@ -17,7 +17,7 @@ class TestContainer_Release(TestRunnerDBTestTask):
 
 class TestContainer_BaseTest(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
-        return ReleaseContainer_BaseTest(flavor_path=flavor_path)
+        return ExportContainer_BaseTest(flavor_path=flavor_path)
 
     def get_release_type(self):
         return ReleaseType.BaseTest
@@ -25,7 +25,7 @@ class TestContainer_BaseTest(TestRunnerDBTestTask):
 
 class TestContainer_FlavorTest(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
-        return ReleaseContainer_FlavorTest(flavor_path=flavor_path)
+        return ExportContainer_FlavorTest(flavor_path=flavor_path)
 
     def get_release_type(self):
         return ReleaseType.FlavorTest
@@ -33,18 +33,16 @@ class TestContainer_FlavorTest(TestRunnerDBTestTask):
 
 class TestContainer(FlavorWrapperTask):
     release_types = luigi.ListParameter(["Release"])
-    ignore_flavor_test_config = luigi.BoolParameter(False)
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
     test_files = luigi.ListParameter([])
-    tests_to_execute = luigi.ListParameter([])
+    test_restrictions = luigi.ListParameter([])
     languages = luigi.ListParameter([None])
-    environment = luigi.DictParameter({"TRAVIS": ""})
+    test_environment_vars = luigi.DictParameter({"TRAVIS": ""})
 
     test_log_level = luigi.Parameter("critical")
     reuse_database = luigi.BoolParameter(False)
-    reuse_uploaded_release_container = luigi.BoolParameter(False)
-    docker_subnet = luigi.Parameter("12.12.12.0/24")
+    reuse_uploaded_container = luigi.BoolParameter(False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,13 +58,12 @@ class TestContainer(FlavorWrapperTask):
         result = []
         args = dict(flavor_path=flavor_path,
                     reuse_database=self.reuse_database,
-                    reuse_uploaded_release_container=self.reuse_uploaded_release_container,
+                    reuse_uploaded_container=self.reuse_uploaded_container,
                     generic_language_tests=self.generic_language_tests,
                     test_folders=self.test_folders,
-                    tests_to_execute=self.tests_to_execute,
+                    test_restrictions=self.test_restrictions,
                     log_level=self.test_log_level,
-                    environment=self.environment,
-                    ignore_flavor_test_config=self.ignore_flavor_test_config,
+                    test_environment_vars=self.test_environment_vars,
                     languages=self.languages,
                     test_files=self.test_files)
         if ReleaseType.Release in self.actual_release_types:

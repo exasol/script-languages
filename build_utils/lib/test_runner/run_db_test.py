@@ -20,8 +20,8 @@ class RunDBTest(StoppableTask):
     flavor_name = luigi.Parameter()
     release_type = luigi.Parameter()
     language = luigi.OptionalParameter("")
-    tests_to_execute = luigi.ListParameter([])
-    environment = luigi.DictParameter({"TRAVIS": ""}, significant=False)
+    test_restrictions = luigi.ListParameter([])
+    test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
     language_definition = luigi.Parameter(significant=False)
 
     log_path = luigi.Parameter(significant=False)
@@ -75,7 +75,7 @@ class RunDBTest(StoppableTask):
             log_level=log_level,
             environment=environment,
             language=language,
-            tests=" ".join(self.tests_to_execute)
+            tests=" ".join(self.test_restrictions)
         )
         cmd = 'cd /tests/test/; python -tt %s' % args
         bash_cmd = f"""bash -c "{cmd}" """
@@ -84,7 +84,7 @@ class RunDBTest(StoppableTask):
                                                   % (self.flavor_name, self.release_type, self.test_file))
         thread = StillRunningLoggerThread(still_running_logger)
         thread.start()
-        environment = FrozenDictToDict().convert(self.environment)
+        environment = FrozenDictToDict().convert(self.test_environment_vars)
         exit_code, output = test_container.exec_run(cmd=bash_cmd,
                                                     environment=environment)
         thread.stop()

@@ -37,18 +37,16 @@ class StopTestEnvironment():
 
 class TestRunnerDBTestTask(StoppableTask):
     flavor_path = luigi.Parameter()
-    ignore_flavor_test_config = luigi.BoolParameter(False)
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
     test_files = luigi.ListParameter([])
-    tests_to_execute = luigi.ListParameter([])
+    test_restrictions = luigi.ListParameter([])
     languages = luigi.ListParameter([None])
-    environment = luigi.DictParameter({"TRAVIS": ""}, significant=False)
+    test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
 
-    docker_subnet = luigi.Parameter("12.12.12.0/24", significant=False)
     log_level = luigi.Parameter("critical", significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
-    reuse_uploaded_release_container = luigi.BoolParameter(False, significant=False)
+    reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,7 +73,6 @@ class TestRunnerDBTestTask(StoppableTask):
         return {
             "release": self.get_release_task(self.flavor_path),
             "test_environment": SpawnTestDockerEnvironment(environment_name=test_environment_name,
-                                                           docker_subnet=self.docker_subnet,
                                                            reuse_database=self.reuse_database),
         }
 
@@ -89,7 +86,7 @@ class TestRunnerDBTestTask(StoppableTask):
         release_info = self.get_release_info()
         self.test_environment_info, test_environment_info_dict = self.get_test_environment_info()
         reuse_release_container = self.reuse_database and \
-                                  self.reuse_uploaded_release_container and \
+                                  self.reuse_uploaded_container and \
                                   not release_info.is_new
         yield UploadReleaseContainer(
             environment_name=self.test_environment_info.name,
@@ -116,8 +113,8 @@ class TestRunnerDBTestTask(StoppableTask):
             log_path=self.log_path,
             log_level=self.log_level,
             test_environment_info_dict=test_environment_info_dict,
-            environment=self.environment,
-            tests_to_execute=self.tests_to_execute,
+            test_environment_vars=self.test_environment_vars,
+            test_restrictions=self.test_restrictions,
             generic_language_tests=generic_language_tests,
             test_folders=test_folders,
             language_definition=test_config["language_definition"],
@@ -138,15 +135,20 @@ class TestRunnerDBTestTask(StoppableTask):
         test_folders = []
         if test_config["test_folders"] != "":
             test_folders = test_config["test_folders"].split(" ")
-        if self.ignore_flavor_test_config or len(self.test_folders) != 0:
+        if self.tests_specified_in_parameters():
             test_folders = self.test_folders
         return test_folders
+
+    def tests_specified_in_parameters(self):
+        return len(self.generic_language_tests) != 0 or \
+               len(self.test_folders) != 0 or \
+               len(self.test_files) != 0
 
     def get_generic_language_tests(self, test_config):
         generic_language_tests = []
         if test_config["generic_language_tests"] != "":
             generic_language_tests = test_config["generic_language_tests"].split(" ")
-        if self.ignore_flavor_test_config or len(self.generic_language_tests) != 0:
+        if self.tests_specified_in_parameters():
             generic_language_tests = self.generic_language_tests
         return generic_language_tests
 

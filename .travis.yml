@@ -1,7 +1,7 @@
 #
 language: python
 python: "3.6"
-dist: xenial # trusty fails with weird FileNotFoundError in ReleaseContainerTask
+dist: xenial # trusty fails with weird FileNotFoundError in ExportContainerTask
 
 sudo:  required
 services:
@@ -15,5 +15,5 @@ before_script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 script:
-  - pipenv run python3 test.py
+  - pipenv run python3 build_utils/cli.py run-db-test --flavor-path build_utils/test/resources/test-flavor/ --workers 3
 

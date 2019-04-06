@@ -15,9 +15,9 @@ class RunDBTestsInTestConfig(StoppableTask):
     generic_language_tests = luigi.ListParameter()
     test_folders = luigi.ListParameter()
     test_files = luigi.ListParameter()
-    tests_to_execute = luigi.ListParameter([])
+    test_restrictions = luigi.ListParameter([])
     languages = luigi.ListParameter([None])
-    environment = luigi.DictParameter({"TRAVIS": ""}, significant=False)
+    test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
     language_definition = luigi.Parameter(significant=False)
 
     log_path = luigi.Parameter(significant=False)
@@ -54,8 +54,8 @@ class RunDBTestsInTestConfig(StoppableTask):
                 language=language,
                 test_environment_info_dict=self.test_environment_info_dict,
                 log_level=self.log_level,
-                environment=self.environment,
-                tests_to_execute=self.tests_to_execute,
+                test_environment_vars=self.test_environment_vars,
+                test_restrictions=self.test_restrictions,
                 directory="generic"
             )
             self.write_output("generic_tests", language, output_file, test_output)
@@ -74,8 +74,8 @@ class RunDBTestsInTestConfig(StoppableTask):
                     language_definition=self.language_definition,
                     test_environment_info_dict=self.test_environment_info_dict,
                     log_level=self.log_level,
-                    environment=self.environment,
-                    tests_to_execute=self.tests_to_execute,
+                    test_environment_vars=self.test_environment_vars,
+                    test_restrictions=self.test_restrictions,
                     directory=test_folder
                 )
                 test_name = test_folder
@@ -98,8 +98,8 @@ class RunDBTestsInTestConfig(StoppableTask):
                     language_definition=self.language_definition,
                     test_environment_info_dict=self.test_environment_info_dict,
                     log_level=self.log_level,
-                    environment=self.environment,
-                    tests_to_execute=self.tests_to_execute,
+                    test_environment_vars=self.test_environment_vars,
+                    test_restrictions=self.test_restrictions,
                     test_file=test_file,
                     language=language
                 )
