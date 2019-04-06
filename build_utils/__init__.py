@@ -1,3 +1,4 @@
+from build_utils.upload_container import UploadContainer
 from build_utils.export_container import ExportContainer
 from build_utils.docker_build import DockerBuild
 from build_utils.docker_push import DockerPush

@@ -4,11 +4,8 @@ from typing import Tuple
 import luigi
 from click._unicodefun import click
 
-from build_utils import DockerBuild, DockerPush, ExportContainer, TestContainer
-from build_utils.release_type import str
+from build_utils import DockerBuild, DockerPush, ExportContainer, TestContainer, UploadContainer
 from build_utils.stoppable_task import StoppableTask
-from build_utils.upload_container import UploadContainer
-
 
 @click.group()
 def cli():
