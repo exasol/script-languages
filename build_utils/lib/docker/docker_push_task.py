@@ -46,7 +46,7 @@ class DockerPushImageTask(StoppableTask):
     def get_docker_image_task(self, flavor_path):
         pass
 
-    def my_run(self):
+    def run_task(self):
         image_info = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
         generator = self._client.images.push(repository=image_info.name, tag=image_info.tag + "_" + image_info.hash,
                                              auth_config={

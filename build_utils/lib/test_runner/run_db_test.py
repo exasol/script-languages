@@ -47,15 +47,15 @@ class RunDBTest(StoppableTask):
         self._log_target = path.joinpath("log")
         # if self._log_target.exists():
         #     os.remove(self._log_target)
-        exit_code_path = path.joinpath("exit_code")
-        self._exit_code_target = luigi.LocalTarget(str(exit_code_path))
+        status_path = path.joinpath("status.log")
+        self._status_target = luigi.LocalTarget(str(status_path))
         # if self._exit_code_target.exists():
         #     self._exit_code_target.remove()
 
     def output(self):
-        return self._exit_code_target
+        return self._status_target
 
-    def my_run(self):
+    def run_task(self):
         self.logger.info("Task %s: Running db tests of flavor %s and release %s in %s"
                          % (self.task_id, self.flavor_name, self.release_type, self.test_file))
         test_container = self._client.containers.get(self._test_container_info.container_name)
@@ -101,4 +101,7 @@ class RunDBTest(StoppableTask):
         with self._log_target.open("w") as file:
             file.write(log_output)
         with self.output().open("w") as file:
-            file.write(str(exit_code))
+            if exit_code==0:
+                file.write("OK")
+            else:
+                file.write("FAILED")

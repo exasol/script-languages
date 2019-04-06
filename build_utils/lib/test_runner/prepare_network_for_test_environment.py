@@ -39,7 +39,7 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     def output(self):
         return {DOCKER_NETWORK_INFO: self._network_info_target}
 
-    def my_run(self):
+    def run_task(self):
         self.network_info = None
         if self.reuse:
             self.logger.info("Task %s: Try to reuse network %s", self.task_id, self.network_name)

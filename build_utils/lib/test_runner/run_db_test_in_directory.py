@@ -20,7 +20,6 @@ class RunDBTestsInDirectory(StoppableTask):
     language_definition = luigi.Parameter(significant=False)
 
     log_path = luigi.Parameter(significant=False)
-    log_file_name = luigi.Parameter(significant=False)
     log_level = luigi.Parameter("critical",significant=False)
     test_environment_info_dict = luigi.DictParameter(significant=False)
 
@@ -36,15 +35,15 @@ class RunDBTestsInDirectory(StoppableTask):
         self._client.close()
 
     def _prepare_outputs(self):
-        path = pathlib.Path(self.log_path).joinpath(self.log_file_name)
-        self._log_target = luigi.LocalTarget(str(path))
+        path = pathlib.Path(self.log_path).joinpath("summary.log")
+        self._summary_target = luigi.LocalTarget(str(path))
         # if self._log_target.exists():
         #     self._log_target.remove()
 
     def output(self):
-        return self._log_target
+        return self._summary_target
 
-    def my_run(self):
+    def run_task(self):
         test_container = self._client.containers.get(self._test_container_info.container_name)
         with self.output().open("w") as file:
             for test_file, test_task_config in \
@@ -54,8 +53,8 @@ class RunDBTestsInDirectory(StoppableTask):
                     test_task_config["language"] = self.language
                 test_output = yield RunDBTest(**test_task_config)
                 with test_output.open("r") as test_output_file:
-                    exit_code = test_output_file.read()
-                file.write("%s %s\n" % (test_file, exit_code))
+                    status = test_output_file.read()
+                file.write("%s %s\n" % (test_file, status))
 
     def generate_test_task_configs_from_directory(
             self, test_container: Container, directory: str):

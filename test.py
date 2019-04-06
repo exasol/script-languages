@@ -13,8 +13,8 @@ if __name__ == '__main__':
         "--SpawnTestDockerDatabase-db-startup-timeout-in-seconds",str(60*10),
         # "--reuse-database",
         # "--reuse-uploaded-release-container",
-        # "--dont-use-flavor-test-config",
-        # "--test-files", '["python/unicode.py"]'
+        "--ignore-flavor-test-config",
+        "--test-files", '["python/unicode.py"]'
     ]
     p = subprocess.Popen(args=command)
     p.communicate()

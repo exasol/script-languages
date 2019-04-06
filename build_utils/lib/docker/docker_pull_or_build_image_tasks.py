@@ -88,7 +88,7 @@ class DockerPullOrBuildImageTask(StoppableTask):
     def output(self):
         return {IMAGE_INFO: self._image_info_target}
 
-    def my_run(self):
+    def run_task(self):
         image_info_of_dependencies = DependencyImageInfoCollector().get_from_dict_of_inputs(self.input())
         image_hash = self._build_context_hasher.generate_image_hash(image_info_of_dependencies)
         complete_tag = self._image_tag + "_" + image_hash

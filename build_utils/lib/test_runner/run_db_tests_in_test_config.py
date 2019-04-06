@@ -21,7 +21,6 @@ class RunDBTestsInTestConfig(StoppableTask):
     language_definition = luigi.Parameter(significant=False)
 
     log_path = luigi.Parameter(significant=False)
-    log_file_name = luigi.Parameter(significant=False)
     log_level = luigi.Parameter("critical", significant=False)
     test_environment_info_dict = luigi.DictParameter(significant=False)
 
@@ -30,15 +29,15 @@ class RunDBTestsInTestConfig(StoppableTask):
         self._prepare_outputs()
 
     def _prepare_outputs(self):
-        path = pathlib.Path(self.log_path).joinpath(self.log_file_name)
-        self._log_target = luigi.LocalTarget(str(path))
+        path = pathlib.Path(self.log_path).joinpath("summary.log")
+        self._summary_target = luigi.LocalTarget(str(path))
         # if self._log_target.exists():
         #     self._log_target.remove()
 
     def output(self):
-        return self._log_target
+        return self._summary_target
 
-    def my_run(self):
+    def run_task(self):
         with self.output().open("w") as output_file:
             yield from self.run_generic_tests(output_file)
             yield from self.run_test_folders(output_file)
@@ -51,7 +50,6 @@ class RunDBTestsInTestConfig(StoppableTask):
                 flavor_name=self.flavor_name,
                 release_type=self.release_type,
                 log_path=str(log_path),
-                log_file_name="summary.log",
                 language_definition=self.language_definition,
                 language=language,
                 test_environment_info_dict=self.test_environment_info_dict,
@@ -73,7 +71,6 @@ class RunDBTestsInTestConfig(StoppableTask):
                     flavor_name=self.flavor_name,
                     release_type=self.release_type,
                     log_path=str(log_path),
-                    log_file_name="summary.log",
                     language_definition=self.language_definition,
                     test_environment_info_dict=self.test_environment_info_dict,
                     log_level=self.log_level,
@@ -113,7 +110,7 @@ class RunDBTestsInTestConfig(StoppableTask):
 
     def write_output(self, test_type: str, test_file: str, output_file: TextIO, test_output: LocalTarget):
         with test_output.open("r") as test_output_file:
-            exit_code = test_output_file.read()
-        for line in exit_code.split("\n"):
+            status = test_output_file.read()
+        for line in status.split("\n"):
             if line != "":
                 output_file.write("%s %s %s\n" % (test_type, test_file, line))

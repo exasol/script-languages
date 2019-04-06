@@ -47,7 +47,7 @@ class SpawnTestContainer(StoppableTask):
     def requires(self):
         return {"test_container_image": BuildOrPullDBTestContainerImage()}
 
-    def my_run(self):
+    def run_task(self):
         test_container_image_info = self.get_test_container_image_info(self.input())
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         subnet = netaddr.IPNetwork(network_info.subnet)

@@ -51,7 +51,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
             ENVIRONMENT_INFO: self._environment_info_target,
         }
 
-    def my_run(self):
+    def run_task(self):
         docker_network_output = yield PrepareDockerNetworkForTestEnvironment(
             test_container_name=self.test_container_name,
             db_container_name=self.db_container_name,

@@ -40,7 +40,7 @@ class PopulateEngineSmallTestDataToDatabase(StoppableTask):
     def output(self):
         return self._log_target
 
-    def my_run(self):
+    def run_task(self):
         if not self.reuse_data:
             self.populate_data()
         else:

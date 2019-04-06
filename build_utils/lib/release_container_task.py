@@ -55,7 +55,7 @@ class ReleaseContainerTask(StoppableTask):
     def get_release_type(self) -> ReleaseType:
         pass
 
-    def my_run(self):
+    def run_task(self):
         image_info_of_release_image = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
         release_image_name = image_info_of_release_image.complete_name
         release_path = pathlib.Path(self._build_config.output_directory).joinpath("releases")

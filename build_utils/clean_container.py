@@ -42,7 +42,7 @@ class CleanImages(StoppableTask):
     def output(self):
         return self._log_target
 
-    def my_run(self):
+    def run_task(self):
         with self._log_target.open("w") as file:
             if self._docker_config.repository_name == "":
                 raise Exception("docker repository name must not be an empty string")

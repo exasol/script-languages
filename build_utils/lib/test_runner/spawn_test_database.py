@@ -64,8 +64,7 @@ class SpawnTestDockerDatabase(StoppableTask):
     def output(self):
         return {DATABASE_INFO: self._database_info_target}
 
-    def my_run(self):
-        raise Exception()
+    def run_task(self):
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         subnet = netaddr.IPNetwork(network_info.subnet)
         db_ip_address = str(subnet[2 + self.ip_address_index_in_subnet])

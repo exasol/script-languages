@@ -42,7 +42,7 @@ class UploadFileToBucketFS(StoppableTask):
     def output(self):
         return self._log_target
 
-    def my_run(self):
+    def run_task(self):
         file_to_upload = self.get_file_to_upload()
         upload_target = self.get_upload_target()
         pattern_to_wait_for = self.get_pattern_to_wait_for()

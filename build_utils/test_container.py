@@ -33,7 +33,7 @@ class TestContainer_FlavorTest(TestRunnerDBTestTask):
 
 class TestContainer(FlavorWrapperTask):
     release_types = luigi.ListParameter(["Release"])
-    dont_use_flavor_test_config = luigi.BoolParameter(False)
+    ignore_flavor_test_config = luigi.BoolParameter(False)
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
     test_files = luigi.ListParameter([])
@@ -66,7 +66,7 @@ class TestContainer(FlavorWrapperTask):
                     tests_to_execute=self.tests_to_execute,
                     log_level=self.test_log_level,
                     environment=self.environment,
-                    dont_use_flavor_test_config=self.dont_use_flavor_test_config,
+                    ignore_flavor_test_config=self.ignore_flavor_test_config,
                     languages=self.languages,
                     test_files=self.test_files)
         if ReleaseType.Release in self.actual_release_types:
