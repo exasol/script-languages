@@ -10,10 +10,10 @@
     Networks = private
     # Comma-separated list of nameservers for this cluster.
     NameServers =
-    ConfVersion = 6.0.12
-    OSVersion = 6.0.12
-    DBVersion = 6.0.12
-    ImageVersion = 6.0.12-d1
+    ConfVersion = {{ db_version }}
+    OSVersion = {{ db_version }}
+    DBVersion = {{ db_version }}
+    ImageVersion = {{ image_version }}
 
 # SSL options
 [SSL]

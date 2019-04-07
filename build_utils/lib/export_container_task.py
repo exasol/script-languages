@@ -75,7 +75,7 @@ class ExportContainerTask(StoppableTask):
         if release_file.exists() and \
                 (self._build_config.force_build or
                  self._build_config.force_pull):
-            self.logger.info("Task %s: Removed release file %s", self.task_id, release_file)
+            self.logger.info("Task %s: Removed container file %s", self.task_id, release_file)
             os.remove(release_file)
 
     def write_release_info(self, image_info_of_release_image: ImageInfo, is_new: bool,
@@ -92,7 +92,7 @@ class ExportContainerTask(StoppableTask):
             file.write(release_info.to_json())
 
     def create_release(self, release_image_name: str, release_file: str):
-        self.logger.info("Task %s: Create release file %s", self.task_id, release_file)
+        self.logger.info("Task %s: Create container file %s", self.task_id, release_file)
         temp_directory = tempfile.mkdtemp(prefix="release_archive",
                                           dir=self._build_config.temporary_base_directory)
         try:
@@ -105,7 +105,7 @@ class ExportContainerTask(StoppableTask):
             shutil.rmtree(temp_directory)
 
     def create_and_export_container(self, release_image_name: str, temp_directory: str):
-        self.logger.info("Task %s: Export release container %s", self.task_id, release_image_name)
+        self.logger.info("Task %s: Export container %s", self.task_id, release_image_name)
         client = docker.DockerClient(base_url=self._docker_config.base_url)
         try:
             container = client.containers.create(image=release_image_name)
@@ -128,10 +128,10 @@ class ExportContainerTask(StoppableTask):
         return export_file
 
     def pack_release_file(self, log_path: pathlib.Path, extract_dir: str, release_file: str):
-        self.logger.info("Task %s: Pack release file %s", self.task_id, release_file)
+        self.logger.info("Task %s: Pack container file %s", self.task_id, release_file)
         extract_content = " ".join(os.listdir(extract_dir))
         command = f"""tar -C {extract_dir} -cvzf {release_file} {extract_content}"""
-        self.run_command(command, "packing release file %s" % release_file,
+        self.run_command(command, "packing container file %s" % release_file,
                          log_path.joinpath("pack_release_file.log"))
 
     def modify_extracted_container(self, extract_dir: str):

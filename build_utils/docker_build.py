@@ -11,7 +11,7 @@ class DockerBuild_UDFClientDeps(DockerPullOrBuildFlavorImageTask):
         return "udfclient_deps"
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
-        return {"ext": "ext"}
+        return {"01_nodoc": "ext/01_nodoc"}
 
 
 class DockerBuild_LanguageDeps(DockerPullOrBuildFlavorImageTask):
@@ -71,7 +71,7 @@ class DockerBuild_FlavorBaseDeps(DockerPullOrBuildFlavorImageTask):
         return "flavor_base_deps"
 
     def get_additional_build_directories_mapping(self):
-        return {"ext": "ext"}
+        return {"01_nodoc": "ext/01_nodoc"}
 
 
 class DockerBuild_FlavorCustomization(DockerPullOrBuildFlavorImageTask):

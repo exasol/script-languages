@@ -1,10 +1,9 @@
-import gzip
 import io
 import logging
 import pathlib
-import shutil
 import tarfile
 import time
+from datetime import datetime
 from typing import Tuple
 
 import docker
@@ -19,22 +18,20 @@ from build_utils.lib.data.container_info import ContainerInfo
 from build_utils.lib.data.database_info import DatabaseInfo
 from build_utils.lib.data.dependency_collector.dependency_database_info_collector import DATABASE_INFO
 from build_utils.lib.data.docker_network_info import DockerNetworkInfo
+from build_utils.lib.data.image_info import ImageInfo
+from build_utils.lib.docker.pull_log_handler import PullLogHandler
 from build_utils.lib.docker_config import docker_config
-from build_utils.lib.log_config import WriteLogFilesToConsole, log_config
-from build_utils.lib.test_runner.container_log_thread import ContainerLogThread
+from build_utils.lib.still_running_logger import StillRunningLogger
 from build_utils.stoppable_task import StoppableTask
 
 BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
-
 
 class SpawnTestDockerDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     db_container_name = luigi.Parameter()
     reuse_database = luigi.BoolParameter(False, significant=False)
-    db_startup_timeout_in_seconds = luigi.IntParameter(5 * 60, significant=False)
-    remove_container_after_startup_failure = luigi.BoolParameter(True, significant=False)
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
 
@@ -52,6 +49,7 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     def __del__(self):
         self._client.close()
+        self._low_level_client.close()
 
     def _prepare_outputs(self):
         self._database_info_target = luigi.LocalTarget(
@@ -106,6 +104,25 @@ class SpawnTestDockerDatabase(StoppableTask):
                          container_info=container_info)
         return database_info
 
+    def _handle_output(self, output_generator, image_info: ImageInfo):
+        log_file_path = self.prepate_log_file_path(image_info)
+        with PullLogHandler(log_file_path, self.logger, self.task_id, image_info) as log_hanlder:
+            still_running_logger = StillRunningLogger(
+                self.logger, self.task_id, "pull image %s" % image_info.complete_name)
+            for log_line in output_generator:
+                still_running_logger.log()
+                log_hanlder.handle_log_line(log_line)
+
+    def prepate_log_file_path(self, image_info: ImageInfo):
+        log_file_path = pathlib.Path("%s/logs/docker-pull/%s/%s/%s"
+                                     % (self._build_config.output_directory,
+                                        image_info.name, image_info.tag,
+                                        datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
+        log_file_path = luigi.LocalTarget(str(log_file_path))
+        if log_file_path.exists():
+            log_file_path.remove()
+        return log_file_path
+
     def create_database_container(self,
                                   db_ip_address: str, db_private_network: str,
                                   network_info: DockerNetworkInfo):
@@ -115,17 +132,11 @@ class SpawnTestDockerDatabase(StoppableTask):
             self._client.containers.get(self.db_container_name).remove(force=True, v=True)
         except:
             pass
-        db_volume = self.prepare_db_volume(db_private_network)
-        image_name = "exasol/docker-db"
-        image_tag = "6.1.2-d1"
-        try:
-            self._client.images.get("%s:%s" % (image_name, image_tag))
-        except docker.errors.ImageNotFound as e:
-            self.logger.info("Pulling docker-db image %s:%s", image_name, image_tag)
-            self._client.images.pull(image_name, tag=image_tag)
+        docker_db_image_info = self.pull_docker_db_images_if_necassary()
+        db_volume = self.prepare_db_volume(db_private_network, docker_db_image_info)
         db_container = \
             self._client.containers.create(
-                image="%s:%s" % (image_name, image_tag),
+                image="%s" % (docker_db_image_info.complete_name),
                 name=self.db_container_name,
                 detach=True,
                 privileged=True,
@@ -133,51 +144,34 @@ class SpawnTestDockerDatabase(StoppableTask):
                 network_mode=None)
         self._client.networks.get(network_info.network_name).connect(db_container, ipv4_address=db_ip_address)
         db_container.start()
-        database_log_path = \
-            pathlib.Path("%s/logs/test-runner/db-test/database/%s/"
-                         % (self._build_config.output_directory,
-                            self.db_container_name))
-        is_database_ready = self.wait_for_database_startup(database_log_path, db_container)
-        after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
-        self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
-        if is_database_ready:
-            container_info = \
-                ContainerInfo(container_name=db_container.name,
-                              ip_address=db_ip_address,
-                              network_info=network_info,
-                              volume_name=db_volume.name)
-            database_info = \
-                DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,
-                             container_info=container_info)
-            return database_info
-        else:
-            if self.remove_container_after_startup_failure:
-                db_container.remove(v=True, force=True)
-            raise Exception("Startup of database in container %s failed" % db_container.name)
+        container_info = \
+            ContainerInfo(container_name=db_container.name,
+                          ip_address=db_ip_address,
+                          network_info=network_info,
+                          volume_name=db_volume.name)
+        database_info = \
+            DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,
+                         container_info=container_info)
+        return database_info
 
-    def wait_for_database_startup(self, database_log_path, db_container):
-        if database_log_path.exists():
-            shutil.rmtree(database_log_path)
-        database_log_path.mkdir(parents=True)
-        startup_log_file = database_log_path.joinpath("startup.log")
-        thread = ContainerLogThread(db_container,
-                                    self.task_id,
-                                    self.logger,
-                                    startup_log_file,
-                                    "Database Startup %s" % self.db_container_name)
-        thread.start()
-        is_database_ready = self.is_database_ready(db_container, self.db_startup_timeout_in_seconds)
-        thread.stop()
-        thread.join()
-        if not is_database_ready:
-            if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error:
-                self.logger.error("Task %s: Database startup failed %s failed\nStartup Log:\n%s",
-                                  self.task_id,
-                                  self.db_container_name,
-                                  "\n".join(thread.complete_log))
-        return is_database_ready
+    def pull_docker_db_images_if_necassary(self):
+        image_name = "exasol/docker-db"
+        image_tag = "6.0.12-d1"
+        docker_db_image_info = ImageInfo(name=image_name,
+                                         tag=image_tag,
+                                         complete_name="%s:%s" % (image_name, image_tag),
+                                         is_new=False)
+        try:
 
-    def prepare_db_volume(self, db_private_network: str) -> Volume:
+            self._client.images.get(docker_db_image_info.complete_name)
+        except docker.errors.ImageNotFound as e:
+            self.logger.info("Pulling docker-db image %s", docker_db_image_info.complete_name)
+            output_generator = self._low_level_client.pull(docker_db_image_info.name, tag=docker_db_image_info.tag,
+                                                           stream=True)
+            self._handle_output(output_generator, docker_db_image_info)
+        return docker_db_image_info
+
+    def prepare_db_volume(self, db_private_network: str, docker_db_image_info: ImageInfo) -> Volume:
         db_volume_preperation_container_name = f"""{self.db_container_name}_preparation"""
         db_volume_name = self.get_db_volume_name()
         self.remove_container(db_volume_preperation_container_name)
@@ -187,7 +181,9 @@ class SpawnTestDockerDatabase(StoppableTask):
             self.create_volume_and_container(db_volume_name,
                                              db_volume_preperation_container_name)
         try:
-            self.upload_init_db_files(volume_preparation_container, db_private_network)
+            self.upload_init_db_files(volume_preparation_container,
+                                      db_private_network,
+                                      docker_db_image_info)
             self.execute_init_db(db_volume, volume_preparation_container)
             return db_volume
         finally:
@@ -225,19 +221,29 @@ class SpawnTestDockerDatabase(StoppableTask):
                     db_volume.name: {"bind": "/exa", "mode": "rw"}})
         return db_volume, volume_preparation_container
 
-    def upload_init_db_files(self, volume_preperation_container: Container, db_private_network: str):
+    def upload_init_db_files(self,
+                             volume_preperation_container: Container,
+                             db_private_network: str,
+                             docker_db_image_info: ImageInfo):
+        #db_private_network="128.0.0.2/24"
         file_like_object = io.BytesIO()
         with tarfile.open(fileobj=file_like_object, mode="x") as tar:
             tar.add("build_utils/lib/test_runner/init_db.sh", "init_db.sh")
-            self.add_exa_conf(tar, db_private_network)
+            self.add_exa_conf(tar, db_private_network, docker_db_image_info)
         volume_preperation_container.put_archive("/", file_like_object.getbuffer().tobytes())
 
-    def add_exa_conf(self, tar: tarfile.TarFile, db_private_network: str):
+    def add_exa_conf(self, tar: tarfile.TarFile,
+                     db_private_network: str,
+                     docker_db_image_info: ImageInfo):
         with open("ext/EXAConf") as file:
             template_str = file.read()
         template = Template(template_str)
 
-        rendered_template = template.render(private_network=db_private_network)
+        db_version = "-".join(docker_db_image_info.tag.split("-")[0:-1])
+        image_version = docker_db_image_info.tag
+        rendered_template = template.render(private_network=db_private_network,
+                                            db_version=db_version,
+                                            image_version=image_version)
         self.add_string_to_tarfile(tar, "EXAConf", rendered_template)
 
     def add_string_to_tarfile(self, tar: tarfile.TarFile, name: str, string: str):
@@ -253,21 +259,3 @@ class SpawnTestDockerDatabase(StoppableTask):
         if exit_code != 0:
             raise Exception(
                 "Error during preperation of docker-db volume %s got following ouput %s" % (db_volume.name, output))
-
-    def is_database_ready(self, database_container: Container, timeout_in_seconds: int):
-        start_time = time.time()
-        timeout_over = lambda current_time: current_time - start_time > timeout_in_seconds
-        while not timeout_over(time.time()):
-            (exit_code, output) = \
-                database_container.exec_run(
-                    cmd='bash -c "ls /exa/logs/db/DB1/*ConnectionServer*"')
-            if exit_code == 0:
-                return True
-            time.sleep(5)
-        return False
-
-    def save_db_log_files_as_gzip_tar(self, path: pathlib.Path, database_container: Container):
-        stream, stat = database_container.get_archive("/exa/logs/db")
-        with gzip.open(path, "wb") as file:
-            for chunk in stream:
-                file.write(chunk)

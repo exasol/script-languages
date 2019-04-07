@@ -83,14 +83,13 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         ipam_config = docker.types.IPAMConfig(
             pool_configs=[ipam_pool]
         )
-        self.remove_network(self.network_name) #TODO race condition possible
+        self.remove_network(self.network_name)  # TODO race condition possible
         network = self._client.networks.create(
             name=self.network_name,
             driver="bridge",
             ipam=ipam_config
         )
         return network_info
-
 
     def remove_network(self, network_name):
         try:

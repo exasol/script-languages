@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV ARCHIVE_UBUNTU_PREFIX=de.
 RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNTU_PREFIX\2/" /etc/apt/sources.list
 
-COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
+COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
 RUN apt-get -y update && \
     apt-get -y install \

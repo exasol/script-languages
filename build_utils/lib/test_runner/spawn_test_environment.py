@@ -5,14 +5,12 @@ import luigi
 from luigi import LocalTarget
 
 from build_utils.lib.build_config import build_config
-from build_utils.lib.build_or_pull_db_test_image import BuildOrPullDBTestContainerImage
 from build_utils.lib.data.dependency_collector.dependency_container_info_collector import \
     DependencyContainerInfoCollector
 from build_utils.lib.data.dependency_collector.dependency_database_info_collector import DependencyDatabaseInfoCollector
 from build_utils.lib.data.dependency_collector.dependency_docker_network_info_collector import \
     DependencyDockerNetworkInfoCollector
 from build_utils.lib.data.dependency_collector.dependency_environment_info_collector import ENVIRONMENT_INFO
-from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from build_utils.lib.data.environment_info import EnvironmentInfo
 from build_utils.lib.test_runner.populate_data import PopulateEngineSmallTestDataToDatabase
 from build_utils.lib.test_runner.prepare_network_for_test_environment import PrepareDockerNetworkForTestEnvironment
@@ -20,6 +18,7 @@ from build_utils.lib.test_runner.spawn_test_container import SpawnTestContainer
 from build_utils.lib.test_runner.spawn_test_database import SpawnTestDockerDatabase
 from build_utils.lib.test_runner.upload_exa_jdbc import UploadExaJDBC
 from build_utils.lib.test_runner.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
+from build_utils.lib.test_runner.wait_for_test_docker_database import WaitForTestDockerDatabase
 from build_utils.stoppable_task import StoppableTask
 
 
@@ -59,8 +58,11 @@ class SpawnTestDockerEnvironment(StoppableTask):
         )
         network_info, network_info_dict = \
             self.get_network_container_info(docker_network_output)
-        database_info, test_container_info = \
+        database_info, database_info_dict, \
+        test_container_info, test_container_info_dict = \
             yield from self.spawn_database_and_test_container(network_info_dict)
+        yield WaitForTestDockerDatabase(test_container_info_dict=test_container_info_dict,
+                                        database_info_dict=database_info_dict)
         test_environment_info = \
             EnvironmentInfo(name=self.environment_name,
                             database_info=database_info,
@@ -84,18 +86,19 @@ class SpawnTestDockerEnvironment(StoppableTask):
     def spawn_database_and_test_container(self, network_info_dict):
         database_and_test_container_output = \
             yield {
-                "database": SpawnTestDockerDatabase(db_container_name=self.db_container_name,
-                                                    network_info_dict=network_info_dict,
-                                                    ip_address_index_in_subnet=0),
                 "test_container": SpawnTestContainer(test_container_name=self.test_container_name,
                                                      network_info_dict=network_info_dict,
-                                                     ip_address_index_in_subnet=1)
+                                                     ip_address_index_in_subnet=1),
+                "database": SpawnTestDockerDatabase(db_container_name=self.db_container_name,
+                                                    network_info_dict=network_info_dict,
+                                                    ip_address_index_in_subnet=0)
             }
-        database_info, database_info_dict = \
-            self.get_database_info(database_and_test_container_output)
         test_container_info, test_container_info_dict = \
             self.get_test_container_info(database_and_test_container_output)
-        return database_info, test_container_info
+        database_info, database_info_dict = \
+            self.get_database_info(database_and_test_container_output)
+        return database_info, database_info_dict, \
+               test_container_info, test_container_info_dict
 
     def get_network_container_info(self, network_info_target):
         network_info = \
