@@ -7,6 +7,7 @@ from build_utils.export_container import ExportContainer_BaseTest, ExportContain
     ExportContainer_Release
 from build_utils.release_type import ReleaseType
 
+
 class TestContainer_Release(TestRunnerDBTestTask):
     def get_release_task(self, flavor_path):
         return ExportContainer_Release(flavor_path=flavor_path)

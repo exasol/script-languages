@@ -12,8 +12,8 @@ from build_utils.lib.data.container_info import ContainerInfo
 from build_utils.lib.data.dependency_collector.dependency_container_info_collector import CONTAINER_INFO
 from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from build_utils.lib.data.docker_network_info import DockerNetworkInfo
-from build_utils.lib.data.image_info import ImageInfo
 from build_utils.lib.docker_config import docker_config
+from build_utils.lib.test_runner.create_release_directory import CreateReleaseDirectory
 from build_utils.stoppable_task import StoppableTask
 
 
@@ -45,14 +45,18 @@ class SpawnTestContainer(StoppableTask):
         return {CONTAINER_INFO: self._test_container_info_target}
 
     def requires(self):
-        return {"test_container_image": BuildOrPullDBTestContainerImage()}
+        return {"test_container_image": BuildOrPullDBTestContainerImage(),
+                "releases_directory": CreateReleaseDirectory()}
 
     def run_task(self):
         test_container_image_info = self.get_test_container_image_info(self.input())
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         subnet = netaddr.IPNetwork(network_info.subnet)
-        ip_address = str(subnet[2+self.ip_address_index_in_subnet])
-        release_host_path = pathlib.Path(self._build_config.output_directory + "/releases").absolute()
+        ip_address = str(subnet[2 + self.ip_address_index_in_subnet])
+        # A later task which uses the test_container needs the exported container,
+        # but to access exported container from inside the test_container,
+        # we need to mount the release directory into the test_container.
+        release_host_path = pathlib.Path(self.get_release_directory()).absolute()
         tests_host_path = pathlib.Path("./tests").absolute()
         test_container = \
             self._client.containers.create(
@@ -71,7 +75,7 @@ class SpawnTestContainer(StoppableTask):
                         "mode": "ro"
                     }
                 })
-        self._client.networks.get(network_info.network_name).connect(test_container,ipv4_address=ip_address)
+        self._client.networks.get(network_info.network_name).connect(test_container, ipv4_address=ip_address)
         test_container.start()
         test_container.exec_run(cmd="cp -r /tests_src /tests")
         with self.output()[CONTAINER_INFO].open("w") as file:
@@ -79,6 +83,9 @@ class SpawnTestContainer(StoppableTask):
                                            ip_address=ip_address,
                                            network_info=network_info)
             file.write(container_info.to_json())
+
+    def get_release_directory(self):
+        return pathlib.Path(self.input()["releases_directory"].path).absolute().parent
 
     def get_test_container_image_info(self, input: Dict[str, Dict[str, LocalTarget]]):
         image_info_of_dependencies = \

@@ -15,5 +15,5 @@ before_script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 script:
-  - pipenv run python3 build_utils/cli.py run-db-test --flavor-path build_utils/test/resources/test-flavor/ --workers 3
+  - pipenv run python3 build_utils/cli.py run-db-test --flavor-path build_utils/test/resources/test-flavor/ --release-type Release --workers 5
 

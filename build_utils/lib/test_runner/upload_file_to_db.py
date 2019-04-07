@@ -105,7 +105,7 @@ class UploadFileToBucketFS(StoppableTask):
         if exit_code != 0:
             self.write_logs(log_output)
             raise Exception("Upload of %s failed, got following output %s"
-                            % file_to_upload, log_output)
+                            % (file_to_upload, log_output))
         return log_output
 
     def run_upload_command(self, file_to_upload, upload_target):

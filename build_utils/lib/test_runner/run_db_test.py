@@ -90,7 +90,9 @@ class RunDBTest(StoppableTask):
         thread.stop()
         thread.join()
         self._log_target.parent.mkdir(parents=True, exist_ok=True)
-        log_output = bash_cmd + "\n" + output.decode("utf-8")
+        log_output = "command: " + bash_cmd + "\n" + \
+                     "environment: " + str(environment) + "\n" + \
+                     output.decode("utf-8")
         if log_config().write_log_files_to_console == WriteLogFilesToConsole.all:
             self.logger.info("Task %s: Test results for db tests of flavor %s and release %s in %s\n%s"
                              % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
@@ -101,7 +103,7 @@ class RunDBTest(StoppableTask):
         with self._log_target.open("w") as file:
             file.write(log_output)
         with self.output().open("w") as file:
-            if exit_code==0:
+            if exit_code == 0:
                 file.write("OK")
             else:
                 file.write("FAILED")

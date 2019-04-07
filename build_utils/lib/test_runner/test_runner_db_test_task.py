@@ -181,7 +181,7 @@ class TestRunnerDBTestTask(StoppableTask):
         if not self.reuse_database and \
                 self.test_environment_info is not None \
                 and isinstance(exception, Exception) \
-                and exception.message != "Some test failed.":
+                and "Some test failed." in str(exception):
             StopTestEnvironment.stop(self.test_environment_info)
         super().on_failure(exception)
 

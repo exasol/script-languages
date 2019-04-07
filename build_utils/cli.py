@@ -1,4 +1,5 @@
 import getpass
+import json
 from typing import Tuple
 
 import luigi
@@ -6,6 +7,7 @@ from click._unicodefun import click
 
 from build_utils import DockerBuild, DockerPush, ExportContainer, TestContainer, UploadContainer
 from build_utils.stoppable_task import StoppableTask
+
 
 @click.group()
 def cli():
@@ -170,7 +172,7 @@ def upload(flavor_path: Tuple[str, ...],
 @click.option('--test-file', multiple=True, type=click.Path())
 @click.option('--test-language', multiple=True, type=str)
 @click.option('--test', multiple=True, type=str)
-@click.option('--test-environment-vars', type=str)
+@click.option('--test-environment-vars', type=str, default="""{"TRAVIS": ""}""")
 @click.option('--test-log-level', default="critical",
               type=click.Choice(['critical', 'error', "warning", "info", "debug"]))
 @click.option('--reuse-database/--no-reuse-database', default=False)
@@ -209,6 +211,7 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 ):
     set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+
     tasks = [TestContainer(flavor_paths=list(flavor_path),
                            release_types=list(release_type),
                            generic_language_tests=list(generic_language_test),
@@ -216,7 +219,7 @@ def run_db_test(flavor_path: Tuple[str, ...],
                            test_files=list(test_file),
                            test_restrictions=list(test),
                            languages=list(test_language),
-                           test_environment_vars=test_environment_vars,
+                           test_environment_vars=json.loads(test_environment_vars),
                            test_log_level=test_log_level,
                            reuse_database=reuse_database,
                            reuse_uploaded_container=reuse_uploaded_container
