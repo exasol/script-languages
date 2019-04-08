@@ -1,11 +1,11 @@
 FROM ubuntu:18.04
 RUN mkdir /conf /buckets
 
-COPY --from={{build_run}} /usr /usr
-COPY --from={{build_run}} /lib /lib
-COPY --from={{build_run}} /bin /bin
-COPY --from={{build_run}} /opt /opt
-COPY --from={{build_run}} /etc /etc
+COPY --from={{language_deps}} /usr /usr
+COPY --from={{language_deps}} /lib /lib
+COPY --from={{language_deps}} /bin /bin
+COPY --from={{language_deps}} /opt /opt
+COPY --from={{language_deps}} /etc /etc
 
 COPY --from={{flavor_customization}} /usr /usr
 COPY --from={{flavor_customization}} /lib /lib

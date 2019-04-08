@@ -99,7 +99,8 @@ class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
 
     def requires(self):
         return {"flavor_customization": DockerBuild_FlavorCustomization(flavor_path=self.flavor_path),
-                "build_run": DockerBuild_BuildRun(flavor_path=self.flavor_path)}
+                "build_run": DockerBuild_BuildRun(flavor_path=self.flavor_path),
+                "language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
 
 
 class DockerBuild(FlavorWrapperTask):
