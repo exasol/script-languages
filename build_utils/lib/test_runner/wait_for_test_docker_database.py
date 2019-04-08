@@ -88,11 +88,7 @@ class WaitForTestDockerDatabase(StoppableTask):
                             db_container_name))
 
         is_database_ready = \
-            self.wait_for_database_startup(
-                database_log_path,
-                test_container,
-                db_container
-            )
+            self.wait_for_database_startup(database_log_path,test_container,db_container)
         after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
         self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
         if not is_database_ready:
@@ -103,10 +99,21 @@ class WaitForTestDockerDatabase(StoppableTask):
     def wait_for_database_startup(self, database_log_path,
                                   test_container: Container,
                                   db_container: Container):
-        if database_log_path.exists():
-            shutil.rmtree(database_log_path)
-        database_log_path.mkdir(parents=True)
-        startup_log_file = database_log_path.joinpath("startup.log")
+        container_log_thread, is_database_ready_thread = \
+            self.start_wait_threads(database_log_path, db_container, test_container)
+        is_database_ready = \
+            self.wait_for_threads(container_log_thread, is_database_ready_thread)
+        self.join_threads(container_log_thread, is_database_ready_thread)
+        if not is_database_ready:
+            if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error:
+                self.logger.error("Task %s: Database startup failed %s failed\nStartup Log:\n%s",
+                                  self.task_id,
+                                  db_container.name,
+                                  "\n".join(container_log_thread.complete_log))
+        return is_database_ready
+
+    def start_wait_threads(self, database_log_path, db_container, test_container):
+        startup_log_file = self.prepare_startup_log_file(database_log_path)
         container_log_thread = ContainerLogThread(db_container,
                                                   self.task_id,
                                                   self.logger,
@@ -116,6 +123,22 @@ class WaitForTestDockerDatabase(StoppableTask):
         is_database_ready_thread = IsDatabaseReadyThread(self._database_info, test_container,
                                                          self.db_startup_timeout_in_seconds)
         is_database_ready_thread.start()
+        return container_log_thread, is_database_ready_thread
+
+    def prepare_startup_log_file(self, database_log_path):
+        if database_log_path.exists():
+            shutil.rmtree(database_log_path)
+        database_log_path.mkdir(parents=True)
+        startup_log_file = database_log_path.joinpath("startup.log")
+        return startup_log_file
+
+    def join_threads(self, container_log_thread, is_database_ready_thread):
+        container_log_thread.stop()
+        is_database_ready_thread.stop()
+        container_log_thread.join()
+        is_database_ready_thread.join()
+
+    def wait_for_threads(self, container_log_thread, is_database_ready_thread):
         is_database_ready = False
         while (True):
             if container_log_thread.error_message != None:
@@ -124,16 +147,6 @@ class WaitForTestDockerDatabase(StoppableTask):
             if is_database_ready_thread.finish:
                 is_database_ready = True
                 break
-        container_log_thread.stop()
-        is_database_ready_thread.stop()
-        container_log_thread.join()
-        is_database_ready_thread.join()
-        if not is_database_ready:
-            if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error:
-                self.logger.error("Task %s: Database startup failed %s failed\nStartup Log:\n%s",
-                                  self.task_id,
-                                  db_container.name,
-                                  "\n".join(container_log_thread.complete_log))
         return is_database_ready
 
     def save_db_log_files_as_gzip_tar(self, path: pathlib.Path, database_container: Container):
