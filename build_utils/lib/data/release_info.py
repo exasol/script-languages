@@ -3,7 +3,7 @@ from build_utils.lib.data.info import Info
 from build_utils.release_type import ReleaseType
 
 
-class ReleaseInfo(Info):
+class ExportInfo(Info):
 
     def __init__(self, path: str, complete_name: str, name: str, hash: str, is_new: bool,
                  release_type:ReleaseType, depends_on_image: ImageInfo):

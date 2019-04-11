@@ -1,7 +1,7 @@
 from typing import Dict
 
 from build_utils.lib.data.environment_info import EnvironmentInfo
-from build_utils.lib.data.release_info import ReleaseInfo
+from build_utils.lib.data.release_info import ExportInfo
 from build_utils.lib.data.dependency_collector.dependency_collector import DependencyInfoCollector
 
 

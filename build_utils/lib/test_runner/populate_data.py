@@ -17,22 +17,21 @@ class PopulateEngineSmallTestDataToDatabase(StoppableTask):
     reuse_data = luigi.BoolParameter(False, significant=False)
     test_environment_info_dict = luigi.DictParameter(significant=False)
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
         self._client = docker.DockerClient(base_url=self._docker_config.base_url)
         self._build_config = build_config()
-        test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
-        self._test_container_info = test_environment_info.test_container_info
-        self._database_info = test_environment_info.database_info
+        self._test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
+        self._test_container_info = self._test_environment_info.test_container_info
+        self._database_info = self._test_environment_info.database_info
         self._prepare_outputs()
 
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
-            "%s/logs/test-runner/db-test/populate_data/%s/%s"
+            "%s/logs/environment/%s/populate_data/%s"
             % (self._build_config.output_directory,
-               self._test_container_info.container_name,
+               self._test_environment_info.name,
                self.task_id))
         if self._log_target.exists():
             self._log_target.remove()
@@ -59,6 +58,6 @@ class PopulateEngineSmallTestDataToDatabase(StoppableTask):
         if exit_code != 0:
             raise Exception("Failed to populate the database with data.\nLog: %s" % cmd + "\n" + output.decode("utf-8"))
 
-    def write_logs(self, output:str):
+    def write_logs(self, output: str):
         with self._log_target.open("w") as file:
             file.write(output)

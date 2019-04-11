@@ -16,11 +16,11 @@ from build_utils.lib.command_log_handler import CommandLogHandler
 from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from build_utils.lib.data.dependency_collector.dependency_release_info_collector import RELEASE_INFO
 from build_utils.lib.data.image_info import ImageInfo
-from build_utils.lib.data.release_info import ReleaseInfo
+from build_utils.lib.data.release_info import ExportInfo
 from build_utils.lib.docker_config import docker_config
 from build_utils.lib.flavor import flavor
 from build_utils.lib.still_running_logger import StillRunningLogger
-from build_utils.lib.test_runner.create_release_directory import CreateReleaseDirectory
+from build_utils.lib.test_runner.create_export_directory import CreateExportDirectory
 from build_utils.stoppable_task import StoppableTask
 from build_utils.release_type import ReleaseType
 
@@ -37,7 +37,7 @@ class ExportContainerTask(StoppableTask):
 
     def _prepare_outputs(self):
         self._target = luigi.LocalTarget(
-            "%s/release_info/%s/%s"
+            "%s/info/export/%s/%s"
             % (self._build_config.output_directory,
                flavor.get_name_from_path(self.flavor_path),
                self.get_release_type().name
@@ -51,7 +51,7 @@ class ExportContainerTask(StoppableTask):
 
     def requires(self):
         return {"release_task": self.get_release_task(self.flavor_path),
-                "releases_directory": CreateReleaseDirectory()}
+                "export_directory": CreateExportDirectory()}
 
     def get_release_task(self, flavor_path):
         pass
@@ -76,7 +76,7 @@ class ExportContainerTask(StoppableTask):
         self.write_release_info(image_info_of_release_image, is_new, release_file, release_name)
 
     def get_release_directory(self):
-        return pathlib.Path(self.input()["releases_directory"].path).absolute().parent
+        return pathlib.Path(self.input()["export_directory"].path).absolute().parent
 
     def remove_release_file_if_requested(self, release_file):
         if release_file.exists() and \
@@ -87,7 +87,7 @@ class ExportContainerTask(StoppableTask):
 
     def write_release_info(self, image_info_of_release_image: ImageInfo, is_new: bool,
                            release_file: pathlib.Path, release_name: str):
-        release_info = ReleaseInfo(
+        release_info = ExportInfo(
             path=str(release_file),
             complete_name=release_name,
             name=flavor.get_name_from_path(self.flavor_path),
@@ -158,7 +158,7 @@ class ExportContainerTask(StoppableTask):
         return extract_dir
 
     def prepare_log_dir(self, release_image_name: str):
-        log_dir = pathlib.Path("%s/logs/release/%s/%s/"
+        log_dir = pathlib.Path("%s/logs/exports/%s/%s/"
                                % (self._build_config.output_directory,
                                   release_image_name,
                                   datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))

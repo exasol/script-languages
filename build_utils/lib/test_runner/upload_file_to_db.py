@@ -25,16 +25,16 @@ class UploadFileToBucketFS(StoppableTask):
         self._docker_config = docker_config()
         self._client = docker.DockerClient(base_url=self._docker_config.base_url)
         self._build_config = build_config()
-        test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
+        self._test_environment_info = test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = test_environment_info.test_container_info
         self._database_info = test_environment_info.database_info
         self._prepare_outputs()
 
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
-            "%s/logs/test-runner/db-test/bucketfs-upload/%s/%s"
+            "%s/logs/environment/%s/bucketfs-upload/%s"
             % (self._build_config.output_directory,
-               self._test_container_info.container_name,
+               self._test_environment_info.name,
                self.task_id))
         if self._log_target.exists():
             self._log_target.remove()

@@ -41,7 +41,7 @@ class DockerPullOrBuildImageTask(StoppableTask):
 
     def _prepare_outputs(self):
         self._image_info_target = luigi.LocalTarget(
-            "%s/image_info/%s/%s"
+            "%s/info/image/%s/%s"
             % (self._build_config.output_directory,
                self._image_name, self._image_tag))
         if self._image_info_target.exists():

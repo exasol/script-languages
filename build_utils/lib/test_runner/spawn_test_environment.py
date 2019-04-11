@@ -38,7 +38,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
 
     def _prepare_outputs(self):
         self._environment_info_target = luigi.LocalTarget(
-            "%s/test-runner/db-test/test-environment/%s/environment_info"
+            "%s/info/environment/%s/environment_info"
             % (self._build_config.output_directory,
                self.environment_name))
         if self._environment_info_target.exists():
@@ -51,9 +51,11 @@ class SpawnTestDockerEnvironment(StoppableTask):
 
     def run_task(self):
         docker_network_output = yield PrepareDockerNetworkForTestEnvironment(
+            environment_name=self.environment_name,
             test_container_name=self.test_container_name,
             db_container_name=self.db_container_name,
             network_name=self.network_name,
+
             reuse=self.reuse_database,
         )
         network_info, network_info_dict = \
@@ -61,7 +63,8 @@ class SpawnTestDockerEnvironment(StoppableTask):
         database_info, database_info_dict, \
         test_container_info, test_container_info_dict = \
             yield from self.spawn_database_and_test_container(network_info_dict)
-        yield WaitForTestDockerDatabase(test_container_info_dict=test_container_info_dict,
+        yield WaitForTestDockerDatabase(environment_name=self.environment_name,
+                                        test_container_info_dict=test_container_info_dict,
                                         database_info_dict=database_info_dict)
         test_environment_info = \
             EnvironmentInfo(name=self.environment_name,
@@ -86,12 +89,16 @@ class SpawnTestDockerEnvironment(StoppableTask):
     def spawn_database_and_test_container(self, network_info_dict):
         database_and_test_container_output = \
             yield {
-                "test_container": SpawnTestContainer(test_container_name=self.test_container_name,
-                                                     network_info_dict=network_info_dict,
-                                                     ip_address_index_in_subnet=1),
-                "database": SpawnTestDockerDatabase(db_container_name=self.db_container_name,
-                                                    network_info_dict=network_info_dict,
-                                                    ip_address_index_in_subnet=0)
+                "test_container": SpawnTestContainer(
+                    environment_name=self.environment_name,
+                    test_container_name=self.test_container_name,
+                    network_info_dict=network_info_dict,
+                    ip_address_index_in_subnet=1),
+                "database": SpawnTestDockerDatabase(
+                    environment_name=self.environment_name,
+                    db_container_name=self.db_container_name,
+                    network_info_dict=network_info_dict,
+                    ip_address_index_in_subnet=0)
             }
         test_container_info, test_container_info_dict = \
             self.get_test_container_info(database_and_test_container_output)

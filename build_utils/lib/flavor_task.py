@@ -12,7 +12,7 @@ class FlavorTask(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.flavor_paths is not None:
-            self.actual_flavor_paths = self.flavor_paths
+            self.actual_flavor_paths = set(self.flavor_paths)
         elif self.flavor_path is not None:
             self.actual_flavor_paths = [self.flavor_path]
         else:

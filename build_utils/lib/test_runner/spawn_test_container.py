@@ -13,11 +13,12 @@ from build_utils.lib.data.dependency_collector.dependency_container_info_collect
 from build_utils.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from build_utils.lib.data.docker_network_info import DockerNetworkInfo
 from build_utils.lib.docker_config import docker_config
-from build_utils.lib.test_runner.create_release_directory import CreateReleaseDirectory
+from build_utils.lib.test_runner.create_export_directory import CreateExportDirectory
 from build_utils.stoppable_task import StoppableTask
 
 
 class SpawnTestContainer(StoppableTask):
+    environment_name = luigi.Parameter()
     test_container_name = luigi.Parameter()
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
@@ -35,8 +36,9 @@ class SpawnTestContainer(StoppableTask):
 
     def _prepare_outputs(self):
         self._test_container_info_target = luigi.LocalTarget(
-            "%s/test-runner/db-test/test-container/%s/info"
+            "%s/info/environment/%s/test-container/%s/container_info"
             % (self._build_config.output_directory,
+               self.environment_name,
                self.test_container_name))
         if self._test_container_info_target.exists():
             self._test_container_info_target.remove()
@@ -46,7 +48,7 @@ class SpawnTestContainer(StoppableTask):
 
     def requires(self):
         return {"test_container_image": BuildOrPullDBTestContainerImage(),
-                "releases_directory": CreateReleaseDirectory()}
+                "export_directory": CreateExportDirectory()}
 
     def run_task(self):
         test_container_image_info = self.get_test_container_image_info(self.input())
@@ -56,7 +58,7 @@ class SpawnTestContainer(StoppableTask):
         # A later task which uses the test_container needs the exported container,
         # but to access exported container from inside the test_container,
         # we need to mount the release directory into the test_container.
-        release_host_path = pathlib.Path(self.get_release_directory()).absolute()
+        exports_host_path = pathlib.Path(self.get_release_directory()).absolute()
         tests_host_path = pathlib.Path("./tests").absolute()
         test_container = \
             self._client.containers.create(
@@ -66,8 +68,8 @@ class SpawnTestContainer(StoppableTask):
                 command="sleep infinity",
                 detach=True,
                 volumes={
-                    release_host_path: {
-                        "bind": "/releases",
+                    exports_host_path: {
+                        "bind": "/exports",
                         "mode": "ro"
                     },
                     tests_host_path: {
@@ -85,7 +87,7 @@ class SpawnTestContainer(StoppableTask):
             file.write(container_info.to_json())
 
     def get_release_directory(self):
-        return pathlib.Path(self.input()["releases_directory"].path).absolute().parent
+        return pathlib.Path(self.input()["export_directory"].path).absolute().parent
 
     def get_test_container_image_info(self, input: Dict[str, Dict[str, LocalTarget]]):
         image_info_of_dependencies = \

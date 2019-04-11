@@ -1,11 +1,12 @@
 import getpass
 import json
-from typing import Tuple
+from typing import Tuple, Callable
 
 import luigi
 from click._unicodefun import click
+from luigi import LocalTarget
 
-from build_utils import DockerBuild, DockerPush, ExportContainer, TestContainer, UploadContainer
+from build_utils import DockerBuild, DockerPush, ExportContainer, TestContainer, UploadContainer, CleanImages
 from build_utils.stoppable_task import StoppableTask
 
 flavor_options = [
@@ -38,17 +39,17 @@ docker_options = [
                       "Without password option the system prompts for the password."),
 ]
 
+output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),
+                                default=".build_output",
+                                show_default=True,
+                                help="Output directory where the system stores all output and log files.")
 build_options = [
     click.option('--force-build/--no-force-build', default=False,
                  help="Forces the system to complete rebuild of a all stages."),
     click.option('--force-pull/--no-force-pull', default=False,
                  help="Forces the system to pull all stages if available, otherwise it rebuilds a stage."),
 
-    click.option('--output-directory',
-                 type=click.Path(file_okay=False, dir_okay=True),
-                 default=".build_ouptuts",
-                 show_default=True,
-                 help="Output directory where the system stores all output and log files."),
+    output_directory,
     click.option('--temporary-base-directory',
                  type=click.Path(file_okay=False, dir_okay=True),
                  default="/tmp",
@@ -164,7 +165,7 @@ def export(flavor_path: Tuple[str, ...],
     """
     set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
-    tasks = [ExportContainer(flavor_paths=list(flavor_path), release_types=list(release_type))]
+    tasks = [ExportContainer(flavor_paths=list(flavor_path), release_types=list([release_type]))]
     run_tasks(tasks, workers)
 
 
@@ -176,9 +177,11 @@ def export(flavor_path: Tuple[str, ...],
 @click.option('--bucketfs-port', type=int, required=True)
 @click.option('--bucketfs-username', type=str, required=True)
 @click.option('--bucketfs-password', type=str)
+@click.option('--bucketfs-https/--no-bucketfs-https', default=False)
 @click.option('--bucketfs-name', type=str, required=True)
 @click.option('--bucket-name', type=str, required=True)
 @click.option('--path-in-bucket', type=str, required=True)
+@click.option('--release-name', type=str, default=None)
 @add_options(build_options)
 @add_options(docker_options)
 @add_options(system_options)
@@ -188,9 +191,11 @@ def upload(flavor_path: Tuple[str, ...],
            bucketfs_port: int,
            bucketfs_username: str,
            bucketfs_password: str,
+           bucketfs_https: bool,
            bucketfs_name: str,
            bucket_name: str,
            path_in_bucket: str,
+           release_name: str,
            force_build: bool,
            force_pull: bool,
            output_directory: str,
@@ -209,15 +214,70 @@ def upload(flavor_path: Tuple[str, ...],
     set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
     tasks = [UploadContainer(flavor_paths=list(flavor_path),
-                             release_type=release_type,
+                             release_types=list([release_type]),
                              database_host=database_host,
                              bucketfs_port=bucketfs_port,
                              bucketfs_username=bucketfs_username,
                              bucketfs_password=bucketfs_password,
-                             bucketfs_name=bucketfs_name,
                              bucket_name=bucket_name,
-                             path_in_bucket=path_in_bucket
+                             path_in_bucket=path_in_bucket,
+                             bucketfs_https=bucketfs_https,
+                             release_name=release_name,
+                             bucketfs_name=bucketfs_name
                              )]
+
+    def on_success():
+        target = luigi.LocalTarget(
+            "%s/uploads/current" % (output_directory))
+
+        with target.open("r") as f:
+            print(f.read())
+
+    run_tasks(tasks, workers, on_success=on_success)
+
+
+@cli.command()
+@add_options(flavor_options)
+@add_options([output_directory])
+@add_options(docker_options)
+@add_options(system_options)
+def clean_flavor_images(flavor_path: Tuple[str, ...],
+                  output_directory: str,
+                  docker_base_url: str,
+                  docker_repository_name: str,
+                  docker_username: str,
+                  docker_password: str,
+                  workers: int):
+    """
+    This command uploads the whole script language container package of the flavor to the database.
+    If the stages or the packaged container do not exists locally, the system will build, pull or
+    export them before the upload.
+    """
+    set_output_directory(output_directory)
+    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+    tasks = [CleanImages(flavor_path=flavor_path[0])]
+    run_tasks(tasks, workers)
+
+
+@cli.command()
+@add_options([output_directory])
+@add_options(docker_options)
+@add_options(system_options)
+def clean_all_images(
+        output_directory: str,
+        docker_base_url: str,
+        docker_repository_name: str,
+        docker_username: str,
+        docker_password: str,
+        workers: int):
+    """
+    This command uploads the whole script language container package of the flavor to the database.
+    If the stages or the packaged container do not exists locally, the system will build, pull or
+    export them before the upload.
+    """
+    set_output_directory(output_directory)
+    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+    tasks = [CleanImages()]
     run_tasks(tasks, workers)
 
 
@@ -239,7 +299,7 @@ def upload(flavor_path: Tuple[str, ...],
                    "The option can be repeated with different test files. "
                    "The test runner will run all specified test files."
               )
-@click.option('--test-language', multiple=True, type=str,
+@click.option('--test-language', multiple=True, type=str, default=[None],
               help="Specifies with which language the test files get executed."
                    "The option can be repeated with different languages. "
                    "The test runner will run the test files with all specified languages."
@@ -308,17 +368,29 @@ def run_db_test(flavor_path: Tuple[str, ...],
                            reuse_database=reuse_database,
                            reuse_uploaded_container=reuse_uploaded_container
                            )]
-    run_tasks(tasks, workers)
+    def on_success():
+        target = luigi.LocalTarget(
+            "%s/logs/test-runner/db-test/tests/current" % (output_directory))
+
+        print("Test Results:")
+        with target.open("r") as f:
+            print(f.read())
+
+    run_tasks(tasks, workers, on_success=on_success)
 
 
 def set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory):
     luigi.configuration.get_config().set('build_config', 'force_build', str(force_build))
     luigi.configuration.get_config().set('build_config', 'force_pull', str(force_pull))
-    if output_directory is not None:
-        luigi.configuration.get_config().set('build_config', 'output_directory', output_directory)
+    set_output_directory(output_directory)
     if temporary_base_directory is not None:
         luigi.configuration.get_config().set('build_config', 'temporary_base_directory', temporary_base_directory)
     luigi.configuration.get_config().set('build_config', 'log_build_context_content', str(log_build_context_content))
+
+
+def set_output_directory(output_directory):
+    if output_directory is not None:
+        luigi.configuration.get_config().set('build_config', 'output_directory', output_directory)
 
 
 def set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username):
@@ -336,13 +408,19 @@ def set_docker_config(docker_base_url, docker_password, docker_repository_name, 
             luigi.configuration.get_config().set('docker_config', 'password', password)
 
 
-def run_tasks(tasks, workers):
+def run_tasks(tasks, workers,
+              on_success: Callable[[], None] = None,
+              on_failure: Callable[[], None] = None):
     if StoppableTask.failed_target.exists():
         StoppableTask.failed_target.remove()
     luigi.build(tasks, workers=workers, local_scheduler=True, log_level="INFO")
     if StoppableTask.failed_target.exists():
+        if on_failure is not None:
+            on_failure()
         exit(1)
     else:
+        if on_success is not None:
+            on_success()
         exit(0)
 
 

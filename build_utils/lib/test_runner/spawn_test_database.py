@@ -27,9 +27,11 @@ from build_utils.stoppable_task import StoppableTask
 BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
 
+
 class SpawnTestDockerDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
+    environment_name = luigi.Parameter()
     db_container_name = luigi.Parameter()
     reuse_database = luigi.BoolParameter(False, significant=False)
     network_info_dict = luigi.DictParameter(significant=False)
@@ -53,8 +55,9 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     def _prepare_outputs(self):
         self._database_info_target = luigi.LocalTarget(
-            "%s/test-runner/db-test/database/%s/info"
+            "%s/info/environment/%s/database/%s/database_info"
             % (self._build_config.output_directory,
+               self.environment_name,
                self.db_container_name))
         if self._database_info_target.exists():
             self._database_info_target.remove()
@@ -141,7 +144,9 @@ class SpawnTestDockerDatabase(StoppableTask):
                 detach=True,
                 privileged=True,
                 volumes={db_volume.name: {"bind": "/exa", "mode": "rw"}},
-                network_mode=None)
+                network_mode=None,
+                ports={DB_PORT: DB_PORT, BUCKETFS_PORT: BUCKETFS_PORT}
+            )
         self._client.networks.get(network_info.network_name).connect(db_container, ipv4_address=db_ip_address)
         db_container.start()
         container_info = \
@@ -225,7 +230,7 @@ class SpawnTestDockerDatabase(StoppableTask):
                              volume_preperation_container: Container,
                              db_private_network: str,
                              docker_db_image_info: ImageInfo):
-        #db_private_network="128.0.0.2/24"
+        # db_private_network="128.0.0.2/24"
         file_like_object = io.BytesIO()
         with tarfile.open(fileobj=file_like_object, mode="x") as tar:
             tar.add("build_utils/lib/test_runner/init_db.sh", "init_db.sh")
@@ -258,4 +263,4 @@ class SpawnTestDockerDatabase(StoppableTask):
         (exit_code, output) = volume_preperation_container.exec_run(cmd="bash /init_db.sh")
         if exit_code != 0:
             raise Exception(
-                "Error during preperation of docker-db volume %s got following ouput %s" % (db_volume.name, output))
+                "Error during preperation of docker-db volume %s got following output %s" % (db_volume.name, output))

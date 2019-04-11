@@ -7,4 +7,4 @@ class build_config(luigi.Config):
     log_build_context_content = luigi.BoolParameter(False)
     #keep_build_context = luigi.BoolParameter(False)
     temporary_base_directory = luigi.OptionalParameter(None)
-    output_directory = luigi.Parameter(".build_ouput")
+    output_directory = luigi.Parameter(".build_output")

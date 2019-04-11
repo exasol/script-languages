@@ -49,6 +49,7 @@ class IsDatabaseReadyThread(Thread):
 
 class WaitForTestDockerDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
+    environment_name = luigi.Parameter()
     test_container_info_dict = luigi.DictParameter(significant=False)
     database_info_dict = luigi.DictParameter(significant=False)
     db_startup_timeout_in_seconds = luigi.IntParameter(5 * 60, significant=False)
@@ -69,8 +70,9 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def _prepare_outputs(self):
         self._database_ready_target = luigi.LocalTarget(
-            "%s/test-runner/db-test/database/%s/ready"
+            "%s/info/environment/%s/database/%s/ready"
             % (self._build_config.output_directory,
+               self.environment_name,
                self._database_info.container_info.container_name))
         if self._database_ready_target.exists():
             self._database_ready_target.remove()
@@ -83,12 +85,13 @@ class WaitForTestDockerDatabase(StoppableTask):
         db_container_name = self._database_info.container_info.container_name
         db_container = self._client.containers.get(db_container_name)
         database_log_path = \
-            pathlib.Path("%s/logs/test-runner/db-test/database/%s/"
+            pathlib.Path("%s/logs/environment/%s/database/%s/"
                          % (self._build_config.output_directory,
+                            self.environment_name,
                             db_container_name))
 
         is_database_ready = \
-            self.wait_for_database_startup(database_log_path,test_container,db_container)
+            self.wait_for_database_startup(database_log_path, test_container, db_container)
         after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
         self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
         if not is_database_ready:

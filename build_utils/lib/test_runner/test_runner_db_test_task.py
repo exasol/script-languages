@@ -14,7 +14,7 @@ from build_utils.lib.docker_config import docker_config
 from build_utils.lib.flavor import flavor
 from build_utils.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
 from build_utils.lib.test_runner.spawn_test_environment import SpawnTestDockerEnvironment
-from build_utils.lib.test_runner.upload_release_container import UploadReleaseContainer
+from build_utils.lib.test_runner.upload_exported_container import UploadExportedContainer
 from build_utils.stoppable_task import StoppableTask
 from build_utils.release_type import ReleaseType
 
@@ -88,7 +88,7 @@ class TestRunnerDBTestTask(StoppableTask):
         reuse_release_container = self.reuse_database and \
                                   self.reuse_uploaded_container and \
                                   not release_info.is_new
-        yield UploadReleaseContainer(
+        yield UploadExportedContainer(
             environment_name=self.test_environment_info.name,
             release_name=release_info.name,
             release_type=release_info.release_type.name,
@@ -96,10 +96,10 @@ class TestRunnerDBTestTask(StoppableTask):
             release_info_dict=release_info.to_dict(),
             reuse_uploaded=reuse_release_container)
 
-        result_status = yield from self.run_test(test_environment_info_dict)
+        result_status, summary = yield from self.run_test(test_environment_info_dict)
 
         with self.output().open("w") as output_file:
-            output_file.write(result_status)
+            output_file.write(f"""{self.flavor_name} {self.release_type} {result_status}\n""")
         if result_status == "FAILED":
             raise Exception("Some test failed.")
 
@@ -122,7 +122,11 @@ class TestRunnerDBTestTask(StoppableTask):
             languages=self.languages
         )
         with test_output.open("r") as test_output_file:
-            status = test_output_file.read()
+            summary = test_output_file.read()
+        result_status = self.get_result_status(summary)
+        return result_status, summary
+
+    def get_result_status(self, status):
         result_status = "OK"
         for line in status.split("\n"):
             if line != "":

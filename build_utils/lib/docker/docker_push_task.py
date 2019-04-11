@@ -32,7 +32,7 @@ class DockerPushImageTask(StoppableTask):
 
     def _prepare_outputs(self):
         self._push_info_target = luigi.LocalTarget(
-            "%s/push_info/%s"
+            "%s/info/push/%s"
             % (self._build_config.output_directory, self.task_id))
         if self._push_info_target.exists():
             self._push_info_target.remove()

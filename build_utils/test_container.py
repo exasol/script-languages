@@ -1,6 +1,7 @@
 import luigi
 
-from build_utils.lib.flavor_task import FlavorWrapperTask
+from build_utils.lib.build_config import build_config
+from build_utils.lib.flavor_task import FlavorWrapperTask, FlavorTask
 from build_utils.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
 from build_utils.stoppable_task import StoppableTask
 from build_utils.export_container import ExportContainer_BaseTest, ExportContainer_FlavorTest, \
@@ -32,7 +33,7 @@ class TestContainer_FlavorTest(TestRunnerDBTestTask):
         return ReleaseType.FlavorTest
 
 
-class TestContainer(FlavorWrapperTask):
+class TestContainer(FlavorTask):
     release_types = luigi.ListParameter(["Release"])
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
@@ -47,6 +48,8 @@ class TestContainer(FlavorWrapperTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._build_config = build_config()
+        self._prepare_outputs()
         if StoppableTask.failed_target.exists():
             print("removed failed target")
             StoppableTask.failed_target.remove()
@@ -74,3 +77,23 @@ class TestContainer(FlavorWrapperTask):
         if ReleaseType.FlavorTest in self.actual_release_types:
             result.append(TestContainer_FlavorTest(**args))
         return result
+
+    def _prepare_outputs(self):
+        self._target = luigi.LocalTarget(
+            "%s/logs/test-runner/db-test/tests/current"
+            % (self._build_config.output_directory))
+        if self._target.exists():
+            self._target.remove()
+
+    def output(self):
+        return self._target
+
+    def run(self):
+        with self.output().open("w") as out_file:
+            for releases in self.input():
+                for in_target in releases:
+                    with in_target.open("r") as in_file:
+                        out_file.write(in_file.read())
+                        out_file.write("\n")
+                        out_file.write("=================================================")
+                        out_file.write("\n")

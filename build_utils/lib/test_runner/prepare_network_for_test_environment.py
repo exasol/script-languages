@@ -14,6 +14,7 @@ from build_utils.stoppable_task import StoppableTask
 class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
+    environment_name = luigi.Parameter()
     network_name = luigi.Parameter()
     test_container_name = luigi.Parameter(significant=False)
     db_container_name = luigi.Parameter(significant=False)
@@ -29,8 +30,9 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
 
     def _prepare_outputs(self):
         self._network_info_target = luigi.LocalTarget(
-            "%s/test-runner/db-test/network/%s/network_info"
+            "%s/info/environment/%s/network/%s/network_info"
             % (self._build_config.output_directory,
+               self.environment_name,
                self.network_name))
         if self._network_info_target.exists():
             self._network_info_target.remove()
