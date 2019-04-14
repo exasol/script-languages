@@ -15,7 +15,7 @@ run () {
     fi
     cd "$SCRIPT_DIR"
     export PYTHONPATH="."
-    $PIPENV_BIN run python3 build_utils/exaslct.py $COMMAND_LINE_ARGS
+    $PIPENV_BIN run python3 exaslct_src/exaslct.py $COMMAND_LINE_ARGS
 }
 
 find_via_pip () {

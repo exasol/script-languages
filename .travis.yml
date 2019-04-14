@@ -10,10 +10,6 @@ services:
 install:
   - sudo pip install pipenv
 
-before_script:
-  - pipenv install
-  - export PYTHONPATH=$PYTHONPATH:$(pwd)
-
 script:
-  - pipenv run python3 build_utils/cli.py run-db-test --flavor-path build_utils/test/resources/test-flavor/ --release-type Release --workers 5
+  - ./exaslct run-db-test --flavor-path exaslct_src/test/resources/test-flavor/ --release-type Release --workers 5
 
