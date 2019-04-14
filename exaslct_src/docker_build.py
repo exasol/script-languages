@@ -4,7 +4,6 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.docker.docker_pull_or_build_flavor_image_task import DockerPullOrBuildFlavorImageTask
 from exaslct_src.lib.flavor_task import FlavorWrapperTask
 
-
 class DockerBuild_UDFClientDeps(DockerPullOrBuildFlavorImageTask):
 
     def get_build_step(self) -> str:
@@ -22,15 +21,10 @@ class DockerBuild_LanguageDeps(DockerPullOrBuildFlavorImageTask):
     def requires(self):
         return {"udfclient_deps": DockerBuild_UDFClientDeps(flavor_path=self.flavor_path)}
 
-
 class DockerBuild_BuildDeps(DockerPullOrBuildFlavorImageTask):
 
     def get_build_step(self) -> str:
         return "build_deps"
-
-    def requires(self):
-        return {"language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
-
 
 class DockerBuild_BuildRun(DockerPullOrBuildFlavorImageTask):
 
@@ -38,7 +32,8 @@ class DockerBuild_BuildRun(DockerPullOrBuildFlavorImageTask):
         return "build_run"
 
     def requires(self):
-        return {"build_deps": DockerBuild_BuildDeps(flavor_path=self.flavor_path)}
+        return {"build_deps": DockerBuild_BuildDeps(flavor_path=self.flavor_path),
+                "language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"src": "src"}
@@ -59,7 +54,8 @@ class DockerBuild_BaseTestBuildRun(DockerPullOrBuildFlavorImageTask):
         return "base_test_build_run"
 
     def requires(self):
-        return {"base_test_deps": DockerBuild_BaseTestDeps(flavor_path=self.flavor_path)}
+        return {"base_test_deps": DockerBuild_BaseTestDeps(flavor_path=self.flavor_path),
+                "language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"src": "src", "emulator": "emulator"}

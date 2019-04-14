@@ -15,7 +15,6 @@ RUN apt-get -y update && \
         libprotobuf-dev \
         libssl-dev \
         unzip \
-        libpcre3-dev \
         curl \
         libnss-db && \
     locale-gen en_US.UTF-8 && \

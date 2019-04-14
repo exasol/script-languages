@@ -27,7 +27,7 @@ from exaslct_src.stoppable_task import StoppableTask
 BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
 
-
+#TODO add port mapping
 class SpawnTestDockerDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
@@ -145,7 +145,7 @@ class SpawnTestDockerDatabase(StoppableTask):
                 privileged=True,
                 volumes={db_volume.name: {"bind": "/exa", "mode": "rw"}},
                 network_mode=None,
-                ports={DB_PORT: DB_PORT, BUCKETFS_PORT: BUCKETFS_PORT}
+                #ports={DB_PORT: DB_PORT, BUCKETFS_PORT: BUCKETFS_PORT}
             )
         self._client.networks.get(network_info.network_name).connect(db_container, ipv4_address=db_ip_address)
         db_container.start()
