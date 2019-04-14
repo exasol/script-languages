@@ -50,3 +50,5 @@ def clean_all_images(
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
     tasks = [CleanImages()]
     run_tasks(tasks, workers)
+
+# TODO add commands clean containers, networks, all

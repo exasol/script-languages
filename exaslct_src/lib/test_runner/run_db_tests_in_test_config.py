@@ -8,7 +8,7 @@ from exaslct_src.lib.test_runner.run_db_test import RunDBTest
 from exaslct_src.lib.test_runner.run_db_test_in_directory import RunDBTestsInDirectory
 from exaslct_src.stoppable_task import StoppableTask
 
-
+# TODO fetch database logs after test execution
 class RunDBTestsInTestConfig(StoppableTask):
     flavor_name = luigi.Parameter()
     release_type = luigi.Parameter()

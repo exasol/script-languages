@@ -15,7 +15,9 @@ from exaslct_src.lib.flavor import flavor
 from exaslct_src.release_type import ReleaseType
 from exaslct_src.stoppable_task import StoppableTask
 
-
+# TODO check if upload was successfull by requesting the file
+# TODO add error checks and propose reasons for the error
+# TODO extract bucketfs interaction into own module
 class UploadContainerTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()

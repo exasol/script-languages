@@ -71,6 +71,12 @@ class SpawnTestDockerEnvironment(StoppableTask):
                             database_info=database_info,
                             test_container_info=test_container_info)
         test_environment_info_dict = test_environment_info.to_dict()
+        yield from self.prepare_test_database(test_environment_info_dict)
+        self.write_output(test_environment_info)
+
+    def setup_test_database(self, test_environment_info_dict):
+        # TODO add reuse_database_setup
+        # TODO check if database is setup
         yield [UploadExaJDBC(environment_name=self.environment_name,
                              test_environment_info_dict=test_environment_info_dict,
                              reuse_uploaded=self.reuse_database),
@@ -83,8 +89,6 @@ class SpawnTestDockerEnvironment(StoppableTask):
                    test_environment_info_dict=test_environment_info_dict,
                    reuse_data=self.reuse_database
                )]
-
-        self.write_output(test_environment_info)
 
     def spawn_database_and_test_container(self, network_info_dict):
         database_and_test_container_output = \

@@ -1,10 +1,8 @@
 import luigi
-from luigi import LocalTarget
-from luigi.mock import MockTarget
 
 from exaslct_src.export_container import ExportContainer_Release, ExportContainer_BaseTest, ExportContainer_FlavorTest
 from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.flavor_task import FlavorWrapperTask, FlavorTask
+from exaslct_src.lib.flavor_task import FlavorTask
 from exaslct_src.lib.upload_container_task import UploadContainerTask
 from exaslct_src.release_type import ReleaseType
 

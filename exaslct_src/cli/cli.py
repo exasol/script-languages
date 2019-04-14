@@ -5,3 +5,4 @@ from click._unicodefun import click
 def cli():
     pass
 
+# TODO add command spawn environment, database

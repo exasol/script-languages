@@ -24,7 +24,9 @@ from exaslct_src.lib.test_runner.create_export_directory import CreateExportDire
 from exaslct_src.stoppable_task import StoppableTask
 from exaslct_src.release_type import ReleaseType
 
-
+# TODO make exported container easier accessible for users
+# TODO print path of exported container at the command end
+# TODO add output path where the container gets copied to
 class ExportContainerTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()

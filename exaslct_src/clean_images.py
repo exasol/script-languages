@@ -10,7 +10,8 @@ from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.stoppable_task import StoppableTask
 
-
+# TODO remove only images that are not represented by current flavor directories
+# TODO requires that docker build only returns the image_info without actually building or pulling
 class CleanImages(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.OptionalParameter(None)
