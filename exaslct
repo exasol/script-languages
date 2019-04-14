@@ -10,7 +10,12 @@ run () {
     then
         echo "Using existing virtual environment"
     else
-        echo "Creating new virtual environment"
+        echo "Creating new virtual environment and installing dependencies"
+        $PIPENV_BIN install
+    fi
+    if [ ! -f Pipfile.lock ];
+    then
+        echo "Installing dependencies"
         $PIPENV_BIN install
     fi
     cd "$SCRIPT_DIR"
