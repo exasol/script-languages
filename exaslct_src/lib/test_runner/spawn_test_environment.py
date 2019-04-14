@@ -71,7 +71,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
                             database_info=database_info,
                             test_container_info=test_container_info)
         test_environment_info_dict = test_environment_info.to_dict()
-        yield from self.prepare_test_database(test_environment_info_dict)
+        yield from self.setup_test_database(test_environment_info_dict)
         self.write_output(test_environment_info)
 
     def setup_test_database(self, test_environment_info_dict):
