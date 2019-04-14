@@ -230,7 +230,6 @@ class SpawnTestDockerDatabase(StoppableTask):
                              volume_preperation_container: Container,
                              db_private_network: str,
                              docker_db_image_info: ImageInfo):
-        # db_private_network="128.0.0.2/24"
         file_like_object = io.BytesIO()
         with tarfile.open(fileobj=file_like_object, mode="x") as tar:
             tar.add("build_utils/lib/test_runner/init_db.sh", "init_db.sh")

@@ -1,3 +1,6 @@
+[requires]
+python_version = "3.6"
+
 [packages]
 luigi = "*"
 jinja2 = "*"

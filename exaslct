@@ -1,0 +1,75 @@
+#!/bin/bash
+
+COMMAND_LINE_ARGS=$*
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+run () {
+    PIPENV_BIN="$1"
+    echo "Using following pipenv executable: $PIPENV_BIN"
+    if $PIPENV_BIN --venv &> /dev/null;
+    then
+        echo "Using existing virtual environment"
+    else
+        echo "Creating new virtual environment"
+        $PIPENV_BIN install
+    fi
+    cd "$SCRIPT_DIR"
+    export PYTHONPATH="."
+    $PIPENV_BIN run python3 build_utils/exaslct.py $COMMAND_LINE_ARGS
+}
+
+find_via_pip () {
+    local PIPENV_LOCATION=$(pip show pipenv | grep 'Location:'  | cut -f 2 -d " ")
+    local PIPENV_BIN_IN_LOCATION=$(pip show -f pipenv | grep 'bin/pipenv$' | awk '{$1=$1};1')
+    PIPENV_BIN=$(command -v "$PIPENV_LOCATION/$PIPENV_BIN_IN_LOCATION")
+}
+
+if [ -n "$PIPENV_BIN" ];
+then
+    run "$PIPENV_BIN"
+else
+    PIPENV_BIN=$(command -v pipenv)
+    if [ -n "$PIPENV_BIN" ];
+    then
+        run "$PIPENV_BIN"
+    else
+        if pip show pipenv &> /dev/null;
+        then
+            find_via_pip
+            if [ -n "$PIPENV_BIN" ];
+            then
+                run "$PIPENV_BIN"
+            else
+                echo "ERROR: pipenv seems to be installed, but I can't find in the PATH or via pip"
+                exit 1
+            fi
+        else
+            IS_IN_VIRTUAL_ENV=$(python -c "import sys; print(hasattr(sys, 'real_prefix'))")
+            if [ "$IS_IN_VIRTUAL_ENV" == "True" ];
+            then
+                echo "Do you want to install pipenv into the current virtual environment: yes/no"
+                read ANSWER
+                if [ "$ANSWER" == "yes" ];
+                then
+                    pip install pipenv
+                    find_via_pip
+                    run "$PIPENV_BIN"
+                else
+                    echo "Aborting"
+                fi
+            else
+                echo "Do you want to install pipenv local to the user: yes/no"
+                read ANSWER
+                if [ "$ANSWER" == "yes" ];
+                then
+                    pip install --user pipenv
+                    PIPENV_BIN="$(python3 -m site --user-base)/bin/pipenv"
+                    run "$PIPENV_BIN"
+                else
+                    echo "Aborting"
+                fi
+            fi
+
+        fi
+    fi
+fi
