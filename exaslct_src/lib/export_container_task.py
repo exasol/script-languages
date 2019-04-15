@@ -24,12 +24,15 @@ from exaslct_src.lib.test_runner.create_export_directory import CreateExportDire
 from exaslct_src.stoppable_task import StoppableTask
 from exaslct_src.release_type import ReleaseType
 
+
 # TODO make exported container easier accessible for users
 # TODO print path of exported container at the command end
 # TODO add output path where the container gets copied to
 class ExportContainerTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()
+    output_path = luigi.OptionalParameter(None)
+    release_name = luigi.OptionalParameter(None)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,11 +41,13 @@ class ExportContainerTask(StoppableTask):
         self._prepare_outputs()
 
     def _prepare_outputs(self):
+        self.flavor_name = flavor.get_name_from_path(self.flavor_path)
+        self.release_type_name = self.get_release_type().name
         self._target = luigi.LocalTarget(
             "%s/info/export/%s/%s"
             % (self._build_config.output_directory,
-               flavor.get_name_from_path(self.flavor_path),
-               self.get_release_type().name
+               self.flavor_name,
+               self.release_type_name
                # datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
                ))
         if self._target.exists():
@@ -66,16 +71,25 @@ class ExportContainerTask(StoppableTask):
         image_info_of_release_image = image_infos["release_task"]
         release_image_name = image_info_of_release_image.complete_name
         release_path = pathlib.Path(self.get_release_directory()).absolute()
-        release_name = f"""{image_info_of_release_image.tag}-{image_info_of_release_image.hash}"""
-        release_file = release_path.joinpath(release_name + ".tar.gz").absolute()
-        self.remove_release_file_if_requested(release_file)
+        complete_name = f"""{image_info_of_release_image.tag}-{image_info_of_release_image.hash}"""
+        cache_file = release_path.joinpath(complete_name + ".tar.gz").absolute()
+        self.remove_release_file_if_requested(cache_file)
 
         is_new = False
-        if not release_file.exists():
-            self.create_release(release_image_name, release_file)
+        if not cache_file.exists():
+            self.create_release(release_image_name, cache_file)
             is_new = True
+        output_file = self.copy_cache_file_to_output_path(cache_file, is_new)
+        self.write_release_info(image_info_of_release_image, is_new, cache_file, complete_name, output_file)
 
-        self.write_release_info(image_info_of_release_image, is_new, release_file, release_name)
+    def copy_cache_file_to_output_path(self, cache_file, is_new):
+        output_file = None
+        if self.output_path is not None:
+            file_name = f"""{self.flavor_name}_{self.release_type_name}_{self.release_name}.tar.gz"""
+            output_file = pathlib.Path(self.output_path).joinpath(file_name)
+            if not output_file.exists() or is_new:
+                shutil.copy2(cache_file, output_file)
+        return output_file
 
     def get_release_directory(self):
         return pathlib.Path(self.input()["export_directory"].path).absolute().parent
@@ -88,15 +102,18 @@ class ExportContainerTask(StoppableTask):
             os.remove(release_file)
 
     def write_release_info(self, image_info_of_release_image: ImageInfo, is_new: bool,
-                           release_file: pathlib.Path, release_name: str):
+                           cache_file: pathlib.Path, release_name: str, output_file: pathlib.Path):
         release_info = ExportInfo(
-            path=str(release_file),
+            cache_file=str(cache_file),
             complete_name=release_name,
-            name=flavor.get_name_from_path(self.flavor_path),
-            hash=image_info_of_release_image.hash,
+            name=self.flavor_name,
+            hash=str(image_info_of_release_image.hash),
             is_new=is_new,
             depends_on_image=image_info_of_release_image,
-            release_type=self.get_release_type())
+            release_type=self.get_release_type(),
+            release_name=str(self.release_name),
+            output_file=str(output_file)
+        )
         json = release_info.to_json()
         with self.output()[RELEASE_INFO].open("w") as file:
             file.write(json)

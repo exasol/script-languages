@@ -40,8 +40,8 @@ def run_tasks(tasks, workers,
               on_failure: Callable[[], None] = None):
     if StoppableTask.failed_target.exists():
         StoppableTask.failed_target.remove()
-    luigi.build(tasks, workers=workers, local_scheduler=True, log_level="INFO")
-    if StoppableTask.failed_target.exists():
+    no_scheduling_errors = luigi.build(tasks, workers=workers, local_scheduler=True, log_level="INFO")
+    if StoppableTask.failed_target.exists() or not no_scheduling_errors:
         if on_failure is not None:
             on_failure()
         exit(1)

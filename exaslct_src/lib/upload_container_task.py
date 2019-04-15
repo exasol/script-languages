@@ -107,7 +107,7 @@ class UploadContainerTask(StoppableTask):
     def upload_container(self, release_info: ExportInfo):
         s = requests.session()
         url = self.get_upload_url(release_info)
-        with open(release_info.path, 'rb') as file:
+        with open(release_info.cache_file, 'rb') as file:
             r = s.put(url, data=file)
 
     def get_upload_url(self, release_info: ExportInfo, without_login: bool = False):
