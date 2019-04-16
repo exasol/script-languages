@@ -1,4 +1,5 @@
 import getpass
+from datetime import datetime
 from typing import Callable
 
 import luigi
@@ -38,6 +39,7 @@ def set_docker_config(docker_base_url, docker_password, docker_repository_name, 
 def run_tasks(tasks, workers,
               on_success: Callable[[], None] = None,
               on_failure: Callable[[], None] = None):
+    start_time = datetime.now()
     if StoppableTask.failed_target.exists():
         StoppableTask.failed_target.remove()
     no_scheduling_errors = luigi.build(tasks, workers=workers, local_scheduler=True, log_level="INFO")
@@ -48,6 +50,8 @@ def run_tasks(tasks, workers,
     else:
         if on_success is not None:
             on_success()
+        timedelta = datetime.now() - start_time
+        print("The command took %s s" % timedelta.total_seconds())
         exit(0)
 
 def add_options(options):
