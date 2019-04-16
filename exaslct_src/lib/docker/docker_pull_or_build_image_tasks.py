@@ -109,12 +109,8 @@ class DockerPullOrBuildImageTask(StoppableTask):
         self.remove_image_if_requested(image_target)
         if not image_target.exists():
             if not self._build_config.force_build:
-                try:
-                    self._pull_image(image_target)
-                    is_new = True
-                except Exception as e:
-                    self.logger.warning("Task %s: Could not pull image %s, got exception %s", self.task_id,
-                                        image_target.get_complete_name(), e)
+                is_new, pull_success = self.try_pull(image_target)
+                if not pull_success:
                     self._image_builder.build(image_info, image_info_of_dependencies)
                     is_new = True
             else:
@@ -125,6 +121,18 @@ class DockerPullOrBuildImageTask(StoppableTask):
                              self.task_id, image_target.get_complete_name())
             is_new = False
         return is_new
+
+    def try_pull(self, image_target):
+        try:
+            self._pull_image(image_target)
+            is_new = True
+            pull_success = True
+        except Exception as e:
+            self.logger.warning("Task %s: Could not pull image %s, got exception %s", self.task_id,
+                                image_target.get_complete_name(), e)
+            is_new = False
+            pull_success = False
+        return is_new, pull_success
 
     def remove_image_if_requested(self, image_target):
         if self._build_config.force_build \

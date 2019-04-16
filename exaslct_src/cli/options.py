@@ -69,5 +69,6 @@ system_options = [
 release_options = [
     click.option('--release-type',
                  type=click.Choice(['Release', 'BaseTest', "FlavorTest"]),
+                 default="Release"
                  )
 ]
