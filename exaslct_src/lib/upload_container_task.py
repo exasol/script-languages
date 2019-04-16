@@ -66,7 +66,7 @@ class UploadContainerTask(StoppableTask):
 
     def write_output(self, language_definition, release_info):
         flavor_name = flavor.get_name_from_path(self.flavor_path)
-        relative_release_path = Path(release_info.path).relative_to(Path(".").absolute())
+        relative_release_path = Path(release_info.cache_file).relative_to(Path(".").absolute())
         with self.output().open("w") as f:
             f.write(f"""Uploaded {relative_release_path} to \n""" + \
                     f"""{self.get_upload_url(release_info, without_login=True)}""")
@@ -80,7 +80,7 @@ class UploadContainerTask(StoppableTask):
             f.write("\n")
 
     def generate_language_definition(self, release_info: ExportInfo):
-        language_definition_path = Path(self.flavor_path).joinpath("language_definition")
+        language_definition_path = Path(self.flavor_path).joinpath("flavor_base").joinpath("language_definition")
         with language_definition_path.open("r") as f:
             language_definition_template = f.read()
         template = Template(language_definition_template)
@@ -118,7 +118,7 @@ class UploadContainerTask(StoppableTask):
             login = f"""{self.bucketfs_username}:{self.bucketfs_password}@"""
         url = f"""{self.get_url_prefix()}{login}""" + \
               f"""{self.database_host}:{self.bucketfs_port}/{self.bucket_name}/{self.path_in_bucket}/""" + \
-              complete_release_name
+              complete_release_name + ".tar.gz"
         return url
 
     def get_complete_release_name(self, release_info: ExportInfo):

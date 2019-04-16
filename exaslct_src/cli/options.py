@@ -11,24 +11,32 @@ flavor_options = [
                       "The system will run the command for each flavor.")
 ]
 
-docker_options = [
-    click.option('--docker-base-url', type=str,
-                 default="unix:///var/run/docker.sock",
-                 show_default=True,
-                 help="URL to the socket of the docker daemon."),
-    click.option('--docker-repository-name', type=str,
-                 default="exasol/script-language-container",
-                 show_default=True,
-                 help="Name of the docker repository for naming, pushing or fetching cached stages. "
-                      "The repository name may contain URL of the docker registory, "
-                      "the username and the actual repository name. "
-                      "A common strcuture is <docker-registry-url>/<username>/<repository-name>"),
-    click.option('--docker-username', type=str,
-                 help="Username for the docker registry from where the system pulls cached stages."),
-    click.option('--docker-password', type=str,
-                 help="Password for the docker registry from where the system pulls cached stages. "
-                      "Without password option the system prompts for the password."),
-]
+
+def docker_options(login_required: bool):
+    return [
+        click.option('--docker-base-url', type=str,
+                     default="unix:///var/run/docker.sock",
+                     show_default=True,
+                     help="URL to the socket of the docker daemon."),
+        click.option('--docker-repository-name', type=str,
+                     default="exasol/script-language-container",
+                     show_default=True,
+                     help="Name of the docker repository for naming, pushing or fetching cached stages. "
+                          "The repository name may contain URL of the docker registory, "
+                          "the username and the actual repository name. "
+                          "A common strcuture is <docker-registry-url>/<username>/<repository-name>"),
+        click.option('--docker-username', type=str,
+                     help="Username for the docker registry from where the system pulls cached stages.",
+                     required=login_required),
+        click.option('--docker-password', type=str,
+                     help="Password for the docker registry from where the system pulls cached stages. "
+                          "Without password option the system prompts for the password."),
+    ]
+
+
+docker_options_login_not_required = docker_options(False)
+
+docker_options_login_required = docker_options(True)
 
 output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),
                                 default=".build_output",

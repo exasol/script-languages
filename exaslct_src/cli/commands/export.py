@@ -7,7 +7,8 @@ from exaslct_src import ExportContainer
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
 from exaslct_src.cli.options \
-    import build_options, flavor_options, docker_options, system_options, release_options
+    import build_options, flavor_options, system_options, release_options, \
+    docker_options_login_not_required
 
 
 @cli.command()
@@ -16,7 +17,7 @@ from exaslct_src.cli.options \
 @click.option('--output-path', type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
 @click.option('--release-name', type=str, default=None)
 @add_options(build_options)
-@add_options(docker_options)
+@add_options(docker_options_login_not_required)
 @add_options(system_options)
 def export(flavor_path: Tuple[str, ...],
            release_type: str,

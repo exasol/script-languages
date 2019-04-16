@@ -47,6 +47,7 @@ class TestRunnerDBTestTask(StoppableTask):
     log_level = luigi.Parameter("critical", significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
+    reuse_database_setup = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,7 +74,8 @@ class TestRunnerDBTestTask(StoppableTask):
         return {
             "release": self.get_release_task(self.flavor_path),
             "test_environment": SpawnTestDockerEnvironment(environment_name=test_environment_name,
-                                                           reuse_database=self.reuse_database),
+                                                           reuse_database=self.reuse_database,
+                                                           reuse_database_setup=self.reuse_database_setup)
         }
 
     def get_release_task(self, flavor_path):
@@ -170,7 +172,7 @@ class TestRunnerDBTestTask(StoppableTask):
         return test_environment_info, test_environment_info_dict
 
     def read_test_config(self):
-        with pathlib.Path(self.flavor_path).joinpath("testconfig").open("r") as file:
+        with pathlib.Path(self.flavor_path).joinpath("flavor_base").joinpath("testconfig").open("r") as file:
             test_config_str = file.read()
             test_config = {}
             for line in test_config_str.splitlines():

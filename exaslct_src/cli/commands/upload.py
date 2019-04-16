@@ -1,3 +1,4 @@
+import getpass
 from typing import Tuple
 
 import luigi
@@ -7,7 +8,8 @@ from exaslct_src import UploadContainer
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
 from exaslct_src.cli.options \
-    import build_options, flavor_options, docker_options, system_options, release_options
+    import build_options, flavor_options, system_options, release_options, \
+    docker_options_login_not_required
 
 
 @cli.command()
@@ -24,7 +26,7 @@ from exaslct_src.cli.options \
 @click.option('--path-in-bucket', type=str, required=True)
 @click.option('--release-name', type=str, default=None)
 @add_options(build_options)
-@add_options(docker_options)
+@add_options(docker_options_login_not_required)
 @add_options(system_options)
 def upload(flavor_path: Tuple[str, ...],
            release_type: str,
@@ -54,6 +56,9 @@ def upload(flavor_path: Tuple[str, ...],
     """
     set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+    if bucketfs_password is None:
+        bucketfs_password = getpass.getpass(
+            "BucketFS Password for BucketFS %s and User %s:" % (bucketfs_name, bucketfs_username))
     tasks = [UploadContainer(flavor_paths=list(flavor_path),
                              release_types=list([release_type]),
                              database_host=database_host,
@@ -75,4 +80,3 @@ def upload(flavor_path: Tuple[str, ...],
             print(f.read())
 
     run_tasks(tasks, workers, on_success=on_success)
-

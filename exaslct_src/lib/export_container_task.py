@@ -85,7 +85,11 @@ class ExportContainerTask(StoppableTask):
     def copy_cache_file_to_output_path(self, cache_file, is_new):
         output_file = None
         if self.output_path is not None:
-            file_name = f"""{self.flavor_name}_{self.release_type_name}_{self.release_name}.tar.gz"""
+            if self.release_name is not None:
+                suffix = f"""_{self.release_name}"""
+            else:
+                suffix = ""
+            file_name = f"""{self.flavor_name}_{self.release_type_name}{suffix}.tar.gz"""
             output_file = pathlib.Path(self.output_path).joinpath(file_name)
             if not output_file.exists() or is_new:
                 shutil.copy2(cache_file, output_file)

@@ -35,8 +35,8 @@ class UploadContainer(FlavorTask):
     release_types = luigi.ListParameter(["Release"])
     database_host = luigi.Parameter()
     bucketfs_port = luigi.IntParameter()
-    bucketfs_username = luigi.Parameter()
-    bucketfs_password = luigi.Parameter()
+    bucketfs_username = luigi.Parameter(significant=False)
+    bucketfs_password = luigi.Parameter(significant=False, visibility=luigi.parameter.ParameterVisibility.PRIVATE)
     bucketfs_name = luigi.Parameter()
     bucket_name = luigi.Parameter()
     path_in_bucket = luigi.Parameter()
@@ -75,7 +75,7 @@ class UploadContainer(FlavorTask):
 
     def _prepare_outputs(self):
         self._target = luigi.LocalTarget(
-            "%s/logs/uploads/current"
+            "%s/uploads/current"
             % (self._build_config.output_directory))
         if self._target.exists():
             self._target.remove()

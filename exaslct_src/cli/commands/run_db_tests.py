@@ -8,7 +8,8 @@ from exaslct_src import TestContainer
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
 from exaslct_src.cli.options \
-    import build_options, flavor_options, docker_options, system_options, release_options
+    import build_options, flavor_options, system_options, release_options, \
+    docker_options_login_not_required
 
 
 @cli.command()
@@ -49,10 +50,12 @@ from exaslct_src.cli.options \
 @click.option('--reuse-database/--no-reuse-database', default=False,
               help="Reuse a previous create test-database and "
                    "disables the clean up of the test-database to allow reuse later.")
+@click.option('--reuse-database-setup/--no-reuse-database-setup', default=False,
+              help="Reuse a previous executed database setup in a reused database")
 @click.option('--reuse-uploaded-container/--no-reuse-uploaded-container', default=False,
               help="Reuse the uploaded script-langauge-container in a reused database.")
 @add_options(build_options)
-@add_options(docker_options)
+@add_options(docker_options_login_not_required)
 @add_options(system_options)
 def run_db_test(flavor_path: Tuple[str, ...],
                 release_type: str,
@@ -64,6 +67,7 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 test_environment_vars: str,
                 test_log_level: str,
                 reuse_database: bool,
+                reuse_database_setup: bool,
                 reuse_uploaded_container: bool,
                 force_build: bool,
                 force_pull: bool,
@@ -96,7 +100,8 @@ def run_db_test(flavor_path: Tuple[str, ...],
                            test_environment_vars=json.loads(test_environment_vars),
                            test_log_level=test_log_level,
                            reuse_database=reuse_database,
-                           reuse_uploaded_container=reuse_uploaded_container
+                           reuse_uploaded_container=reuse_uploaded_container,
+                           reuse_database_setup=reuse_database_setup
                            )]
 
     def on_success():

@@ -4,13 +4,14 @@ from exaslct_src import CleanImages
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_docker_config, run_tasks, set_output_directory, add_options
 from exaslct_src.cli.options \
-    import flavor_options, docker_options, system_options, output_directory
+    import flavor_options, docker_options, system_options, output_directory, docker_options_login_not_required
+
 
 
 @cli.command()
 @add_options(flavor_options)
 @add_options([output_directory])
-@add_options(docker_options)
+@add_options(docker_options_login_not_required)
 @add_options(system_options)
 def clean_flavor_images(flavor_path: Tuple[str, ...],
                         output_directory: str,
@@ -32,7 +33,7 @@ def clean_flavor_images(flavor_path: Tuple[str, ...],
 
 @cli.command()
 @add_options([output_directory])
-@add_options(docker_options)
+@add_options(docker_options_login_not_required)
 @add_options(system_options)
 def clean_all_images(
         output_directory: str,

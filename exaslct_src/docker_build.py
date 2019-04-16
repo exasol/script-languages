@@ -12,6 +12,8 @@ class DockerBuild_UDFClientDeps(DockerPullOrBuildFlavorImageTask):
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"01_nodoc": "ext/01_nodoc"}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
 
 class DockerBuild_LanguageDeps(DockerPullOrBuildFlavorImageTask):
 
@@ -21,10 +23,16 @@ class DockerBuild_LanguageDeps(DockerPullOrBuildFlavorImageTask):
     def requires(self):
         return {"udfclient_deps": DockerBuild_UDFClientDeps(flavor_path=self.flavor_path)}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
+
 class DockerBuild_BuildDeps(DockerPullOrBuildFlavorImageTask):
 
     def get_build_step(self) -> str:
         return "build_deps"
+
+    def get_path_in_flavor(self):
+        return "flavor_base"
 
 class DockerBuild_BuildRun(DockerPullOrBuildFlavorImageTask):
 
@@ -38,6 +46,9 @@ class DockerBuild_BuildRun(DockerPullOrBuildFlavorImageTask):
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"src": "src"}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
+
 
 class DockerBuild_BaseTestDeps(DockerPullOrBuildFlavorImageTask):
 
@@ -47,6 +58,8 @@ class DockerBuild_BaseTestDeps(DockerPullOrBuildFlavorImageTask):
     def requires(self):
         return {"build_deps": DockerBuild_BuildDeps(flavor_path=self.flavor_path)}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
 
 class DockerBuild_BaseTestBuildRun(DockerPullOrBuildFlavorImageTask):
 
@@ -60,6 +73,8 @@ class DockerBuild_BaseTestBuildRun(DockerPullOrBuildFlavorImageTask):
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"src": "src", "emulator": "emulator"}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
 
 class DockerBuild_FlavorBaseDeps(DockerPullOrBuildFlavorImageTask):
 
@@ -69,6 +84,8 @@ class DockerBuild_FlavorBaseDeps(DockerPullOrBuildFlavorImageTask):
     def get_additional_build_directories_mapping(self):
         return {"01_nodoc": "ext/01_nodoc"}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
 
 class DockerBuild_FlavorCustomization(DockerPullOrBuildFlavorImageTask):
 
@@ -88,6 +105,8 @@ class DockerBuild_FlavorTestBuildRun(DockerPullOrBuildFlavorImageTask):
         return {"flavor_customization": DockerBuild_FlavorCustomization(flavor_path=self.flavor_path),
                 "base_test_build_run": DockerBuild_BaseTestBuildRun(flavor_path=self.flavor_path)}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
 
 class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
@@ -98,6 +117,8 @@ class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
                 "build_run": DockerBuild_BuildRun(flavor_path=self.flavor_path),
                 "language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
 
+    def get_path_in_flavor(self):
+        return "flavor_base"
 
 class DockerBuild(FlavorWrapperTask):
 

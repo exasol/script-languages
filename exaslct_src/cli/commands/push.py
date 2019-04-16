@@ -4,13 +4,13 @@ from exaslct_src import DockerPush
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
 from exaslct_src.cli.options \
-    import build_options, flavor_options, docker_options, system_options
+    import build_options, flavor_options, system_options, docker_options_login_required
 
 
 @cli.command()
 @add_options(flavor_options)
 @add_options(build_options)
-@add_options(docker_options)
+@add_options(docker_options_login_required)
 @add_options(system_options)
 def push(flavor_path: Tuple[str, ...],
          force_build: bool,

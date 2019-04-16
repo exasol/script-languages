@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict
 
 import luigi
@@ -37,10 +38,23 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         flavor_name = flavor.get_name_from_path(self.flavor_path)
         return "%s-%s" % (flavor_name, self.build_step)
 
+    def get_path_in_flavor(self):
+        return None
+
     def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:
-        result = {self.build_step: "%s/%s" % (self.flavor_path, self.build_step)}
+        build_step_path = self.get_build_step_path()
+        result = {self.build_step: str(build_step_path)}
         result.update(self.additional_build_directories_mapping)
         return result
 
+    def get_build_step_path(self):
+        path_in_flavor = self.get_path_in_flavor()
+        if path_in_flavor is None:
+            build_step_path_in_flavor = Path(self.build_step)
+        else:
+            build_step_path_in_flavor = Path(path_in_flavor).joinpath(self.build_step)
+        build_step_path = Path(self.flavor_path).joinpath(build_step_path_in_flavor)
+        return build_step_path
+
     def get_dockerfile(self) -> str:
-        return "%s/%s/Dockerfile" % (self.flavor_path, self.build_step)
+        return str(self.get_build_step_path().joinpath("Dockerfile"))

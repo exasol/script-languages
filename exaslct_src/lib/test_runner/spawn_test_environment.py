@@ -26,6 +26,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
+    reuse_database_setup = luigi.BoolParameter(False, significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
@@ -75,19 +76,18 @@ class SpawnTestDockerEnvironment(StoppableTask):
         self.write_output(test_environment_info)
 
     def setup_test_database(self, test_environment_info_dict):
-        # TODO add reuse_database_setup
         # TODO check if database is setup
         yield [UploadExaJDBC(environment_name=self.environment_name,
                              test_environment_info_dict=test_environment_info_dict,
-                             reuse_uploaded=self.reuse_database),
+                             reuse_uploaded=self.reuse_database_setup),
                UploadVirtualSchemaJDBCAdapter(
                    environment_name=self.environment_name,
                    test_environment_info_dict=test_environment_info_dict,
-                   reuse_uploaded=self.reuse_database),
+                   reuse_uploaded=self.reuse_database_setup),
                PopulateEngineSmallTestDataToDatabase(
                    environment_name=self.environment_name,
                    test_environment_info_dict=test_environment_info_dict,
-                   reuse_data=self.reuse_database
+                   reuse_data=self.reuse_database_setup
                )]
 
     def spawn_database_and_test_container(self, network_info_dict):

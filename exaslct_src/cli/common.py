@@ -30,7 +30,7 @@ def set_docker_config(docker_base_url, docker_password, docker_repository_name, 
             luigi.configuration.get_config().set('docker_config', 'username', docker_username)
             luigi.configuration.get_config().set('docker_config', 'password', docker_password)
         else:
-            password = getpass.getpass("Docker password for username %s:" % docker_username)
+            password = getpass.getpass("Docker Registry Password for User %s:" % docker_username)
             luigi.configuration.get_config().set('docker_config', 'username', docker_username)
             luigi.configuration.get_config().set('docker_config', 'password', password)
 
