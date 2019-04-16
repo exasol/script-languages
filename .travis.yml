@@ -10,9 +10,6 @@ services:
 install:
   - sudo pip install pipenv
 
-before_script:
-  - docker pull exasol/docker-db:6.0.12-d1
-
 jobs:
   include:
     - stage: build
