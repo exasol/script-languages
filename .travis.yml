@@ -10,5 +10,29 @@ services:
 install:
   - sudo pip install pipenv
 
-script:
-  - ./exaslct run-db-test --flavor-path exaslct_src/test/resources/test-flavor/ --release-type Release --workers 5 --docker-repository-name docker.io/tkilias/script-language-container
+before_script:
+  - docker pull exasol/docker-db:6.0.12-d1
+
+matrix:
+  include:
+  - name: standard-EXASOL-6.1.0-test-python
+    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python STAGE=TEST
+  - name: standard-EXASOL-6.1.0-test-r
+    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=r TEST_FOLDER=r STAGE=TEST
+  - name: standard-EXASOL-6.1.0-test-java
+    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=java TEST_FOLDER=java STAGE=TEST
+
+jobs:
+  include:
+    - stage: build
+      script:
+        - ./exaslct build --flavor-path flavors/$MATRIX_FLAVOR --docker-repository-name docker.io/tkilias/script-language-container
+    - stage: test
+      script:
+        - ./exaslct run-db-test --flavor-path flavors/$MATRIX_FLAVOR --generic-test-lang=$GENERIC_TEST_LANG --docker-repository-name docker.io/tkilias/script-language-container
+    - script:
+        - ./exaslct run-db-test --flavor-path flavors/$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --docker-repository-name docker.io/tkilias/script-language-container
+
+stages:
+  - build
+  - test
