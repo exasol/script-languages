@@ -29,7 +29,8 @@ class DockerPullOrBuildImageTask(StoppableTask):
         self._dockerfile = self.get_dockerfile()
         self._prepare_outputs()
         self._build_context_hasher = \
-            BuildContextHasher(self._mapping_of_build_files_and_directories,
+            BuildContextHasher(self.task_id,
+                               self._mapping_of_build_files_and_directories,
                                self._dockerfile)
         self._image_builder = \
             DockerImageBuilder(
@@ -107,9 +108,15 @@ class DockerPullOrBuildImageTask(StoppableTask):
                       image_info: ImageInfo):
         self.remove_image_if_requested(image_target)
         if not image_target.exists():
-            if not self._build_config.force_build and self._is_image_in_registry(image_target):
-                self._pull_image(image_target)
-                is_new = True
+            if not self._build_config.force_build:
+                try:
+                    self._pull_image(image_target)
+                    is_new = True
+                except Exception as e:
+                    self.logger.warning("Task %s: Could not pull image %s, got exception %s", self.task_id,
+                                        image_target.get_complete_name(), e)
+                    self._image_builder.build(image_info, image_info_of_dependencies)
+                    is_new = True
             else:
                 self._image_builder.build(image_info, image_info_of_dependencies)
                 is_new = True
@@ -132,7 +139,7 @@ class DockerPullOrBuildImageTask(StoppableTask):
             file.write(image_info.to_json())
 
     def _pull_image(self, image_target: DockerImageTarget):
-        self.logger.info("Task %s: Pull docker image %s", self.task_id, image_target.get_complete_name())
+        self.logger.info("Task %s: Try to pull docker image %s", self.task_id, image_target.get_complete_name())
         if self._docker_config.username is not None and \
                 self._docker_config.password is not None:
             auth_config = {
@@ -148,7 +155,7 @@ class DockerPullOrBuildImageTask(StoppableTask):
         try:
             self.logger.info("Task %s: Try to pull image %s", self.task_id,
                              image_target.get_complete_name())
-            registry_data = self._client.images.get_registry_data(image_target.get_complete_name())
+            registry_data = self._pull_image(image_target)
             return True
         except docker.errors.APIError as e:
             self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.task_id,
