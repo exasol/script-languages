@@ -1,31 +1,39 @@
-#
 language: python
-python: "3.6"
-dist: xenial # trusty fails with weird FileNotFoundError in ExportContainerTask
-
-sudo:  required
+python: '3.6'
+dist: xenial
+sudo: required
 services:
-    - docker
-
+- docker
 install:
-  - sudo pip install pipenv
-
+- sudo pip install pipenv
 jobs:
   include:
-#    - stage: build
-#      script:
-#        - ./exaslct build --flavor-path flavors/standard-EXASOL-6.1.0 --docker-repository-name docker.io/tkilias/script-language-container
-    - stage: test
-      script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python --test-folder=python --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=java --test-folder=java --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=r --test-folder=r --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python3 --test-folder=python3 --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=standard-flavor --docker-repository-name docker.io/tkilias/script-language-container
+  - stage: build
+    script:
+    - "./exaslct build --flavor-path flavors/standard-EXASOL-6.1.0
+      --docker-username \"$DOCKER_USERNAME\" --docker-password \"$DOCKER_PASSWORD\"
+      --docker-repository-name \"$DOCKER_REPOSITORY\""
+  - stage: test
+    script:
+    - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python
+      --test-folder=python --docker-repository-name \"$DOCKER_REPOSITORY\""
+  - script:
+    - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=java
+      --test-folder=java --docker-repository-name \"$DOCKER_REPOSITORY\""
+  - script:
+    - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=r
+      --test-folder=r --docker-repository-name \"$DOCKER_REPOSITORY\""
+  - script:
+    - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python3
+      --test-folder=python3 --docker-repository-name \"$DOCKER_REPOSITORY\""
+  - script:
+    - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=standard-flavor
+      --docker-repository-name \"$DOCKER_REPOSITORY\""
 stages:
-#  - build
-  - test
+- build
+- test
+env:
+  global:
+  - secure: GgMM7/YxO4KdPzaSHhQ5UdrZxAQpKrOuJroRSfy+akZJTCW1B/GstNVRVJNDoeZIaQRa86jg8fFKwt5dc6FD+ZQoRehBdSisF14E02OHLLpJiWkGHV4qVmKeVh214rNn/tHJ1rTE4Z/SPWA5gbg1AwkvCo197iU55kYhneW9MIR+CJUITJU9jabjfohv7MsiJY4mhXOGSY0KBS5VhY/GPI7ew1hRHJ8gz5lEQkJ32SdD297a6TlB9pc3Nnkp/OfYuKWru+fMDcHzIKRw3lbdUxyZigWVfIbtlh7LlLXmvhy0MIY8b3kFy6tXcq9SJVrDHix1QLZ7+NeAbICfoP3HgPQXBO/SmEcp6X2AA4yzJeWtztRw3y1yNep4oCu2GTC+syluohRbcGthze2LYear1YB/XPhSmliP9ijXWOSDfUCVsBJGbe06Erv2IlMCM/o7qpfG19zaEAJjZvHjRdBaU/mP8CaCV5Z7E7tNPvisqgw3zVlgMPIwwOvLfUe/BWr+9DtaKohWJAibFZMcGjG2JtrBHU6uEmQc4mZrexfKqboYR8CRRh4kx5g5/HEM/hyihiRIXF3kpWe2btayvfgteSNg0auX7REjhw2GbKZHP7AVYrUAyzQL+F2nkv3z5kePCjUBx73GX8eSPTz8/Q1D3feQ3FVPheSbIWLFy6yDVmg=
+  - secure: GwvyLF7OAb2X0geegfuInNdcbiwl71SQ3RHJFVyi6+GDt2RF/0PONBPpD0gNXcaL+cPyfY6PXZ1gmHPctePehEYPZI8ht2vkA/lYLhmF+glua4rcjIPGO+jLt1U9SVl6gBri1Tz4iyAuodkwIsiebXOVP4jeInmN8p8VKsvHYYzMkyi5n6Kp9G0O7KV0wCu3x8Jq3tbP9+uJfXFsUrVPPGRw+kbojf6CEIoVIBOlZkSljSBo+kEKiSIahV75xrG/UZMWpnbBEK5vihcrSJh/0hGPndBqxab4/WPDtEOJ5Pnfj8nWdbSvxXsG4PDLMBfg56xMrTDSgF/3ZEuXrZB4sWHWB0mlgbwTMO26OL5q00RbzRmTDL/FMOvfx/UPOZCn0GJZb5TL1cB2dQ+AB40izAxR/4a31qSa94webnBwIshQEWJuMPVK1iADlmUGOxLfbU8VssNLGlJ/IGvK/lA7BCdn/kosr7rejZOJSHRoY5HBlLTVT4KgfaXdbYdX1QHAIirjGoziq0ApicmPgkuzcXFEsWEZd/26uGWbyNMdh4aHCPvz2rIVP1jwuDH2fAZyzYqw1IX19t7dD62oMjV21gnaU2v+WdYxc1aDZRLkvPdMNNT2EviHQKMWbOVOeGmSQlpeBtVXhxjZ8qSNSSlh5M/taJCVSo4Hqpf6wmX4ULc=
+  - secure: dO/fWgNeUPegipqaaU5BeZDSwRXpw1GBJadFr1SrCiM8Ih5/8M613zoe2UPIBB3SIA03TAVBQqGo1PxEgRBtVhhhfyf6OGFL0yhh3/oZ32lVx4uLmqYOma/03r34K/MoOGYuzZv2GeV9pplwA8HGVZc2IC3H2VwPKkewiWgDbJqbVNC64iDOm9crEMIqNuWyaFmsgXBMAfdRh5JsoU5kAz79nVTEZ2ltDU3fHnyL2M//G/R6nh7tC2ovfYZTNdFaxH0G8wDyAuhnSRtTgNJYKT1JD3tr6e82HNZW2NhtEUfSapVXl+U7vA/BEbAvyw8IQRDfYALhThb6TRkC64Vk9gjeLJ4YKOSlm8IP/Le1uAFIxpEhlyyZlazn4IWJ/yfFNACgLNDvN6mdtrELvp7zhH1+uMFPe8rIn4Iry3QYPPDRZCOjZ0QP2wUA+WVO9vmMEIVoppxB/uO++kA+chubBFlOe9nx4mD8yTdJSe5nCEr2lvYBmcPdabDit3Fn5RqpgaL+n5Fmvb8oNGSTqqqFg7YD2blK3/4n6bbzGDYn4AmKAX/hZSvELNcRXMm5Dk6h3DyS49OC4D8Wf10XlimxxAnKXvjs1FKgpXI2K3HFWFHjTvMnVrs5a9Yr5SWsdqAYeZAENL5ZvX+o1PzRwlr0UMs5Q74/ZL6o51KmGw+2Dps=
