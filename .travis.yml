@@ -10,25 +10,25 @@ jobs:
   include:
   - stage: build
     script:
-    - "./exaslct build --flavor-path flavors/standard-EXASOL-6.1.0
-      --docker-username \"$DOCKER_USERNAME\" --docker-password \"$DOCKER_PASSWORD\"
-      --docker-repository-name \"$DOCKER_REPOSITORY\""
+    - "./exaslct push --flavor-path flavors/standard-EXASOL-6.1.0
+      --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
+      --docker-repository-name $DOCKER_REPOSITORY"
   - stage: test
     script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python
-      --test-folder=python --docker-repository-name \"$DOCKER_REPOSITORY\""
+      --test-folder=python --docker-repository-name $DOCKER_REPOSITORY"
   - script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=java
-      --test-folder=java --docker-repository-name \"$DOCKER_REPOSITORY\""
+      --test-folder=java --docker-repository-name $DOCKER_REPOSITORY"
   - script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=r
-      --test-folder=r --docker-repository-name \"$DOCKER_REPOSITORY\""
+      --test-folder=r --docker-repository-name $DOCKER_REPOSITORY"
   - script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python3
-      --test-folder=python3 --docker-repository-name \"$DOCKER_REPOSITORY\""
+      --test-folder=python3 --docker-repository-name $DOCKER_REPOSITORY"
   - script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=standard-flavor
-      --docker-repository-name \"$DOCKER_REPOSITORY\""
+      --docker-repository-name $DOCKER_REPOSITORY"
 stages:
 - build
 - test
