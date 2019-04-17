@@ -23,6 +23,7 @@ class JavaUnicode(udf.TestCase):
 			}
         env = os.environ.copy()
         env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
+        env['LC_ALL'] = 'en_US.UTF-8'
         exaplus = subprocess.Popen(cmd.split(), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, 
                                 stderr=subprocess.STDOUT)
 
