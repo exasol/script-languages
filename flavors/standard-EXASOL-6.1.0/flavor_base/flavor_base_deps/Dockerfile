@@ -18,6 +18,6 @@ RUN apt-get -y update && \
     apt-get -y autoremove && \
     ldconfig
 
-RUN /scripts/install_r_packages.sh /packages/r_packages
-RUN /scripts/install_pip_packages.sh pip /packages/pip_packages
-RUN /scripts/install_pip_packages.sh pip3 /packages/pip3_packages
+RUN /scripts/install_packages.sh "R" "Rscript -e" /packages/r_packages
+RUN /scripts/install_packages.sh "PYTHON2-PIP" "pip install" /packages/pip_packages
+RUN /scripts/install_packages.sh "PYTHON3-PIP3" "pip3 install" /packages/pip3_packages

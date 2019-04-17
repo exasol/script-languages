@@ -12,28 +12,20 @@ install:
 
 jobs:
   include:
-    - stage: build
-      script:
-        - ./exaslct build --flavor-path flavors/standard-EXASOL-6.1.0 --docker-repository-name docker.io/tkilias/script-language-container
+#    - stage: build
+#      script:
+#        - ./exaslct build --flavor-path flavors/standard-EXASOL-6.1.0 --docker-repository-name docker.io/tkilias/script-language-container
     - stage: test
       script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-test-lang=python --docker-repository-name docker.io/tkilias/script-language-container
+        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python --test-folder=python --docker-repository-name docker.io/tkilias/script-language-container
     - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=python --docker-repository-name docker.io/tkilias/script-language-container
+        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=java --test-folder=java --docker-repository-name docker.io/tkilias/script-language-container
     - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-test-lang=java --docker-repository-name docker.io/tkilias/script-language-container
+        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=r --test-folder=r --docker-repository-name docker.io/tkilias/script-language-container
     - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=java --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-test-lang=r --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=r --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-test-lang=python3 --docker-repository-name docker.io/tkilias/script-language-container
-    - script:
-        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=python3 --docker-repository-name docker.io/tkilias/script-language-container
+        - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python3 --test-folder=python3 --docker-repository-name docker.io/tkilias/script-language-container
     - script:
         - ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=standard-flavor --docker-repository-name docker.io/tkilias/script-language-container
 stages:
-  - build
+#  - build
   - test
