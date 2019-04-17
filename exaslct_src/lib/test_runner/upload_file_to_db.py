@@ -23,7 +23,7 @@ class UploadFileToBucketFS(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
-        self._client = docker.DockerClient(base_url=self._docker_config.base_url)
+        self._client = docker_config().get_client()
         self._build_config = build_config()
         self._test_environment_info = test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = test_environment_info.test_container_info

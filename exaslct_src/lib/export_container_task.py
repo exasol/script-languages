@@ -137,7 +137,7 @@ class ExportContainerTask(StoppableTask):
 
     def create_and_export_container(self, release_image_name: str, temp_directory: str):
         self.logger.info("Task %s: Export container %s", self.task_id, release_image_name)
-        client = docker.DockerClient(base_url=self._docker_config.base_url)
+        client = docker_config().get_client()
         try:
             container = client.containers.create(image=release_image_name)
             try:

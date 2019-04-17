@@ -24,8 +24,8 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         super().__init__(*args, **kwargs)
         self._build_config = build_config()
         self._docker_config = docker_config()
-        self._client = docker.DockerClient(base_url=self._docker_config.base_url)
-        self._low_level_client = docker.APIClient(base_url=self._docker_config.base_url)
+        self._client = docker_config().get_client()
+        self._low_level_client = docker_config().get_low_level_client()
         self._prepare_outputs()
 
     def _prepare_outputs(self):

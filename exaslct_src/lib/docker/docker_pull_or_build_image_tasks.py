@@ -38,7 +38,7 @@ class DockerPullOrBuildImageTask(StoppableTask):
                 self._mapping_of_build_files_and_directories,
                 self._dockerfile,
                 self.get_additional_docker_build_options())
-        self._client = docker.DockerClient(base_url=self._docker_config.base_url)
+        self._client = docker_config().get_client()
 
     def _prepare_outputs(self):
         self._image_info_target = luigi.LocalTarget(

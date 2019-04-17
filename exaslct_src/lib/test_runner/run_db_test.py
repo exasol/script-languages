@@ -35,7 +35,7 @@ class RunDBTest(StoppableTask):
         test_evironment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = test_evironment_info.test_container_info
         self._database_info = test_evironment_info.database_info
-        self._client = docker.DockerClient(base_url=self._docker_config.base_url)
+        self._client = docker_config().get_client()
         self._prepare_outputs()
 
     def __del__(self):

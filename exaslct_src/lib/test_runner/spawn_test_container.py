@@ -26,7 +26,7 @@ class SpawnTestContainer(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
-        self._client = docker.DockerClient(base_url=self._docker_config.base_url)
+        self._client = docker_config().get_client()
         self._build_config = build_config()
         if self.ip_address_index_in_subnet < 0:
             raise Exception(

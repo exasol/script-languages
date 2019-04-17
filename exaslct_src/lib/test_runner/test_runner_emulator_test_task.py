@@ -14,7 +14,7 @@ class TestRunnerEmulatorTestTask(MyTask):
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
         self._build_config = build_config()
-        self._client = docker.DockerClient(base_url=self._docker_config.base_url)
+        self._client = docker_config().get_client()
         self._prepare_outputs()
 
     def __del__(self):

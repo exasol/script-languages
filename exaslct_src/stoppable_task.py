@@ -5,6 +5,7 @@ import luigi
 from luigi import LocalTarget
 
 from exaslct_src.lib.build_config import build_config
+from exaslct_src.lib.still_running_logger import StillRunningLogger, StillRunningLoggerThread
 
 
 class StoppingFurtherExecution(Exception):
@@ -20,13 +21,20 @@ class StoppableTask(luigi.Task):
         super().__init__(*args, **kwargs)
 
     def run(self):
-        start_time = datetime.now()
-        self.fail_if_any_task_failed()
-        result = self.run_task()
-        if result is not None:
-            yield from result
-        timedelta = datetime.now() - start_time
-        self.logger.info("Task %s: Self-time was %s s", self.task_id, timedelta.total_seconds())
+        still_running_logger = StillRunningLogger(self.logger, self.task_id, "task")
+        thread = StillRunningLoggerThread(still_running_logger)
+        thread.start()
+        try:
+            start_time = datetime.now()
+            self.fail_if_any_task_failed()
+            result = self.run_task()
+            if result is not None:
+                yield from result
+            timedelta = datetime.now() - start_time
+            self.logger.info("Task %s: Self-time was %s s", self.task_id, timedelta.total_seconds())
+        finally:
+            thread.stop()
+            thread.join()
 
     def fail_if_any_task_failed(self):
         if self.failed_target.exists():

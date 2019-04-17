@@ -19,8 +19,8 @@ class CleanImages(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
-        self._client = docker.DockerClient(base_url=self._docker_config.base_url)
-        self._low_level_client = docker.APIClient(base_url=self._docker_config.base_url)
+        self._client = docker_config().get_client()
+        self._low_level_client = docker_config().get_low_level_client()
         if self.flavor_path is None:
             self.flavor_name = None
         else:
