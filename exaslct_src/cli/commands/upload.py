@@ -59,18 +59,18 @@ def upload(flavor_path: Tuple[str, ...],
     if bucketfs_password is None:
         bucketfs_password = getpass.getpass(
             "BucketFS Password for BucketFS %s and User %s:" % (bucketfs_name, bucketfs_username))
-    tasks = [UploadContainer(flavor_paths=list(flavor_path),
-                             release_types=list([release_type]),
-                             database_host=database_host,
-                             bucketfs_port=bucketfs_port,
-                             bucketfs_username=bucketfs_username,
-                             bucketfs_password=bucketfs_password,
-                             bucket_name=bucket_name,
-                             path_in_bucket=path_in_bucket,
-                             bucketfs_https=bucketfs_https,
-                             release_name=release_name,
-                             bucketfs_name=bucketfs_name
-                             )]
+    tasks = lambda: [UploadContainer(flavor_paths=list(flavor_path),
+                                     release_types=list([release_type]),
+                                     database_host=database_host,
+                                     bucketfs_port=bucketfs_port,
+                                     bucketfs_username=bucketfs_username,
+                                     bucketfs_password=bucketfs_password,
+                                     bucket_name=bucket_name,
+                                     path_in_bucket=path_in_bucket,
+                                     bucketfs_https=bucketfs_https,
+                                     release_name=release_name,
+                                     bucketfs_name=bucketfs_name
+                                     )]
 
     def on_success():
         target = luigi.LocalTarget(

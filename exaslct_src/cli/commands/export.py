@@ -38,13 +38,14 @@ def export(flavor_path: Tuple[str, ...],
     ready for the upload into the bucketfs. If the stages do not exists locally,
     the system will build or pull them before the exporting the packaged container.
     """
+
     set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
-    tasks = [ExportContainer(flavor_paths=list(flavor_path),
-                             release_types=list([release_type]),
-                             output_path=output_path,
-                             release_name=release_name
-                             )]
+    tasks = lambda: [ExportContainer(flavor_paths=list(flavor_path),
+                                     release_types=list([release_type]),
+                                     output_path=output_path,
+                                     release_name=release_name
+                                     )]
 
     def on_success():
         target = luigi.LocalTarget(

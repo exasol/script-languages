@@ -1,5 +1,7 @@
 from typing import Tuple
 
+from click._unicodefun import click
+
 from exaslct_src import DockerPush
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
@@ -9,10 +11,12 @@ from exaslct_src.cli.options \
 
 @cli.command()
 @add_options(flavor_options)
+@click.option('--force-push/--no-force-push', default=False)
 @add_options(build_options)
 @add_options(docker_options_login_required)
 @add_options(system_options)
 def push(flavor_path: Tuple[str, ...],
+         force_push: bool,
          force_build: bool,
          force_pull: bool,
          output_directory: str,
@@ -29,5 +33,5 @@ def push(flavor_path: Tuple[str, ...],
     """
     set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
-    tasks = [DockerPush(flavor_paths=list(flavor_path))]
+    tasks = lambda: [DockerPush(flavor_paths=list(flavor_path), force_push=force_push)]
     run_tasks(tasks, workers)

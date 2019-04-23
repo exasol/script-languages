@@ -120,6 +120,13 @@ class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
     def get_path_in_flavor(self):
         return "flavor_base"
 
+# TODO optimize build time, by only pulling absolut necassry images,
+#       for example, if release container is on docker hub,
+#       we only need to pull this one
+#           - first compute for all build steps the hash
+#           - check top down which images are available in local or docker hub cache
+#           - only pull absolut necassry images
+# TODO add retag option, pull from one repository-name but build with another one
 class DockerBuild(FlavorWrapperTask):
 
     def __init__(self, *args, **kwargs):

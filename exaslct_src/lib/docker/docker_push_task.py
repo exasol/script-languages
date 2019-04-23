@@ -14,10 +14,10 @@ from exaslct_src.lib.log_config import log_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.stoppable_task import StoppableTask
 
-
 class DockerPushImageTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()
+    force_push = luigi.BoolParameter(False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -48,14 +48,15 @@ class DockerPushImageTask(StoppableTask):
 
     def run_task(self):
         image_info = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
-        auth_config = {
-            "username": self._docker_config.username,
-            "password": self._docker_config.password
-        }
-        generator = self._client.images.push(repository=image_info.name, tag=image_info.tag + "_" + image_info.hash,
-                                             auth_config=auth_config,
-                                             stream=True)
-        self._handle_output(generator, image_info)
+        if image_info.is_new or self.force_push:
+            auth_config = {
+                "username": self._docker_config.username,
+                "password": self._docker_config.password
+            }
+            generator = self._client.images.push(repository=image_info.name, tag=image_info.tag + "_" + image_info.hash,
+                                                 auth_config=auth_config,
+                                                 stream=True)
+            self._handle_output(generator, image_info)
         self.write_output(image_info)
 
     def write_output(self, image_info):

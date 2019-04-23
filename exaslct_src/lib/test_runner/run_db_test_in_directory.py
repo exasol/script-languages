@@ -16,11 +16,11 @@ class RunDBTestsInDirectory(StoppableTask):
     release_type = luigi.Parameter()
     language = luigi.OptionalParameter(None)
     test_restrictions = luigi.ListParameter([])
-    test_environment_vars = luigi.DictParameter({"TRAVIS": ""},significant=False)
+    test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
     language_definition = luigi.Parameter(significant=False)
 
     log_path = luigi.Parameter(significant=False)
-    log_level = luigi.Parameter("critical",significant=False)
+    log_level = luigi.Parameter("critical", significant=False)
     test_environment_info_dict = luigi.DictParameter(significant=False)
 
     def __init__(self, *args, **kwargs):
@@ -30,6 +30,8 @@ class RunDBTestsInDirectory(StoppableTask):
         self._test_container_info = test_evironment_info.test_container_info
         self._client = docker_config().get_client()
         self._prepare_outputs()
+        self.test_container = self._client.containers.get(self._test_container_info.container_name)
+        self.tasks = self.generate_test_task_configs_from_directory(self.test_container, self.directory)
 
     def __del__(self):
         self._client.close()
@@ -44,31 +46,42 @@ class RunDBTestsInDirectory(StoppableTask):
         return self._summary_target
 
     def run_task(self):
-        test_container = self._client.containers.get(self._test_container_info.container_name)
+        test_outputs = yield from self.run_tests()
+        self.collect_test_outputs(test_outputs)
+
+    def collect_test_outputs(self, test_outputs):
         with self.output().open("w") as file:
-            for test_file, test_task_config in \
-                    self.generate_test_task_configs_from_directory(
-                        test_container, self.directory):
-                if self.language is not None:
-                    test_task_config["language"] = self.language
-                test_output = yield RunDBTest(**test_task_config)
+            for test_file, test_output in test_outputs:
                 with test_output.open("r") as test_output_file:
                     status = test_output_file.read()
                 file.write("%s %s\n" % (test_file, status))
+
+    def run_tests(self):
+        test_outputs = []
+        for test_file, test_task_config in self.tasks:
+            if self.language is not None:
+                test_task_config["language"] = self.language
+            test_output = yield RunDBTest(**test_task_config)
+            test_outputs.append((test_file, test_output))
+        return test_outputs
 
     def generate_test_task_configs_from_directory(
             self, test_container: Container, directory: str):
         exit_code, ls_output = test_container.exec_run(cmd="ls /tests/test/%s/" % directory)
         test_files = ls_output.decode("utf-8").split("\n")
-        for test_file in test_files:
-            if test_file != "":
-                config = dict(flavor_name=self.flavor_name,
-                              release_type=self.release_type,
-                              test_environment_info_dict=self.test_environment_info_dict,
-                              language_definition=self.language_definition,
-                              log_level=self.log_level,
-                              test_environment_vars=self.test_environment_vars,
-                              log_path=self.log_path,
-                              test_restrictions=self.test_restrictions,
-                              test_file=directory + "/" + test_file)
-                yield test_file, config
+        result = [(test_file, self.create_config_for_test(directory, test_file))
+                  for test_file in test_files
+                  if test_file != ""]
+        return result
+
+    def create_config_for_test(self, directory, test_file):
+        config = dict(flavor_name=self.flavor_name,
+                      release_type=self.release_type,
+                      test_environment_info_dict=self.test_environment_info_dict,
+                      language_definition=self.language_definition,
+                      log_level=self.log_level,
+                      test_environment_vars=self.test_environment_vars,
+                      log_path=self.log_path,
+                      test_restrictions=self.test_restrictions,
+                      test_file=directory + "/" + test_file)
+        return config

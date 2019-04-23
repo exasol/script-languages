@@ -30,6 +30,5 @@ def build(flavor_path: Tuple[str, ...],
     """
     set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
-    tasks = [DockerBuild(flavor_paths=list(flavor_path))]
+    tasks = lambda: [DockerBuild(flavor_paths=list(flavor_path))]
     run_tasks(tasks, workers)
-

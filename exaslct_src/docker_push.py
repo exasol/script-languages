@@ -1,3 +1,5 @@
+import luigi
+
 from exaslct_src.docker_build import *
 from exaslct_src.lib.build_or_pull_db_test_image import BuildOrPullDBTestContainerImage
 from exaslct_src.lib.docker.docker_push_task import DockerPushImageTask
@@ -92,21 +94,21 @@ class DockerPush_DBTestContainerImage(DockerPushImageTask):
 
 
 class DockerPush(FlavorWrapperTask):
+    force_push = luigi.BoolParameter(False)
 
     def requires(self):
         return [self.generate_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
 
     def generate_tasks_for_flavor(self, flavor_path):
-        return [DockerPush_UDFClientDeps(flavor_path=flavor_path),
-                DockerPush_LanguageDeps(flavor_path=flavor_path),
-                DockerPush_BuildDeps(flavor_path=flavor_path),
-                DockerPush_BuildRun(flavor_path=flavor_path),
-                DockerPush_BaseTestDeps(flavor_path=flavor_path),
-                DockerPush_BaseTestBuildRun(flavor_path=flavor_path),
-                DockerPush_FlavorBaseDeps(flavor_path=flavor_path),
-                DockerPush_FlavorCustomization(flavor_path=flavor_path),
-                DockerPush_Release(flavor_path=flavor_path),
-                DockerPush_FlavorTestBuildRun(flavor_path=flavor_path),
-                DockerPush_DBTestContainerImage(flavor_path=flavor_path)]
-
-
+        parameter = dict(flavor_path=flavor_path, force_push=self.force_push)
+        return [DockerPush_UDFClientDeps(**parameter),
+                DockerPush_LanguageDeps(**parameter),
+                DockerPush_BuildDeps(**parameter),
+                DockerPush_BuildRun(**parameter),
+                DockerPush_BaseTestDeps(**parameter),
+                DockerPush_BaseTestBuildRun(**parameter),
+                DockerPush_FlavorBaseDeps(**parameter),
+                DockerPush_FlavorCustomization(**parameter),
+                DockerPush_Release(**parameter),
+                DockerPush_FlavorTestBuildRun(**parameter),
+                DockerPush_DBTestContainerImage(**parameter)]

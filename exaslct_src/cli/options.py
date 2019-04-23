@@ -34,9 +34,9 @@ def docker_options(login_required: bool):
     ]
 
 
-docker_options_login_not_required = docker_options(False)
+docker_options_login_not_required = docker_options(login_required=False)
 
-docker_options_login_required = docker_options(True)
+docker_options_login_required = docker_options(login_required=True)
 
 output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),
                                 default=".build_output",

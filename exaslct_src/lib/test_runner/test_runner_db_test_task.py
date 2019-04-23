@@ -34,7 +34,11 @@ class StopTestEnvironment():
         network = _client.networks.get(test_environment_info.test_container_info.network_info.network_name)
         network.remove()
 
-
+# TODO execute tests only if the exported container is new build
+#       - a pulled one is ok,
+#       - needs change in image-info and export-info)
+#       - add options force tests
+#       - only possible if the hash of exaslc also goes into the image hashes
 class TestRunnerDBTestTask(StoppableTask):
     flavor_path = luigi.Parameter()
     generic_language_tests = luigi.ListParameter([])

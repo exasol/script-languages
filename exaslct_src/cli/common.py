@@ -1,6 +1,7 @@
 import getpass
+import shutil
 from datetime import datetime
-from typing import Callable
+from typing import Callable, List
 
 import luigi
 
@@ -36,23 +37,47 @@ def set_docker_config(docker_base_url, docker_password, docker_repository_name, 
             luigi.configuration.get_config().set('docker_config', 'password', password)
 
 
-def run_tasks(tasks, workers,
+def run_tasks(tasks_creator: Callable[[], List[luigi.Task]],
+              workers: int,
               on_success: Callable[[], None] = None,
               on_failure: Callable[[], None] = None):
+    setup_worker()
     start_time = datetime.now()
-    if StoppableTask.failed_target.exists():
-        StoppableTask.failed_target.remove()
+    tasks = remove_stoppable_task_targets(tasks_creator)
     no_scheduling_errors = luigi.build(tasks, workers=workers, local_scheduler=True, log_level="INFO")
     if StoppableTask.failed_target.exists() or not no_scheduling_errors:
-        if on_failure is not None:
-            on_failure()
-        exit(1)
+        handle_failure(on_failure)
     else:
-        if on_success is not None:
-            on_success()
-        timedelta = datetime.now() - start_time
-        print("The command took %s s" % timedelta.total_seconds())
-        exit(0)
+        handle_success(on_success, start_time)
+
+
+def handle_success(on_success, start_time):
+    if on_success is not None:
+        on_success()
+    timedelta = datetime.now() - start_time
+    print("The command took %s s" % timedelta.total_seconds())
+    exit(0)
+
+
+def handle_failure(on_failure):
+    if on_failure is not None:
+        on_failure()
+    exit(1)
+
+
+def remove_stoppable_task_targets(tasks_creator):
+    if StoppableTask.failed_target.exists():
+        StoppableTask.failed_target.remove()
+    if StoppableTask.timers_dir.exists():
+        shutil.rmtree(str(StoppableTask.timers_dir))
+    tasks = tasks_creator()
+    return tasks
+
+
+def setup_worker():
+    luigi.configuration.get_config().set('worker', 'wait_interval', str(0.1))
+    luigi.configuration.get_config().set('worker', 'wait_jitter', str(0.5))
+
 
 def add_options(options):
     def _add_options(func):
