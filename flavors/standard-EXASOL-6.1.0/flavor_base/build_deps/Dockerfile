@@ -4,10 +4,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV ARCHIVE_UBUNTU_PREFIX=de.
 RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNTU_PREFIX\2/" /etc/apt/sources.list
 
-COPY build_deps/packages /packages
+RUN mkdir -p /packages
+COPY build_deps/packages /packages/build_deps
 
 RUN apt-get -y update && \
-    apt-get install -y $(cat /packages/apt_get_packages) && \
+    apt-get install -y $(cat /packages/build_deps/apt_get_packages) && \
 	echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
 	curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
 	apt-get update && \

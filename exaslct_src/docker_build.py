@@ -127,6 +127,7 @@ class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
 #           - check top down which images are available in local or docker hub cache
 #           - only pull absolut necassry images
 # TODO add retag option, pull from one repository-name but build with another one
+# TODO add option release type
 class DockerBuild(FlavorWrapperTask):
 
     def __init__(self, *args, **kwargs):

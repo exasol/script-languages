@@ -44,6 +44,7 @@ class StoppableTask(luigi.Task):
         if not self.first_run_timer_state_file.exists():
             with self.first_run_timer_state_file.open("w") as f:
                 f.write(str(start_time.timestamp()))
+        # TODO use larger delay for this StillRunningLogger
         still_running_logger = StillRunningLogger(self.logger, self.task_id, "task")
         thread = StillRunningLoggerThread(still_running_logger)
         thread.start()

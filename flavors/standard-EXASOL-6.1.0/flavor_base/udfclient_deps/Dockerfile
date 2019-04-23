@@ -6,10 +6,11 @@ RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNT
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
-COPY udfclient_deps/packages /packages
+RUN mkdir -p /packages
+COPY udfclient_deps/packages /packages/udfclient_deps
 
 RUN apt-get -y update && \
-    apt-get -y install $(cat /packages/apt_get_packages) && \
+    apt-get -y install $(cat /packages/udfclient_deps/apt_get_packages) && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \

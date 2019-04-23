@@ -7,11 +7,13 @@ RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNT
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
-COPY flavor_base_deps/packages /packages
 COPY flavor_base_deps/scripts /scripts
 
+RUN mkdir -p /packages
+COPY flavor_base_deps/packages /packages/flavor_base_deps
+
 RUN apt-get -y update && \
-    apt-get -y install $(cat /packages/apt_get_packages) && \
+    apt-get -y install $(cat /packages/flavor_base_deps/apt_get_packages) && \
 	locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \

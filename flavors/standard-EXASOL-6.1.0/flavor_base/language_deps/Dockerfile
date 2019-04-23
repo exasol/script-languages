@@ -1,9 +1,10 @@
 FROM {{udfclient_deps}}
 
-COPY language_deps/apt_get_packages /language_deps_apt_get_packages
+RUN mkdir -p /packages
+COPY language_deps/packages /packages/language_deps
 
 RUN apt-get -y update && \
-    apt-get -y install $(cat /language_deps_apt_get_packages) && \
+    apt-get -y install $(cat /packages/language_deps/apt_get_packages) && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
