@@ -20,6 +20,6 @@ RUN apt-get -y update && \
     apt-get -y autoremove && \
     ldconfig
 
-RUN /scripts/install_packages.sh "R" "Rscript -e" /packages/r_packages
-RUN /scripts/install_packages.sh "PYTHON2-PIP" "pip install" /packages/pip_packages
-RUN /scripts/install_packages.sh "PYTHON3-PIP3" "pip3 install" /packages/pip3_packages
+RUN /scripts/install_packages.sh "R" "Rscript -e" /packages/flavor_base_deps/r_packages
+RUN /scripts/install_packages.sh "PYTHON2-PIP" "pip install" /packages/flavor_base_deps/pip_packages
+RUN /scripts/install_packages.sh "PYTHON3-PIP3" "pip3 install" /packages/flavor_base_deps/pip3_packages

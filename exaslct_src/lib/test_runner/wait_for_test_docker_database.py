@@ -18,6 +18,7 @@ from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
 from exaslct_src.stoppable_task import StoppableTask
 
 
+# TODO check if bucketfs is online, too
 class IsDatabaseReadyThread(Thread):
     def __init__(self, database_info: DatabaseInfo, test_container: Container, timeout_in_seconds: int):
         super().__init__()
@@ -33,18 +34,32 @@ class IsDatabaseReadyThread(Thread):
     def run(self):
         start_time = time.time()
         timeout_over = lambda current_time: current_time - start_time > self.timeout_in_seconds
+        db_connection_command = self.create_db_connection_command()
+        bucket_fs_connection_command = self.create_bucketfs_connection_command()
+        while not timeout_over(time.time()) and not self.finish:
+            (exit_code_db_connection, output_db_connection) = \
+                self.test_container.exec_run(cmd=db_connection_command)
+            (exit_code_bucketfs_connection, output_bucketfs_connection) = \
+                self.test_container.exec_run(cmd=bucket_fs_connection_command)
+            if exit_code_db_connection == 0 and exit_code_bucketfs_connection == 0:
+                self.finish = True
+                self.is_ready = True
+            time.sleep(1)
+
+    def create_db_connection_command(self):
         username = "sys"
         password = "exasol"
         connection_options = f"""-c '{self._database_info.host}:{self._database_info.db_port}' -u '{username}' -p '{password}'"""
         cmd = f"""$EXAPLUS {connection_options}  -sql 'select 1;'"""
         bash_cmd = f"""bash -c "{cmd}" """
-        while not timeout_over(time.time()) and not self.finish:
-            (exit_code, output) = \
-                self.test_container.exec_run(cmd=bash_cmd)
-            if exit_code == 0:
-                self.finish = True
-                self.is_ready = True
-            time.sleep(1)
+        return bash_cmd
+
+    def create_bucketfs_connection_command(self):
+        username = "w"
+        password = "write"
+        cmd = f"""curl '{username}:{password}@{self._database_info.host}:{self._database_info.bucketfs_port}'"""
+        bash_cmd = f"""bash -c "{cmd}" """
+        return bash_cmd
 
 
 class WaitForTestDockerDatabase(StoppableTask):
