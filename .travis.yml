@@ -25,6 +25,10 @@ jobs:
     - "./exaslct push --flavor-path flavors/standard-EXASOL-6.0.0
       --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
       --docker-repository-name $DOCKER_REPOSITORY"
+  - script:
+      - "./exaslct push --flavor-path flavors/python3-ds-EXASOL-6.0.0
+      --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
+      --docker-repository-name $DOCKER_REPOSITORY"
   - stage: test
   # test standard-EXASOL-6.1.0
     script:
@@ -56,6 +60,13 @@ jobs:
 #  - script:
 #      - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.0.0 --test-folder=standard-flavor
 #      --docker-repository-name $DOCKER_REPOSITORY"
+  # test python3-ds-EXASOL-6.0.0
+  - script:
+      - "./exaslct run-db-test --flavor-path flavors/python3-ds-EXASOL-6.0.0 --generic-language-test=python3
+          --test-folder=python --docker-repository-name $DOCKER_REPOSITORY"
+  - script:
+      - "./exaslct run-db-test --flavor-path flavors/python3-ds-EXASOL-6.0.0 --test-folder=python3 --test-folder=python3-ds-flavor
+      --test-folder=java --docker-repository-name $DOCKER_REPOSITORY"
 stages:
 - build
 - test

@@ -5,7 +5,7 @@ command="$2"
 input="$3"
 if [[ -f "$input" ]]
 then
-    while IFS= read -r package
+    while IFS= read -r package || [ -n "$package" ]
     do
         package=$(echo "$package" | cut -f 1 -d "#")
         package=$(echo "$package" | awk '{$1=$1;print}')

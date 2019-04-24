@@ -10,7 +10,7 @@ class DockerBuild_UDFClientDeps(DockerPullOrBuildFlavorImageTask):
         return "udfclient_deps"
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
-        return {"01_nodoc": "ext/01_nodoc"}
+        return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
 
     def get_path_in_flavor(self):
         return "flavor_base"
@@ -30,6 +30,9 @@ class DockerBuild_BuildDeps(DockerPullOrBuildFlavorImageTask):
 
     def get_build_step(self) -> str:
         return "build_deps"
+
+    def get_additional_build_directories_mapping(self) -> Dict[str, str]:
+        return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
 
     def get_path_in_flavor(self):
         return "flavor_base"
@@ -82,7 +85,7 @@ class DockerBuild_FlavorBaseDeps(DockerPullOrBuildFlavorImageTask):
         return "flavor_base_deps"
 
     def get_additional_build_directories_mapping(self):
-        return {"01_nodoc": "ext/01_nodoc"}
+        return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
 
     def get_path_in_flavor(self):
         return "flavor_base"

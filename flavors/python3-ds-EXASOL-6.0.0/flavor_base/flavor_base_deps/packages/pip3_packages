@@ -1,0 +1,17 @@
+pyexasol
+keras
+tensorflow
+kmodes
+seaborn
+matplotlib
+imbalanced-learn
+lifelines
+nltk
+gensim
+lxml
+ujson
+numpy
+scipy
+scikit-learn
+pycurl
+statsmodels

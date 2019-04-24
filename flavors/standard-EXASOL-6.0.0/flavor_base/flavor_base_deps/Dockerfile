@@ -6,9 +6,7 @@ ENV ARCHIVE_UBUNTU_PREFIX=de.
 RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNTU_PREFIX\2/" /etc/apt/sources.list
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
-
-COPY flavor_base_deps/scripts /scripts
-
+COPY scripts /scripts
 RUN mkdir -p /packages
 COPY flavor_base_deps/packages /packages/flavor_base_deps
 
