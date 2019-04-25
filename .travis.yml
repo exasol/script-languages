@@ -6,9 +6,6 @@ services:
 - docker
 install:
 - sudo pip install pipenv
-before_script:
-  - docker pull ubuntu:18.04
-  - docker pull ubuntu:16.04
 env:
   global:
   - secure: "R6Yclwn+EDigXM7t3yerREjWr4Zif96RFyAg/SyIIw8FoUNHZsgw9seltkBqVPOfGCOE6P0k35wTOCH/wDlvNAhO3G0l4ULkLm4HbC1M7o+mcaeOg8XTrRimOlRsS54TW4ofA611pDzK9Ajgr4KzKv2jWvf/bNJzs4dCDBIJsa5t20LZbDr6eqnuWJfS+JJ2XMHOPI5x3BJeVb5jKwtblg4vPHYdtgngLyE0czLu3R44lsqeZmAEPFVjRurijSMFP1r52XGYnKcJ0hk6jrDS4Hy/ccsCQ50geC19tCXyKgqJJRcRg+h6gYxkUx0Kl47L7tYtYIu8522IKhsy/K02kn5AfWFfYXGi4liS6eS3m4cXdI8vgbYqL9oMnlnuC+rvRNi7pmKEWwh5xz8eCO0koD3B4t+BPmeyUU0uJ2/ZvGyE05iO/DlBH3FFp5i7a2vAkxS0qwoqVXUy5zl2aZDbz8Bamomp6f8P9srNs997ud3eKBQukM9tvH5inHbWBTqkqKgKgLrY9daNJcTpQ6rniw3TZ5snKvtMo3+riWKita1G9dozqD/aWGiX/s6X+33Sd08jcpQsqEue5WkVHT+8U3dU1S0KpUOjmNsZORzg/u/7vwO3ysektrLQxNVwjKgIr9wR9eqmfbr9yiWvksUregMinP2H6IP62aUB+YrXIAY="
@@ -17,56 +14,88 @@ env:
 jobs:
   include:
   - stage: build
+    name: Build standard-EXASOL-6.1.0
     script:
     - "./exaslct push --flavor-path flavors/standard-EXASOL-6.1.0
       --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
       --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: Build standard-EXASOL-6.0.0
+    script:
     - "./exaslct push --flavor-path flavors/standard-EXASOL-6.0.0
       --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
       --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: Build python3-ds-EXASOL-6.0.0
+    script:
       - "./exaslct push --flavor-path flavors/python3-ds-EXASOL-6.0.0
       --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
       --docker-repository-name $DOCKER_REPOSITORY"
-  - stage: test
-  # test standard-EXASOL-6.1.0
+  - name: Build python3-ds-EXASOL-6.1.0
+    script:
+      - "./exaslct push --flavor-path flavors/python3-ds-EXASOL-6.1.0
+      --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
+      --docker-repository-name $DOCKER_REPOSITORY"
+  - stage: run-db-test
+##################################################################################################
+################################ run-db-test standard-EXASOL-6.0.0 ###############################
+##################################################################################################
+    name: run-db-test standard-EXASOL-6.1.0 --generic-language-test=python --test-folder=python
     script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python
       --test-folder=python --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: run-db-test standard-EXASOL-6.1.0 --generic-language-test=java --test-folder=java
+    script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=java
       --test-folder=java --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: run-db-test standard-EXASOL-6.1.0 --generic-language-test=r --test-folder=r
+    script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=r
       --test-folder=r --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: run-db-test standard-EXASOL-6.1.0 --generic-language-test=python3 --test-folder=python3
+    script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --generic-language-test=python3
       --test-folder=python3 --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: run-db-test standard-EXASOL-6.1.0 --test-folder=standard-flavor
+    script:
     - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0 --test-folder=standard-flavor
       --docker-repository-name $DOCKER_REPOSITORY"
-  # test standard-EXASOL-6.0.0
-  - script:
+##################################################################################################
+################################ run-db-test standard-EXASOL-6.0.0 ###############################
+##################################################################################################
+  - name: run-db-test standard-EXASOL-6.0.0 --generic-language-test=python --test-folder=python
+    script:
       - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.0.0 --generic-language-test=python
           --test-folder=python --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: run-db-test standard-EXASOL-6.0.0 --generic-language-test=java --test-folder=java
+    script:
       - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.0.0 --generic-language-test=java
       --test-folder=java --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
+  - name: run-db-test standard-EXASOL-6.0.0 --generic-language-test=r --test-folder=r
+    script:
       - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.0.0 --generic-language-test=r
       --test-folder=r --docker-repository-name $DOCKER_REPOSITORY"
 # TODO standard-flavor test with 6.0.0 doesn't work because the test expects python3 and makes no exception
-#  - script:
-#      - "./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.0.0 --test-folder=standard-flavor
-#      --docker-repository-name $DOCKER_REPOSITORY"
-  # test python3-ds-EXASOL-6.0.0
-  - script:
+##################################################################################################
+############################### run-db-test python3-ds-EXASOL-6.0.0 ##############################
+##################################################################################################
+  - name: run-db-test python3-ds-EXASOL-6.0.0 --generic-language-test=python3
+    script:
       - "./exaslct run-db-test --flavor-path flavors/python3-ds-EXASOL-6.0.0 --generic-language-test=python3
-          --test-folder=python --docker-repository-name $DOCKER_REPOSITORY"
-  - script:
-      - "./exaslct run-db-test --flavor-path flavors/python3-ds-EXASOL-6.0.0 --test-folder=python3 --test-folder=python3-ds-flavor
-      --test-folder=java --docker-repository-name $DOCKER_REPOSITORY"
+      --docker-repository-name $DOCKER_REPOSITORY"
+  - name: run-db-test python3-ds-EXASOL-6.0.0 --test-folder=python3 --test-folder=python3-ds-flavor
+    script:
+      - "./exaslct run-db-test --flavor-path flavors/python3-ds-EXASOL-6.0.0 --test-folder=python3
+      --test-folder=python3-ds-flavor --docker-repository-name $DOCKER_REPOSITORY"
+##################################################################################################
+############################### run-db-test python3-ds-EXASOL-6.1.0 ##############################
+##################################################################################################
+  - name: run-db-test python3-ds-EXASOL-6.1.0 --generic-language-test=python3
+    script:
+      - "./exaslct run-db-test --flavor-path flavors/python3-ds-EXASOL-6.1.0 --generic-language-test=python3
+      --docker-repository-name $DOCKER_REPOSITORY"
+  - name: run-db-test python3-ds-EXASOL-6.1.0 --test-folder=python3 --test-folder=python3-ds-flavor
+    script:
+      - "./exaslct run-db-test --flavor-path flavors/python3-ds-EXASOL-6.1.0 --test-folder=python3
+      --test-folder=python3-ds-flavor --docker-repository-name $DOCKER_REPOSITORY"
 stages:
 - build
-- test
+- run-db-test
