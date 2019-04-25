@@ -1,4 +1,0 @@
-install.packages("rredis",repos = "http://cran.r-project.org")
-install.packages("data.table",repos = "http://cran.r-project.org")
-install.packages("htmltools",repos = "http://cran.r-project.org")
-install.packages("flashClust",repos = "http://cran.r-project.org")

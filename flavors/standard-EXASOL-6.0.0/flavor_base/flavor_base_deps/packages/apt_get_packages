@@ -45,6 +45,7 @@ python-scipy
 python-boto
 python-pycurl
 python-requests
+r-base
 r-cran-rcurl
 r-cran-xml
 r-cran-formula

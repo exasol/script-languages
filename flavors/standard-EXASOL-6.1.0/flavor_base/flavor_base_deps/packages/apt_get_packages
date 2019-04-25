@@ -67,6 +67,7 @@ python3-docutils
 python3-requests
 python3-boto
 python3-ujson
+r-base
 r-cran-rcurl
 r-cran-xml
 r-cran-formula

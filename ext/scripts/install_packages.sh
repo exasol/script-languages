@@ -1,9 +1,14 @@
 #!/bin/bash
 
+# This script installs a list of packages given by a file with a given command template
+
+# Package Type, only for useful output necessary
 package_type="$1"
-command="$2"
-input="$3"
-if [[ -f "$input" ]]
+# Command template, Example pip install <<package>>, the string <<package>> will be replaced by the actual package
+command_template="$2"
+# The file with the package list
+package_list_file="$3"
+if [[ -f "$package_list_file" ]]
 then
     while IFS= read -r package || [ -n "$package" ]
     do
@@ -12,8 +17,9 @@ then
         if [[ -n "$package" ]]
         then
             echo "$package_type: Installing package '$package'"
-            echo "Executing: $command '$package'"
-            if $command "$package"
+            command=$(echo "$command_template" | sed "s/<<package>>/$package/")
+            echo "Executing: $command"
+            if $command
             then
                 echo "$package_type: Successfully installed package '$package'"
             else
@@ -21,9 +27,9 @@ then
                 exit 1
             fi
         fi
-    done < "$input"
+    done < "$package_list_file"
     exit 0
 else
-    echo "Couldn't find $input"
+    echo "Couldn't find $package_list_file"
     exit 1
 fi

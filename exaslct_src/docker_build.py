@@ -10,7 +10,7 @@ class DockerBuild_UDFClientDeps(DockerPullOrBuildFlavorImageTask):
         return "udfclient_deps"
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
-        return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
+        return {"01_nodoc": "ext/01_nodoc"}
 
     def get_path_in_flavor(self):
         return "flavor_base"
@@ -19,6 +19,9 @@ class DockerBuild_LanguageDeps(DockerPullOrBuildFlavorImageTask):
 
     def get_build_step(self) -> str:
         return "language_deps"
+
+    def get_additional_build_directories_mapping(self) -> Dict[str, str]:
+        return {"scripts": "ext/scripts"}
 
     def requires(self):
         return {"udfclient_deps": DockerBuild_UDFClientDeps(flavor_path=self.flavor_path)}
@@ -84,6 +87,9 @@ class DockerBuild_FlavorBaseDeps(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "flavor_base_deps"
 
+    def requires(self):
+        return {"language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
+
     def get_additional_build_directories_mapping(self):
         return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
 
@@ -131,6 +137,7 @@ class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
 #           - only pull absolut necassry images
 # TODO add retag option, pull from one repository-name but build with another one
 # TODO add option release type
+# TODO allow partial builds up to certain build step to split the build into multiple stage in travis
 class DockerBuild(FlavorWrapperTask):
 
     def __init__(self, *args, **kwargs):

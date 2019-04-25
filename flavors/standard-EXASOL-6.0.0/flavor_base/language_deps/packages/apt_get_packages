@@ -1,7 +1,7 @@
 openjdk-9-jdk-headless
 python2.7-dev
 python3-dev
-r-base
+r-base-core
 r-base-dev
 cython
 python3-pandas
