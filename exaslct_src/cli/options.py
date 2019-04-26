@@ -42,6 +42,14 @@ output_directory = click.option('--output-directory', type=click.Path(file_okay=
                                 default=".build_output",
                                 show_default=True,
                                 help="Output directory where the system stores all output and log files.")
+goal_options = [
+    click.option('--goal', multiple=True, type=str,
+                 help="Selects which build stage will be build or pushed. "
+                      "The system will build also all dependencies of the selected build stage. "
+                      "The option can be repeated with different stages. "
+                      "The system will than build all these stages and their dependencies."
+                 )]
+
 build_options = [
     click.option('--force-build/--no-force-build', default=False,
                  help="Forces the system to complete rebuild of a all stages."),

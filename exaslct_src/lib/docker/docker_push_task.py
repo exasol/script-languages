@@ -14,9 +14,11 @@ from exaslct_src.lib.log_config import log_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.stoppable_task import StoppableTask
 
+# TODO don't push if image was pulled
+# TODO discover tree of dependencies by following requires results
+# TODO or model dependencies in data tasks only and build from there the build and push dependencies
 class DockerPushImageTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
-    flavor_path = luigi.Parameter()
     force_push = luigi.BoolParameter(False)
 
     def __init__(self, *args, **kwargs):
@@ -41,9 +43,9 @@ class DockerPushImageTask(StoppableTask):
         return self._push_info_target
 
     def requires(self):
-        return self.get_docker_image_task(self.flavor_path)
+        return self.get_docker_image_task()
 
-    def get_docker_image_task(self, flavor_path):
+    def get_docker_image_task(self):
         pass
 
     def run_task(self):

@@ -116,3 +116,22 @@ class StoppableTask(luigi.Task):
                 with self.failed_target.open("w") as f:
                     f.write("%s" % self.task_id)
         super().on_failure(exception)
+
+    def __repr__(self):
+        """
+        Build a task representation like `MyTask(param1=1.5, param2='5')`
+        """
+        params = self.get_params()
+        param_values = self.get_param_values(params, [], self.param_kwargs)
+
+        # Build up task id
+        repr_parts = []
+        param_objs = dict(params)
+        for param_name, param_value in param_values:
+            if param_objs[param_name].significant and \
+                    param_objs[param_name].visibility==luigi.parameter.ParameterVisibility.PUBLIC:
+                repr_parts.append('%s=%s' % (param_name, param_objs[param_name].serialize(param_value)))
+
+        task_str = '{}({})'.format(self.get_task_family(), ', '.join(repr_parts))
+
+        return task_str

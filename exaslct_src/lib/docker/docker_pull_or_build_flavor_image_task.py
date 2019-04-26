@@ -3,8 +3,8 @@ from typing import Dict
 
 import luigi
 
-from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.docker.docker_pull_or_build_image_tasks import DockerPullOrBuildImageTask
+from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.flavor import flavor
 
 
@@ -31,15 +31,15 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         """
         return {}
 
+    def get_path_in_flavor(self):
+        return None
+
     def get_image_name(self) -> str:
         return self._docker_config.repository_name
 
     def get_image_tag(self) -> str:
         flavor_name = flavor.get_name_from_path(self.flavor_path)
         return "%s-%s" % (flavor_name, self.build_step)
-
-    def get_path_in_flavor(self):
-        return None
 
     def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:
         build_step_path = self.get_build_step_path()
