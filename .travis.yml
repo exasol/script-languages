@@ -39,6 +39,11 @@ jobs:
       - "./exaslct push --flavor-path flavors/fancyr-EXASOL-6.0.0
       --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
       --docker-repository-name $DOCKER_REPOSITORY"
+  - name: Build fancyr-EXASOL-6.1.0
+    script:
+      - "./exaslct push --flavor-path flavors/fancyr-EXASOL-6.1.0
+      --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
+      --docker-repository-name $DOCKER_REPOSITORY"
   - stage: run-db-test
 ##################################################################################################
 ################################ run-db-test standard-EXASOL-6.0.0 ###############################
@@ -107,6 +112,13 @@ jobs:
   - name: run-db-test fancyr-EXASOL-6.1.0 --generic-language-test=r --test-folder=r
     script:
       - "./exaslct run-db-test --flavor-path flavors/fancyr-EXASOL-6.0.0 --generic-language-test=r --test-folder=r
+      --docker-repository-name $DOCKER_REPOSITORY"
+##################################################################################################
+############################### run-db-test fancyr-EXASOL-6.1.0 ##############################
+##################################################################################################
+  - name: run-db-test fancyr-EXASOL-6.1.0 --generic-language-test=r --test-folder=r
+    script:
+      - "./exaslct run-db-test --flavor-path flavors/fancyr-EXASOL-6.1.0 --generic-language-test=r --test-folder=r
       --docker-repository-name $DOCKER_REPOSITORY"
 stages:
 - build

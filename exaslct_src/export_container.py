@@ -78,8 +78,9 @@ class ExportContainer(FlavorTask):
                     out_file.write("Cached container under %s"%export_info.cache_file)
                     if export_info.output_file is not None:
                         out_file.write("\n")
-                        out_file.write("Copied container to %s" % export_info.output_file)
-                    out_file.write("\n")
+                        if export_info.output_file is not None:
+                            out_file.write("Copied container to %s" % export_info.output_file)
+                            out_file.write("\n")
                     out_file.write("=================================================")
                     out_file.write("\n")
 

@@ -24,10 +24,10 @@ from exaslct_src.lib.test_runner.create_export_directory import CreateExportDire
 from exaslct_src.stoppable_task import StoppableTask
 from exaslct_src.release_type import ReleaseType
 
-
-# TODO make exported container easier accessible for users
-# TODO print path of exported container at the command end
-# TODO add output path where the container gets copied to
+# TODO create docker image from exported container and if possible fetch it from docker hub
+#       required again the analysis of images without actual building them.
+#       It is possible with docker import to get an images from the packed tar and with
+#       docker export we get a tar with a single layer tar which contains the unchanged packed tar
 class ExportContainerTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()
