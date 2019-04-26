@@ -34,7 +34,6 @@ class DockerPush(FlavorWrapperTask):
         build_tasks_per_flavor = build_wrapper_task.requires()
         pull_tasks = [self.generate_tasks_for_flavor(build_tasks)
                       for build_tasks in build_tasks_per_flavor]
-        pull_tasks.append(self.create_push_task(BuildOrPullDBTestContainerImage()))
         return pull_tasks
 
     def generate_tasks_for_flavor(self, build_tasks: Set[DockerPullOrBuildImageTask]):
