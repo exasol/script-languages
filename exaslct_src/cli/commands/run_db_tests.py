@@ -69,7 +69,8 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 reuse_database: bool,
                 reuse_database_setup: bool,
                 reuse_uploaded_container: bool,
-                force_build: bool,
+                force_rebuild: bool,
+                force_rebuild_from: Tuple[str, ...],
                 force_pull: bool,
                 output_directory: str,
                 temporary_base_directory: str,
@@ -87,7 +88,12 @@ def run_db_test(flavor_path: Tuple[str, ...],
     If the stages or the packaged container do not exists locally,
     the system will build, pull or export them before running the tests.
     """
-    set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
+    set_build_config(force_rebuild,
+                     force_rebuild_from,
+                     force_pull,
+                     log_build_context_content,
+                     output_directory,
+                     temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
 
     tasks = lambda: [TestContainer(flavor_paths=list(flavor_path),

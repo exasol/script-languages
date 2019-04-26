@@ -19,7 +19,8 @@ from exaslct_src.cli.options \
 def push(flavor_path: Tuple[str, ...],
          goal: Tuple[str, ...],
          force_push: bool,
-         force_build: bool,
+         force_rebuild: bool,
+         force_rebuild_from: Tuple[str, ...],
          force_pull: bool,
          output_directory: str,
          temporary_base_directory: str,
@@ -33,7 +34,12 @@ def push(flavor_path: Tuple[str, ...],
     This command pushes all stages of the script language container flavor.
     If the stages do not exists locally, the system will build or pull them before the push.
     """
-    set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
+    set_build_config(force_rebuild,
+                     force_rebuild_from,
+                     force_pull,
+                     log_build_context_content,
+                     output_directory,
+                     temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
     tasks = lambda: [DockerPush(flavor_paths=list(flavor_path), force_push=force_push, goals=list(goal))]
     run_tasks(tasks, workers)

@@ -86,6 +86,9 @@ class DockerPullOrBuildImageTask(StoppableTask):
     def get_additional_docker_build_options(self) -> Dict[str, Any]:
         return {}
 
+    def is_rebuild_requested(self) -> bool:
+        pass
+
     def output(self):
         return {IMAGE_INFO: self._image_info_target}
 
@@ -97,54 +100,90 @@ class DockerPullOrBuildImageTask(StoppableTask):
         image_info = ImageInfo(
             complete_name=image_target.get_complete_name(),
             name=self._image_name, tag=self._image_tag, hash=image_hash,
-            is_new=None, depends_on_images=list(image_info_of_dependencies.values()))
-        is_new = self.pull_or_build(image_info_of_dependencies, image_target, image_info)
-        image_info.is_new = is_new
+            depends_on_images=list(image_info_of_dependencies.values()),
+            was_pulled=None, was_build=None
+        )
+        was_build, was_pulled = \
+            self.create_image_or_use_locally_existing(
+                image_info_of_dependencies, image_target, image_info)
+        image_info.was_build = was_build
+        image_info.was_pulled = was_pulled
         self.write_image_info_to_output(image_info)
 
-    def pull_or_build(self,
-                      image_info_of_dependencies: Dict[str, ImageInfo],
-                      image_target: DockerImageTarget,
-                      image_info: ImageInfo):
-        self.remove_image_if_requested(image_target)
+    def create_image_or_use_locally_existing(
+            self,
+            image_info_of_dependencies: Dict[str, ImageInfo],
+            image_target: DockerImageTarget,
+            image_info: ImageInfo):
+        is_any_dependency_newly_build = \
+            self.is_any_dependency_newly_build(image_info_of_dependencies)
+        self.remove_image_if_requested(image_target, is_any_dependency_newly_build)
         if not image_target.exists():
-            if not self._build_config.force_build:
-                is_new, pull_success = self.try_pull(image_target)
-                if not pull_success:
-                    self._image_builder.build(image_info, image_info_of_dependencies)
-                    is_new = True
-            else:
-                self._image_builder.build(image_info, image_info_of_dependencies)
-                is_new = True
+            was_build, was_pulled = \
+                self.pull_or_build_image(
+                    image_target, image_info,
+                    image_info_of_dependencies,
+                    is_any_dependency_newly_build)
         else:
-            self.logger.info("Task %s: Used locally existing docker images %s",
+            was_build = False
+            was_pulled = False
+            self.logger.info("Task %s: Using locally existing docker images %s",
                              self.task_id, image_target.get_complete_name())
-            is_new = False
-        return is_new
+        return was_build, was_pulled
 
-    def try_pull(self, image_target):
-        try:
-            self._pull_image(image_target)
-            is_new = True
-            pull_success = True
-        except Exception as e:
-            self.logger.warning("Task %s: Could not pull image %s, got exception %s", self.task_id,
-                                image_target.get_complete_name(), e)
-            is_new = False
-            pull_success = False
-        return is_new, pull_success
+    def is_any_dependency_newly_build(self, image_info_of_dependencies: Dict[str, ImageInfo]) -> bool:
+        return any(image_info.was_build for image_info
+                   in image_info_of_dependencies.values())
 
-    def remove_image_if_requested(self, image_target):
-        if self._build_config.force_build \
-                or self._build_config.force_pull:
+    def remove_image_if_requested(self, image_target: DockerImageTarget,
+                                  is_any_dependency_newly_build: bool):
+        if self.image_removal_requested(is_any_dependency_newly_build):
             if image_target.exists():
                 self._client.images.remove(image=image_target.get_complete_name(), force=True)
                 self.logger.warning("Task %s: Removed docker images %s",
                                     self.task_id, image_target.get_complete_name())
 
-    def write_image_info_to_output(self, image_info: ImageInfo):
-        with  self.output()[IMAGE_INFO].open("wt") as file:
-            file.write(image_info.to_json())
+    def image_removal_requested(self, is_any_dependency_newly_build: bool):
+        return self.is_rebuild_requested() or \
+               self._build_config.force_pull or \
+               is_any_dependency_newly_build
+
+    def pull_or_build_image(self,
+                            image_target: DockerImageTarget, image_info: ImageInfo,
+                            image_info_of_dependencies: Dict[str, ImageInfo],
+                            is_any_dependency_newly_build: bool):
+        if not self.is_rebuild_necessary(is_any_dependency_newly_build):
+            was_build, was_pulled = \
+                self.try_pull_or_fallback_to_build(
+                    image_target, image_info,
+                    image_info_of_dependencies)
+        else:
+            self._image_builder.build(image_info, image_info_of_dependencies)
+            was_build = True
+            was_pulled = False
+        return was_build, was_pulled
+
+    def is_rebuild_necessary(self, is_any_dependency_newly_build: bool):
+        return is_any_dependency_newly_build or self.is_rebuild_requested()
+
+    def try_pull_or_fallback_to_build(self,
+                                      image_target: DockerImageTarget, image_info: ImageInfo,
+                                      image_info_of_dependencies: Dict[str, ImageInfo]):
+        was_build = False
+        was_pulled = self.try_pull(image_target)
+        if not was_pulled:
+            self._image_builder.build(image_info, image_info_of_dependencies)
+            was_build = True
+        return was_build, was_pulled
+
+    def try_pull(self, image_target: DockerImageTarget):
+        try:
+            self._pull_image(image_target)
+            return True
+        except Exception as e:
+            self.logger.warning("Task %s: Could not pull image %s, got exception %s", self.task_id,
+                                image_target.get_complete_name(), e)
+            return False
 
     def _pull_image(self, image_target: DockerImageTarget):
         self.logger.info("Task %s: Try to pull docker image %s", self.task_id, image_target.get_complete_name())
@@ -169,3 +208,7 @@ class DockerPullOrBuildImageTask(StoppableTask):
             self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.task_id,
                                 image_target.get_complete_name(), e)
             return False
+
+    def write_image_info_to_output(self, image_info: ImageInfo):
+        with  self.output()[IMAGE_INFO].open("wt") as file:
+            file.write(image_info.to_json())

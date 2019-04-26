@@ -14,16 +14,17 @@ from exaslct_src.cli.options \
 @cli.command()
 @add_options(flavor_options)
 @add_options(release_options)
-@click.option('--output-path', type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
+@click.option('--export-path', type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
 @click.option('--release-name', type=str, default=None)
 @add_options(build_options)
 @add_options(docker_options_login_not_required)
 @add_options(system_options)
 def export(flavor_path: Tuple[str, ...],
            release_type: str,
-           output_path: str,
+           export_path: str,
            release_name: str,
-           force_build: bool,
+           force_rebuild: bool,
+           force_rebuild_from: Tuple[str, ...],
            force_pull: bool,
            output_directory: str,
            temporary_base_directory: str,
@@ -39,11 +40,16 @@ def export(flavor_path: Tuple[str, ...],
     the system will build or pull them before the exporting the packaged container.
     """
 
-    set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
+    set_build_config(force_rebuild,
+                     force_rebuild_from,
+                     force_pull,
+                     log_build_context_content,
+                     output_directory,
+                     temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
     tasks = lambda: [ExportContainer(flavor_paths=list(flavor_path),
                                      release_types=list([release_type]),
-                                     output_path=output_path,
+                                     export_path=export_path,
                                      release_name=release_name
                                      )]
 

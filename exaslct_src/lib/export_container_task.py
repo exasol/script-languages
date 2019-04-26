@@ -24,6 +24,7 @@ from exaslct_src.lib.test_runner.create_export_directory import CreateExportDire
 from exaslct_src.stoppable_task import StoppableTask
 from exaslct_src.release_type import ReleaseType
 
+
 # TODO create docker image from exported container and if possible fetch it from docker hub
 #       required again the analysis of images without actual building them.
 #       It is possible with docker import to get an images from the packed tar and with
@@ -31,7 +32,7 @@ from exaslct_src.release_type import ReleaseType
 class ExportContainerTask(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.Parameter()
-    output_path = luigi.OptionalParameter(None)
+    export_path = luigi.OptionalParameter(None)
     release_name = luigi.OptionalParameter(None)
 
     def __init__(self, *args, **kwargs):
@@ -84,13 +85,13 @@ class ExportContainerTask(StoppableTask):
 
     def copy_cache_file_to_output_path(self, cache_file, is_new):
         output_file = None
-        if self.output_path is not None:
+        if self.export_path is not None:
             if self.release_name is not None:
                 suffix = f"""_{self.release_name}"""
             else:
                 suffix = ""
             file_name = f"""{self.flavor_name}_{self.release_type_name}{suffix}.tar.gz"""
-            output_file = pathlib.Path(self.output_path).joinpath(file_name)
+            output_file = pathlib.Path(self.export_path).joinpath(file_name)
             if not output_file.exists() or is_new:
                 shutil.copy2(cache_file, output_file)
         return output_file
@@ -100,13 +101,17 @@ class ExportContainerTask(StoppableTask):
 
     def remove_release_file_if_requested(self, release_file):
         if release_file.exists() and \
-                (self._build_config.force_build or
+                (self._build_config.force_rebuild or
                  self._build_config.force_pull):
             self.logger.info("Task %s: Removed container file %s", self.task_id, release_file)
             os.remove(release_file)
 
     def write_release_info(self, image_info_of_release_image: ImageInfo, is_new: bool,
-                           cache_file: pathlib.Path, release_name: str, output_file: pathlib.Path):
+                           cache_file: pathlib.Path, release_name: str, output_file_path: pathlib.Path):
+        if output_file_path is None:
+            output_file = None
+        else:
+            output_file = str(output_file_path)
         release_info = ExportInfo(
             cache_file=str(cache_file),
             complete_name=release_name,
@@ -116,7 +121,7 @@ class ExportContainerTask(StoppableTask):
             depends_on_image=image_info_of_release_image,
             release_type=self.get_release_type(),
             release_name=str(self.release_name),
-            output_file=str(output_file)
+            output_file=output_file
         )
         json = release_info.to_json()
         with self.output()[RELEASE_INFO].open("w") as file:

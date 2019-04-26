@@ -50,12 +50,13 @@ class DockerPushImageTask(StoppableTask):
 
     def run_task(self):
         image_info = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
-        if image_info.is_new or self.force_push:
+        if image_info.was_build or image_info.was_pulled or self.force_push:
             auth_config = {
                 "username": self._docker_config.username,
                 "password": self._docker_config.password
             }
-            generator = self._client.images.push(repository=image_info.name, tag=image_info.tag + "_" + image_info.hash,
+            generator = self._client.images.push(repository=image_info.name,
+                                                 tag=image_info.tag + "_" + image_info.hash,
                                                  auth_config=auth_config,
                                                  stream=True)
             self._handle_output(generator, image_info)

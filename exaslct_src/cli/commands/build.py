@@ -15,7 +15,8 @@ from exaslct_src.cli.options \
 @add_options(system_options)
 def build(flavor_path: Tuple[str, ...],
           goal: Tuple[str, ...],
-          force_build: bool,
+          force_rebuild: bool,
+          force_rebuild_from: Tuple[str, ...],
           force_pull: bool,
           output_directory: str,
           temporary_base_directory: str,
@@ -30,7 +31,12 @@ def build(flavor_path: Tuple[str, ...],
     If stages are cached in a docker registry, they command is going to pull them,
     instead of building them.
     """
-    set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory)
+    set_build_config(force_rebuild,
+                     force_rebuild_from,
+                     force_pull,
+                     log_build_context_content,
+                     output_directory,
+                     temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
     tasks = lambda: [DockerBuild(flavor_paths=list(flavor_path), goals=list(goal))]
     run_tasks(tasks, workers)

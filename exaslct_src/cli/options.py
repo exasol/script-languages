@@ -51,11 +51,17 @@ goal_options = [
                  )]
 
 build_options = [
-    click.option('--force-build/--no-force-build', default=False,
-                 help="Forces the system to complete rebuild of a all stages."),
+    click.option('--force-rebuild/--no-force-rebuild', default=False,
+                 help="Forces the system to complete rebuild all stages down the stages "
+                      "specified with the options --force-rebuild-from."),
+    click.option('--force-rebuild-from', multiple=True, type=str,
+                 help="If the option --force-rebuild is given, "
+                      "this options specifies for which stages and dependent stages system will force a rebuild. "
+                      "The option can be repeated with different stages. "
+                      "The system will than force the rebuild of these stages and their. dependet stages."
+                 ),
     click.option('--force-pull/--no-force-pull', default=False,
                  help="Forces the system to pull all stages if available, otherwise it rebuilds a stage."),
-
     output_directory,
     click.option('--temporary-base-directory',
                  type=click.Path(file_okay=False, dir_okay=True),

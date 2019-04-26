@@ -169,6 +169,13 @@ class DockerBuild(FlavorWrapperTask):
             "base_test_build_run": DockerBuild_BaseTestBuildRun,
             "flavor_test_build_run": DockerBuild_FlavorTestBuildRun
         }
+        self.available_goals = set(self.goal_class_map.keys())
+        build_stages_to_rebuild = set(self._build_config.force_rebuild_from)
+        if not build_stages_to_rebuild.issubset(
+                self.available_goals):
+            difference = build_stages_to_rebuild.difference(self.available_goals)
+            raise Exception(f"Unknown build stages {difference} forced to rebuild, "
+                            f"following stages are avaialable {self.available_goals}")
 
     def requires(self) -> List[Set[DockerPullOrBuildImageTask]]:
         return [self.generate_build_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
@@ -177,14 +184,14 @@ class DockerBuild(FlavorWrapperTask):
         goals = {"release", "base_test_build_run", "flavor_test_build_run"}
         if len(self.goals) != 0:
             goals = set(self.goals)
-        available_goals = set(self.goal_class_map.keys())
-        if goals.issubset(available_goals):
+        if goals.issubset(self.available_goals):
             tasks = [self.goal_class_map[goal](flavor_path=flavor_path) for goal in goals]
             dependencies = self.get_dependencies(tasks)
             return dependencies
         else:
-            difference = goals.difference(available_goals)
-            raise Exception(f"Unknown goal(s) {difference}, following goals are avaialable {available_goals}")
+            difference = goals.difference(self.available_goals)
+            raise Exception(f"Unknown goal(s) {difference}, "
+                            f"following goals are avaialable {self.available_goals}")
 
     def get_dependencies(self, tasks) -> Set[DockerPullOrBuildImageTask]:
         dependencies = tasks.copy()

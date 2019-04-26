@@ -1,15 +1,22 @@
 import getpass
+import json
 import shutil
 from datetime import datetime
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
 import luigi
 
 from exaslct_src.stoppable_task import StoppableTask
 
 
-def set_build_config(force_build, force_pull, log_build_context_content, output_directory, temporary_base_directory):
-    luigi.configuration.get_config().set('build_config', 'force_build', str(force_build))
+def set_build_config(force_rebuild: bool,
+                     force_rebuild_from: Tuple[str, ...],
+                     force_pull: bool,
+                     log_build_context_content: bool,
+                     output_directory: str,
+                     temporary_base_directory: str):
+    luigi.configuration.get_config().set('build_config', 'force_rebuild', str(force_rebuild))
+    luigi.configuration.get_config().set('build_config', 'force_rebuild_from', json.dumps(force_rebuild_from))
     luigi.configuration.get_config().set('build_config', 'force_pull', str(force_pull))
     set_output_directory(output_directory)
     if temporary_base_directory is not None:

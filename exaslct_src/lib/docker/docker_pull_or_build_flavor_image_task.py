@@ -3,11 +3,15 @@ from typing import Dict
 
 import luigi
 
+from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.docker.docker_pull_or_build_image_tasks import DockerPullOrBuildImageTask
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.flavor import flavor
 
 
+# TODO change task inheritance with composition.
+#  In this case DockerPullOrBuildFlavorImageTask could create a DockerPullOrBuildImageTask
+#  if this would have parameters instead of abstract methods
 class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
     flavor_path = luigi.Parameter()
 
@@ -16,6 +20,15 @@ class DockerPullOrBuildFlavorImageTask(DockerPullOrBuildImageTask):
         self.additional_build_directories_mapping = self.get_additional_build_directories_mapping()
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
+
+    def is_rebuild_requested(self) -> bool:
+        config = build_config()
+        return (
+                config.force_rebuild and
+                (
+                        self.get_build_step() in config.force_rebuild_from or
+                        len(config.force_rebuild_from) == 0
+                ))
 
     def get_build_step(self) -> str:
         pass

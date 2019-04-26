@@ -1,10 +1,11 @@
 import luigi
 
-from exaslct_src.docker_build import DockerBuild_Release, DockerBuild_BaseTestBuildRun, DockerBuild_FlavorTestBuildRun
+from exaslct_src.docker_build import DockerBuild_Release, DockerBuild_BaseTestBuildRun, DockerBuild_FlavorTestBuildRun, \
+    DockerBuild
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyReleaseInfoCollector
 from exaslct_src.lib.export_container_task import ExportContainerTask
-from exaslct_src.lib.flavor_task import FlavorWrapperTask, FlavorTask
+from exaslct_src.lib.flavor_task import FlavorTask
 from exaslct_src.release_type import ReleaseType
 
 
@@ -34,7 +35,7 @@ class ExportContainer_FlavorTest(ExportContainerTask):
 
 class ExportContainer(FlavorTask):
     release_types = luigi.ListParameter(["Release"])
-    output_path = luigi.OptionalParameter(None)
+    export_path = luigi.OptionalParameter(None)
     release_name = luigi.OptionalParameter(None)
 
 
@@ -44,13 +45,17 @@ class ExportContainer(FlavorTask):
         self._prepare_outputs()
         self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
 
+        # TODO currently needed to check for valid build stages in build_config.force_rebuild_from
+        #       could be used later to automatically discover release_container
+        build_wrapper_task = DockerBuild(flavor_paths=self.actual_flavor_paths)
+
     def requires(self):
         return [self.generate_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
 
     def generate_tasks_for_flavor(self, flavor_path):
         result = []
         parameter = dict(flavor_path=flavor_path,
-                         output_path=self.output_path,
+                         export_path=self.export_path,
                          release_name=self.release_name)
         if ReleaseType.Release in self.actual_release_types:
             result.append(ExportContainer_Release(**parameter))

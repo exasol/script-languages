@@ -1,5 +1,6 @@
 import luigi
 
+from exaslct_src.docker_build import DockerBuild
 from exaslct_src.export_container import ExportContainer_Release, ExportContainer_BaseTest, ExportContainer_FlavorTest
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.flavor_task import FlavorTask
@@ -46,9 +47,13 @@ class UploadContainer(FlavorTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._build_config = build_config()
+
+        # TODO currently needed to check for valid build stages in build_config.force_rebuild_from
+        #       could be used later to automatically discover release_container
+        build_wrapper_task = DockerBuild(flavor_paths=self.actual_flavor_paths)
+
         self._prepare_outputs()
         self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
-
 
     def requires(self):
         return [self.generate_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
@@ -92,4 +97,3 @@ class UploadContainer(FlavorTask):
                         out_file.write("\n")
                         out_file.write("=================================================")
                         out_file.write("\n")
-

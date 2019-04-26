@@ -164,8 +164,7 @@ class SpawnTestDockerDatabase(StoppableTask):
         image_tag = "6.0.12-d1"
         docker_db_image_info = ImageInfo(name=image_name,
                                          tag=image_tag,
-                                         complete_name="%s:%s" % (image_name, image_tag),
-                                         is_new=False)
+                                         complete_name="%s:%s" % (image_name, image_tag))
         try:
 
             self._client.images.get(docker_db_image_info.complete_name)
