@@ -37,6 +37,28 @@ jobs:
     script:
     - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
 ##################################################################################################
+################################# Build --goal flavor_base_deps ##################################
+##################################################################################################
+  - stage: "Build --goal flavor_base_deps --goal build_run"
+    name: "fancyr-EXASOL-6.0.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "fancyr-EXASOL-6.1.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.1.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+##################################################################################################
 ##################################### Build --goal build_run #####################################
 ##################################################################################################
   - stage: "Build --goal flavor_base_deps --goal build_run"
@@ -58,27 +80,6 @@ jobs:
   - name: "fancyr-EXASOL-6.1.0 --goal build_run"
     script:
     - "travis/build_build_run.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
-##################################################################################################
-################################# Build --goal flavor_base_deps ##################################
-##################################################################################################
-  - name: "standard-EXASOL-6.1.0 --goal flavor_base_deps"
-    script:
-    - "travis/build_flavor_base_deps.sh --flavor-path flavors/standard-EXASOL-6.1.0"
-  - name: "standard-EXASOL-6.0.0 --goal flavor_base_deps"
-    script:
-    - "travis/build_flavor_base_deps.sh --flavor-path flavors/standard-EXASOL-6.0.0"
-  - name: "python3-ds-EXASOL-6.0.0 --goal flavor_base_deps"
-    script:
-    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
-  - name: "python3-ds-EXASOL-6.1.0 --goal flavor_base_deps"
-    script:
-    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
-  - name: "fancyr-EXASOL-6.0.0 --goal flavor_base_deps"
-    script:
-    - "travis/build_flavor_base_deps.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
-  - name: "fancyr-EXASOL-6.1.0 --goal flavor_base_deps"
-    script:
-    - "travis/build_flavor_base_deps.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
 ##################################################################################################
 ###################################### Build --goal release ######################################
 ##################################################################################################
@@ -102,9 +103,9 @@ jobs:
     script:
     - "travis/build_release.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
 ##################################################################################################
-################################ run-db-test standard-EXASOL-6.0.0 ###############################
+################################ Run DB Test standard-EXASOL-6.0.0 ###############################
 ##################################################################################################
-  - stage: "run-db-test"
+  - stage: "Run DB Test"
     name: "standard-EXASOL-6.1.0 --generic-language-test=python --test-folder=python"
     script:
     - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.1.0
@@ -130,9 +131,10 @@ jobs:
     - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.1.0
     --test-folder=standard-flavor"
 ##################################################################################################
-################################ run-db-test standard-EXASOL-6.0.0 ###############################
+################################ Run DB Test standard-EXASOL-6.0.0 ###############################
 ##################################################################################################
-  - name: "standard-EXASOL-6.0.0 --generic-language-test=python --test-folder=python"
+  - stage: "Run DB Test"
+    name: "standard-EXASOL-6.0.0 --generic-language-test=python --test-folder=python"
     script:
       - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.0.0
       --generic-language-test=python
@@ -149,9 +151,10 @@ jobs:
       --test-folder=r"
 # TODO standard-flavor test with 6.0.0 doesn't work because the test expects python3 and makes no exception
 ##################################################################################################
-############################### run-db-test python3-ds-EXASOL-6.0.0 ##############################
+############################### Run DB Test python3-ds-EXASOL-6.0.0 ##############################
 ##################################################################################################
-  - name: "python3-ds-EXASOL-6.0.0 --generic-language-test=python3"
+  - stage: "Run DB Test"
+    name: "python3-ds-EXASOL-6.0.0 --generic-language-test=python3"
     script:
       - "travis/run_db_test.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0
       --generic-language-test=python3"
@@ -161,9 +164,10 @@ jobs:
       --test-folder=python3
       --test-folder=python3-ds-flavor"
 ##################################################################################################
-############################### run-db-test python3-ds-EXASOL-6.1.0 ##############################
+############################### Run DB Test python3-ds-EXASOL-6.1.0 ##############################
 ##################################################################################################
-  - name: "python3-ds-EXASOL-6.1.0 --generic-language-test=python3"
+  - stage: "Run DB Test"
+    name: "python3-ds-EXASOL-6.1.0 --generic-language-test=python3"
     script:
       - "travis/run_db_test.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0
       --generic-language-test=python3"
@@ -173,17 +177,19 @@ jobs:
       --test-folder=python3
       --test-folder=python3-ds-flavor"
 ##################################################################################################
-############################### run-db-test fancyr-EXASOL-6.0.0 ##############################
+############################### Run DB Test fancyr-EXASOL-6.0.0 ##############################
 ##################################################################################################
-  - name: "fancyr-EXASOL-6.0.0 --generic-language-test=r --test-folder=r"
+  - stage: "Run DB Test"
+    name: "fancyr-EXASOL-6.0.0 --generic-language-test=r --test-folder=r"
     script:
       - "travis/run_db_test.sh --flavor-path flavors/fancyr-EXASOL-6.0.0
       --generic-language-test=r
       --test-folder=r"
 ##################################################################################################
-############################### run-db-test fancyr-EXASOL-6.1.0 ##############################
+############################### Run DB Test fancyr-EXASOL-6.1.0 ##############################
 ##################################################################################################
-  - name: "fancyr-EXASOL-6.1.0 --generic-language-test=r --test-folder=r"
+  - stage: "Run DB Test"
+    name: "fancyr-EXASOL-6.1.0 --generic-language-test=r --test-folder=r"
     script:
       - "travis/run_db_test.sh --flavor-path flavors/fancyr-EXASOL-6.1.0
       --generic-language-test=r
@@ -192,4 +198,4 @@ stages:
 - "Build --goal language_deps --goal build_deps"
 - "Build --goal flavor_base_deps --goal build_run"
 - "Build --goal release"
-- run-db-test
+- "Run DB Test"
