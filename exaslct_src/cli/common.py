@@ -43,7 +43,7 @@ def set_docker_config(docker_base_url, docker_password, docker_repository_name, 
             luigi.configuration.get_config().set('docker_config', 'username', docker_username)
             luigi.configuration.get_config().set('docker_config', 'password', password)
 
-
+# TODO add watchdog, which uploads the logs after given ammount of time, to get logs before travis kills the job
 def run_tasks(tasks_creator: Callable[[], List[luigi.Task]],
               workers: int,
               on_success: Callable[[], None] = None,

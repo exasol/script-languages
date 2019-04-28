@@ -12,7 +12,7 @@ from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.still_running_logger import StillRunningLoggerThread, StillRunningLogger
 from exaslct_src.stoppable_task import StoppableTask
 
-
+# TODO add timeout, because sometimes the upload stucks
 class UploadFileToBucketFS(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
