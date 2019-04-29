@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from exaslct_src import CleanImages
+from exaslct_src import CleanExaslcImages
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_docker_config, run_tasks, set_output_directory, add_options
 from exaslct_src.cli.options \
@@ -26,7 +26,7 @@ def clean_flavor_images(flavor_path: Tuple[str, ...],
     """
     set_output_directory(output_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
-    tasks = lambda: [CleanImages(flavor_path=flavor_path[0])]
+    tasks = lambda: [CleanExaslcImages(flavor_path=flavor_path[0])]
     run_tasks(tasks, workers)
 
 
@@ -48,7 +48,7 @@ def clean_all_images(
     """
     set_output_directory(output_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
-    tasks = lambda: [CleanImages()]
+    tasks = lambda: [CleanExaslcImages()]
     run_tasks(tasks, workers)
 
 # TODO add commands clean containers, networks, all

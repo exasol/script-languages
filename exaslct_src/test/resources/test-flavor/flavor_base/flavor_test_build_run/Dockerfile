@@ -8,5 +8,4 @@ COPY --from={{flavor_customization}} /lib /lib
 COPY --from={{flavor_customization}} /bin /bin
 COPY --from={{flavor_customization}} /etc /etc
 
-RUN ldconfig
-
+RUN mkdir /exaudf

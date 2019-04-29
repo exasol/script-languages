@@ -16,18 +16,19 @@ class StoppingFurtherExecution(Exception):
 class StoppableTask(luigi.Task):
     logger = logging.getLogger('luigi-interface')
 
-    failed_target = LocalTarget(build_config().output_directory + "/TASK_FAILED")
+    def set_class_targets(self):
+        self.failed_target = LocalTarget(build_config().output_directory + "/TASK_FAILED")
+        self.timers_dir = pathlib.Path(build_config().output_directory).joinpath("timers")
+        self.timers_state_dir = self.timers_dir.joinpath("state")
+        self.timers_result_dir = self.timers_dir.joinpath("results")
 
-    timers_dir = pathlib.Path(build_config().output_directory).joinpath("timers")
-    timers_state_dir = timers_dir.joinpath("state")
-    timers_result_dir = timers_dir.joinpath("results")
-
-    creation_timer_state_dir = timers_state_dir.joinpath("creation")
-    first_run_timer_state_dir = timers_state_dir.joinpath("first_run")
-    run_timer_state_dir = timers_state_dir.joinpath("run")
+        self.creation_timer_state_dir = self.timers_state_dir.joinpath("creation")
+        self.first_run_timer_state_dir = self.timers_state_dir.joinpath("first_run")
+        self.run_timer_state_dir = self.timers_state_dir.joinpath("run")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.set_class_targets()
 
         self.creation_timer_state_dir.mkdir(parents=True, exist_ok=True)
         self.creation_timer_state_file = self.creation_timer_state_dir.joinpath(self.task_id)
@@ -135,3 +136,8 @@ class StoppableTask(luigi.Task):
         task_str = '{}({})'.format(self.get_task_family(), ', '.join(repr_parts))
 
         return task_str
+
+class StoppableWrapperTask(StoppableTask):
+
+    def complete(self):
+        return all(r.complete() for r in luigi.task.flatten(self.requires()))

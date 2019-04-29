@@ -13,7 +13,5 @@ COPY --from={{flavor_customization}} /bin /bin
 COPY --from={{flavor_customization}} /opt /opt
 COPY --from={{flavor_customization}} /etc /etc
 
-RUN ldconfig
-
 COPY --from={{build_run}} /exaudf /exaudf
 

@@ -3,7 +3,7 @@ import hashlib
 import logging
 from typing import Dict
 
-from exaslct_src.lib.utils.directory_hasher import FileDirectoryListHasher
+from exaslct_src.lib.utils.file_directory_list_hasher import FileDirectoryListHasher
 from exaslct_src.lib.data.image_info import ImageInfo
 
 
@@ -25,7 +25,8 @@ class BuildContextHasher:
             FileDirectoryListHasher(hashfunc="sha256",
                                     hash_file_names=True,
                                     hash_directory_names=True,
-                                    hash_permissions=True)
+                                    hash_permissions=True,
+                                    use_relative_paths=True)
         files_directories_to_hash = list(self.build_directories_mapping.values()) + [str(self.dockerfile)]
         self.logger.debug("Task %s: files_directories_list_hasher %s", self.task_id, files_directories_to_hash)
         hash_of_build_context = files_directories_list_hasher.hash(files_directories_to_hash)

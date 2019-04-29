@@ -52,7 +52,7 @@ def run_tasks(tasks_creator: Callable[[], List[luigi.Task]],
     start_time = datetime.now()
     tasks = remove_stoppable_task_targets(tasks_creator)
     no_scheduling_errors = luigi.build(tasks, workers=workers, local_scheduler=True, log_level="INFO")
-    if StoppableTask.failed_target.exists() or not no_scheduling_errors:
+    if StoppableTask().failed_target.exists() or not no_scheduling_errors:
         handle_failure(on_failure)
     else:
         handle_success(on_success, start_time)
@@ -73,10 +73,11 @@ def handle_failure(on_failure):
 
 
 def remove_stoppable_task_targets(tasks_creator):
-    if StoppableTask.failed_target.exists():
-        StoppableTask.failed_target.remove()
-    if StoppableTask.timers_dir.exists():
-        shutil.rmtree(str(StoppableTask.timers_dir))
+    stoppable_task = StoppableTask()
+    if stoppable_task.failed_target.exists():
+        stoppable_task.failed_target.remove()
+    if stoppable_task.timers_dir.exists():
+        shutil.rmtree(str(stoppable_task.timers_dir))
     tasks = tasks_creator()
     return tasks
 

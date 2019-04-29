@@ -14,7 +14,12 @@ env:
   - secure: "n7802Z/GwQVs2RHmre3tdLmug71vVI5HDlNZ6vP6JkaIWAG17i/Dkbn7Bg9CbpN2lMZiQcu7xot+8c5X4ISz9vT+5LsE5Z/agNk2HZZ/7gJkf6eO6nby/+MbTmOwZwPLrXiMDdas4KV3pG4EZexF3Z5bE0rQ7mcPhjF6tt3rXR7ce7PJWFD6UDc6v/eF8H/cH3EnGH02ooGyXTZ4goIeQd5pwCNpO3GY8BIdMc4/I8ukOCJffQvWPxL+vifICtuGdlv3er/RKHcwwUxwEXdzqD120+9BI4oNi9QrNs37WVXogSIm8cm3PvpI0i11vfC/dN8Hl85N8TWndxA9PLJdZIQ0/MCjxYCkxyGZyZFf3uUFQXJC2lqyw+EYTMPGIP3N3FDy7fT5qOTzcB6DPci45jN1jPiaID5MbHODxB/iEJ1sMNZmT200Breq4cNAQmP5Im33JhKWIkOj82pl/UzZN4Y+PFsNrEQThNJBPTAt9LUqzSPOQcwtZ90GtB/DNkDsxP07Xz4GQp/gThwKP1Ff2hafUATy2Lznx8321Fj6+ehaHuqQhrsMVrInnzU9PIATz0zT0nMsRbuKVRgJyvIeQunI8ORGlcoFky1Cd1ZyrrNMIt1ccn8jdn4FHdmiD96lIaI/fMTlL90TQj1GGruBrF0D2zzhXyMFfIfe94bUcwA="
 jobs:
   include:
-##################################################################################################
+  - stage: "Test exaslct"
+    name: "Test exaslct"
+    script:
+    - pipenv install
+    - pipenv run python -m unittest discover -s exaslct_src/test
+    ##################################################################################################
 ########################## Build --goal language_deps --goal build_deps ##########################
 ##################################################################################################
   - stage: "Build --goal language_deps --goal build_deps"
@@ -195,6 +200,7 @@ jobs:
       --generic-language-test=r
       --test-folder=r"
 stages:
+- "Test exaslc"
 - "Build --goal language_deps --goal build_deps"
 - "Build --goal flavor_base_deps --goal build_run"
 - "Build --goal release"

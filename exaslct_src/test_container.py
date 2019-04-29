@@ -51,9 +51,10 @@ class TestContainer(FlavorTask):
         super().__init__(*args, **kwargs)
         self._build_config = build_config()
         self._prepare_outputs()
-        if StoppableTask.failed_target.exists():
+        stoppable_task = StoppableTask()
+        if stoppable_task.failed_target.exists():
             print("removed failed target")
-            StoppableTask.failed_target.remove()
+            stoppable_task.failed_target.remove()
         self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
 
     def requires(self):

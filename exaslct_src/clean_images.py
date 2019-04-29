@@ -2,29 +2,53 @@ import datetime
 import logging
 from collections import deque
 
-import docker
 import luigi
 
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.flavor import flavor
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.utils.docker_utils import find_images_by_tag
+from exaslct_src.stoppable_task import StoppableWrapperTask, StoppableTask
+
 
 # TODO remove only images that are not represented by current flavor directories
 # TODO requires that docker build only returns the image_info without actually building or pulling
-class CleanImages(StoppableTask):
+class CleanExaslcImages(StoppableWrapperTask):
     logger = logging.getLogger('luigi-interface')
     flavor_path = luigi.OptionalParameter(None)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.flavor_path is None:
+            self.flavor_name = None
+        else:
+            self.flavor_name = flavor.get_name_from_path(self.flavor_path)
+        self._build_config = build_config()
+        self._prepare_outputs()
+        if self._docker_config.repository_name == "":
+            raise Exception("docker repository name must not be an empty string")
+
+        if self.flavor_name is not None:
+            flavor_name_extension = ":%s" % self.flavor_name
+        else:
+            flavor_name_extension = ""
+        self.starts_with_pattern = self._docker_config.repository_name + \
+                                   flavor_name_extension
+
+    def requires(self):
+        return CleanImagesStartingWith(self.starts_with_pattern)
+
+
+class CleanImagesStartingWith(StoppableTask):
+    logger = logging.getLogger('luigi-interface')
+
+    starts_with_pattern = luigi.Parameter()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._docker_config = docker_config()
         self._client = docker_config().get_client()
         self._low_level_client = docker_config().get_low_level_client()
-        if self.flavor_path is None:
-            self.flavor_name = None
-        else:
-            self.flavor_name = flavor.get_name_from_path(self.flavor_path)
         self._build_config = build_config()
         self._prepare_outputs()
 
@@ -56,20 +80,10 @@ class CleanImages(StoppableTask):
                     self.handle_errors(e, file, image, image_id, queue)
 
     def find_imges_to_clean(self):
-        if self._docker_config.repository_name == "":
-            raise Exception("docker repository name must not be an empty string")
-        images = self._client.images.list()
-        if self.flavor_name is not None:
-            flavor_name_extension = ":%s" % self.flavor_name
-        else:
-            flavor_name_extension = ""
-        starts_with_pattern = self._docker_config.repository_name + \
-                              flavor_name_extension
-        self.logger.info("Going to remove all images starting with %s" % starts_with_pattern)
-        filter_images = [image for image in images
-                         if len(image.tags) >= 1 is not None and
-                         any([tag.startswith(starts_with_pattern) for tag in image.tags])]
-        self.logger.info("Going to remove following images %s" % filter_images)
+        self.logger.info("Going to remove all images starting with %s" % self.starts_with_pattern)
+        filter_images = find_images_by_tag(self._client, lambda tag: tag.startswith(self.starts_with_pattern))
+        for i in filter_images:
+            self.logger.info("Going to remove following image: %s" % i.tags)
         return filter_images
 
     def try_tor_remove_image(self, file, image_id):
