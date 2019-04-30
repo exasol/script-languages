@@ -200,7 +200,7 @@ jobs:
       --generic-language-test=r
       --test-folder=r"
 stages:
-- "Test exaslc"
+- "Test exaslct"
 - "Build --goal language_deps --goal build_deps"
 - "Build --goal flavor_base_deps --goal build_run"
 - "Build --goal release"
