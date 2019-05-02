@@ -57,7 +57,7 @@ class ExportContainerTask(StoppableTask):
     def output(self):
         return {RELEASE_INFO: self._target}
 
-    def requires(self):
+    def requires_tasks(self):
         return {"release_task": self.get_release_task(self.flavor_path),
                 "export_directory": CreateExportDirectory()}
 

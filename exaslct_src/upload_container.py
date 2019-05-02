@@ -55,7 +55,7 @@ class UploadContainer(FlavorTask):
         self._prepare_outputs()
         self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
 
-    def requires(self):
+    def requires_tasks(self):
         return [self.generate_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
 
     def generate_tasks_for_flavor(self, flavor_path):

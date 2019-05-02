@@ -46,7 +46,7 @@ class SpawnTestContainer(StoppableTask):
     def output(self):
         return {CONTAINER_INFO: self._test_container_info_target}
 
-    def requires(self):
+    def requires_tasks(self):
         return {"test_container_image": BuildOrPullDBTestContainerImage(),
                 "export_directory": CreateExportDirectory()}
 

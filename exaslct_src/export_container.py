@@ -49,7 +49,7 @@ class ExportContainer(FlavorTask):
         #       could be used later to automatically discover release_container
         build_wrapper_task = DockerBuild(flavor_paths=self.actual_flavor_paths)
 
-    def requires(self):
+    def requires_tasks(self):
         return [self.generate_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
 
     def generate_tasks_for_flavor(self, flavor_path):

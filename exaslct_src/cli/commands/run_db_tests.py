@@ -79,8 +79,8 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 docker_repository_name: str,
                 docker_username: str,
                 docker_password: str,
-                workers: int
-                ):
+                workers: int,
+                task_dependencies_dot_file:str):
     """
     This command runs the integration tests in local docker-db.
     The systems spawns a test environment in which the test are executed.
@@ -118,4 +118,4 @@ def run_db_test(flavor_path: Tuple[str, ...],
         with target.open("r") as f:
             print(f.read())
 
-    run_tasks(tasks, workers, on_success=on_success)
+    run_tasks(tasks, workers, task_dependencies_dot_file, on_success=on_success)

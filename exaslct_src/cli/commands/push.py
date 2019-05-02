@@ -29,7 +29,8 @@ def push(flavor_path: Tuple[str, ...],
          docker_repository_name: str,
          docker_username: str,
          docker_password: str,
-         workers: int):
+         workers: int,
+         task_dependencies_dot_file:str):
     """
     This command pushes all stages of the script language container flavor.
     If the stages do not exists locally, the system will build or pull them before the push.
@@ -42,4 +43,4 @@ def push(flavor_path: Tuple[str, ...],
                      temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
     tasks = lambda: [DockerPush(flavor_paths=list(flavor_path), force_push=force_push, goals=list(goal))]
-    run_tasks(tasks, workers)
+    run_tasks(tasks, workers, task_dependencies_dot_file)

@@ -29,7 +29,7 @@ class DockerBuild_LanguageDeps(DockerPullOrBuildFlavorImageTask):
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"scripts": "ext/scripts"}
 
-    def requires(self):
+    def requires_tasks(self):
         return {"udfclient_deps": DockerBuild_UDFClientDeps(flavor_path=self.flavor_path)}
 
     def get_path_in_flavor(self):
@@ -53,7 +53,7 @@ class DockerBuild_BuildRun(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "build_run"
 
-    def requires(self):
+    def requires_tasks(self):
         return {"build_deps": DockerBuild_BuildDeps(flavor_path=self.flavor_path),
                 "language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
 
@@ -69,7 +69,7 @@ class DockerBuild_BaseTestDeps(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "base_test_deps"
 
-    def requires(self):
+    def requires_tasks(self):
         return {"build_deps": DockerBuild_BuildDeps(flavor_path=self.flavor_path)}
 
     def get_path_in_flavor(self):
@@ -81,7 +81,7 @@ class DockerBuild_BaseTestBuildRun(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "base_test_build_run"
 
-    def requires(self):
+    def requires_tasks(self):
         return {"base_test_deps": DockerBuild_BaseTestDeps(flavor_path=self.flavor_path),
                 "language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
 
@@ -97,7 +97,7 @@ class DockerBuild_FlavorBaseDeps(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "flavor_base_deps"
 
-    def requires(self):
+    def requires_tasks(self):
         return {"language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
 
     def get_additional_build_directories_mapping(self):
@@ -112,7 +112,7 @@ class DockerBuild_FlavorCustomization(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "flavor_customization"
 
-    def requires(self):
+    def requires_tasks(self):
         return {"flavor_base_deps": DockerBuild_FlavorBaseDeps(flavor_path=self.flavor_path)}
 
 
@@ -121,7 +121,7 @@ class DockerBuild_FlavorTestBuildRun(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "flavor_test_build_run"
 
-    def requires(self):
+    def requires_tasks(self):
         return {"flavor_customization": DockerBuild_FlavorCustomization(flavor_path=self.flavor_path),
                 "base_test_build_run": DockerBuild_BaseTestBuildRun(flavor_path=self.flavor_path)}
 
@@ -133,7 +133,7 @@ class DockerBuild_Release(DockerPullOrBuildFlavorImageTask):
     def get_build_step(self) -> str:
         return "release"
 
-    def requires(self):
+    def requires_tasks(self):
         return {"flavor_customization": DockerBuild_FlavorCustomization(flavor_path=self.flavor_path),
                 "build_run": DockerBuild_BuildRun(flavor_path=self.flavor_path),
                 "language_deps": DockerBuild_LanguageDeps(flavor_path=self.flavor_path)}
@@ -177,24 +177,33 @@ class DockerBuild(FlavorWrapperTask):
             raise Exception(f"Unknown build stages {difference} forced to rebuild, "
                             f"following stages are avaialable {self.available_goals}")
 
-    def requires(self) -> List[Set[DockerPullOrBuildImageTask]]:
-        return [self.generate_build_tasks_for_flavor(flavor_path) for flavor_path in self.actual_flavor_paths]
+    def requires_tasks(self) -> List[Set[DockerPullOrBuildImageTask]]:
+        return [self.generate_tasks_of_goals_for_flavor(flavor_path)
+                for flavor_path in self.actual_flavor_paths]
 
-    def generate_build_tasks_for_flavor(self, flavor_path) -> Set[DockerPullOrBuildImageTask]:
+    def generate_dependencies_for_build_tasks(self):
+        return [self.generate_dependencies_for_build_tasks_of_flavor(flavor_path)
+                for flavor_path in self.actual_flavor_paths]
+
+    def generate_dependencies_for_build_tasks_of_flavor(self, flavor_path):
+        tasks = self.generate_tasks_of_goals_for_flavor(flavor_path)
+        dependencies = self.get_dependencies(tasks)
+        return dependencies
+
+    def generate_tasks_of_goals_for_flavor(self, flavor_path) -> Set[DockerPullOrBuildImageTask]:
         goals = {"release", "base_test_build_run", "flavor_test_build_run"}
         if len(self.goals) != 0:
             goals = set(self.goals)
         if goals.issubset(self.available_goals):
-            tasks = [self.goal_class_map[goal](flavor_path=flavor_path) for goal in goals]
-            dependencies = self.get_dependencies(tasks)
-            return dependencies
+            tasks = {self.goal_class_map[goal](flavor_path=flavor_path) for goal in goals}
+            return tasks
         else:
             difference = goals.difference(self.available_goals)
             raise Exception(f"Unknown goal(s) {difference}, "
                             f"following goals are avaialable {self.available_goals}")
 
     def get_dependencies(self, tasks) -> Set[DockerPullOrBuildImageTask]:
-        dependencies = tasks.copy()
+        dependencies = list(tasks)
         task_deque = deque(tasks)
         while len(task_deque) != 0:
             current_task = task_deque.pop()

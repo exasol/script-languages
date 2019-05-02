@@ -68,7 +68,7 @@ class TaskC(luigi.Task):
         #do somthing
         pass
         
-    def requires(self):
+    def requires_tasks(self):
         return [TaskA(),TaskB()]
 
 ```

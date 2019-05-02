@@ -49,7 +49,7 @@ class UploadContainerTask(StoppableTask):
     def output(self):
         return self._target
 
-    def requires(self):
+    def requires_tasks(self):
         return {"release": self.get_export_task(self.flavor_path)}
 
     def get_export_task(self, flavor_path):

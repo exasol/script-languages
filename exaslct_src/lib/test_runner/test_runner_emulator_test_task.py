@@ -31,7 +31,7 @@ class TestRunnerEmulatorTestTask(MyTask):
     def output(self):
         return self._log_target
 
-    def requires(self):
+    def requires_tasks(self):
         return self.get_build_run_task(self.flavor_path)
 
     def get_build_run_task(self, flavor_path):

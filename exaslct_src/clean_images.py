@@ -35,7 +35,7 @@ class CleanExaslcImages(StoppableWrapperTask):
         self.starts_with_pattern = self._docker_config.repository_name + \
                                    flavor_name_extension
 
-    def requires(self):
+    def requires_tasks(self):
         return CleanImagesStartingWith(self.starts_with_pattern)
 
 

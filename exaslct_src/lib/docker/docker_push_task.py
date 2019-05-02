@@ -42,7 +42,7 @@ class DockerPushImageTask(StoppableTask):
     def output(self):
         return self._push_info_target
 
-    def requires(self):
+    def requires_tasks(self):
         return self.get_docker_image_task()
 
     def get_docker_image_task(self):

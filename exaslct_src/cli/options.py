@@ -77,7 +77,9 @@ build_options = [
 system_options = [
     click.option('--workers', type=int,
                  default=5, show_default=True,
-                 help="Number of parallel workers")
+                 help="Number of parallel workers"),
+    click.option('--task-dependencies-dot-file', type=click.Path(file_okay=True),
+                 default=None, help="Path where to store the Task Dependency Graph as dot file")
 ]
 
 release_options = [

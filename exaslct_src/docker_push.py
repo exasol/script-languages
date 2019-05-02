@@ -29,9 +29,9 @@ class DockerPush(FlavorWrapperTask):
     force_push = luigi.BoolParameter(False)
     goals = luigi.ListParameter([])
 
-    def requires(self):
+    def requires_tasks(self):
         build_wrapper_task = DockerBuild(flavor_paths=self.actual_flavor_paths, goals=self.goals)
-        build_tasks_per_flavor = build_wrapper_task.requires()
+        build_tasks_per_flavor = build_wrapper_task.generate_dependencies_for_build_tasks()
         pull_tasks = [self.generate_tasks_for_flavor(build_tasks)
                       for build_tasks in build_tasks_per_flavor]
         return pull_tasks

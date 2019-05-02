@@ -25,7 +25,8 @@ def build(flavor_path: Tuple[str, ...],
           docker_repository_name: str,
           docker_username: str,
           docker_password: str,
-          workers: int):
+          workers: int,
+          task_dependencies_dot_file:str):
     """
     This command builds all stages of the script language container flavor.
     If stages are cached in a docker registry, they command is going to pull them,
@@ -39,4 +40,4 @@ def build(flavor_path: Tuple[str, ...],
                      temporary_base_directory)
     set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
     tasks = lambda: [DockerBuild(flavor_paths=list(flavor_path), goals=list(goal))]
-    run_tasks(tasks, workers)
+    run_tasks(tasks, workers, task_dependencies_dot_file)

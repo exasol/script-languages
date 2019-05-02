@@ -49,7 +49,8 @@ def upload(flavor_path: Tuple[str, ...],
            docker_repository_name: str,
            docker_username: str,
            docker_password: str,
-           workers: int):
+           workers: int,
+           task_dependencies_dot_file:str):
     """
     This command uploads the whole script language container package of the flavor to the database.
     If the stages or the packaged container do not exists locally, the system will build, pull or
@@ -85,4 +86,4 @@ def upload(flavor_path: Tuple[str, ...],
         with target.open("r") as f:
             print(f.read())
 
-    run_tasks(tasks, workers, on_success=on_success)
+    run_tasks(tasks, workers, task_dependencies_dot_file, on_success=on_success)

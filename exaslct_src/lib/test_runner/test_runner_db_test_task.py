@@ -73,7 +73,7 @@ class TestRunnerDBTestTask(StoppableTask):
     def output(self):
         return self._status_target
 
-    def requires(self):
+    def requires_tasks(self):
         test_environment_name = f"""{self.flavor_name}_{self.release_type}"""
         return {
             "release": self.get_release_task(self.flavor_path),
