@@ -1,5 +1,4 @@
 import json
-from typing import List
 
 import jsonpickle
 import luigi
@@ -15,9 +14,9 @@ class FrozenDictToDict():
             return obj
 
 class Info:
-    def to_json(self):
+    def to_json(self, indent=4):
         jsonpickle.set_preferred_backend('simplejson')
-        jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
+        jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=indent)
         return jsonpickle.encode(self)
 
     def to_dict(self):

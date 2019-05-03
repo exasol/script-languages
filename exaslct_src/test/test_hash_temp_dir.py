@@ -11,7 +11,7 @@ TEST_FILE = "/tmp/SEFQWEFWQEHDUWEFDGZWGDZWEFDUWESGRFUDWEGFUDWAFGWAZESGFDWZA"
 
 class HashTempDirTest(unittest.TestCase):
     def setUp(self):
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_dir = tempfile.mkdtemp()+"/"+self.__class__.__name__
         self.test_dir1 = self.temp_dir + "/test1"
         self.generate_test_dir(self.test_dir1)
         self.test_dir2 = self.temp_dir + "/test2"

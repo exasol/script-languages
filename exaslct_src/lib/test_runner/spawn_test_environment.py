@@ -19,7 +19,7 @@ from exaslct_src.lib.test_runner.spawn_test_database import SpawnTestDockerDatab
 from exaslct_src.lib.test_runner.upload_exa_jdbc import UploadExaJDBC
 from exaslct_src.lib.test_runner.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
 from exaslct_src.lib.test_runner.wait_for_test_docker_database import WaitForTestDockerDatabase
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class SpawnTestDockerEnvironment(StoppableTask):
@@ -28,10 +28,12 @@ class SpawnTestDockerEnvironment(StoppableTask):
     environment_name = luigi.Parameter()
     reuse_database_setup = luigi.BoolParameter(False, significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
+    database_port_forward = luigi.OptionalParameter(None,significant=False)
+    bucketfs_port_forward = luigi.OptionalParameter(None,significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._build_config = build_config()
+
         self._prepare_outputs()
         self.test_container_name = f"""test_container_{self.environment_name}"""
         self.db_container_name = f"""db_container_{self.environment_name}"""
@@ -40,7 +42,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
     def _prepare_outputs(self):
         self._environment_info_target = luigi.LocalTarget(
             "%s/info/environment/%s/environment_info"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                self.environment_name))
         if self._environment_info_target.exists():
             self._environment_info_target.remove()
@@ -102,7 +104,10 @@ class SpawnTestDockerEnvironment(StoppableTask):
                     environment_name=self.environment_name,
                     db_container_name=self.db_container_name,
                     network_info_dict=network_info_dict,
-                    ip_address_index_in_subnet=0)
+                    ip_address_index_in_subnet=0,
+                    database_port_forward=self.database_port_forward,
+                    bucketfs_port_forward=self.bucketfs_port_forward
+                )
             }
         test_container_info, test_container_info_dict = \
             self.get_test_container_info(database_and_test_container_output)

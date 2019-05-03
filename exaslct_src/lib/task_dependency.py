@@ -41,9 +41,9 @@ class TaskDependency():
 
     def __init__(self, source: TaskDescription, target: TaskDescription,
                  type: DependencyType, index: int, state: DependencyState):
-        self.state = state
+        self.state = state.name
         self.index = index
-        self.type = type
+        self.type = type.name
         self.target = target
         self.source = source
 
@@ -73,4 +73,4 @@ class TaskDependency():
         )
 
     def __repr__(self):
-        return f"TaskDependency(source={self.source}, target={self.target}, type={self.type.name}, index={self.index}, state={self.state.name})"
+        return f"TaskDependency(source={self.source}, target={self.target}, type={self.type}, index={self.index}, state={self.state})"

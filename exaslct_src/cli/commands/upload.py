@@ -4,7 +4,7 @@ from typing import Tuple
 import luigi
 from click._unicodefun import click
 
-from exaslct_src import UploadContainer
+from exaslct_src.lib.upload_container import UploadContainer
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
 from exaslct_src.cli.options \
@@ -45,12 +45,12 @@ def upload(flavor_path: Tuple[str, ...],
            output_directory: str,
            temporary_base_directory: str,
            log_build_context_content: bool,
-           docker_base_url: str,
+           cache_directory: str,
            docker_repository_name: str,
            docker_username: str,
            docker_password: str,
            workers: int,
-           task_dependencies_dot_file:str):
+           task_dependencies_dot_file: str):
     """
     This command uploads the whole script language container package of the flavor to the database.
     If the stages or the packaged container do not exists locally, the system will build, pull or
@@ -61,8 +61,9 @@ def upload(flavor_path: Tuple[str, ...],
                      force_pull,
                      log_build_context_content,
                      output_directory,
-                     temporary_base_directory)
-    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+                     temporary_base_directory,
+                     cache_directory)
+    set_docker_config(docker_password, docker_repository_name, docker_username)
     if bucketfs_password is None:
         bucketfs_password = getpass.getpass(
             "BucketFS Password for BucketFS %s and User %s:" % (bucketfs_name, bucketfs_username))
@@ -81,7 +82,7 @@ def upload(flavor_path: Tuple[str, ...],
 
     def on_success():
         target = luigi.LocalTarget(
-            "%s/uploads/current" % (output_directory))
+            "%s/uploads/command_line_output" % (output_directory))
 
         with target.open("r") as f:
             print(f.read())

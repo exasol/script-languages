@@ -1,1 +1,1 @@
-dot -Grankdir=LR -Tpng -O "$1"
+dot -Nshape=rectangle -Grankdir=TB -Tpng -O "$1"

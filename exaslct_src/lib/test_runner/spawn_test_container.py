@@ -1,20 +1,20 @@
 import pathlib
-from typing import Dict
+from typing import Dict, Any
 
-import docker
+import jsonpickle
 import luigi
 import netaddr
 from luigi import LocalTarget
 
+from exaslct_src.lib.analyze_test_container import AnalyzeTestContainer, DockerTestContainerBuild
 from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.build_or_pull_db_test_image import BuildOrPullDBTestContainerImage
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.dependency_collector.dependency_container_info_collector import CONTAINER_INFO
 from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class SpawnTestContainer(StoppableTask):
@@ -25,9 +25,9 @@ class SpawnTestContainer(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._docker_config = docker_config()
+
         self._client = docker_config().get_client()
-        self._build_config = build_config()
+
         if self.ip_address_index_in_subnet < 0:
             raise Exception(
                 "ip_address_index_in_subnet needs to be greater than 0 got %s"
@@ -37,7 +37,7 @@ class SpawnTestContainer(StoppableTask):
     def _prepare_outputs(self):
         self._test_container_info_target = luigi.LocalTarget(
             "%s/info/environment/%s/test-container/%s/container_info"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                self.environment_name,
                self.test_container_name))
         if self._test_container_info_target.exists():
@@ -47,7 +47,7 @@ class SpawnTestContainer(StoppableTask):
         return {CONTAINER_INFO: self._test_container_info_target}
 
     def requires_tasks(self):
-        return {"test_container_image": BuildOrPullDBTestContainerImage(),
+        return {"test_container_image": DockerTestContainerBuild(),
                 "export_directory": CreateExportDirectory()}
 
     def run_task(self):
@@ -89,8 +89,9 @@ class SpawnTestContainer(StoppableTask):
     def get_release_directory(self):
         return pathlib.Path(self.input()["export_directory"].path).absolute().parent
 
-    def get_test_container_image_info(self, input: Dict[str, Dict[str, LocalTarget]]):
-        image_info_of_dependencies = \
-            DependencyImageInfoCollector().get_from_dict_of_inputs(input)
-        test_container_image_info = image_info_of_dependencies["test_container_image"]
-        return test_container_image_info
+    def get_test_container_image_info(self, input: Dict[str, LocalTarget]):
+        with input["test_container_image"].open("r") as f:
+            jsonpickle.set_preferred_backend('simplejson')
+            jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
+            object = jsonpickle.decode(f.read())
+        return object["test-container"]["test-container"]

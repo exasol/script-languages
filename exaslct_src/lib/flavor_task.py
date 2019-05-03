@@ -2,7 +2,7 @@ import pathlib
 
 import luigi
 
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class FlavorTask(StoppableTask):

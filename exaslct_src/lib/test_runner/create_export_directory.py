@@ -1,7 +1,7 @@
 import luigi
 
 from exaslct_src.lib.build_config import build_config
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 # This task is needed because ExportContainerTask and SpawnTestContainer
 # requires the releases directory which stores the exported container.
@@ -11,10 +11,10 @@ from exaslct_src.stoppable_task import StoppableTask
 class CreateExportDirectory(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._build_config = build_config()
+
 
     def output(self):
-        self.directory = "%s/exports/" % self._build_config.output_directory
+        self.directory = "%s/exports/" % build_config().output_directory
         release_directory = luigi.LocalTarget(self.directory + ".created")
         return release_directory
 

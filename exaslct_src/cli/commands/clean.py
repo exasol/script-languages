@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from exaslct_src import CleanExaslcImages
+from exaslct_src.lib.clean_images import CleanExaslcImages
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_docker_config, run_tasks, set_output_directory, add_options
 from exaslct_src.cli.options \
@@ -14,7 +14,6 @@ from exaslct_src.cli.options \
 @add_options(system_options)
 def clean_flavor_images(flavor_path: Tuple[str, ...],
                         output_directory: str,
-                        docker_base_url: str,
                         docker_repository_name: str,
                         docker_username: str,
                         docker_password: str,
@@ -26,7 +25,7 @@ def clean_flavor_images(flavor_path: Tuple[str, ...],
     export them before the upload.
     """
     set_output_directory(output_directory)
-    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+    set_docker_config(docker_password, docker_repository_name, docker_username)
     tasks = lambda: [CleanExaslcImages(flavor_path=flavor_path[0])]
     run_tasks(tasks, workers, task_dependencies_dot_file)
 
@@ -37,7 +36,6 @@ def clean_flavor_images(flavor_path: Tuple[str, ...],
 @add_options(system_options)
 def clean_all_images(
         output_directory: str,
-        docker_base_url: str,
         docker_repository_name: str,
         docker_username: str,
         docker_password: str,
@@ -49,7 +47,7 @@ def clean_all_images(
     export them before the upload.
     """
     set_output_directory(output_directory)
-    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+    set_docker_config(docker_password, docker_repository_name, docker_username)
     tasks = lambda: [CleanExaslcImages()]
     run_tasks(tasks, workers, task_dependencies_dot_file)
 

@@ -3,20 +3,22 @@ import logging
 import pathlib
 
 import docker
+import jsonpickle
 import luigi
 
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_environment_info_collector import \
     DependencyEnvironmentInfoCollector
-from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyReleaseInfoCollector
+from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyExportInfoCollector
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.export_containers import ExportContainers
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
 from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestDockerEnvironment
 from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
-from exaslct_src.stoppable_task import StoppableTask
-from exaslct_src.release_type import ReleaseType
+from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.release_type import ReleaseType
 
 
 class StopTestEnvironment():
@@ -26,7 +28,7 @@ class StopTestEnvironment():
     def stop(cls, test_environment_info: EnvironmentInfo):
         cls.logger.info("Stopping environment %s", test_environment_info.name)
         _docker_config = docker_config()
-        _client = docker.DockerClient(base_url=_docker_config.base_url)
+        _client = docker_config().get_client()
         db_container = _client.containers.get(test_environment_info.database_info.container_info.container_name)
         db_container.remove(force=True, v=True)
         test_container = _client.containers.get(test_environment_info.test_container_info.container_name)
@@ -47,6 +49,8 @@ class TestRunnerDBTestTask(StoppableTask):
     test_restrictions = luigi.ListParameter([])
     languages = luigi.ListParameter([None])
     test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
+    release_type = luigi.Parameter()
+
 
     log_level = luigi.Parameter("critical", significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
@@ -55,15 +59,14 @@ class TestRunnerDBTestTask(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._build_config = build_config()
+
         self.test_environment_info = None
         self._prepare_outputs()
 
     def _prepare_outputs(self):
         self.flavor_name = flavor.get_name_from_path(str(self.flavor_path))
-        self.release_type = self.get_release_type().name
         self.log_path = "%s/logs/test-runner/db-test/tests/%s/%s/%s/" % (
-            self._build_config.output_directory,
+            build_config().output_directory,
             self.flavor_name, self.release_type,
             datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
         self._status_target = luigi.LocalTarget(self.log_path + "status.log")
@@ -76,17 +79,11 @@ class TestRunnerDBTestTask(StoppableTask):
     def requires_tasks(self):
         test_environment_name = f"""{self.flavor_name}_{self.release_type}"""
         return {
-            "release": self.get_release_task(self.flavor_path),
+            "release": ExportContainers(release_types=[self.release_type], flavor_path=self.flavor_path),
             "test_environment": SpawnTestDockerEnvironment(environment_name=test_environment_name,
                                                            reuse_database=self.reuse_database,
                                                            reuse_database_setup=self.reuse_database_setup)
         }
-
-    def get_release_task(self, flavor_path):
-        pass
-
-    def get_release_type(self) -> ReleaseType:
-        pass
 
     def run_task(self):
         release_info = self.get_release_info()
@@ -97,7 +94,7 @@ class TestRunnerDBTestTask(StoppableTask):
         yield UploadExportedContainer(
             environment_name=self.test_environment_info.name,
             release_name=release_info.name,
-            release_type=release_info.release_type.name,
+            release_type=release_info.release_type,
             test_environment_info_dict=test_environment_info_dict,
             release_info_dict=release_info.to_dict(),
             reuse_uploaded=reuse_release_container)
@@ -163,10 +160,11 @@ class TestRunnerDBTestTask(StoppableTask):
         return generic_language_tests
 
     def get_release_info(self):
-        release_info_of_dependencies = \
-            DependencyReleaseInfoCollector().get_from_dict_of_inputs(self.input())
-        release_info = release_info_of_dependencies["release"]
-        return release_info
+        with self.input()["release"].open("r") as f:
+            jsonpickle.set_preferred_backend('simplejson')
+            jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
+            object = jsonpickle.decode(f.read())
+        return object[next(object.keys().__iter__())]["release"]
 
     def get_test_environment_info(self):
         test_environment_info_of_dependencies = \

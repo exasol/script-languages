@@ -1,5 +1,5 @@
 import abc
-from typing import Dict, List, TypeVar, Generic
+from typing import Dict, List, TypeVar, Generic, Tuple, Set
 
 from luigi import LocalTarget
 
@@ -15,7 +15,7 @@ class DependencyInfoCollector(Generic[T]):
             return dict()
 
     def get_from_list_of_inputs(self, input: List[Dict[str, LocalTarget]]) -> List[T]:
-        if isinstance(input, List):
+        if isinstance(input, (List,Tuple,Set)):
             return [self.read_info(value)
                     for value in input
                     if self.is_info(value)]

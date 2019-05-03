@@ -1,13 +1,12 @@
 import pathlib
 
-import docker
 import luigi
 from docker.models.containers import Container
 
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.test_runner.run_db_test import RunDBTest
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class RunDBTestsInDirectory(StoppableTask):
@@ -25,7 +24,7 @@ class RunDBTestsInDirectory(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._docker_config = docker_config()
+
         test_evironment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = test_evironment_info.test_container_info
         self._client = docker_config().get_client()

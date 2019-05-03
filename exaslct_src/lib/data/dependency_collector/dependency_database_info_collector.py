@@ -1,7 +1,6 @@
 from typing import Dict
 
 from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.data.dependency_collector.dependency_collector import DependencyInfoCollector
 
 

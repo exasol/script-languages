@@ -1,12 +1,11 @@
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.data.info import Info
-from exaslct_src.release_type import ReleaseType
 
 
 class ExportInfo(Info):
 
     def __init__(self, cache_file: str, complete_name: str, name: str, hash: str, is_new: bool,
-                 release_type: ReleaseType, depends_on_image: ImageInfo,
+                 release_type: str, depends_on_image: ImageInfo,
                  output_file: str = None, release_name: str = None):
         self.release_name = release_name
         self.output_file = output_file

@@ -75,12 +75,12 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 output_directory: str,
                 temporary_base_directory: str,
                 log_build_context_content: bool,
-                docker_base_url: str,
+                cache_directory: str,
                 docker_repository_name: str,
                 docker_username: str,
                 docker_password: str,
                 workers: int,
-                task_dependencies_dot_file:str):
+                task_dependencies_dot_file: str):
     """
     This command runs the integration tests in local docker-db.
     The systems spawns a test environment in which the test are executed.
@@ -93,8 +93,9 @@ def run_db_test(flavor_path: Tuple[str, ...],
                      force_pull,
                      log_build_context_content,
                      output_directory,
-                     temporary_base_directory)
-    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+                     temporary_base_directory,
+                     cache_directory)
+    set_docker_config(docker_password, docker_repository_name, docker_username)
 
     tasks = lambda: [TestContainer(flavor_paths=list(flavor_path),
                                    release_types=list([release_type]),

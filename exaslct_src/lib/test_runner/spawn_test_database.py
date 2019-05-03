@@ -22,12 +22,11 @@ from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker.pull_log_handler import PullLogHandler
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
 
-#TODO add port mapping
 class SpawnTestDockerDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
@@ -36,11 +35,12 @@ class SpawnTestDockerDatabase(StoppableTask):
     reuse_database = luigi.BoolParameter(False, significant=False)
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
+    database_port_forward = luigi.OptionalParameter(None, significant=False)
+    bucketfs_port_forward = luigi.OptionalParameter(None, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._build_config = build_config()
-        self._docker_config = docker_config()
+
         self._client = docker_config().get_client()
         self._low_level_client = docker_config().get_low_level_client()
         if self.ip_address_index_in_subnet < 0:
@@ -56,7 +56,7 @@ class SpawnTestDockerDatabase(StoppableTask):
     def _prepare_outputs(self):
         self._database_info_target = luigi.LocalTarget(
             "%s/info/environment/%s/database/%s/database_info"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                self.environment_name,
                self.db_container_name))
         if self._database_info_target.exists():
@@ -118,7 +118,7 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     def prepate_log_file_path(self, image_info: ImageInfo):
         log_file_path = pathlib.Path("%s/logs/docker-pull/%s/%s/%s"
-                                     % (self._build_config.output_directory,
+                                     % (build_config().output_directory,
                                         image_info.name, image_info.tag,
                                         datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
         log_file_path = luigi.LocalTarget(str(log_file_path))
@@ -137,6 +137,11 @@ class SpawnTestDockerDatabase(StoppableTask):
             pass
         docker_db_image_info = self.pull_docker_db_images_if_necassary()
         db_volume = self.prepare_db_volume(db_private_network, docker_db_image_info)
+        ports = {}
+        if self.database_port_forward is not None:
+            ports[f"{DB_PORT}/tcp"] = ('127.0.0.1', int(self.database_port_forward))
+        if self.bucketfs_port_forward is not None:
+            ports[f"{BUCKETFS_PORT}/tcp"] = ('127.0.0.1', int(self.bucketfs_port_forward))
         db_container = \
             self._client.containers.create(
                 image="%s" % (docker_db_image_info.complete_name),
@@ -145,7 +150,7 @@ class SpawnTestDockerDatabase(StoppableTask):
                 privileged=True,
                 volumes={db_volume.name: {"bind": "/exa", "mode": "rw"}},
                 network_mode=None,
-                #ports={DB_PORT: DB_PORT, BUCKETFS_PORT: BUCKETFS_PORT}
+                ports=ports
             )
         self._client.networks.get(network_info.network_name).connect(db_container, ipv4_address=db_ip_address)
         db_container.start()
@@ -164,7 +169,10 @@ class SpawnTestDockerDatabase(StoppableTask):
         image_tag = "6.0.12-d1"
         docker_db_image_info = ImageInfo(name=image_name,
                                          tag=image_tag,
-                                         complete_name="%s:%s" % (image_name, image_tag))
+                                         complete_name="%s:%s" % (image_name, image_tag),
+                                         complete_tag=image_tag,
+                                         hash="",
+                                         image_description=None)
         try:
 
             self._client.images.get(docker_db_image_info.complete_name)

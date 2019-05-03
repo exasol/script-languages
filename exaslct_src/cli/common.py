@@ -4,14 +4,14 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Set
 
 import luigi
 import networkx
-from networkx import MultiDiGraph, DiGraph
+from networkx import DiGraph
 
-from exaslct_src.stoppable_task import StoppableTask
-from exaslct_src.task_dependency import TaskDependency, DependencyState
+from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.task_dependency import TaskDependency, DependencyState
 
 
 def set_build_config(force_rebuild: bool,
@@ -19,13 +19,16 @@ def set_build_config(force_rebuild: bool,
                      force_pull: bool,
                      log_build_context_content: bool,
                      output_directory: str,
-                     temporary_base_directory: str):
+                     temporary_base_directory: str,
+                     cache_directory:str):
     luigi.configuration.get_config().set('build_config', 'force_rebuild', str(force_rebuild))
     luigi.configuration.get_config().set('build_config', 'force_rebuild_from', json.dumps(force_rebuild_from))
     luigi.configuration.get_config().set('build_config', 'force_pull', str(force_pull))
     set_output_directory(output_directory)
     if temporary_base_directory is not None:
         luigi.configuration.get_config().set('build_config', 'temporary_base_directory', temporary_base_directory)
+    if cache_directory is not None:
+        luigi.configuration.get_config().set('build_config', 'cache_directory', cache_directory)
     luigi.configuration.get_config().set('build_config', 'log_build_context_content', str(log_build_context_content))
 
 
@@ -34,9 +37,7 @@ def set_output_directory(output_directory):
         luigi.configuration.get_config().set('build_config', 'output_directory', output_directory)
 
 
-def set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username):
-    if docker_base_url is not None:
-        luigi.configuration.get_config().set('docker_config', 'base_url', docker_base_url)
+def set_docker_config(docker_password, docker_repository_name, docker_username):
     if docker_repository_name is not None:
         luigi.configuration.get_config().set('docker_config', 'repository_name', docker_repository_name)
     if docker_username is not None:
@@ -84,11 +85,11 @@ def generate_graph_from_task_dependencies(task_dependencies_dot_file: str):
             g.add_node(dependency.target, label=dependency.target.representation)
             g.add_edge(dependency.source, dependency.target,
                        dependency=dependency,
-                       label=f"\"type={dependency.type.name}, index={dependency.index}\"")
+                       label=f"\"type={dependency.type}, index={dependency.index}\"")
         networkx.nx_pydot.write_dot(g, task_dependencies_dot_file)
 
 
-def collect_dependencies():
+def collect_dependencies()->Set[TaskDependency]:
     stoppable_task = StoppableTask()
     dependencies = set()
     for root, directories, files in os.walk(stoppable_task.dependencies_dir):
@@ -97,7 +98,7 @@ def collect_dependencies():
             with open(file_path) as f:
                 for line in f.readlines():
                     task_dependency = TaskDependency.from_json(line)
-                    if task_dependency.state == DependencyState.requested:
+                    if task_dependency.state == DependencyState.requested.name:
                         dependencies.add(task_dependency)
     return dependencies
 

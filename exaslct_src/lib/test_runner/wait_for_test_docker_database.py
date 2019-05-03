@@ -5,7 +5,6 @@ import shutil
 import time
 from threading import Thread
 
-import docker
 import luigi
 from docker.models.containers import Container
 
@@ -15,7 +14,7 @@ from exaslct_src.lib.data.database_info import DatabaseInfo
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 # TODO check if bucketfs is online, too
@@ -71,8 +70,8 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._build_config = build_config()
-        self._docker_config = docker_config()
+
+
         self._client = docker_config().get_client()
         self._low_level_client = docker_config().get_low_level_client()
         self._test_container_info = ContainerInfo.from_dict(self.test_container_info_dict)
@@ -86,7 +85,7 @@ class WaitForTestDockerDatabase(StoppableTask):
     def _prepare_outputs(self):
         self._database_ready_target = luigi.LocalTarget(
             "%s/info/environment/%s/database/%s/ready"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                self.environment_name,
                self._database_info.container_info.container_name))
         if self._database_ready_target.exists():
@@ -101,7 +100,7 @@ class WaitForTestDockerDatabase(StoppableTask):
         db_container = self._client.containers.get(db_container_name)
         database_log_path = \
             pathlib.Path("%s/logs/environment/%s/database/%s/"
-                         % (self._build_config.output_directory,
+                         % (build_config().output_directory,
                             self.environment_name,
                             db_container_name))
 

@@ -1,10 +1,10 @@
 from typing import Tuple
 
-from exaslct_src import DockerBuild
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, docker_options_login_not_required, goal_options
+from exaslct_src.lib.docker_build import DockerBuild
 
 
 @cli.command()
@@ -21,12 +21,12 @@ def build(flavor_path: Tuple[str, ...],
           output_directory: str,
           temporary_base_directory: str,
           log_build_context_content: bool,
-          docker_base_url: str,
+          cache_directory:str,
           docker_repository_name: str,
           docker_username: str,
           docker_password: str,
           workers: int,
-          task_dependencies_dot_file:str):
+          task_dependencies_dot_file: str):
     """
     This command builds all stages of the script language container flavor.
     If stages are cached in a docker registry, they command is going to pull them,
@@ -37,7 +37,8 @@ def build(flavor_path: Tuple[str, ...],
                      force_pull,
                      log_build_context_content,
                      output_directory,
-                     temporary_base_directory)
-    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
+                     temporary_base_directory,
+                     cache_directory)
+    set_docker_config(docker_password, docker_repository_name, docker_username)
     tasks = lambda: [DockerBuild(flavor_paths=list(flavor_path), goals=list(goal))]
     run_tasks(tasks, workers, task_dependencies_dot_file)

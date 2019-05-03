@@ -1,20 +1,19 @@
 from typing import Tuple
 
-import luigi
 from click._unicodefun import click
 
-from exaslct_src import ExportContainer
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
     docker_options_login_not_required
+from exaslct_src.lib.export_containers import ExportContainers
 
 
 @cli.command()
 @add_options(flavor_options)
 @add_options(release_options)
-@click.option('--export-path', type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
+@click.option('--export-path', type=click.Path(exists=False, file_okay=False, dir_okay=True), default=None)
 @click.option('--release-name', type=str, default=None)
 @add_options(build_options)
 @add_options(docker_options_login_not_required)
@@ -29,12 +28,12 @@ def export(flavor_path: Tuple[str, ...],
            output_directory: str,
            temporary_base_directory: str,
            log_build_context_content: bool,
-           docker_base_url: str,
+           cache_directory: str,
            docker_repository_name: str,
            docker_username: str,
            docker_password: str,
            workers: int,
-           task_dependencies_dot_file:str):
+           task_dependencies_dot_file: str):
     """
     This command exports the whole script language container package of the flavor,
     ready for the upload into the bucketfs. If the stages do not exists locally,
@@ -46,19 +45,17 @@ def export(flavor_path: Tuple[str, ...],
                      force_pull,
                      log_build_context_content,
                      output_directory,
-                     temporary_base_directory)
-    set_docker_config(docker_base_url, docker_password, docker_repository_name, docker_username)
-    tasks = lambda: [ExportContainer(flavor_paths=list(flavor_path),
-                                     release_types=list([release_type]),
-                                     export_path=export_path,
-                                     release_name=release_name
-                                     )]
+                     temporary_base_directory,
+                     cache_directory)
+    set_docker_config(docker_password, docker_repository_name, docker_username)
+    tasks = lambda: [ExportContainers(flavor_paths=list(flavor_path),
+                                      release_types=list([release_type]),
+                                      export_path=export_path,
+                                      release_name=release_name
+                                      )]
 
     def on_success():
-        target = luigi.LocalTarget(
-            "%s/exports/current" % (output_directory))
-
-        with target.open("r") as f:
+        with ExportContainers.command_line_output_target.open("r") as f:
             print(f.read())
 
     run_tasks(tasks, workers, task_dependencies_dot_file, on_success=on_success)

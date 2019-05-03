@@ -2,7 +2,6 @@ import logging
 import time
 from datetime import datetime
 
-import docker
 import luigi
 from docker.models.containers import Container
 
@@ -10,7 +9,8 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.still_running_logger import StillRunningLoggerThread, StillRunningLogger
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
+
 
 # TODO add timeout, because sometimes the upload stucks
 class UploadFileToBucketFS(StoppableTask):
@@ -22,9 +22,9 @@ class UploadFileToBucketFS(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._docker_config = docker_config()
+
         self._client = docker_config().get_client()
-        self._build_config = build_config()
+
         self._test_environment_info = test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = test_environment_info.test_container_info
         self._database_info = test_environment_info.database_info
@@ -33,7 +33,7 @@ class UploadFileToBucketFS(StoppableTask):
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
             "%s/logs/environment/%s/bucketfs-upload/%s"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                self._test_environment_info.name,
                self.task_id))
         if self._log_target.exists():
@@ -77,11 +77,16 @@ class UploadFileToBucketFS(StoppableTask):
         thread = StillRunningLoggerThread(still_running_logger)
         thread.start()
         utc_now = datetime.utcnow()
+        start_exit_code, start_output = \
+            self.find_pattern_in_logfile(
+                database_container, log_file, pattern_to_wait_for)
         output = self.upload_file(file_to_upload=file_to_upload, upload_target=upload_target)
         self.wait_for_upload(
             database_container=database_container,
             pattern_to_wait_for=pattern_to_wait_for,
-            log_file=log_file, start_time=utc_now)
+            log_file=log_file, start_time=utc_now,
+            start_exit_code=start_exit_code,
+            start_output=start_output)
         thread.stop()
         thread.join()
         return output
@@ -101,50 +106,69 @@ class UploadFileToBucketFS(StoppableTask):
     def upload_file(self, file_to_upload: str, upload_target: str):
         self.logger.info("Task %s: upload file %s to %s", self.task_id,
                          file_to_upload, upload_target)
-        exit_code, log_output = self.run_upload_command(file_to_upload, upload_target)
+        command = self.generate_upload_command(file_to_upload, upload_target)
+        exit_code, log_output = self.run_command(command)
+
         if exit_code != 0:
             self.write_logs(log_output)
-            raise Exception("Upload of %s failed, got following output %s"
-                            % (file_to_upload, log_output))
+            raise Exception("Task %s: Upload of %s failed, got following output %s"
+                            % (self.task_id, file_to_upload, log_output))
         return log_output
 
-    def run_upload_command(self, file_to_upload, upload_target):
+    def run_command(self, cmd):
         test_container = self._client.containers.get(self._test_container_info.container_name)
+        self.logger.info("Task %s: start upload command %s", self.task_id, cmd)
+        exit_code, output = test_container.exec_run(cmd=cmd)
+        self.logger.info("Task %s: finish upload command %s", self.task_id, cmd)
+        log_output = cmd + "\n\n" + output.decode("utf-8")
+        return exit_code, log_output
+
+    def generate_upload_command(self, file_to_upload, upload_target):
+
         url = "http://w:write@{host}:{port}/{target}".format(
             host=self._database_info.host, port=self._database_info.bucketfs_port,
             target=upload_target)
         cmd = "curl -v -X PUT -T {jar} {url}".format(jar=file_to_upload, url=url)
-        exit_code, output = test_container.exec_run(cmd=cmd)
-        log_output = cmd + "\n\n" + output.decode("utf-8")
-        return exit_code, log_output
+        return cmd
 
     def wait_for_upload(self,
                         database_container: Container,
                         pattern_to_wait_for: str,
                         log_file: str,
-                        start_time: datetime):
+                        start_time: datetime,
+                        start_exit_code, start_output):
         self.logger.info("Task %s: wait for upload of file", self.task_id)
+
         ready = False
         while not ready:
             exit_code, output = self.find_pattern_in_logfile(
                 database_container, log_file, pattern_to_wait_for)
-            if exit_code == 0 and output != b'':
-                ready = self.output_happend_after_start_time(output, start_time)
+            if self.exit_code_changed(exit_code, start_exit_code) or \
+                    self.found_new_log_line(exit_code, start_exit_code,
+                                            start_output, output):
+                ready = True
             time.sleep(1)
+
+    def exit_code_changed(self,exit_code, start_exit_code):
+        return exit_code == 0 and start_exit_code != 0
+
+    def found_new_log_line(self, exit_code, start_exit_code,
+                           start_output, output):
+        return exit_code == 0 and start_exit_code == 0 and len(start_output) < len(output)
 
     def find_pattern_in_logfile(self, database_container: Container,
                                 log_file: str, pattern_to_wait_for: str):
-        cmd = f"""grep -B 0 -A 0 '{pattern_to_wait_for}' {log_file} | tail -1 """
+        cmd = f"""grep '{pattern_to_wait_for}' {log_file}"""
         bash_cmd = f"""bash -c "{cmd}" """
         exit_code, output = \
-            database_container.exec_run(cmd=bash_cmd)
+            database_container.exec_run(bash_cmd)
         return exit_code, output
 
-    def output_happend_after_start_time(self, output, start_time):
+    def output_happened_after_start_time(self, output, start_time):
         time_str_from_output = " ".join(output.decode("utf-8").split(" ")[1:3])
         time_from_output = datetime.strptime(time_str_from_output, "%y%m%d %H:%M:%S")
-        happend_after = time_from_output > start_time
-        return happend_after
+        happened_after = time_from_output > start_time
+        return happened_after
 
     def write_logs(self, output):
         with self._log_target.open("w") as file:

@@ -1,13 +1,11 @@
 import logging
 
-import docker
 import luigi
-from luigi import LocalTarget
 
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_config
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class PopulateEngineSmallTestDataToDatabase(StoppableTask):
@@ -19,9 +17,9 @@ class PopulateEngineSmallTestDataToDatabase(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._docker_config = docker_config()
+
         self._client = docker_config().get_client()
-        self._build_config = build_config()
+
         self._test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = self._test_environment_info.test_container_info
         self._database_info = self._test_environment_info.database_info
@@ -30,7 +28,7 @@ class PopulateEngineSmallTestDataToDatabase(StoppableTask):
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
             "%s/logs/environment/%s/populate_data/%s"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                self._test_environment_info.name,
                self.task_id))
         if self._log_target.exists():

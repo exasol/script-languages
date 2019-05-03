@@ -2,7 +2,7 @@ import pathlib
 
 import luigi
 
-from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyReleaseInfoCollector
+from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyExportInfoCollector
 from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.test_runner.upload_file_to_db import UploadFileToBucketFS
 

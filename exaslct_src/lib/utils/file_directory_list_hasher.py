@@ -1,12 +1,11 @@
-import os
 import hashlib
-import re
+import os
 import stat
+from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Tuple
 
 import humanfriendly
-from multiprocessing import Pool
 
 HASH_FUNCTIONS = {
     'md5': hashlib.md5,

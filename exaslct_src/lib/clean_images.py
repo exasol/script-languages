@@ -8,7 +8,7 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.utils.docker_utils import find_images_by_tag
-from exaslct_src.stoppable_task import StoppableWrapperTask, StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableWrapperTask, StoppableTask
 
 
 # TODO remove only images that are not represented by current flavor directories
@@ -19,20 +19,20 @@ class CleanExaslcImages(StoppableWrapperTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         if self.flavor_path is None:
             self.flavor_name = None
         else:
             self.flavor_name = flavor.get_name_from_path(self.flavor_path)
-        self._build_config = build_config()
-        self._prepare_outputs()
-        if self._docker_config.repository_name == "":
+
+        if docker_config().repository_name == "":
             raise Exception("docker repository name must not be an empty string")
 
         if self.flavor_name is not None:
             flavor_name_extension = ":%s" % self.flavor_name
         else:
             flavor_name_extension = ""
-        self.starts_with_pattern = self._docker_config.repository_name + \
+        self.starts_with_pattern = docker_config().repository_name + \
                                    flavor_name_extension
 
     def requires_tasks(self):
@@ -46,16 +46,16 @@ class CleanImagesStartingWith(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._docker_config = docker_config()
+
         self._client = docker_config().get_client()
         self._low_level_client = docker_config().get_low_level_client()
-        self._build_config = build_config()
+
         self._prepare_outputs()
 
     def _prepare_outputs(self):
         self._log_target = luigi.LocalTarget(
             "%s/logs/clean/images/%s_%s"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
                self.task_id))
         if self._log_target.exists():
@@ -69,24 +69,24 @@ class CleanImagesStartingWith(StoppableTask):
 
     def run_task(self):
         with self._log_target.open("w") as file:
-            filter_images = self.find_imges_to_clean()
+            filter_images = self.find_images_to_clean()
             queue = deque(filter_images)
             while len(queue) != 0:
                 image = queue.pop()
                 image_id = image.id
                 try:
-                    self.try_tor_remove_image(file, image_id)
+                    self.try_to_remove_image(file, image_id)
                 except Exception as e:
                     self.handle_errors(e, file, image, image_id, queue)
 
-    def find_imges_to_clean(self):
+    def find_images_to_clean(self):
         self.logger.info("Going to remove all images starting with %s" % self.starts_with_pattern)
         filter_images = find_images_by_tag(self._client, lambda tag: tag.startswith(self.starts_with_pattern))
         for i in filter_images:
             self.logger.info("Going to remove following image: %s" % i.tags)
         return filter_images
 
-    def try_tor_remove_image(self, file, image_id):
+    def try_to_remove_image(self, file, image_id):
         file.write("Try to remove image %s" % image_id)
         file.write("\n")
         self._client.images.remove(image=image_id, force=True)

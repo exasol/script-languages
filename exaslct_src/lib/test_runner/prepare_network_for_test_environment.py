@@ -2,13 +2,12 @@ import logging
 
 import docker
 import luigi
-import netaddr
 
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_docker_network_info_collector import DOCKER_NETWORK_INFO
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.docker_config import docker_config
-from exaslct_src.stoppable_task import StoppableTask
+from exaslct_src.lib.stoppable_task import StoppableTask
 
 
 class PrepareDockerNetworkForTestEnvironment(StoppableTask):
@@ -22,8 +21,8 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._build_config = build_config()
-        self._docker_config = docker_config()
+
+
         self._client = docker_config().get_client()
         self._low_level_client = docker_config().get_low_level_client()
         self._prepare_outputs()
@@ -31,7 +30,7 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     def _prepare_outputs(self):
         self._network_info_target = luigi.LocalTarget(
             "%s/info/environment/%s/network/%s/network_info"
-            % (self._build_config.output_directory,
+            % (build_config().output_directory,
                self.environment_name,
                self.network_name))
         if self._network_info_target.exists():
