@@ -9,7 +9,7 @@
 3. [How to build an existing flavor?](#how-to-build-an-existing-flavor)
 4. [How to customize an existing flavor?](#how-to-customize-an-existing-flavor)
 5. [Partial builds or rebuilds](#partial-builds-and-rebuilds)
-6. [Using own remote cache](#using-own-remote-cache)
+6. [Using your own remote cache](#using-your-own-remote-cache)
 7. [Testing an existing flavor](#testing-an-existing-flavor)
 8. [Cleaning up after your are finished](#cleaning-up-after-your-are-finished)
 
@@ -44,7 +44,7 @@ This project supports different versions of script language environments with di
 We call these versions _flavors_. The pre-defined flavors can be modified and extended to create customized flavors.
 Each pre-defined flavor has its own set of Dockerfiles in a corresponding subfolder of [flavors](flavors).
 
-Create the language container and export it the local file system
+Create the language container and export it to the local file system
 
 ```bash
 $ ./exaslct export --flavor-path=flavors/<flavor-name> --export-path <export-path>
@@ -58,8 +58,8 @@ $ ./exaslct upload --flavor-path=flavors/<flavor-name> --database-host <hostname
                    --bucket-name <bucket-name> --path-in-bucket <path/in/bucket>
 ```
 
-It will print after the successful upload the ALTER SESSION Statement 
-to activate the script language container in the database.
+Once it is successfully uploaded, it will print the ALTER SESSION statement
+that can be used to activate the script language container in the database.
 
 ## How to customize an existing flavor?
 
@@ -100,10 +100,11 @@ or
 ADD flavor-customization/<your-file-or-directory> <destination>
 ```
 
-Your changes on the file system will than be merge with the file system of the script client 
-which contains all necessary libraries that are required for it to run and the script language runtime.
-The merge will override all changes which may prevent the execution of the script client. 
-In details. this means if you change or remove packages or files in flavor-customization 
+Your changes on the file system will then be merged with the file system of the script client
+which contains all necessary libraries that are required to run the script language runtime.
+
+Be aware that the merge will override all changes which may prevent the execution of the script client.
+In details, this means if you change or remove packages or files in flavor-customization
 which are necessary for the script client they will be restored in the final container.
 
 After you finished your changes, rebuild with 
@@ -120,13 +121,13 @@ $ ./exaslct upload --flavor-path=flavors/<flavor-name> --database-host <hostname
                    --bucket-name <bucket-name> --path-in-bucket <path/in/bucket>
 ```
 
-Note: The tool exaslct tries to reuse as much as possible or the previous build or tries to pull already exising images from Docker Hub.
+Note: The tool `exaslct` tries to reuse as much as possible of the previous build or tries to pull already exising images from Docker Hub.
 
 ## Force a rebuild
 
 Sometimes it is necessary to force a rebuild of a flavor. 
-A typical reason is to update the dependencies and 
-with this patch bugs and security vulnerabilities in the installed dependencies. 
+A typical reason is to update the dependencies in order to
+fix bugs and security vulnerabilities in the installed dependencies.
 To force a rebuild the command line option --force-rebuild can be used 
 with basically all commands of ./exaslct, except the clean commands.
 
@@ -143,8 +144,8 @@ for the ./exaslct commands build and push.
 The build command only rebuilds the docker images, 
 but does not export a new container.
 All other commands don't support the --goal option, 
-because they required specific images to be built, 
-otherwise they can not be continued. 
+because they require specific images to be built,
+otherwise they would not proceed.
 
 ```bash
 ./exaslct build --flavor-path=<path-to-flavor> --goal <build-stage>
@@ -165,11 +166,11 @@ The following build-stage are currently available:
 * release
 
 
-With the option --force-rebuild-from can specifiy from where the rebuild is forces. 
-All build-stage before this build-stage will use cached versions if possible. 
-If a build-stage gets builds it triggers a build for all following build-stages. 
+With the option --force-rebuild-from, you can specify from where the rebuild should be forced.
+All previous build-stages before this will use cached versions where possible.
+However, if a single stage is built, it will trigger a build for all following build-stages.
 The option --force-rebuild-from only has an effect together with the option --force-rebuild, 
-without it gets ignored.
+without it is ignored.
 
 ```bash
 ./exaslct build --flavor-path=<path-to-flavor> --force-rebuild --force-rebuild-from <build-stage>
@@ -187,13 +188,14 @@ With the command line options --repository-name
 you can configure your own docker registry as cache. 
 The --repository-name option can be used with all 
 ./exaslct commands that could trigger a build, 
-which include build, export, upload and run-db-test.
-Furthermore, it can be used with the push command. 
-The push command uploads the build images to the docker registry.
+which include build, export, upload and run-db-test commands.
+Furthermore, it can be used with the push command which
+uploads the build images to the docker registry.
 In this case the --repository-name option specifies 
-not only from where to pull cached images during build, 
-but also to which chache the built images get pushed.
-You can specify the repository name, like that:
+not only from where to pull cached images during the build,
+but also to which cache the built images should be pushed.
+
+You can specify the repository name, as below:
 
 ```bash
 ./exaslct export --flavor-path=<path-to-flavor> --repository-name <hostname>[:port]/<user>/<repository-name>
@@ -201,18 +203,21 @@ You can specify the repository name, like that:
 
 ## Testing an existing flavor
 
-To test the script language container you can execute the following command 
-
-**Note: you need docker in privileged mode to execute the tests**
+To test the script language container you can execute the following command:
 
 ```bash
 $ ./exaslct run-db-test --flavor-path=flavors/<flavor-name>
 ```
 
+**Note: you need docker in privileged mode to execute the tests**
+
 ## Cleaning up after your are finished
-The creation of scripting language container create or downloads several docker images 
-which can consume quite a lot disk space. Therefore, we recommand to remove the Docker images 
-for this flavor after your finished. This can be done as follows:
+
+The creation of scripting language container creates or downloads several docker images
+which can consume a lot of disk space. Therefore, we recommand to remove the Docker images
+of a flavor after working with them.
+
+This can be done as follows:
 
 ```bash
 ./exaslct clean-flavor-images --flavor-path=flavors/<flavor-name>
@@ -226,6 +231,3 @@ To remove all images of all flavors you can use:
 
 **Please note that this script does not delete the Linux image that is used as basis for the images that were build in the previous steps. 
 Furthermore, this command doesn't delete cached files in the output directory. The default path for the output directory is .build-output.**
-
-
-
