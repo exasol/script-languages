@@ -1,11 +1,74 @@
 # Contributing to the Script Language Containers
 
-## +1::tada: First off, thanks for taking the time to contribute! :tada::+1:
+## :tada: :+1: First off, thanks for taking the time to contribute! :tada: :+1:
 
 The following is a set of guidelines for contributing to the Script Language Containers. 
 These are mostly guidelines, not rules. Use your best judgment, and feel free 
 to propose changes to this document in a pull request. 
 Furthermore, they contain some information which might help you during development.
 
+## How can you contribute?
 
+You can contribute to this project at several levels:
+- Probably, the easiest way to contribute are bug reports or feature requests in the Github Issues
+- If, you are more experienced, we happy about any pull requests for bugs, improvements or new flavors. 
+    - **However, be aware that the script-language container are tightly integrated into the Exasol Database, 
+    we need to check any contribution thoroughly and might reject pull requests which may break this integration. 
+    So, please open first a Github Issue and discuss the change with us.**
+        - The implementation of the script client is especially such a area, 
+        which might break alot, if you are not careful
+    - **And please respect, that we don't except changes to the build step flavor-customization of any flavor, 
+    because this step should be used from users for temporary additions to the flavor. 
+    If you would like to add new dependencies to a falvor, add them to corresponding build step:**
+        - udfclient-deps: basic dependencies which are required for the script client, 
+        which need to be in the final container
+        - language-deps: basic dependencies for the script language of the flavor
+        - build-deps: any dependencies which are required to build the script client,
+        but which are not needed in the final container
+        - flavor-base-deps(_2): dependencies which are flavor specific
+        - base-test-deps: basic dependencies which are only needed for development, debugging and testing
+    
+        If you are not sure, where to add the dependencies, don't hesitate to ask.
+        
+## Testing
 
+We use tests on different levels, we have unit and integration tests for exaslct (Script Language Container Tool, 
+our build system for the containers) and we have integration tests for all flavors with the docker version 
+of the Exasol Database. You can see in our travis configuration how we run the tests.
+
+The tests for exaslct are located [here](exaslct_src/test). 
+It consists of several python unittest tests and 
+defines a test flavor in the [resources](exaslct_src/test/resources).
+
+The integration tests for the flavors are located [here](tests). 
+They consists of generic language tests and flavor specific tests.
+You can execute them with the exaslct run-db-test command.
+
+## How to configure Travis
+
+If, you want to use Travis as your continuous integration server during development 
+you need to configure it in a specific way. Our build takes a while, 
+because we build quite extensive containers in some flavor. 
+Furthermore, our integrations tests take their time, too. 
+Therefore, we were forced to use caching between the build stages of Travis. 
+Unfortunatly, the existing Travis Cache doesn't handle caching of artifacts 
+from multiple jobs in a stage, such that we had to use a external cloud service for caching.
+
+Because our build of the flavor already consists of a sequence of docker images, 
+we decided to use docker registries as build cache. You can use either docker hub or 
+a own docker regirstry as cache. We encode the information about the docker registry
+as encrypted environment variables in the .travis.yml. If you want to use Travis in 
+your fork of this repository you have to set your own encrypted environment variables.
+Please, revert the environment variables before a pull request to the original ones, 
+used in exasol/script-language container, such that we can test your changes before the merge.
+
+We use the following encrypted Environment Variables 
+to provide the Information for the docker registry to the build:
+
+- DOCKER_REPOSITORY
+- DOCKER_USERNAME
+- DOCKER_PASSWORD
+
+The DOCKER_REPOSITORY needs to be of the following form 
+
+    <hostname>[:port]/<user>/<repository-name>
