@@ -2,8 +2,7 @@ import gzip
 import logging
 import pathlib
 import shutil
-import time
-from threading import Thread
+from datetime import datetime, timedelta
 
 import luigi
 from docker.models.containers import Container
@@ -15,50 +14,7 @@ from exaslct_src.lib.docker_config import docker_config
 from exaslct_src.lib.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
 from exaslct_src.lib.stoppable_task import StoppableTask
-
-
-# TODO check if bucketfs is online, too
-class IsDatabaseReadyThread(Thread):
-    def __init__(self, database_info: DatabaseInfo, test_container: Container, timeout_in_seconds: int):
-        super().__init__()
-        self._database_info = database_info
-        self.test_container = test_container
-        self.timeout_in_seconds = timeout_in_seconds
-        self.finish = False
-        self.is_ready = False
-
-    def stop(self):
-        self.finish = True
-
-    def run(self):
-        start_time = time.time()
-        timeout_over = lambda current_time: current_time - start_time > self.timeout_in_seconds
-        db_connection_command = self.create_db_connection_command()
-        bucket_fs_connection_command = self.create_bucketfs_connection_command()
-        while not timeout_over(time.time()) and not self.finish:
-            (exit_code_db_connection, output_db_connection) = \
-                self.test_container.exec_run(cmd=db_connection_command)
-            (exit_code_bucketfs_connection, output_bucketfs_connection) = \
-                self.test_container.exec_run(cmd=bucket_fs_connection_command)
-            if exit_code_db_connection == 0 and exit_code_bucketfs_connection == 0:
-                self.finish = True
-                self.is_ready = True
-            time.sleep(1)
-
-    def create_db_connection_command(self):
-        username = "sys"
-        password = "exasol"
-        connection_options = f"""-c '{self._database_info.host}:{self._database_info.db_port}' -u '{username}' -p '{password}'"""
-        cmd = f"""$EXAPLUS {connection_options}  -sql 'select 1;'"""
-        bash_cmd = f"""bash -c "{cmd}" """
-        return bash_cmd
-
-    def create_bucketfs_connection_command(self):
-        username = "w"
-        password = "write"
-        cmd = f"""curl '{username}:{password}@{self._database_info.host}:{self._database_info.bucketfs_port}'"""
-        bash_cmd = f"""bash -c "{cmd}" """
-        return bash_cmd
+from exaslct_src.lib.test_runner.is_database_ready_thread import IsDatabaseReadyThread
 
 
 class WaitForTestDockerDatabase(StoppableTask):
@@ -70,8 +26,6 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-
         self._client = docker_config().get_client()
         self._low_level_client = docker_config().get_low_level_client()
         self._test_container_info = ContainerInfo.from_dict(self.test_container_info_dict)
@@ -132,12 +86,13 @@ class WaitForTestDockerDatabase(StoppableTask):
     def start_wait_threads(self, database_log_path, db_container, test_container):
         startup_log_file = self.prepare_startup_log_file(database_log_path)
         container_log_thread = ContainerLogThread(db_container,
-                                                  self.task_id,
+                                                  self.__repr__(),
                                                   self.logger,
                                                   startup_log_file,
                                                   "Database Startup %s" % db_container.name)
         container_log_thread.start()
-        is_database_ready_thread = IsDatabaseReadyThread(self._database_info, test_container,
+        is_database_ready_thread = IsDatabaseReadyThread(self.__repr__(),
+                                                         self._database_info, test_container,
                                                          self.db_startup_timeout_in_seconds)
         is_database_ready_thread.start()
         return container_log_thread, is_database_ready_thread
@@ -149,14 +104,18 @@ class WaitForTestDockerDatabase(StoppableTask):
         startup_log_file = database_log_path.joinpath("startup.log")
         return startup_log_file
 
-    def join_threads(self, container_log_thread, is_database_ready_thread):
+    def join_threads(self, container_log_thread: ContainerLogThread,
+                     is_database_ready_thread: IsDatabaseReadyThread):
         container_log_thread.stop()
         is_database_ready_thread.stop()
         container_log_thread.join()
         is_database_ready_thread.join()
 
-    def wait_for_threads(self, container_log_thread, is_database_ready_thread):
+    def wait_for_threads(self, container_log_thread: ContainerLogThread,
+                         is_database_ready_thread: IsDatabaseReadyThread):
         is_database_ready = False
+        start_time = datetime.now()
+        time_delta = timedelta(minutes=5)
         while (True):
             if container_log_thread.error_message != None:
                 is_database_ready = False
@@ -164,6 +123,19 @@ class WaitForTestDockerDatabase(StoppableTask):
             if is_database_ready_thread.finish:
                 is_database_ready = True
                 break
+
+            if datetime.now() - start_time > time_delta:
+                self.logger.warning(
+                    "Task %s: Database startup didn't finished after %s, here some debug information %s",
+                    self.__repr__(), datetime.now() - start_time > time_delta,
+                    f"""
+                    ========== Container-Log: ============ 
+                    {container_log_thread.complete_log}
+                    ========== IsDatabaseReadyThread output db connection: ============
+                    {is_database_ready_thread.output_db_connection}
+                    ========== IsDatabaseReadyThread output db connection: ============
+                    {is_database_ready_thread.output_bucketfs_connection}
+                    """)
         return is_database_ready
 
     def save_db_log_files_as_gzip_tar(self, path: pathlib.Path, database_container: Container):
