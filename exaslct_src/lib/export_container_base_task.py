@@ -99,7 +99,7 @@ class ExportContainerBaseTask(StoppableTask):
         if release_file.exists() and \
                 (build_config().force_rebuild or
                  build_config().force_pull):
-            self.logger.info("Task %s: Removed container file %s", self.task_id, release_file)
+            self.logger.info("Task %s: Removed container file %s", self.__repr__(), release_file)
             os.remove(release_file)
 
     def write_release_info(self, image_info_of_release_image: ImageInfo, is_new: bool,
@@ -124,7 +124,7 @@ class ExportContainerBaseTask(StoppableTask):
             file.write(json)
 
     def create_release(self, release_image_name: str, release_file: str):
-        self.logger.info("Task %s: Create container file %s", self.task_id, release_file)
+        self.logger.info("Task %s: Create container file %s", self.__repr__(), release_file)
         temp_directory = tempfile.mkdtemp(prefix="release_archive_",
                                           dir=build_config().temporary_base_directory)
         try:
@@ -137,7 +137,7 @@ class ExportContainerBaseTask(StoppableTask):
             shutil.rmtree(temp_directory)
 
     def create_and_export_container(self, release_image_name: str, temp_directory: str):
-        self.logger.info("Task %s: Export container %s", self.task_id, release_image_name)
+        self.logger.info("Task %s: Export container %s", self.__repr__(), release_image_name)
         client = docker_config().get_client()
         try:
             container = client.containers.create(image=release_image_name)
@@ -153,14 +153,14 @@ class ExportContainerBaseTask(StoppableTask):
         export_file = temp_directory + "/export.tar"
         with open(export_file, "wb") as file:
             still_running_logger = StillRunningLogger(
-                self.logger, self.task_id, "Export image %s" % release_image_name)
+                self.logger, self.__repr__(), "Export image %s" % release_image_name)
             for chunk in generator:
                 still_running_logger.log()
                 file.write(chunk)
         return export_file
 
     def pack_release_file(self, log_path: pathlib.Path, extract_dir: str, release_file: str):
-        self.logger.info("Task %s: Pack container file %s", self.task_id, release_file)
+        self.logger.info("Task %s: Pack container file %s", self.__repr__(), release_file)
         extract_content = " ".join("'%s'" % file for file in os.listdir(extract_dir))
         command = f"""tar -C '{extract_dir}' -cvzf '{release_file}' {extract_content}"""
         self.run_command(command, "packing container file %s" % release_file,
@@ -171,7 +171,7 @@ class ExportContainerBaseTask(StoppableTask):
         os.symlink("/conf/hosts", f"""{extract_dir}/etc/hosts""")
 
     def extract_exported_container(self, log_path: pathlib.Path, export_file: str, temp_directory: str):
-        self.logger.info("Task %s: Extract exported file %s", self.task_id, export_file)
+        self.logger.info("Task %s: Extract exported file %s", self.__repr__(), export_file)
         extract_dir = temp_directory + "/extract"
         os.makedirs(extract_dir)
         excludes = " ".join(
@@ -194,9 +194,9 @@ class ExportContainerBaseTask(StoppableTask):
     def run_command(self, command: str, description: str, log_file_path: pathlib.Path):
         with subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT) as process:
-            with CommandLogHandler(log_file_path, self.logger, self.task_id, description) as log_handler:
+            with CommandLogHandler(log_file_path, self.logger, self.__repr__(), description) as log_handler:
                 still_running_logger = StillRunningLogger(
-                    self.logger, self.task_id, description)
+                    self.logger, self.__repr__(), description)
                 log_handler.handle_log_line((command + "\n").encode("utf-8"))
                 for line in iter(process.stdout.readline, b''):
                     still_running_logger.log()

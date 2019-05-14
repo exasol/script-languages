@@ -34,7 +34,7 @@ class DockerAnalyzeImageTask(StoppableTask):
         self._dockerfile = self.get_dockerfile()
         self._prepare_outputs()
         self._build_context_hasher = \
-            BuildContextHasher(self.task_id,
+            BuildContextHasher(self.__repr__(),
                                self.image_description)
         self._client = docker_config().get_client()
 
@@ -136,7 +136,7 @@ class DockerAnalyzeImageTask(StoppableTask):
                     and not build_config().force_pull \
                     and not build_config().force_load:
                 self.logger.info(
-                    f"Checking if image {image_target.get_complete_name()} "
+                    f"Task {self.__repr__()}: Checking if image {image_target.get_complete_name()} "
                     f"is locally available, result {image_target.exists()}")
                 return ImageState.LOCALLY_AVAILABLE
             elif self.can_image_be_loaded(image_target):
@@ -158,7 +158,7 @@ class DockerAnalyzeImageTask(StoppableTask):
     def can_image_be_loaded(self, image_target: DockerImageTarget):
         if build_config().cache_directory is not None:
             image_path = self.get_path_to_cached_image(image_target)
-            self.logger.info(f"Checking if image archive {image_path} "
+            self.logger.info(f"Task {self.__repr__()}: Checking if image archive {image_path} "
                              f"is available in cache directory, "
                              f"result {image_path.exists()}")
             return image_path.exists()
@@ -173,14 +173,14 @@ class DockerAnalyzeImageTask(StoppableTask):
 
     def is_image_in_registry(self, image_target: DockerImageTarget):
         try:
-            self.logger.info("Task %s: Try to find image %s in registry", self.task_id,
+            self.logger.info("Task %s: Try to find image %s in registry", self.__repr__(),
                              image_target.get_complete_name())
             exists = DockerRegistryImageChecker().check(image_target.get_complete_name())
             if exists:
-                self.logger.info("Task %s: Found image %s in registry", self.task_id,
+                self.logger.info("Task %s: Found image %s in registry", self.__repr__(),
                                  image_target.get_complete_name())
             return exists
         except docker.errors.DockerException as e:
-            self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.task_id,
+            self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.__repr__(),
                                 image_target.get_complete_name(), e)
             return False

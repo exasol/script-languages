@@ -1,7 +1,8 @@
+from pathlib import Path
 from typing import Tuple
 
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
+from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options, import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, docker_options_login_not_required, goal_options
 from exaslct_src.lib.docker_build import DockerBuild
@@ -32,6 +33,7 @@ def build(flavor_path: Tuple[str, ...],
     If stages are cached in a docker registry, they command is going to pull them,
     instead of building them.
     """
+    import_build_steps(flavor_path)
     set_build_config(force_rebuild,
                      force_rebuild_from,
                      force_pull,
@@ -42,3 +44,4 @@ def build(flavor_path: Tuple[str, ...],
     set_docker_config(docker_password, docker_repository_name, docker_username)
     tasks = lambda: [DockerBuild(flavor_paths=list(flavor_path), goals=list(goal))]
     run_tasks(tasks, workers, task_dependencies_dot_file)
+

@@ -77,10 +77,10 @@ class DockerSaveImageBaseTask(StoppableTask):
                             save_file_path: pathlib.Path,
                             image_info: ImageInfo,
                             output_generator: Generator):
-        self.logger.info(f"Saving image {image_info.complete_name} to file {save_file_path}")
+        self.logger.info(f"Task {self.__repr__()}: Saving image {image_info.complete_name} to file {save_file_path}")
         with save_file_path.open("wb") as file:
             still_running_logger = StillRunningLogger(
-                self.logger, self.task_id, "save image %s" % image_info.complete_name)
+                self.logger, self.__repr__(), "save image %s" % image_info.complete_name)
             for chunk in output_generator:
                 still_running_logger.log()
                 file.write(chunk)

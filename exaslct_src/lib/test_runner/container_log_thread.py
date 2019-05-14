@@ -26,9 +26,9 @@ class ContainerLogThread(Thread):
         self.finish = True
 
     def run(self):
-        with ContainerLogHandler(self.log_file, self.logger, self.task_id, self.description) as log_handler:
+        with ContainerLogHandler(self.log_file, self.logger, self.__repr__(), self.description) as log_handler:
             still_running_logger = StillRunningLogger(
-                self.logger, self.task_id, self.description)
+                self.logger, self.__repr__(), self.description)
             while not self.finish:
                 self.current_timestamp = math.floor(time.time())
                 log = self.container.logs(since=self.previous_timestamp, until=self.current_timestamp)

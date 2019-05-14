@@ -169,7 +169,7 @@ class StoppableTask(luigi.Task):
 
     def start_still_running_logger(self):
         # TODO use larger delay for this StillRunningLogger
-        still_running_logger = StillRunningLogger(self.logger, self.task_id, "task")
+        still_running_logger = StillRunningLogger(self.logger, self.__repr__(), "task")
         still_running_logger_thread = StillRunningLoggerThread(still_running_logger)
         still_running_logger_thread.start()
         return still_running_logger_thread
@@ -203,7 +203,7 @@ class StoppableTask(luigi.Task):
                 start_time_str = f.read()
             start_time = datetime.fromtimestamp(float(start_time_str))
             timedelta = now - start_time
-            self.logger.info("Task %s: Time since creation %s s", self.task_id, timedelta.total_seconds())
+            self.logger.info("Task %s: Time since creation %s s", self.__repr__(), timedelta.total_seconds())
             self.timers_result_dir.mkdir(parents=True, exist_ok=True)
             with self.timers_result_dir.joinpath(self.task_id + "_" + "since_creation").open("w") as f:
                 f.write(str(timedelta.total_seconds()))
@@ -214,7 +214,7 @@ class StoppableTask(luigi.Task):
                 start_time_str = f.read()
             start_time = datetime.fromtimestamp(float(start_time_str))
             timedelta = now - start_time
-            self.logger.info("Task %s: Time since first_run %s s", self.task_id, timedelta.total_seconds())
+            self.logger.info("Task %s: Time since first_run %s s", self.__repr__(), timedelta.total_seconds())
             self.timers_result_dir.mkdir(parents=True, exist_ok=True)
             with self.timers_result_dir.joinpath(self.task_id + "_" + "since_first_run").open("w") as f:
                 f.write(str(timedelta.total_seconds()))
@@ -223,7 +223,7 @@ class StoppableTask(luigi.Task):
         if self.run_timer_state_file.exists():
             with self.run_timer_state_file.open("r") as f:
                 total_runtime = self.calculate_total_runtime(f.readlines())
-            self.logger.info("Task %s: Total runtime of run method %s s", self.task_id, total_runtime)
+            self.logger.info("Task %s: Total runtime of run method %s s", self.__repr__(), total_runtime)
             with self.timers_result_dir.joinpath(self.task_id + "_" + "total_run").open("w") as f:
                 f.write(str(total_runtime))
 

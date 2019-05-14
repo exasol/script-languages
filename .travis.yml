@@ -123,7 +123,13 @@ jobs:
 ###################################### Build --goal release ######################################
 ##################################################################################################
   - stage: "Build --goal release"
-    name: "standard-EXASOL-6.1.0"
+    name: "fancyr-EXASOL-6.1.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "standard-EXASOL-6.1.0"
     script:
     - "travis/build_release.sh --flavor-path flavors/standard-EXASOL-6.1.0"
   - name: "standard-EXASOL-6.0.0"
@@ -135,12 +141,6 @@ jobs:
   - name: "python3-ds-EXASOL-6.1.0"
     script:
     - "travis/build_release.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
-  - name: "fancyr-EXASOL-6.0.0"
-    script:
-    - "travis/build_release.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
-  - name: "fancyr-EXASOL-6.1.0"
-    script:
-    - "travis/build_release.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
 ##################################################################################################
 ################################ Run DB Test standard-EXASOL-6.0.0 ###############################
 ##################################################################################################

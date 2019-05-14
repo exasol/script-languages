@@ -41,11 +41,11 @@ class PopulateEngineSmallTestDataToDatabase(StoppableTask):
         if not self.reuse_data:
             self.populate_data()
         else:
-            self.logger.warning("Task %s: Reusing data", self.task_id)
+            self.logger.warning("Task %s: Reusing data", self.__repr__())
             self.write_logs("Reused")
 
     def populate_data(self):
-        self.logger.warning("Task %s: Uploading data", self.task_id)
+        self.logger.warning("Task %s: Uploading data", self.__repr__())
         username = "sys"
         password = "exasol"
         test_container = self._client.containers.get(self._test_container_info.container_name)

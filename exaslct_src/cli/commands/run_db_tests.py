@@ -6,7 +6,7 @@ from click._unicodefun import click
 
 from exaslct_src import TestContainer
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
+from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options, import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
     docker_options_login_not_required
@@ -88,6 +88,7 @@ def run_db_test(flavor_path: Tuple[str, ...],
     If the stages or the packaged container do not exists locally,
     the system will build, pull or export them before running the tests.
     """
+    import_build_steps(flavor_path)
     set_build_config(force_rebuild,
                      force_rebuild_from,
                      force_pull,

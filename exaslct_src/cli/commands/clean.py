@@ -2,7 +2,7 @@ from typing import Tuple
 
 from exaslct_src.lib.clean_images import CleanExaslcImages
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_docker_config, run_tasks, set_output_directory, add_options
+from exaslct_src.cli.common import set_docker_config, run_tasks, set_output_directory, add_options, import_build_steps
 from exaslct_src.cli.options \
     import flavor_options, system_options, output_directory, docker_options_login_not_required
 
@@ -24,6 +24,7 @@ def clean_flavor_images(flavor_path: Tuple[str, ...],
     If the stages or the packaged container do not exists locally, the system will build, pull or
     export them before the upload.
     """
+    import_build_steps(flavor_path)
     set_output_directory(output_directory)
     set_docker_config(docker_password, docker_repository_name, docker_username)
     tasks = lambda: [CleanExaslcImages(flavor_path=flavor_path[0])]

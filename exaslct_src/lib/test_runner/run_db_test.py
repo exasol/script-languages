@@ -56,7 +56,7 @@ class RunDBTest(StoppableTask):
 
     def run_task(self):
         self.logger.info("Task %s: Running db tests of flavor %s and release %s in %s"
-                         % (self.task_id, self.flavor_name, self.release_type, self.test_file))
+                         % (self.__repr__(), self.flavor_name, self.release_type, self.test_file))
         test_container = self._client.containers.get(self._test_container_info.container_name)
         log_level = "--loglevel=%s" % self.log_level
         server = "--server '%s:%s'" % (self._database_info.host, self._database_info.db_port)
@@ -78,7 +78,7 @@ class RunDBTest(StoppableTask):
         )
         cmd = 'cd /tests/test/; python -tt %s' % args
         bash_cmd = f"""bash -c "{cmd}" """
-        still_running_logger = StillRunningLogger(self.logger, self.task_id,
+        still_running_logger = StillRunningLogger(self.logger, self.__repr__(),
                                                   "db tests of flavor %s and release %s in %s"
                                                   % (self.flavor_name, self.release_type, self.test_file))
         thread = StillRunningLoggerThread(still_running_logger)
@@ -94,10 +94,10 @@ class RunDBTest(StoppableTask):
                      output.decode("utf-8")
         if log_config().write_log_files_to_console == WriteLogFilesToConsole.all:
             self.logger.info("Task %s: Test results for db tests of flavor %s and release %s in %s\n%s"
-                             % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
+                             % (self.__repr__(), self.flavor_name, self.release_type, self.test_file, log_output))
         if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error and exit_code != 0:
             self.logger.error("Task %s: db tests of flavor %s and release %s in %s failed\nTest results:\n%s"
-                              % (self.task_id, self.flavor_name, self.release_type, self.test_file, log_output))
+                              % (self.__repr__(), self.flavor_name, self.release_type, self.test_file, log_output))
 
         with self._log_target.open("w") as file:
             file.write(log_output)

@@ -20,7 +20,7 @@ def set_build_config(force_rebuild: bool,
                      log_build_context_content: bool,
                      output_directory: str,
                      temporary_base_directory: str,
-                     cache_directory:str):
+                     cache_directory: str):
     luigi.configuration.get_config().set('build_config', 'force_rebuild', str(force_rebuild))
     luigi.configuration.get_config().set('build_config', 'force_rebuild_from', json.dumps(force_rebuild_from))
     luigi.configuration.get_config().set('build_config', 'force_pull', str(force_pull))
@@ -48,6 +48,16 @@ def set_docker_config(docker_password, docker_repository_name, docker_username):
             password = getpass.getpass("Docker Registry Password for User %s:" % docker_username)
             luigi.configuration.get_config().set('docker_config', 'username', docker_username)
             luigi.configuration.get_config().set('docker_config', 'password', password)
+
+
+def import_build_steps(flavor_path:Tuple[str,...]):
+    import importlib.util
+    for path in flavor_path:
+        path_to_build_steps = Path(path).joinpath("flavor_base/build_steps.py")
+        module_name_for_build_steps = path.replace("/","_").replace(".","_")
+        spec = importlib.util.spec_from_file_location(module_name_for_build_steps, path_to_build_steps)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
 
 
 # TODO add watchdog, which uploads the logs after given ammount of time, to get logs before travis kills the job
@@ -89,7 +99,7 @@ def generate_graph_from_task_dependencies(task_dependencies_dot_file: str):
         networkx.nx_pydot.write_dot(g, task_dependencies_dot_file)
 
 
-def collect_dependencies()->Set[TaskDependency]:
+def collect_dependencies() -> Set[TaskDependency]:
     stoppable_task = StoppableTask()
     dependencies = set()
     for root, directories, files in os.walk(stoppable_task.dependencies_dir):

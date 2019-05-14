@@ -27,6 +27,7 @@ from exaslct_src.lib.stoppable_task import StoppableTask
 BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
 
+
 class SpawnTestDockerDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
@@ -79,13 +80,13 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     def try_to_reuse_database(self, db_ip_address: str, network_info: DockerNetworkInfo) -> DatabaseInfo:
         self.logger.info("Task %s: Try to reuse database container %s",
-                         self.task_id, self.db_container_name)
+                         self.__repr__(), self.db_container_name)
         database_info = None
         try:
             database_info = self.get_database_info(db_ip_address, network_info)
         except Exception as e:
             self.logger.warning("Task %s: Tried to reuse database container %s, but got Exeception %s. "
-                                "Fallback to create new database.", self.task_id, self.db_container_name, e)
+                                "Fallback to create new database.", self.__repr__(), self.db_container_name, e)
         return database_info
 
     def write_output(self, database_info: DatabaseInfo):
@@ -109,9 +110,9 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     def _handle_output(self, output_generator, image_info: ImageInfo):
         log_file_path = self.prepate_log_file_path(image_info)
-        with PullLogHandler(log_file_path, self.logger, self.task_id, image_info) as log_hanlder:
+        with PullLogHandler(log_file_path, self.logger, self.__repr__(), image_info) as log_hanlder:
             still_running_logger = StillRunningLogger(
-                self.logger, self.task_id, "pull image %s" % image_info.complete_name)
+                self.logger, self.__repr__(), "pull image %s" % image_info.complete_name)
             for log_line in output_generator:
                 still_running_logger.log()
                 log_hanlder.handle_log_line(log_line)
@@ -130,7 +131,7 @@ class SpawnTestDockerDatabase(StoppableTask):
                                   db_ip_address: str, db_private_network: str,
                                   network_info: DockerNetworkInfo):
         self.logger.info("Task %s: Starting database container %s",
-                         self.task_id, self.db_container_name)
+                         self.__repr__(), self.db_container_name)
         try:
             self._client.containers.get(self.db_container_name).remove(force=True, v=True)
         except:
@@ -177,7 +178,8 @@ class SpawnTestDockerDatabase(StoppableTask):
 
             self._client.images.get(docker_db_image_info.complete_name)
         except docker.errors.ImageNotFound as e:
-            self.logger.info("Pulling docker-db image %s", docker_db_image_info.complete_name)
+            self.logger.info("Task %s: Pulling docker-db image %s",
+                             self.__repr__(), docker_db_image_info.complete_name)
             output_generator = self._low_level_client.pull(docker_db_image_info.name, tag=docker_db_image_info.tag,
                                                            stream=True)
             self._handle_output(output_generator, docker_db_image_info)
@@ -208,14 +210,14 @@ class SpawnTestDockerDatabase(StoppableTask):
     def remove_container(self, db_volume_preperation_container_name):
         try:
             self._client.containers.get(db_volume_preperation_container_name).remove(force=True)
-            self.logger.info("Task %s: Removed container %s", self.task_id, db_volume_preperation_container_name)
+            self.logger.info("Task %s: Removed container %s", self.__repr__(), db_volume_preperation_container_name)
         except docker.errors.NotFound:
             pass
 
     def remove_volume(self, db_volume_name):
         try:
             self._client.volumes.get(db_volume_name).remove(force=True)
-            self.logger.info("Task %s: Removed volume %s", self.task_id, db_volume_name)
+            self.logger.info("Task %s: Removed volume %s", self.__repr__(), db_volume_name)
         except docker.errors.NotFound:
             pass
 

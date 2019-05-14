@@ -3,7 +3,7 @@ from typing import Tuple
 from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options
+from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options, import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, goal_options, \
     docker_options_login_not_required
@@ -44,6 +44,7 @@ def save(save_directory: str,
     This command pushes all stages of the script language container flavor.
     If the stages do not exists locally, the system will build or pull them before the push.
     """
+    import_build_steps(flavor_path)
     set_build_config(force_rebuild,
                      force_rebuild_from,
                      force_pull,

@@ -55,7 +55,7 @@ class UploadFileToBucketFS(StoppableTask):
             self.write_logs(output)
         else:
             self.logger.warning("Task %s: Reusing uploaded target %s instead of file %s",
-                                self.task_id, upload_target, file_to_upload)
+                                self.__repr__(), upload_target, file_to_upload)
             self.write_logs("Reusing")
 
     def should_be_reused(self, database_container: Container, log_file: str,
@@ -71,7 +71,7 @@ class UploadFileToBucketFS(StoppableTask):
 
     def upload_and_wait(self, database_container: Container, file_to_upload: str,
                         log_file: str, pattern_to_wait_for: str, upload_target: str):
-        still_running_logger = StillRunningLogger(self.logger, self.task_id,
+        still_running_logger = StillRunningLogger(self.logger, self.__repr__(),
                                                   "file upload of %s to %s"
                                                   % (file_to_upload, upload_target))
         thread = StillRunningLoggerThread(still_running_logger)
@@ -104,7 +104,7 @@ class UploadFileToBucketFS(StoppableTask):
         pass
 
     def upload_file(self, file_to_upload: str, upload_target: str):
-        self.logger.info("Task %s: upload file %s to %s", self.task_id,
+        self.logger.info("Task %s: upload file %s to %s", self.__repr__(),
                          file_to_upload, upload_target)
         command = self.generate_upload_command(file_to_upload, upload_target)
         exit_code, log_output = self.run_command(command)
@@ -117,9 +117,9 @@ class UploadFileToBucketFS(StoppableTask):
 
     def run_command(self, cmd):
         test_container = self._client.containers.get(self._test_container_info.container_name)
-        self.logger.info("Task %s: start upload command %s", self.task_id, cmd)
+        self.logger.info("Task %s: start upload command %s", self.__repr__(), cmd)
         exit_code, output = test_container.exec_run(cmd=cmd)
-        self.logger.info("Task %s: finish upload command %s", self.task_id, cmd)
+        self.logger.info("Task %s: finish upload command %s", self.__repr__(), cmd)
         log_output = cmd + "\n\n" + output.decode("utf-8")
         return exit_code, log_output
 
@@ -137,7 +137,7 @@ class UploadFileToBucketFS(StoppableTask):
                         log_file: str,
                         start_time: datetime,
                         start_exit_code, start_output):
-        self.logger.info("Task %s: wait for upload of file", self.task_id)
+        self.logger.info("Task %s: wait for upload of file", self.__repr__())
 
         ready = False
         while not ready:

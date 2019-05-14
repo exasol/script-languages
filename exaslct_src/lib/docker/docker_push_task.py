@@ -67,9 +67,9 @@ class DockerPushImageBaseTask(StoppableTask):
 
     def _handle_output(self, output_generator, image_info: ImageInfo):
         log_file_path = self.prepate_log_file_path(image_info)
-        with PushLogHandler(log_file_path, self.logger, self.task_id, image_info) as log_hanlder:
+        with PushLogHandler(log_file_path, self.logger, self.__repr__(), image_info) as log_hanlder:
             still_running_logger = StillRunningLogger(
-                self.logger, self.task_id, "push image %s" % image_info.complete_name)
+                self.logger, self.__repr__(), "push image %s" % image_info.complete_name)
             for log_line in output_generator:
                 still_running_logger.log()
                 log_hanlder.handle_log_line(log_line)
