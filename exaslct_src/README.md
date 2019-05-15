@@ -85,28 +85,111 @@ Especially, if the order of execution of dependencies is important or
 the dependencies depend on some calculation. The dynamic dependencies 
 allow the implementation of a fork-join pattern.
 
-## How are the dependencies between the build stages
+## Build Steps and their Dependencies
 
-We compose the langauge container from several different Dockerfiles.
-Each Dockerfile install dependencies for one specific purpose.
+We compose the language container from several different Dockerfiles.
+Each Dockerfile installs dependencies for one specific purpose.
 We also added a separate Dockerfile flavor-customization for user specific changes.
 The user specifc changes will be merged on filesystem basis 
-with the resulting docker images for the udfclient. 
+with the resulting docker images for the script client. 
 The merge will overwrite user specific changes 
-that could prevent the udfclient from working properly.
+that could prevent the script client from working properly.
+
+The following graph shows the default build steps and their dependencies.
 
 ![](docs/image-dependencies.png)
 
-A dependency between build stages can be either a FROM or 
+A dependency between build steps can be either a FROM or 
 COPY dependencies. A FROM dependency means that 
 the target of the arrow uses the source of the arrow as base image.
 A COPY dependency means that the target of the arrow [copies parts](https://docs.docker.com/develop/develop-images/multistage-build/) of 
 the source of the arrow.
 
-All stages with the string "build_run" in their name, 
+All steps with the string "build_run" in their name, 
 either run the build for the udfclient or 
 at least inherit from a images which had build it. 
 As such these images contain all necassary tools to rebuild 
 the udfclient for debugging purposes.
 
+## How do we define build steps for a flavor
+
+Each flavor has build_steps.py in the <flavor-path>/flavor_base directory 
+which defines the build steps as classes which inherit from DockerFlavorAnalyzeImageTask.
+For example:
+
+```
+class AnalyzeBuildRun(DockerFlavorAnalyzeImageTask):
+
+    def get_build_step(self) -> str:
+    # name of the build step, which defines the directory name 
+    # for the build context of this image and gets used for the 
+    # build boundaries
+        return "build_run"
+
+    def requires_tasks(self):
+    # other build steps the current build step depends on, the keys used here, 
+    # get replaced in your dockerfile with the actual image names of your dependencies
+        return {"build_deps": AnalyzeBuildDeps(flavor_path=self.flavor_path),
+                "language_deps": AnalyzeLanguageDeps(flavor_path=self.flavor_path)}
+
+    def get_additional_build_directories_mapping(self) -> Dict[str, str]:
+    # additional build directories or files which are specific to the build step
+        return {"src": "src"}
+
+    def get_path_in_flavor(self):
+    # to get the path to the build context of the build step within the flavor path
+        return "flavor_base"
+
+    def get_image_changing_build_arguments(self):
+    # optional: build arguments which might change the image content
+        return dict()
+        
+    def get_transparent_build_arguments(self):
+    # optional: build arguments which won't change the image content
+        return dict()
+```
+
+
 ## How does caching work
+
+Exaslct was built with caching in mind, 
+because building a flavor might take very long and 
+many build steps don't change that often. 
+A end user most likely only change the build-step flavor-customization
+which is designed to have a minimal impact on all other build steps.
+
+### Which caches are available
+
+Exaslct provides three types of caching: 
+- docker images maneged by the docker daemon
+- file system cache with saved docker images
+- docker registry as remote cache
+
+All caches can work together, the analyzes phase checks 
+in which cache a images is available. 
+The different type of cache have different precedence 
+which might you override by command line parameters. 
+The precedence is derived by how fast is a image available.
+Docker images maneged by the docker daemon are instantaneously available.
+Save docker images on the filesystem follow next, 
+they need to be loaded by the daemon, 
+but are most likely on a local file system. 
+The last cache which gets checked is a docker registry, 
+because it is most likely not local and needs transport over network.
+
+### Finding the corresponding docker images to the current build context
+
+Exaslct hashes the whole build context of a Image and 
+adds the hash value to the tag of the image. 
+Responsible for hashing the build context is `BuildContextHasher` 
+which uses the `FileDirectoryListHasher`.
+
+The `BuildContextHasher` adds the hashes of all directories, files and 
+their executable rights of the build context, such as the hashes of images
+the current images depends on and the image changing build arguments.
+ 
+Other build arguments which only influence the resources 
+which are used to build the image are not part of the final hash.
+The `BuildContextHasher` hashes the execution rights of files, 
+because these are the only rights which get saved in git and 
+can be important for the images.

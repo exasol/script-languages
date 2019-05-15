@@ -51,6 +51,12 @@ def set_docker_config(docker_password, docker_repository_name, docker_username):
 
 
 def import_build_steps(flavor_path:Tuple[str,...]):
+    # We need to load the build steps of a flavor in the commandline processor,
+    # because the imported classes need to be available in all processes spawned by luigi.
+    # If we use, import the build steps in a Luigi Task they are only available in the worker
+    # which executes this task. The build method with local scheduler of luigi uses fork
+    # to create the scheduler and worker processes, such that the imported classes available
+    # in the scheduler and worker processes
     import importlib.util
     for path in flavor_path:
         path_to_build_steps = Path(path).joinpath("flavor_base/build_steps.py")

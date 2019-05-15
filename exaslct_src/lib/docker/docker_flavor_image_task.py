@@ -31,11 +31,16 @@ class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask):
                 ))
 
     def get_build_step(self) -> str:
+        """
+        Called by the constructor to get the name of build step.
+        Sub classes need to implement this method.
+        :return: dictionaries with destination path as keys and source paths in values
+        """
         pass
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         """
-        Called by the constructor to get additional build directories which are specific to the build step.
+        Called by the constructor to get additional build directories or files which are specific to the build step.
         This mappings gets merged with the default flavor build directories mapping.
         The keys are the relative paths to the destination in build context and
         the values are the paths to the source directories or files.
@@ -45,6 +50,11 @@ class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask):
         return {}
 
     def get_path_in_flavor(self):
+        """
+        Called by the constructor to get the path to the build context of the build step within the flavor path.
+        Sub classes need to implement this method.
+        :return: dictionaries with destination path as keys and source paths in values
+        """
         return None
 
     def get_image_name(self) -> str:

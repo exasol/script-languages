@@ -6,7 +6,7 @@ from typing import Dict
 from exaslct_src.lib.utils.file_directory_list_hasher import FileDirectoryListHasher
 from exaslct_src.lib.data.image_info import ImageInfo, ImageDescription
 
-
+# TODO add hash config to the hash
 class BuildContextHasher:
     logger = logging.getLogger('luigi-interface')
 
