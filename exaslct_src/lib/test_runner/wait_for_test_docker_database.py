@@ -136,6 +136,7 @@ class WaitForTestDockerDatabase(StoppableTask):
                     ========== IsDatabaseReadyThread output db connection: ============
                     {is_database_ready_thread.output_bucketfs_connection}
                     """)
+                time_delta=time_delta+timedelta(minutes=2)
         return is_database_ready
 
     def save_db_log_files_as_gzip_tar(self, path: pathlib.Path, database_container: Container):

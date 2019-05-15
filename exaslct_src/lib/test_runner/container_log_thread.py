@@ -43,5 +43,6 @@ class ContainerLogThread(Thread):
                     self.error_message = log_line
                     self.finish = True
                 self.previous_timestamp = self.current_timestamp
+                self.complete_log = log_handler.get_complete_log().copy()
                 time.sleep(1)
-            self.complete_log = log_handler.get_complete_log()
+
