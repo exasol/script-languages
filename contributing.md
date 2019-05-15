@@ -11,22 +11,23 @@ Furthermore, they contain some information which might help you during developme
 
 You can contribute to this project at several levels:
 - Probably, the easiest way to contribute are bug reports or feature requests in the Github Issues
-- If, you are more experienced, we happy about any pull requests for bugs, improvements or new flavors. 
+- If, you are more experienced, we are happy about any pull request for bugs, improvements or new flavors. 
     - **However, be aware that the script-language container are tightly integrated into the Exasol Database, 
     we need to check any contribution thoroughly and might reject pull requests which may break this integration. 
     So, please open first a Github Issue and discuss the change with us.**
         - The implementation of the script client is especially such a area, 
-        which might break alot, if you are not careful
-    - **And please respect, that we don't except changes to the build step flavor-customization of any flavor, 
-    because this step should be used from users for temporary additions to the flavor. 
-    If you would like to add new dependencies to a falvor, add them to corresponding build step:**
-        - udfclient-deps: basic dependencies which are required for the script client, 
+        which might break many things, if you are not careful
+    - **And please respect, that we don't except changes that add packages to the build step 
+    flavor-customization of any flavor, because this step should be used from users for 
+    temporary additions to the flavor. If you would like to add new dependencies to a flavor, 
+    please add them to the corresponding build step:**
+        - `udfclient-deps:` dependencies which are required for the script client to run, 
         which need to be in the final container
-        - language-deps: basic dependencies for the script language of the flavor
-        - build-deps: any dependencies which are required to build the script client,
+        - `language-deps:` dependencies for the script language of the flavor
+        - `build-deps:` any dependencies which are required to build the script client,
         but which are not needed in the final container
-        - flavor-base-deps(_2): dependencies which are flavor specific
-        - base-test-deps: basic dependencies which are only needed for development, debugging and testing
+        - `flavor-base-deps(_2):` dependencies which are flavor specific
+        - `base-test-deps:` dependencies which are only needed for development, debugging and testing
     
         If you are not sure, where to add the dependencies, don't hesitate to ask.
         
@@ -51,12 +52,12 @@ you need to configure it in a specific way. Our build takes a while,
 because we build quite extensive containers in some flavor. 
 Furthermore, our integrations tests take their time, too. 
 Therefore, we were forced to use caching between the build stages of Travis. 
-Unfortunatly, the existing Travis Cache doesn't handle caching of artifacts 
+Unfortunately, the existing Travis Cache doesn't handle caching of artifacts 
 from multiple jobs in a stage, such that we had to use a external cloud service for caching.
 
 Because our build of the flavor already consists of a sequence of docker images, 
 we decided to use docker registries as build cache. You can use either docker hub or 
-a own docker regirstry as cache. We encode the information about the docker registry
+a own docker registry as cache. We encode the information about the docker registry
 as encrypted environment variables in the .travis.yml. If you want to use Travis in 
 your fork of this repository you have to set your own encrypted environment variables.
 Please, revert the environment variables before a pull request to the original ones, 
