@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 ENV DEBIAN_FRONTEND=noninteractive
 
-ENV ARCHIVE_UBUNTU_PREFIX=de.
+ENV ARCHIVE_UBUNTU_PREFIX=""
 RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNTU_PREFIX\2/" /etc/apt/sources.list
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
@@ -24,6 +24,6 @@ RUN apt-get -y update && \
     apt-get -y autoremove && \
     ldconfig
 
-RUN touch env && \
-    echo "export PROTOBUF_BIN=/usr/bin/protoc" >> env && \
-    echo "export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64" >> env
+RUN touch /env && \
+    echo "export PROTOBUF_BIN=/usr/bin/protoc" >> /env && \
+    echo "export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64" >> /env
