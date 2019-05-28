@@ -11,4 +11,4 @@ RUN apt-get -y update && \
     apt-get -y autoremove && \
     ldconfig
 
-RUN /scripts/install_packages_batch.sh "PYTHON3-PIP" "pip install --ignore-installed <<list>>" "<<package>>" " " /packages/flavor_base_deps/pip3_packages
+RUN /scripts/install_packages_batch.sh "PYTHON3-PIP" "pip install --ignore-installed <<list>>" "'<<package>>'" " " /packages/flavor_base_deps/pip3_packages
