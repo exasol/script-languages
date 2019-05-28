@@ -2,6 +2,7 @@ import gzip
 import logging
 import pathlib
 import shutil
+import textwrap
 from datetime import datetime, timedelta
 
 import luigi
@@ -22,7 +23,8 @@ class WaitForTestDockerDatabase(StoppableTask):
     environment_name = luigi.Parameter()
     test_container_info_dict = luigi.DictParameter(significant=False)
     database_info_dict = luigi.DictParameter(significant=False)
-    db_startup_timeout_in_seconds = luigi.IntParameter(5 * 60, significant=False)
+    db_startup_timeout_in_seconds = luigi.IntParameter(10*60, significant=False)
+    attempt = luigi.IntParameter(1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,10 +40,11 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def _prepare_outputs(self):
         self._database_ready_target = luigi.LocalTarget(
-            "%s/info/environment/%s/database/%s/ready"
+            "%s/info/environment/%s/database/%s/%s/ready"
             % (build_config().output_directory,
                self.environment_name,
-               self._database_info.container_info.container_name))
+               self._database_info.container_info.container_name,
+               self.attempt))
         if self._database_ready_target.exists():
             self._database_ready_target.remove()
 
@@ -62,10 +65,7 @@ class WaitForTestDockerDatabase(StoppableTask):
             self.wait_for_database_startup(database_log_path, test_container, db_container)
         after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
         self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
-        if not is_database_ready:
-            raise Exception("Startup of database in container %s failed" % db_container.name)
-        else:
-            self.write_output()
+        self.write_output(is_database_ready)
 
     def wait_for_database_startup(self, database_log_path,
                                   test_container: Container,
@@ -75,12 +75,6 @@ class WaitForTestDockerDatabase(StoppableTask):
         is_database_ready = \
             self.wait_for_threads(container_log_thread, is_database_ready_thread)
         self.join_threads(container_log_thread, is_database_ready_thread)
-        if not is_database_ready:
-            if log_config().write_log_files_to_console == WriteLogFilesToConsole.only_error:
-                self.logger.error("Task %s: Database startup failed %s failed\nStartup Log:\n%s",
-                                  self.task_id,
-                                  db_container.name,
-                                  "\n".join(container_log_thread.complete_log))
         return is_database_ready
 
     def start_wait_threads(self, database_log_path, db_container, test_container):
@@ -92,8 +86,7 @@ class WaitForTestDockerDatabase(StoppableTask):
                                                   "Database Startup %s" % db_container.name)
         container_log_thread.start()
         is_database_ready_thread = IsDatabaseReadyThread(self.__repr__(),
-                                                         self._database_info, test_container,
-                                                         self.db_startup_timeout_in_seconds)
+                                                         self._database_info, test_container)
         is_database_ready_thread.start()
         return container_log_thread, is_database_ready_thread
 
@@ -114,30 +107,43 @@ class WaitForTestDockerDatabase(StoppableTask):
     def wait_for_threads(self, container_log_thread: ContainerLogThread,
                          is_database_ready_thread: IsDatabaseReadyThread):
         is_database_ready = False
+        reason = None
         start_time = datetime.now()
-        time_delta = timedelta(minutes=5)
         while (True):
             if container_log_thread.error_message != None:
                 is_database_ready = False
+                reason = "error message in container log"
                 break
             if is_database_ready_thread.finish:
                 is_database_ready = True
                 break
-
-            if datetime.now() - start_time > time_delta:
-                self.logger.warning(
-                    "Task %s: Database startup didn't finished after %s, here some debug information %s",
-                    self.__repr__(), datetime.now() - start_time > time_delta,
-                    f"""
-                    ========== Container-Log: ============ 
-                    {container_log_thread.complete_log}
-                    ========== IsDatabaseReadyThread output db connection: ============
-                    {is_database_ready_thread.output_db_connection}
-                    ========== IsDatabaseReadyThread output db connection: ============
-                    {is_database_ready_thread.output_bucketfs_connection}
-                    """)
-                time_delta=time_delta+timedelta(minutes=2)
+            if self.timeout_occured(start_time):
+                reason = f"timeout after after {self.db_startup_timeout_in_seconds} seconds"
+                is_database_ready = False
+                break
+        if not is_database_ready:
+            self.log_database_not_ready(container_log_thread, is_database_ready_thread, reason)
+        container_log_thread.stop()
+        is_database_ready_thread.stop()
         return is_database_ready
+
+    def log_database_not_ready(self, container_log_thread, is_database_ready_thread, reason):
+        container_log = '\n'.join(container_log_thread.complete_log)
+        log_information = f"""
+========== IsDatabaseReadyThread output db connection: ============
+{is_database_ready_thread.output_db_connection}
+========== IsDatabaseReadyThread output buckerfs connection: ============
+{is_database_ready_thread.output_bucketfs_connection}
+========== Container-Log: ============ 
+{container_log}
+"""
+        self.logger.warning(
+            'Task %s: Database startup failed for following reason "%s", here some debug information \n%s',
+            self.__repr__(), reason, log_information)
+
+    def timeout_occured(self, start_time):
+        timeout = timedelta(seconds=self.db_startup_timeout_in_seconds)
+        return datetime.now() - start_time > timeout
 
     def save_db_log_files_as_gzip_tar(self, path: pathlib.Path, database_container: Container):
         stream, stat = database_container.get_archive("/exa/logs/db")
@@ -145,6 +151,6 @@ class WaitForTestDockerDatabase(StoppableTask):
             for chunk in stream:
                 file.write(chunk)
 
-    def write_output(self):
+    def write_output(self, is_database_ready: bool):
         with self.output().open("w") as file:
-            file.write("READY")
+            file.write(str(is_database_ready))

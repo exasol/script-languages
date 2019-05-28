@@ -10,12 +10,11 @@ from exaslct_src.lib.data.database_info import DatabaseInfo
 class IsDatabaseReadyThread(Thread):
     logger = logging.getLogger('luigi-interface')
 
-    def __init__(self, task_id, database_info: DatabaseInfo, test_container: Container, timeout_in_seconds: int):
+    def __init__(self, task_id, database_info: DatabaseInfo, test_container: Container):
         super().__init__()
         self.task_id = task_id
         self._database_info = database_info
         self.test_container = test_container
-        self.timeout_in_seconds = timeout_in_seconds
         self.finish = False
         self.is_ready = False
         self.output_db_connection = None
@@ -26,11 +25,9 @@ class IsDatabaseReadyThread(Thread):
         self.finish = True
 
     def run(self):
-        start_time = time.time()
-        timeout_over = lambda current_time: current_time - start_time > self.timeout_in_seconds
         db_connection_command = self.create_db_connection_command()
         bucket_fs_connection_command = self.create_bucketfs_connection_command()
-        while not timeout_over(time.time()) and not self.finish:
+        while not self.finish:
             (exit_code_db_connection, self.output_db_connection) = \
                 self.test_container.exec_run(cmd=db_connection_command)
             (exit_code_bucketfs_connection, self.output_bucketfs_connection) = \
@@ -38,7 +35,7 @@ class IsDatabaseReadyThread(Thread):
             if exit_code_db_connection == 0 and exit_code_bucketfs_connection == 0:
                 self.finish = True
                 self.is_ready = True
-            time.sleep(1)
+            time.sleep(10)
 
     def create_db_connection_command(self):
         username = "sys"

@@ -28,8 +28,9 @@ class SpawnTestDockerEnvironment(StoppableTask):
     environment_name = luigi.Parameter()
     reuse_database_setup = luigi.BoolParameter(False, significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
-    database_port_forward = luigi.OptionalParameter(None,significant=False)
-    bucketfs_port_forward = luigi.OptionalParameter(None,significant=False)
+    database_port_forward = luigi.OptionalParameter(None, significant=False)
+    bucketfs_port_forward = luigi.OptionalParameter(None, significant=False)
+    max_start_attempts = luigi.IntParameter(2, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,29 +54,59 @@ class SpawnTestDockerEnvironment(StoppableTask):
         }
 
     def run_task(self):
-        docker_network_output = yield PrepareDockerNetworkForTestEnvironment(
-            environment_name=self.environment_name,
-            test_container_name=self.test_container_name,
-            db_container_name=self.db_container_name,
-            network_name=self.network_name,
 
-            reuse=self.reuse_database,
-        )
-        network_info, network_info_dict = \
-            self.get_network_container_info(docker_network_output)
-        database_info, database_info_dict, \
-        test_container_info, test_container_info_dict = \
-            yield from self.spawn_database_and_test_container(network_info_dict)
-        yield WaitForTestDockerDatabase(environment_name=self.environment_name,
-                                        test_container_info_dict=test_container_info_dict,
-                                        database_info_dict=database_info_dict)
+        test_environment_info = yield from self.attempt_database_start()
+
+        test_environment_info_dict = test_environment_info.to_dict()
+        yield from self.setup_test_database(test_environment_info_dict)
+        self.write_output(test_environment_info)
+
+    def attempt_database_start(self):
+        is_database_ready = False
+        attempt = 0
+        while not is_database_ready and attempt < self.max_start_attempts:
+            database_info, is_database_ready, test_container_info = \
+                yield from self.start_database(attempt)
+            attempt += 1
+        if not is_database_ready and not attempt < self.max_start_attempts:
+            raise Exception(f"Maximum attempts {attempt} to start the database reached.")
         test_environment_info = \
             EnvironmentInfo(name=self.environment_name,
                             database_info=database_info,
                             test_container_info=test_container_info)
-        test_environment_info_dict = test_environment_info.to_dict()
-        yield from self.setup_test_database(test_environment_info_dict)
-        self.write_output(test_environment_info)
+        return test_environment_info
+
+    def start_database(self, attempt):
+        network_info_dict = yield from self.create_network(attempt)
+        database_info, database_info_dict, \
+        test_container_info, test_container_info_dict = \
+            yield from self.spawn_database_and_test_container(network_info_dict, attempt)
+        is_database_ready = yield from self.wait_for_database(database_info_dict, test_container_info_dict, attempt)
+        return database_info, is_database_ready, test_container_info
+
+    def create_network(self, attempt):
+        docker_network_output = \
+            yield PrepareDockerNetworkForTestEnvironment(
+                environment_name=self.environment_name,
+                test_container_name=self.test_container_name,
+                db_container_name=self.db_container_name,
+                network_name=self.network_name,
+                reuse=self.reuse_database,
+                attempt=attempt
+            )
+        network_info, network_info_dict = \
+            self.get_network_info(docker_network_output)
+        return network_info_dict
+
+    def wait_for_database(self, database_info_dict, test_container_info_dict, attempt):
+        database_ready_target = \
+            yield WaitForTestDockerDatabase(environment_name=self.environment_name,
+                                            test_container_info_dict=test_container_info_dict,
+                                            database_info_dict=database_info_dict,
+                                            attempt=attempt)
+        with database_ready_target.open("r") as file:
+            is_database_ready = file.read() == str(True)
+        return is_database_ready
 
     def setup_test_database(self, test_environment_info_dict):
         # TODO check if database is setup
@@ -92,21 +123,23 @@ class SpawnTestDockerEnvironment(StoppableTask):
                    reuse_data=self.reuse_database_setup
                )]
 
-    def spawn_database_and_test_container(self, network_info_dict):
+    def spawn_database_and_test_container(self, network_info_dict, attempt):
         database_and_test_container_output = \
             yield {
                 "test_container": SpawnTestContainer(
                     environment_name=self.environment_name,
                     test_container_name=self.test_container_name,
                     network_info_dict=network_info_dict,
-                    ip_address_index_in_subnet=1),
+                    ip_address_index_in_subnet=1,
+                    attempt=attempt),
                 "database": SpawnTestDockerDatabase(
                     environment_name=self.environment_name,
                     db_container_name=self.db_container_name,
                     network_info_dict=network_info_dict,
                     ip_address_index_in_subnet=0,
                     database_port_forward=self.database_port_forward,
-                    bucketfs_port_forward=self.bucketfs_port_forward
+                    bucketfs_port_forward=self.bucketfs_port_forward,
+                    attempt=attempt
                 )
             }
         test_container_info, test_container_info_dict = \
@@ -116,7 +149,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
         return database_info, database_info_dict, \
                test_container_info, test_container_info_dict
 
-    def get_network_container_info(self, network_info_target):
+    def get_network_info(self, network_info_target):
         network_info = \
             DependencyDockerNetworkInfoCollector().get_from_sinlge_input(network_info_target)
         network_info_dict = network_info.to_dict()

@@ -22,6 +22,7 @@ class SpawnTestContainer(StoppableTask):
     test_container_name = luigi.Parameter()
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
+    attempt = luigi.IntParameter(1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,10 +37,11 @@ class SpawnTestContainer(StoppableTask):
 
     def _prepare_outputs(self):
         self._test_container_info_target = luigi.LocalTarget(
-            "%s/info/environment/%s/test-container/%s/container_info"
+            "%s/info/environment/%s/test-container/%s/%s/container_info"
             % (build_config().output_directory,
                self.environment_name,
-               self.test_container_name))
+               self.test_container_name,
+               self.attempt))
         if self._test_container_info_target.exists():
             self._test_container_info_target.remove()
 

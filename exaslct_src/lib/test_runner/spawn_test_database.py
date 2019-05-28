@@ -38,6 +38,7 @@ class SpawnTestDockerDatabase(StoppableTask):
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
     database_port_forward = luigi.OptionalParameter(None, significant=False)
     bucketfs_port_forward = luigi.OptionalParameter(None, significant=False)
+    attempt = luigi.IntParameter(1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,10 +57,11 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     def _prepare_outputs(self):
         self._database_info_target = luigi.LocalTarget(
-            "%s/info/environment/%s/database/%s/database_info"
+            "%s/info/environment/%s/database/%s/%s/database_info"
             % (build_config().output_directory,
                self.environment_name,
-               self.db_container_name))
+               self.db_container_name,
+               self.attempt))
         if self._database_info_target.exists():
             self._database_info_target.remove()
 

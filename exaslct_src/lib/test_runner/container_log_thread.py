@@ -19,8 +19,8 @@ class ContainerLogThread(Thread):
         self.log_file = log_file
         self.container = container
         self.finish = False
-        self.previous_timestamp = math.floor(time.time())
-        self.current_timestamp = self.previous_timestamp
+        self.previous_timestamp = None
+        self.current_timestamp = None
         self.error_message = None
 
     def stop(self):

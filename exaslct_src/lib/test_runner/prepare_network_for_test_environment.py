@@ -18,21 +18,21 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     test_container_name = luigi.Parameter(significant=False)
     db_container_name = luigi.Parameter(significant=False)
     reuse = luigi.BoolParameter(False, significant=False)
+    attempt = luigi.IntParameter(-1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-
         self._client = docker_config().get_client()
         self._low_level_client = docker_config().get_low_level_client()
         self._prepare_outputs()
 
     def _prepare_outputs(self):
         self._network_info_target = luigi.LocalTarget(
-            "%s/info/environment/%s/network/%s/network_info"
+            "%s/info/environment/%s/network/%s/%s/network_info"
             % (build_config().output_directory,
                self.environment_name,
-               self.network_name))
+               self.network_name,
+               self.attempt))
         if self._network_info_target.exists():
             self._network_info_target.remove()
 
