@@ -20,7 +20,7 @@ from exaslct_src.lib.data.dependency_collector.dependency_database_info_collecto
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker.pull_log_handler import PullLogHandler
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.lib.stoppable_task import StoppableTask
 
@@ -43,8 +43,8 @@ class SpawnTestDockerDatabase(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._client = docker_config().get_client()
-        self._low_level_client = docker_config().get_low_level_client()
+        self._client = docker_client_config().get_client()
+        self._low_level_client = docker_client_config().get_low_level_client()
         if self.ip_address_index_in_subnet < 0:
             raise Exception(
                 "ip_address_index_in_subnet needs to be greater than 0 got %s"
@@ -114,7 +114,7 @@ class SpawnTestDockerDatabase(StoppableTask):
         log_file_path = self.prepate_log_file_path(image_info)
         with PullLogHandler(log_file_path, self.logger, self.__repr__(), image_info) as log_hanlder:
             still_running_logger = StillRunningLogger(
-                self.logger, self.__repr__(), "pull image %s" % image_info.complete_name)
+                self.logger, self.__repr__(), "pull image %s" % image_info.get_source_complete_name())
             for log_line in output_generator:
                 still_running_logger.log()
                 log_hanlder.handle_log_line(log_line)
@@ -122,7 +122,7 @@ class SpawnTestDockerDatabase(StoppableTask):
     def prepate_log_file_path(self, image_info: ImageInfo):
         log_file_path = pathlib.Path("%s/logs/docker-pull/%s/%s/%s"
                                      % (build_config().output_directory,
-                                        image_info.name, image_info.tag,
+                                        image_info.source_repository_name, image_info.source_tag,
                                         datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
         log_file_path = luigi.LocalTarget(str(log_file_path))
         if log_file_path.exists():
@@ -147,7 +147,7 @@ class SpawnTestDockerDatabase(StoppableTask):
             ports[f"{BUCKETFS_PORT}/tcp"] = ('127.0.0.1', int(self.bucketfs_port_forward))
         db_container = \
             self._client.containers.create(
-                image="%s" % (docker_db_image_info.complete_name),
+                image="%s" % (docker_db_image_info.get_source_complete_name()),
                 name=self.db_container_name,
                 detach=True,
                 privileged=True,
@@ -170,19 +170,21 @@ class SpawnTestDockerDatabase(StoppableTask):
     def pull_docker_db_images_if_necassary(self):
         image_name = "exasol/docker-db"
         image_tag = "6.0.12-d1"
-        docker_db_image_info = ImageInfo(name=image_name,
-                                         tag=image_tag,
-                                         complete_name="%s:%s" % (image_name, image_tag),
-                                         complete_tag=image_tag,
-                                         hash="",
-                                         image_description=None)
+        docker_db_image_info = ImageInfo(
+            target_repository_name=image_name,
+            source_repository_name=image_name,
+            source_tag=image_tag,
+            target_tag=image_tag,
+            hash="",
+            image_description=None)
         try:
 
-            self._client.images.get(docker_db_image_info.complete_name)
+            self._client.images.get(docker_db_image_info.get_source_complete_name())
         except docker.errors.ImageNotFound as e:
             self.logger.info("Task %s: Pulling docker-db image %s",
-                             self.__repr__(), docker_db_image_info.complete_name)
-            output_generator = self._low_level_client.pull(docker_db_image_info.name, tag=docker_db_image_info.tag,
+                             self.__repr__(), docker_db_image_info.get_source_complete_name())
+            output_generator = self._low_level_client.pull(docker_db_image_info.source_repository_name,
+                                                           tag=docker_db_image_info.source_tag,
                                                            stream=True)
             self._handle_output(output_generator, docker_db_image_info)
         return docker_db_image_info
@@ -254,8 +256,8 @@ class SpawnTestDockerDatabase(StoppableTask):
             template_str = file.read()
         template = Template(template_str)
 
-        db_version = "-".join(docker_db_image_info.tag.split("-")[0:-1])
-        image_version = docker_db_image_info.tag
+        db_version = "-".join(docker_db_image_info.source_tag.split("-")[0:-1])
+        image_version = docker_db_image_info.source_tag
         rendered_template = template.render(private_network=db_private_network,
                                             db_version=db_version,
                                             image_version=image_version)

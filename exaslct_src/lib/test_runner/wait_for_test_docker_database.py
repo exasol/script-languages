@@ -11,7 +11,7 @@ from docker.models.containers import Container
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
 from exaslct_src.lib.stoppable_task import StoppableTask
@@ -28,8 +28,8 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._client = docker_config().get_client()
-        self._low_level_client = docker_config().get_low_level_client()
+        self._client = docker_client_config().get_client()
+        self._low_level_client = docker_client_config().get_low_level_client()
         self._test_container_info = ContainerInfo.from_dict(self.test_container_info_dict)
         self._database_info = DatabaseInfo.from_dict(self.database_info_dict)
         self._prepare_outputs()

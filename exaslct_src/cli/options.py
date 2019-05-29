@@ -11,40 +11,68 @@ flavor_options = [
                       "The system will run the command for each flavor.")
 ]
 
+docker_repository_options = [
+    click.option('--source-docker-repository-name', type=str,
+                 default="exasol/script-language-container",
+                 show_default=True,
+                 help="Name of the docker repository for pulling cached stages. "
+                      "The repository name may contain the URL of the docker registry, "
+                      "the username and the actual repository name. "
+                      "A common structure is <docker-registry-url>/<username>/<repository-name>"),
+    click.option('--source-docker-tag-prefix', type=str,
+                 default="",
+                 show_default=True,
+                 help="Prefix for the tags which are used for pulling of cached stages"),
+    click.option('--source-docker-username', type=str,
+                 help="Username for the docker registry from where the system pulls cached stages.",
+                 required=False),
+    click.option('--source-docker-password', type=str,
+                 help="Password for the docker registry from where the system pulls cached stages. "
+                      "Without password option the system prompts for the password."),
+    click.option('--target-docker-repository-name', type=str,
+                 default="exasol/script-language-container",
+                 show_default=True,
+                 help="Name of the docker repository for naming and pushing images of stages. "
+                      "The repository name may contain the URL of the docker registry, "
+                      "the username and the actual repository name. "
+                      "A common structure is <docker-registry-url>/<username>/<repository-name>"),
+    click.option('--target-docker-tag-prefix', type=str,
+                 default="",
+                 show_default=True,
+                 help="Prefix for the tags which are used for naming and pushing of stages"),
+    click.option('--target-docker-username', type=str,
+                 help="Username for the docker registry where the system pushes images of stages.",
+                 required=False),
+    click.option('--target-docker-password', type=str,
+                 help="Password for the docker registry where the system pushes images of stages. "
+                      "Without password option the system prompts for the password."),
+]
 
-def docker_options(login_required: bool):
-    return [
-        click.option('--docker-repository-name', type=str,
-                     default="exasol/script-language-container",
-                     show_default=True,
-                     help="Name of the docker repository for naming, pushing or fetching cached stages. "
-                          "The repository name may contain URL of the docker registory, "
-                          "the username and the actual repository name. "
-                          "A common strcuture is <docker-registry-url>/<username>/<repository-name>"),
-        click.option('--docker-username', type=str,
-                     help="Username for the docker registry from where the system pulls cached stages.",
-                     required=False),
-        click.option('--docker-password', type=str,
-                     help="Password for the docker registry from where the system pulls cached stages. "
-                          "Without password option the system prompts for the password."),
-    ]
-
-
-docker_options_login_not_required = docker_options(login_required=False)
-
-docker_options_login_required = docker_options(login_required=True)
+simple_docker_repository_options = [
+    click.option('--docker-repository-name', type=str,
+                 default="exasol/script-language-container",
+                 show_default=True,
+                 help="Name of the docker repository for naming images. "
+                      "The repository name may contain the URL of the docker registry, "
+                      "the username and the actual repository name. "
+                      "A common structure is <docker-registry-url>/<username>/<repository-name>"),
+    click.option('--docker-tag-prefix', type=str,
+                 default="",
+                 show_default=True,
+                 help="Prefix for the tags of the images"),
+]
 
 output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),
                                 default=".build_output",
                                 show_default=True,
                                 help="Output directory where the system stores all output and log files.")
+
 tempory_base_directory = click.option('--temporary-base-directory',
                                       type=click.Path(file_okay=False,
                                                       dir_okay=True),
                                       default="/tmp",
                                       show_default=True,
                                       help="Directory where the system creates temporary directories.")
-
 
 goal_options = [
     click.option('--goal', multiple=True, type=str,
@@ -56,7 +84,7 @@ goal_options = [
 
 build_options = [
     click.option('--force-rebuild/--no-force-rebuild', default=False,
-                 help="Forces the system to complete rebuild all stages down the stages "
+                 help="Forces the system to complete rebuild all stages down to the stages "
                       "specified with the options --force-rebuild-from."),
     click.option('--force-rebuild-from', multiple=True, type=str,
                  help="If the option --force-rebuild is given, "
@@ -71,7 +99,7 @@ build_options = [
     click.option('--log-build-context-content/--no-log-build-context-content',
                  default=False,
                  help="For Debugging: Logs the files and directories in the build context of a stage"),
-    click.option('--cache-directory', default=None,  type=click.Path(file_okay=False, dir_okay=True, exists=False),
+    click.option('--cache-directory', default=None, type=click.Path(file_okay=False, dir_okay=True, exists=False),
                  help="Directory from where saved docker images can be loaded"),
 ]
 

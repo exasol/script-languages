@@ -4,9 +4,9 @@ from click._unicodefun import click
 
 from exaslct_src.lib.docker_push import DockerPush
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options, import_build_steps
+from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, import_build_steps
 from exaslct_src.cli.options \
-    import build_options, flavor_options, system_options, docker_options_login_required, goal_options
+    import build_options, flavor_options, system_options, docker_repository_options, goal_options
 
 
 @cli.command()
@@ -17,7 +17,7 @@ from exaslct_src.cli.options \
 @click.option('--push-all/--no-push-all', default=False,
               help="Forces the system to push all images of build-steps that are specified by the goals")
 @add_options(build_options)
-@add_options(docker_options_login_required)
+@add_options(docker_repository_options)
 @add_options(system_options)
 def push(flavor_path: Tuple[str, ...],
          goal: Tuple[str, ...],
@@ -30,9 +30,14 @@ def push(flavor_path: Tuple[str, ...],
          temporary_base_directory: str,
          log_build_context_content: bool,
          cache_directory: str,
-         docker_repository_name: str,
-         docker_username: str,
-         docker_password: str,
+         source_docker_repository_name: str,
+         source_docker_tag_prefix: str,
+         source_docker_username: str,
+         source_docker_password: str,
+         target_docker_repository_name: str,
+         target_docker_tag_prefix: str,
+         target_docker_username: str,
+         target_docker_password: str,
          workers: int,
          task_dependencies_dot_file: str):
     """
@@ -47,7 +52,10 @@ def push(flavor_path: Tuple[str, ...],
                      output_directory,
                      temporary_base_directory,
                      cache_directory)
-    set_docker_config(docker_password, docker_repository_name, docker_username)
+    set_docker_repository_config(source_docker_password, source_docker_repository_name, source_docker_username,
+                                 source_docker_tag_prefix, "source")
+    set_docker_repository_config(target_docker_password, target_docker_repository_name, target_docker_username,
+                                 target_docker_tag_prefix, "target")
     tasks = lambda: [DockerPush(force_push=force_push,
                                 push_all=push_all,
                                 goals=list(goal),

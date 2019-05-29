@@ -10,7 +10,6 @@ from exaslct_src.lib.flavor_task import FlavorTask
 class DockerFlavorBuildBase(FlavorTask, DockerBuildBase):
 
     # TODO order pull for images which share dependencies
-    # TODO add retag option, pull from one repository-name but build with another one
 
     def get_goal_class_map(self, params) -> Dict[str, DockerAnalyzeImageTask]:
         flavor_path = params["flavor_path"]

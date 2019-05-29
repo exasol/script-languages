@@ -42,7 +42,7 @@ class BuildContextHasher:
         final_hash = hasher.digest()
         return final_hash
 
-    def add_dependencies(self, hasher, image_info_of_dependencies):
+    def add_dependencies(self, hasher, image_info_of_dependencies: Dict[str, ImageInfo]):
         hashes_of_dependencies = \
             [(key, image_info.hash) for key, image_info in image_info_of_dependencies.items()]
         hashes_to_hash = sorted(hashes_of_dependencies, key=lambda t: t[0])

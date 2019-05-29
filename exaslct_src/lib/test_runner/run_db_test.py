@@ -6,7 +6,7 @@ import luigi
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.data.info import FrozenDictToDict
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.lib.still_running_logger import StillRunningLogger, StillRunningLoggerThread
 from exaslct_src.lib.stoppable_task import StoppableTask
@@ -34,7 +34,7 @@ class RunDBTest(StoppableTask):
         test_evironment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = test_evironment_info.test_container_info
         self._database_info = test_evironment_info.database_info
-        self._client = docker_config().get_client()
+        self._client = docker_client_config().get_client()
         self._prepare_outputs()
 
     def __del__(self):

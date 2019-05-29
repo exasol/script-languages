@@ -5,7 +5,7 @@ import luigi
 
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config, source_docker_repository_config, target_docker_repository_config
 from exaslct_src.lib.flavor import flavor
 
 
@@ -57,8 +57,23 @@ class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask):
         """
         return None
 
-    def get_image_name(self) -> str:
-        return docker_config().repository_name
+    def get_source_repository_name(self) -> str:
+        return source_docker_repository_config().repository_name
+
+    def get_target_repository_name(self) -> str:
+        return target_docker_repository_config().repository_name
+
+    def get_source_image_tag(self):
+        if source_docker_repository_config().tag_prefix != "":
+            return f"{source_docker_repository_config().tag_prefix}_{self.get_image_tag()}"
+        else:
+            return f"{self.get_image_tag()}"
+
+    def get_target_image_tag(self):
+        if target_docker_repository_config().tag_prefix != "":
+            return f"{target_docker_repository_config().tag_prefix}_{self.get_image_tag()}"
+        else:
+            return f"{self.get_image_tag()}"
 
     def get_image_tag(self) -> str:
         flavor_name = flavor.get_name_from_path(self.flavor_path)

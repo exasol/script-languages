@@ -12,6 +12,7 @@ from exaslct_src.lib.docker.docker_create_image_task import DockerCreateImageTas
 from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
 from exaslct_src.lib.stoppable_task import StoppableTask
 
+
 # TODO abstract flavor_path away
 class DockerBuildBase(StoppableTask):
     def __init__(self, *args, **kwargs):
@@ -27,7 +28,7 @@ class DockerBuildBase(StoppableTask):
                 for flavor_path in self.actual_flavor_paths}
 
     def generate_tasks_of_goals_for_flavor(self, flavor_path) -> Dict[set, DockerAnalyzeImageTask]:
-        self.goal_class_map = self.get_goal_class_map({"flavor_path":flavor_path})
+        self.goal_class_map = self.get_goal_class_map({"flavor_path": flavor_path})
         self.available_goals = set(self.goal_class_map.keys())
         self.check_if_build_steps_to_rebuild_are_valid_goals()
         goals = self.get_default_goals()
@@ -42,11 +43,11 @@ class DockerBuildBase(StoppableTask):
                             f"following goals are avaialable {self.available_goals}")
 
     @abstractmethod
-    def get_default_goals(self)->Set[str]:
+    def get_default_goals(self) -> Set[str]:
         pass
 
     @abstractmethod
-    def get_goal_class_map(self, params)->Dict[str,DockerAnalyzeImageTask]:
+    def get_goal_class_map(self, params) -> Dict[str, DockerAnalyzeImageTask]:
         pass
 
     def check_if_build_steps_to_rebuild_are_valid_goals(self):
@@ -83,17 +84,17 @@ class DockerBuildBase(StoppableTask):
     def create_build_task_for_image_info(
             self, image_info: ImageInfo,
             shortcut_build: bool = True) -> DockerCreateImageTask:
-        if (self.build_requested(image_info, shortcut_build)):
+        if self.build_with_depenencies_is_requested(image_info, shortcut_build):
             task_for_image_info = self.create_build_task_with_dependencies(image_info, shortcut_build)
             return task_for_image_info
         else:
             task_for_image_info = \
                 DockerCreateImageTask(
-                    image_name=f"{image_info.name}:{image_info.tag}",
+                    image_name=f"{image_info.target_repository_name}:{image_info.target_tag}",
                     image_info_json=image_info.to_json(indent=None))
             return task_for_image_info
 
-    def build_requested(self, image_info: ImageInfo, shortcut_build: bool):
+    def build_with_depenencies_is_requested(self, image_info: ImageInfo, shortcut_build: bool):
         needs_to_be_build = image_info.image_state == ImageState.NEEDS_TO_BE_BUILD.name
         result = (not shortcut_build or needs_to_be_build) and \
                  len(image_info.depends_on_images) > 0
@@ -114,7 +115,7 @@ class DockerBuildBase(StoppableTask):
         image_info_copy.depends_on_images = {}
         task_for_image_info = \
             DockerCreateImageTaskWithDeps(
-                image_name=f"{image_info.name}:{image_info.tag}",
+                image_name=f"{image_info.target_repository_name}:{image_info.target_tag}",
                 image_info_json=image_info_copy.to_json(indent=None),
                 required_task_infos_json=required_task_infos_json)
         return task_for_image_info
@@ -130,4 +131,3 @@ class DockerBuildBase(StoppableTask):
                                               class_name=required_task.__class__.__name__,
                                               params=required_task.param_kwargs)
         return required_task_info
-

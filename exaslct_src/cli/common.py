@@ -37,20 +37,23 @@ def set_output_directory(output_directory):
         luigi.configuration.get_config().set('build_config', 'output_directory', output_directory)
 
 
-def set_docker_config(docker_password, docker_repository_name, docker_username):
+def set_docker_repository_config(docker_password: str, docker_repository_name: str, docker_username: str, tag_prefix: str,
+                                 kind: str):
+    config_class = f'{kind}_docker_repository_config'
+    luigi.configuration.get_config().set(config_class, 'tag_prefix', tag_prefix)
     if docker_repository_name is not None:
-        luigi.configuration.get_config().set('docker_config', 'repository_name', docker_repository_name)
+        luigi.configuration.get_config().set(config_class, 'repository_name', docker_repository_name)
     if docker_username is not None:
         if docker_password is not None:
-            luigi.configuration.get_config().set('docker_config', 'username', docker_username)
-            luigi.configuration.get_config().set('docker_config', 'password', docker_password)
+            luigi.configuration.get_config().set(config_class, 'username', docker_username)
+            luigi.configuration.get_config().set(config_class, 'password', docker_password)
         else:
-            password = getpass.getpass("Docker Registry Password for User %s:" % docker_username)
-            luigi.configuration.get_config().set('docker_config', 'username', docker_username)
-            luigi.configuration.get_config().set('docker_config', 'password', password)
+            password = getpass.getpass(f"{kind.capitalize()} Docker Registry Password for User %s:" % docker_username)
+            luigi.configuration.get_config().set(config_class, 'username', docker_username)
+            luigi.configuration.get_config().set(config_class, 'password', password)
 
 
-def import_build_steps(flavor_path:Tuple[str,...]):
+def import_build_steps(flavor_path: Tuple[str, ...]):
     # We need to load the build steps of a flavor in the commandline processor,
     # because the imported classes need to be available in all processes spawned by luigi.
     # If we use, import the build steps in a Luigi Task they are only available in the worker
@@ -60,7 +63,7 @@ def import_build_steps(flavor_path:Tuple[str,...]):
     import importlib.util
     for path in flavor_path:
         path_to_build_steps = Path(path).joinpath("flavor_base/build_steps.py")
-        module_name_for_build_steps = path.replace("/","_").replace(".","_")
+        module_name_for_build_steps = path.replace("/", "_").replace(".", "_")
         spec = importlib.util.spec_from_file_location(module_name_for_build_steps, path_to_build_steps)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

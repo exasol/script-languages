@@ -7,7 +7,7 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
 from exaslct_src.lib.docker_build_base import DockerBuildBase
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import source_docker_repository_config, target_docker_repository_config
 
 
 class AnalyzeTestContainer(DockerAnalyzeImageTask):
@@ -15,15 +15,26 @@ class AnalyzeTestContainer(DockerAnalyzeImageTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def get_target_repository_name(self) -> str:
+        return f"""{target_docker_repository_config().repository_name}"""
 
-    def get_image_name(self):
-        return f"""{docker_config().repository_name}"""
+    def get_source_repository_name(self) -> str:
+        return f"""{source_docker_repository_config().repository_name}"""
 
-    def get_image_tag(self):
-        return "db-test-container"
+    def get_source_image_tag(self):
+        if source_docker_repository_config().tag_prefix != "":
+            return f"{source_docker_repository_config().tag_prefix}_db-test-container"
+        else:
+            return f"db-test-container"
+
+    def get_target_image_tag(self):
+        if target_docker_repository_config().tag_prefix != "":
+            return f"{target_docker_repository_config().tag_prefix}_db-test-container"
+        else:
+            return f"db-test-container"
 
     def get_mapping_of_build_files_and_directories(self):
-        return {"requirements.txt": "tests/requirements.txt", "ext":"ext"}
+        return {"requirements.txt": "tests/requirements.txt", "ext": "ext"}
 
     def get_dockerfile(self):
         return "tests/Dockerfile"
@@ -33,14 +44,14 @@ class DockerTestContainerBuild(DockerBuildBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.actual_flavor_paths=["test-container"] # TODO abtract flavor away
+        self.actual_flavor_paths = ["test-container"]  # TODO abtract flavor away
         self._prepare_outputs()
 
-    def get_goal_class_map(self, params)->Dict[str,DockerAnalyzeImageTask]:
+    def get_goal_class_map(self, params) -> Dict[str, DockerAnalyzeImageTask]:
         goal_class_map = {"test-container": AnalyzeTestContainer()}
         return goal_class_map
 
-    def get_default_goals(self)->Set[str]:
+    def get_default_goals(self) -> Set[str]:
         goals = {"test-container"}
         return goals
 

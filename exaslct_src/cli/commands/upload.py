@@ -6,10 +6,10 @@ from click._unicodefun import click
 
 from exaslct_src.lib.upload_container import UploadContainer
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_config, run_tasks, add_options, import_build_steps
+from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
-    docker_options_login_not_required
+    docker_repository_options
 
 
 @cli.command()
@@ -26,7 +26,7 @@ from exaslct_src.cli.options \
 @click.option('--path-in-bucket', type=str, required=True)
 @click.option('--release-name', type=str, default=None)
 @add_options(build_options)
-@add_options(docker_options_login_not_required)
+@add_options(docker_repository_options)
 @add_options(system_options)
 def upload(flavor_path: Tuple[str, ...],
            release_type: str,
@@ -46,9 +46,14 @@ def upload(flavor_path: Tuple[str, ...],
            temporary_base_directory: str,
            log_build_context_content: bool,
            cache_directory: str,
-           docker_repository_name: str,
-           docker_username: str,
-           docker_password: str,
+           source_docker_repository_name: str,
+           source_docker_tag_prefix: str,
+           source_docker_username: str,
+           source_docker_password: str,
+           target_docker_repository_name: str,
+           target_docker_tag_prefix: str,
+           target_docker_username: str,
+           target_docker_password: str,
            workers: int,
            task_dependencies_dot_file: str):
     """
@@ -64,7 +69,10 @@ def upload(flavor_path: Tuple[str, ...],
                      output_directory,
                      temporary_base_directory,
                      cache_directory)
-    set_docker_config(docker_password, docker_repository_name, docker_username)
+    set_docker_repository_config(source_docker_password, source_docker_repository_name, source_docker_username,
+                                 source_docker_tag_prefix, "source")
+    set_docker_repository_config(target_docker_password, target_docker_repository_name, target_docker_username,
+                                 target_docker_tag_prefix, "target")
     if bucketfs_password is None:
         bucketfs_password = getpass.getpass(
             "BucketFS Password for BucketFS %s and User %s:" % (bucketfs_name, bucketfs_username))

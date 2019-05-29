@@ -9,7 +9,7 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyExportInfoCollector, \
     EXPORT_INFO
 from exaslct_src.lib.data.release_info import ExportInfo
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.stoppable_task import StoppableTask
 

@@ -11,7 +11,7 @@ from exaslct_src.lib.data.dependency_collector.dependency_environment_info_colle
     DependencyEnvironmentInfoCollector
 from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyExportInfoCollector
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.export_containers import ExportContainers
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
@@ -27,8 +27,8 @@ class StopTestEnvironment():
     @classmethod
     def stop(cls, test_environment_info: EnvironmentInfo):
         cls.logger.info("Stopping environment %s", test_environment_info.name)
-        _docker_config = docker_config()
-        _client = docker_config().get_client()
+        _docker_config = docker_client_config()
+        _client = docker_client_config().get_client()
         db_container = _client.containers.get(test_environment_info.database_info.container_info.container_name)
         db_container.remove(force=True, v=True)
         test_container = _client.containers.get(test_environment_info.test_container_info.container_name)

@@ -11,7 +11,6 @@ from exaslct_src.lib.data.image_info import ImageInfo
 
 class BuildContextCreator:
     def __init__(self,
-                 build_config: build_config,
                  temp_directory,
                  image_info: ImageInfo,
                  log_file_path: Path):
@@ -31,7 +30,7 @@ class BuildContextCreator:
             dockerfile_content = file.read()
         template = Template(dockerfile_content)
         image_names_of_dependencies = \
-            {key: image_info.complete_name
+            {key: image_info.get_target_complete_name()
              for key, image_info
              in self._image_info_of_dependencies.items()}
         final_dockerfile = template.render(**image_names_of_dependencies)

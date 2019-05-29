@@ -11,7 +11,7 @@ from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector i
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState, ImageDescription
 from exaslct_src.lib.docker.docker_image_target import DockerImageTarget
 from exaslct_src.lib.docker.docker_registry_image_checker import DockerRegistryImageChecker
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config, source_docker_repository_config
 from exaslct_src.lib.utils.build_context_hasher import BuildContextHasher
 from exaslct_src.lib.stoppable_task import StoppableTask
 
@@ -21,10 +21,10 @@ class DockerAnalyzeImageTask(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-
-        self._image_name = self.get_image_name()
-        self._image_tag = self.get_image_tag()
+        self._source_repository_name = self.get_source_repository_name()
+        self._target_repository_name = self.get_target_repository_name()
+        self._source_image_tag = self.get_source_image_tag()
+        self._target_image_tag = self.get_target_image_tag()
         self.image_description = ImageDescription(
             dockerfile=self.get_dockerfile(),
             mapping_of_build_files_and_directories=self.get_mapping_of_build_files_and_directories(),
@@ -36,7 +36,7 @@ class DockerAnalyzeImageTask(StoppableTask):
         self._build_context_hasher = \
             BuildContextHasher(self.__repr__(),
                                self.image_description)
-        self._client = docker_config().get_client()
+        self._client = docker_client_config().get_client()
 
     def __del__(self):
         self._client.close()
@@ -45,23 +45,39 @@ class DockerAnalyzeImageTask(StoppableTask):
         self._image_info_target = luigi.LocalTarget(
             "%s/info/image/analyze/%s/%s"
             % (build_config().output_directory,
-               self._image_name, self._image_tag))
+               self._target_repository_name, self._source_image_tag))
         if self._image_info_target.exists():
             self._image_info_target.remove()
 
-    def get_image_name(self) -> str:
+    def get_source_repository_name(self) -> str:
         """
-        Called by the constructor to get the image name. Sub classes need to implement this method.
+        Called by the constructor to get the image name for pulls. Sub classes need to implement this method.
         :return: image name
         """
         pass
 
-    def get_image_tag(self) -> str:
+    def get_target_repository_name(self) -> str:
         """
-        Called by the constructor to get the image tag. Sub classes need to implement this method.
+        Called by the constructor to get the image name for pushs. Sub classes need to implement this method.
+        :return: image name
+        """
+        pass
+
+
+    def get_source_image_tag(self) -> str:
+        """
+        Called by the constructor to get the image tag for pulls. Sub classes need to implement this method.
         :return: image tag
         """
-        return "latest"
+        pass
+
+    def get_target_image_tag(self) -> str:
+        """
+        Called by the constructor to get the image tag for pushs. Sub classes need to implement this method.
+        :return: image tag
+        """
+        pass
+
 
     def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:
         """
@@ -112,36 +128,50 @@ class DockerAnalyzeImageTask(StoppableTask):
     def run_task(self):
         image_info_of_dependencies = DependencyImageInfoCollector().get_from_dict_of_inputs(self.input())
         image_hash = self._build_context_hasher.generate_image_hash(image_info_of_dependencies)
-        complete_tag = self._image_tag + "_" + image_hash
-        image_target = DockerImageTarget(self._image_name, complete_tag)
-        image_state = self.get_image_state(image_target, image_info_of_dependencies)
         image_info = ImageInfo(
-            complete_name=image_target.get_complete_name(),
-            complete_tag=complete_tag,
-            name=self._image_name, tag=self._image_tag, hash=image_hash,
+            source_repository_name=self._source_repository_name,
+            target_repository_name=self._target_repository_name,
+            source_tag=self._source_image_tag,
+            target_tag=self._target_image_tag,
+            hash=image_hash,
             depends_on_images=image_info_of_dependencies,
-            image_state=image_state,
+            image_state=None,
             image_description=self.image_description
         )
+        target_image_target = DockerImageTarget(self._target_repository_name, image_info.get_target_complete_tag())
+        source_image_target = DockerImageTarget(self._source_repository_name, image_info.get_source_complete_tag())
+        image_state = self.get_image_state(source_image_target,
+                                           target_image_target,
+                                           image_info_of_dependencies)
+        image_info.image_state=image_state.name #TODO setter for image_state
         with self._image_info_target.open("w") as f:
             f.write(image_info.to_json())
 
-    def get_image_state(self, image_target: DockerImageTarget,
+    def get_image_state(self,
+                        source_image_target: DockerImageTarget,
+                        target_image_target: DockerImageTarget,
                         image_info_of_dependencies: Dict[str, ImageInfo]) -> ImageState:
 
         if self.is_rebuild_necessary(image_info_of_dependencies):
             return ImageState.NEEDS_TO_BE_BUILD
         else:
-            if image_target.exists() \
+            if target_image_target.exists() \
                     and not build_config().force_pull \
                     and not build_config().force_load:
                 self.logger.info(
-                    f"Task {self.__repr__()}: Checking if image {image_target.get_complete_name()} "
-                    f"is locally available, result {image_target.exists()}")
-                return ImageState.LOCALLY_AVAILABLE
-            elif self.can_image_be_loaded(image_target):
+                    f"Task {self.__repr__()}: Checking if target image {target_image_target.get_complete_name()} "
+                    f"is locally available, result {target_image_target.exists()}")
+                return ImageState.TARGET_LOCALLY_AVAILABLE
+            if source_image_target.exists() \
+                    and not build_config().force_pull \
+                    and not build_config().force_load:
+                self.logger.info(
+                    f"Task {self.__repr__()}: Checking if source image {source_image_target.get_complete_name()} "
+                    f"is locally available, result {source_image_target.exists()}")
+                return ImageState.SOURCE_LOCALLY_AVAILABLE
+            elif self.can_image_be_loaded(source_image_target):
                 return ImageState.CAN_BE_LOADED
-            elif self.is_image_in_registry(image_target):
+            elif self.is_image_in_registry(source_image_target):
                 return ImageState.REMOTE_AVAILABLE
             else:
                 return ImageState.NEEDS_TO_BE_BUILD

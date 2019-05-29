@@ -29,18 +29,18 @@ class PushLogHandler(AbstractLogHandler):
             raise Exception(
                 "Error occured during the push of the image %s. Received error \"%s\" ."
                 "The whole log can be found in %s"
-                % (self._image_info.complete_name, self._error_message, self._log_file_path.path))
+                % (self._image_info.get_target_complete_name(), self._error_message, self._log_file_path.path))
 
     def write_error_log_to_console_if_requested(self):
         if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
             self._logger.error("Task %s: Push of image %s failed\nPush Log:\n%s",
                                self._task_id,
-                               self._image_info.complete_name,
+                               self._image_info.get_target_complete_name(),
                                "\n".join(self._complete_log))
 
     def write_log_to_conosle_if_requested(self):
         if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.all:
             self._logger.info("Task %s: Push Log of image %s\n%s",
                               self._task_id,
-                              self._image_info.complete_name,
+                              self._image_info.get_target_complete_name(),
                               "\n".join(self._complete_log))

@@ -12,7 +12,8 @@ from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.dependency_collector.dependency_container_info_collector import CONTAINER_INFO
 from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.data.image_info import ImageInfo
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
 from exaslct_src.lib.stoppable_task import StoppableTask
 
@@ -27,7 +28,7 @@ class SpawnTestContainer(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._client = docker_config().get_client()
+        self._client = docker_client_config().get_client()
 
         if self.ip_address_index_in_subnet < 0:
             raise Exception(
@@ -64,7 +65,7 @@ class SpawnTestContainer(StoppableTask):
         tests_host_path = pathlib.Path("./tests").absolute()
         test_container = \
             self._client.containers.create(
-                image=test_container_image_info.complete_name,
+                image=test_container_image_info.get_target_complete_name(),
                 name=self.test_container_name,
                 network_mode=None,
                 command="sleep infinity",
@@ -91,7 +92,7 @@ class SpawnTestContainer(StoppableTask):
     def get_release_directory(self):
         return pathlib.Path(self.input()["export_directory"].path).absolute().parent
 
-    def get_test_container_image_info(self, input: Dict[str, LocalTarget]):
+    def get_test_container_image_info(self, input: Dict[str, LocalTarget])->ImageInfo:
         with input["test_container_image"].open("r") as f:
             jsonpickle.set_preferred_backend('simplejson')
             jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)

@@ -9,12 +9,13 @@ import luigi
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.log_config import log_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.lib.stoppable_task import StoppableTask
 
 DOCKER_HUB_REGISTRY_URL_REGEX = r"^.*docker.io/"
+
 
 # TODO align and extract save_path of DockerSaveImageTask and load_path of DockerLoadImageTask
 class DockerSaveImageBaseTask(StoppableTask):
@@ -26,7 +27,7 @@ class DockerSaveImageBaseTask(StoppableTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._client = docker_config().get_client()
+        self._client = docker_client_config().get_client()
         self._log_config = log_config()
         self._prepare_outputs()
 
@@ -52,19 +53,19 @@ class DockerSaveImageBaseTask(StoppableTask):
     def run_task(self):
         image_info = DependencyImageInfoCollector().get_from_sinlge_input(self.input())
         tag_for_save = self.get_tag_for_save(image_info)
-        save_file_path = pathlib.Path("%s/%s.tar" % (self.save_path, image_info.complete_name))
+        save_file_path = pathlib.Path("%s/%s.tar" % (self.save_path, image_info.get_target_complete_name()))
         was_build = image_info.image_state == ImageState.WAS_BUILD.name
         if was_build or self.force_save or not save_file_path.exists():
             self.save_image(image_info, tag_for_save, save_file_path)
         self.write_output(image_info)
 
-    def get_tag_for_save(self, image_info):
-        tag_for_save = re.sub(DOCKER_HUB_REGISTRY_URL_REGEX,"", image_info.complete_name)
+    def get_tag_for_save(self, image_info: ImageInfo):
+        tag_for_save = re.sub(DOCKER_HUB_REGISTRY_URL_REGEX, "", image_info.get_target_complete_name())
         return tag_for_save
 
     def save_image(self, image_info: ImageInfo, tag_for_save: str, save_file_path: pathlib.Path):
         self.remove_save_file_if_necassary(save_file_path)
-        image = self._client.images.get(image_info.complete_name)
+        image = self._client.images.get(image_info.get_target_complete_name())
         generator = image.save(named=tag_for_save)
         self.write_image_to_file(save_file_path, image_info, generator)
 
@@ -77,14 +78,15 @@ class DockerSaveImageBaseTask(StoppableTask):
                             save_file_path: pathlib.Path,
                             image_info: ImageInfo,
                             output_generator: Generator):
-        self.logger.info(f"Task {self.__repr__()}: Saving image {image_info.complete_name} to file {save_file_path}")
+        self.logger.info(
+            f"Task {self.__repr__()}: Saving image {image_info.get_target_complete_name()} to file {save_file_path}")
         with save_file_path.open("wb") as file:
             still_running_logger = StillRunningLogger(
-                self.logger, self.__repr__(), "save image %s" % image_info.complete_name)
+                self.logger, self.__repr__(), "save image %s" % image_info.get_target_complete_name())
             for chunk in output_generator:
                 still_running_logger.log()
                 file.write(chunk)
 
-    def write_output(self, image_info):
+    def write_output(self, image_info: ImageInfo):
         with self._save_info_target.open("w") as file:
-            file.write(image_info.complete_name)
+            file.write(image_info.get_target_complete_name())

@@ -4,7 +4,7 @@ import luigi
 from docker.models.containers import Container
 
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.test_runner.run_db_test import RunDBTest
 from exaslct_src.lib.stoppable_task import StoppableTask
 
@@ -27,7 +27,7 @@ class RunDBTestsInDirectory(StoppableTask):
 
         test_evironment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
         self._test_container_info = test_evironment_info.test_container_info
-        self._client = docker_config().get_client()
+        self._client = docker_client_config().get_client()
         self._prepare_outputs()
         self.test_container = self._client.containers.get(self._test_container_info.container_name)
         self.tasks = self.generate_test_task_configs_from_directory(self.test_container, self.directory)

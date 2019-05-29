@@ -8,6 +8,7 @@ from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector i
 
 class DockerBuild(DockerFlavorBuildBase):
     goals = luigi.ListParameter()
+    shortcut_build = luigi.BoolParameter(True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -27,7 +28,7 @@ class DockerBuild(DockerFlavorBuildBase):
         return self._image_info_target
 
     def run_task(self):
-        tasks_for_all_flavors = self.create_build_tasks_for_all_flavors()
+        tasks_for_all_flavors = self.create_build_tasks_for_all_flavors(self.shortcut_build)
         targets = yield tasks_for_all_flavors
         collector = DependencyImageInfoCollector()
         result = {flavor_path: collector.get_from_dict_of_inputs(image_info_targets)

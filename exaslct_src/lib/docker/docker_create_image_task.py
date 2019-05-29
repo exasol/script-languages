@@ -12,6 +12,7 @@ from exaslct_src.lib.data.required_task_info import RequiredTaskInfo
 from exaslct_src.lib.docker.docker_build_task import DockerBuildImageTask
 from exaslct_src.lib.docker.docker_image_pull_task import DockerPullImageTask
 from exaslct_src.lib.docker.docker_load_task import DockerLoadImageTask
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.stoppable_task import StoppableTask
 
 
@@ -31,7 +32,7 @@ class DockerCreateImageTask(StoppableTask):
         self._image_info_target = luigi.LocalTarget(
             "%s/info/image/build/%s/%s"
             % (build_config().output_directory,
-               self.image_info.name, self.image_info.complete_tag))
+               self.image_info.target_repository_name, self.image_info.get_target_complete_tag()))
         if self._image_info_target.exists():
             self._image_info_target.remove()
 
@@ -60,11 +61,17 @@ class DockerCreateImageTask(StoppableTask):
                 image_name=self.image_name,
                 image_info_json=image_info_json)
             image_info.image_state = ImageState.WAS_PULLED.name
-        elif image_info.image_state == ImageState.LOCALLY_AVAILABLE.name:
+        elif image_info.image_state == ImageState.TARGET_LOCALLY_AVAILABLE.name:
             image_info.image_state = ImageState.USED_LOCAL.name
+        elif image_info.image_state == ImageState.SOURCE_LOCALLY_AVAILABLE.name:
+            image_info.image_state = ImageState.WAS_TAGED.name
+            docker_client_config().get_client().images.get(image_info.get_source_complete_name()).tag(
+                repository=image_info.target_repository_name,
+                tag=image_info.get_target_complete_tag()
+            )
         else:
             raise Exception("Task %s: Image state %s not supported for image %s",
-                            self.task_id, image_info.image_state, image_info.complete_name)
+                            self.task_id, image_info.image_state, image_info.get_target_complete_name())
 
 
 class DockerCreateImageTaskWithDeps(DockerCreateImageTask):

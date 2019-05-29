@@ -5,7 +5,7 @@ import luigi
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker.docker_image_target import DockerImageTarget
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.stoppable_task import StoppableTask
 
 
@@ -18,9 +18,10 @@ class DockerImageCreatorBaseTask(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.client = docker_config().get_client()
+        self.client = docker_client_config().get_client()
         self.image_info = ImageInfo.from_json(self.image_info_json)
-        self.image_target = DockerImageTarget(self.image_info.name, self.image_info.complete_tag)
+        self.image_target = DockerImageTarget(self.image_info.target_repository_name,
+                                              self.image_info.get_target_complete_tag())
         self.remove_image()
 
     def __del__(self):

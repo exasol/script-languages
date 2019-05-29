@@ -16,7 +16,7 @@ from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector i
 from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import EXPORT_INFO
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.data.release_info import ExportInfo
-from exaslct_src.lib.docker_config import docker_config
+from exaslct_src.lib.docker_config import docker_client_config, target_docker_repository_config
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
@@ -36,7 +36,6 @@ class ExportContainerBaseTask(StoppableTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
 
         self._prepare_outputs()
 
@@ -65,9 +64,9 @@ class ExportContainerBaseTask(StoppableTask):
     def run_task(self):
         image_infos = DependencyImageInfoCollector().get_from_dict_of_inputs(self.input())
         image_info_of_release_image = image_infos["release_task"]
-        release_image_name = image_info_of_release_image.complete_name
+        release_image_name = image_info_of_release_image.get_target_complete_name()
         release_path = pathlib.Path(self.get_release_directory()).absolute()
-        complete_name = f"""{image_info_of_release_image.tag}-{image_info_of_release_image.hash}"""
+        complete_name = f"""{image_info_of_release_image.target_tag}-{image_info_of_release_image.hash}"""
         cache_file = release_path.joinpath(complete_name + ".tar.gz").absolute()
         self.remove_release_file_if_requested(cache_file)
 
@@ -88,7 +87,7 @@ class ExportContainerBaseTask(StoppableTask):
             file_name = f"""{self.flavor_name}_{self.release_type}{suffix}.tar.gz"""
             output_file = pathlib.Path(self.export_path).joinpath(file_name)
             if not output_file.exists() or is_new:
-                output_file.parent.mkdir(exist_ok=True,parents=True)
+                output_file.parent.mkdir(exist_ok=True, parents=True)
                 shutil.copy2(cache_file, output_file)
         return output_file
 
@@ -138,7 +137,7 @@ class ExportContainerBaseTask(StoppableTask):
 
     def create_and_export_container(self, release_image_name: str, temp_directory: str):
         self.logger.info("Task %s: Export container %s", self.__repr__(), release_image_name)
-        client = docker_config().get_client()
+        client = docker_client_config().get_client()
         try:
             container = client.containers.create(image=release_image_name)
             try:
