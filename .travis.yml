@@ -9,9 +9,6 @@ install:
 env:
   global:
   - "FORCE_REBUILD=--force-rebuild"
-  - secure: "R6Yclwn+EDigXM7t3yerREjWr4Zif96RFyAg/SyIIw8FoUNHZsgw9seltkBqVPOfGCOE6P0k35wTOCH/wDlvNAhO3G0l4ULkLm4HbC1M7o+mcaeOg8XTrRimOlRsS54TW4ofA611pDzK9Ajgr4KzKv2jWvf/bNJzs4dCDBIJsa5t20LZbDr6eqnuWJfS+JJ2XMHOPI5x3BJeVb5jKwtblg4vPHYdtgngLyE0czLu3R44lsqeZmAEPFVjRurijSMFP1r52XGYnKcJ0hk6jrDS4Hy/ccsCQ50geC19tCXyKgqJJRcRg+h6gYxkUx0Kl47L7tYtYIu8522IKhsy/K02kn5AfWFfYXGi4liS6eS3m4cXdI8vgbYqL9oMnlnuC+rvRNi7pmKEWwh5xz8eCO0koD3B4t+BPmeyUU0uJ2/ZvGyE05iO/DlBH3FFp5i7a2vAkxS0qwoqVXUy5zl2aZDbz8Bamomp6f8P9srNs997ud3eKBQukM9tvH5inHbWBTqkqKgKgLrY9daNJcTpQ6rniw3TZ5snKvtMo3+riWKita1G9dozqD/aWGiX/s6X+33Sd08jcpQsqEue5WkVHT+8U3dU1S0KpUOjmNsZORzg/u/7vwO3ysektrLQxNVwjKgIr9wR9eqmfbr9yiWvksUregMinP2H6IP62aUB+YrXIAY="
-  - secure: "DI2BaT6DPyFY6uB88XU3Yh8W8/tVAiPfTPvfYFQaGsDf4nPw8CfXiMZK1Ow7qImTqXfLPhP4lQtffrXY6ARsbOKgxybayQaxk+1f8X/M/4KkQZKpwNtEUON+hFRUyMT4XjSJGRXptzr4hdv37WErSNDp/Jvi4lJE2WKCGFFZsOKgl1B9+dE1swG0DWFM/DMrWv1huu4ZVAyqGUx/RTzwWWnMIlR218374FGuQjzXTmy4IEbsxUJGdwjQrmCyGZ1xLK85huBg4fhCgzfTzNlk+1k2n4Ro1RLlVCM0VNPlgdbuiD6Re+Lb2IQvpi03iYOq6opYK4pG1VNNUqdS1T5VSTPGIuxsdZMDlIkvFLO8cIpeYg4gsBdoLm3fD2ssK3SlO6F3aBwm+aAwjdW5cK2gIep/DFbFsy4lL6fDnouSOretUTXWGevOz6n3+pBpRFlFObpZFKkEHuz26U1eqiCRFGjS4yt6BL6rsEBOXMcC2nmfcu5VnoLvtPKovsD8332rqYBDB0tknW3Doo5Y3DsHgajFOIE21iBkmM9CJ02Mup4PVo3HZ4DWJsfO3c1blp6rFi0mugCMgUaPi4GpPjbfjyQk3S/6xA9MsXemLif1TENRIyRa5lUmZW+4LFV6lB6dnYCKO9/J7KnTaP89GO8+iRUB6WzzpB4uOp7fjx2jC6w="
-  - secure: "n7802Z/GwQVs2RHmre3tdLmug71vVI5HDlNZ6vP6JkaIWAG17i/Dkbn7Bg9CbpN2lMZiQcu7xot+8c5X4ISz9vT+5LsE5Z/agNk2HZZ/7gJkf6eO6nby/+MbTmOwZwPLrXiMDdas4KV3pG4EZexF3Z5bE0rQ7mcPhjF6tt3rXR7ce7PJWFD6UDc6v/eF8H/cH3EnGH02ooGyXTZ4goIeQd5pwCNpO3GY8BIdMc4/I8ukOCJffQvWPxL+vifICtuGdlv3er/RKHcwwUxwEXdzqD120+9BI4oNi9QrNs37WVXogSIm8cm3PvpI0i11vfC/dN8Hl85N8TWndxA9PLJdZIQ0/MCjxYCkxyGZyZFf3uUFQXJC2lqyw+EYTMPGIP3N3FDy7fT5qOTzcB6DPci45jN1jPiaID5MbHODxB/iEJ1sMNZmT200Breq4cNAQmP5Im33JhKWIkOj82pl/UzZN4Y+PFsNrEQThNJBPTAt9LUqzSPOQcwtZ90GtB/DNkDsxP07Xz4GQp/gThwKP1Ff2hafUATy2Lznx8321Fj6+ehaHuqQhrsMVrInnzU9PIATz0zT0nMsRbuKVRgJyvIeQunI8ORGlcoFky1Cd1ZyrrNMIt1ccn8jdn4FHdmiD96lIaI/fMTlL90TQj1GGruBrF0D2zzhXyMFfIfe94bUcwA="
 jobs:
   include:
 ##################################################################################################
@@ -216,7 +213,7 @@ jobs:
       --test-folder=python3
       --test-folder=python3-ds-flavor"
 ##################################################################################################
-############################### Run DB Test fancyr-EXASOL-6.0.0 ##############################
+############################### Run DB Test fancyr-EXASOL-6.0.0 ##################################
 ##################################################################################################
   - stage: "Run DB Test"
     name: "fancyr-EXASOL-6.0.0 --generic-language-test=r --test-folder=r"
@@ -225,7 +222,7 @@ jobs:
       --generic-language-test=r
       --test-folder=r"
 ##################################################################################################
-############################### Run DB Test fancyr-EXASOL-6.1.0 ##############################
+############################### Run DB Test fancyr-EXASOL-6.1.0 ##################################
 ##################################################################################################
   - stage: "Run DB Test"
     name: "fancyr-EXASOL-6.1.0 --generic-language-test=r --test-folder=r"
@@ -233,9 +230,33 @@ jobs:
       - "travis/run_db_test.sh --flavor-path flavors/fancyr-EXASOL-6.1.0
       --generic-language-test=r
       --test-folder=r"
+##################################################################################################
+############################################ Deploy ##############################################
+##################################################################################################
+  - stage: "Deploy"
+    name: "Export Containers"
+    script:
+    - "travis/export.sh
+      --flavor-path flavors/standard-EXASOL-6.0.0
+      --flavor-path flavors/standard-EXASOL-6.1.0
+      --flavor-path flavors/fancyr-EXASOL-6.0.0
+      --flavor-path flavors/fancyr-EXASOL-6.1.0
+      --flavor-path flavors/python3-ds-EXASOL-6.0.0
+      --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+    deploy:
+      provider: releases
+      api_key: "$GH_TOKEN"
+      file_glob: true
+      file: .build_output/exports/*.tar.gz
+      skip_cleanup: true
+      draft: true
+      on:
+        branch: new-docker-build-pipeline
+#        repo: exasol/script-languages
 stages:
 - "Test exaslct"
 - "Build --goal language_deps --goal build_deps"
 - "Build --goal flavor_base_deps --goal build_run"
 - "Build --goal release"
 - "Run DB Test"
+- "Deploy"

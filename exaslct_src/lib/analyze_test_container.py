@@ -17,10 +17,10 @@ class AnalyzeTestContainer(DockerAnalyzeImageTask):
 
 
     def get_image_name(self):
-        return f"""{docker_config().repository_name}-db-test-container"""
+        return f"""{docker_config().repository_name}"""
 
     def get_image_tag(self):
-        return "latest"
+        return "db-test-container"
 
     def get_mapping_of_build_files_and_directories(self):
         return {"requirements.txt": "tests/requirements.txt", "ext":"ext"}
