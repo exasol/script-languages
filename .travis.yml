@@ -15,6 +15,14 @@ jobs:
 ########################################## Test exaslct ##########################################
 ##################################################################################################
   - stage: "Test exaslct"
+    name: "Test exaslct test_docker_upload.py"
+    script:
+    - travis/exaslct_test.sh test_docker_upload.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_run_db_test.py"
+    script:
+    - travis/exaslct_test.sh test_docker_run_db_test.py
+  - stage: "Test exaslct"
     name: "Test exaslct test_docker_build.py"
     script:
     - travis/exaslct_test.sh test_docker_build.py
@@ -27,17 +35,9 @@ jobs:
     script:
     - travis/exaslct_test.sh test_docker_save.py
   - stage: "Test exaslct"
-    name: "Test exaslct test_docker_upload.py"
-    script:
-    - travis/exaslct_test.sh test_docker_upload.py
-  - stage: "Test exaslct"
     name: "Test exaslct test_docker_push.py"
     script:
     - travis/exaslct_test.sh test_docker_push.py
-  - stage: "Test exaslct"
-    name: "Test exaslct test_docker_run_db_test.py"
-    script:
-    - travis/exaslct_test.sh test_docker_run_db_test.py
   - stage: "Test exaslct"
     name: "Test exaslct test_docker_load.py"
     script:
@@ -231,9 +231,31 @@ jobs:
       --generic-language-test=r
       --test-folder=r"
 ##################################################################################################
-############################################ Deploy ##############################################
+############################## Deploy Images to public build cache ###############################
 ##################################################################################################
-  - stage: "Deploy"
+  - stage: "Deploy Images to public build cache"
+    name: "fancyr-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "standard-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+##################################################################################################
+################################### Deploy exported Container ####################################
+##################################################################################################
+  - stage: "Deploy exported Container"
     name: "Export Containers"
     script:
     - "travis/export.sh
@@ -259,4 +281,5 @@ stages:
 - "Build --goal flavor_base_deps --goal build_run"
 - "Build --goal release"
 - "Run DB Test"
-- "Deploy"
+- "Deploy Images to public build cache"
+- "Deploy exported Container"
