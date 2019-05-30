@@ -231,27 +231,49 @@ jobs:
       --generic-language-test=r
       --test-folder=r"
 ##################################################################################################
+############################ Deploy Images for branch to build cache #############################
+##################################################################################################
+  - stage: "Deploy Images for branch to build cache"
+    name: "fancyr-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_for_branch.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_for_branch.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "standard-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_for_branch.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_for_branch.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_for_branch.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_for_branch.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+##################################################################################################
 ############################## Deploy Images to public build cache ###############################
 ##################################################################################################
   - stage: "Deploy Images to public build cache"
     name: "fancyr-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
   - name: "fancyr-EXASOL-6.0.0"
     script:
-    - "travis/deploy_images.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
   - name: "standard-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/standard-EXASOL-6.1.0"
   - name: "standard-EXASOL-6.0.0"
     script:
-    - "travis/deploy_images.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/standard-EXASOL-6.0.0"
   - name: "python3-ds-EXASOL-6.0.0"
     script:
-    - "travis/deploy_images.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
   - name: "python3-ds-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
 ##################################################################################################
 ################################### Deploy exported Container ####################################
 ##################################################################################################
@@ -274,12 +296,14 @@ jobs:
       draft: true
       on:
         branch: new-docker-build-pipeline
-#        repo: exasol/script-languages
 stages:
-- "Test exaslct"
-- "Build --goal language_deps --goal build_deps"
-- "Build --goal flavor_base_deps --goal build_run"
-- "Build --goal release"
-- "Run DB Test"
-- "Deploy Images to public build cache"
-- "Deploy exported Container"
+- name: "Test exaslct"
+- name: "Build --goal language_deps --goal build_deps"
+- name: "Build --goal flavor_base_deps --goal build_run"
+- name: "Build --goal release"
+- name: "Run DB Test"
+- name: "Deploy Images for branch to build cache"
+- name: "Deploy Images to public build cache"
+  if: branch = new-docker-build-pipeline
+- name: "Deploy exported Container"
+  if: branch = new-docker-build-pipeline
