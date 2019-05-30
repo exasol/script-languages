@@ -3,7 +3,6 @@ from typing import Dict, Any
 
 from exaslct_src.lib.data.info import Info
 
-
 class ImageState(Enum):
     NOT_EXISTING = 0,
     # After analyze phase or if build phase did touch the image
@@ -32,6 +31,8 @@ class ImageDescription:
 
 
 class ImageInfo(Info):
+    DOCKER_TAG_LENGTH_LIMIT=128
+    MAX_TAG_SURPLUS = 15
 
     def __init__(self,
                  source_repository_name: str, target_repository_name: str,
@@ -54,6 +55,14 @@ class ImageInfo(Info):
         self.source_tag = source_tag
         self.target_tag = target_tag
         self.hash = hash
+        self.check_complete_tag_length(self.source_tag)
+        self.check_complete_tag_length(self.target_tag)
+
+    def check_complete_tag_length(self, tag):
+        complete_tag_length_limit = self.DOCKER_TAG_LENGTH_LIMIT + self.MAX_TAG_SURPLUS
+        complete_tag = self._create_complete_tag(tag)
+        if len(complete_tag) > complete_tag_length_limit:
+            raise Exception(f"Complete Tag to long by {len(complete_tag)-complete_tag_length_limit}:  {complete_tag}")
 
     def get_target_complete_name(self):
         return f"{self.target_repository_name}:{self.get_target_complete_tag()}"
@@ -62,13 +71,20 @@ class ImageInfo(Info):
         return f"{self.source_repository_name}:{self.get_source_complete_tag()}"
 
     def get_source_complete_tag(self):
-        if self.hash == "":
-            return f"{self.source_tag}"
-        else:
-            return f"{self.source_tag}_{self.hash}"
+        return self._create_truncated_complete_tag(self.source_tag)
 
     def get_target_complete_tag(self):
+        return self._create_truncated_complete_tag(self.target_tag)
+
+    def _create_truncated_complete_tag(self, tag:str)->str:
+        # we must truncate the tag to 128 characters, because this is the limit of docker tags
+        # refer here https://docs.docker.com/engine/reference/commandline/tag/
+        complete_tag = self._create_complete_tag(tag)
+        truncated_tag = complete_tag[:128]
+        return truncated_tag
+
+    def _create_complete_tag(self, tag):
         if self.hash == "":
-            return f"{self.target_tag}"
+            return f"{tag}"
         else:
-            return f"{self.target_tag}_{self.hash}"
+            return f"{tag}_{self.hash}"
