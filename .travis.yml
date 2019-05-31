@@ -231,27 +231,27 @@ jobs:
       --generic-language-test=r
       --test-folder=r"
 ##################################################################################################
-############################ Deploy Images for branch to build cache #############################
+############################ Deploy Images for commit to build cache #############################
 ##################################################################################################
-  - stage: "Deploy Images for branch to build cache"
+  - stage: "Deploy Images for commit to build cache"
     name: "fancyr-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images_for_branch.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
   - name: "fancyr-EXASOL-6.0.0"
     script:
-    - "travis/deploy_images_for_branch.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
   - name: "standard-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images_for_branch.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/standard-EXASOL-6.1.0"
   - name: "standard-EXASOL-6.0.0"
     script:
-    - "travis/deploy_images_for_branch.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/standard-EXASOL-6.0.0"
   - name: "python3-ds-EXASOL-6.0.0"
     script:
-    - "travis/deploy_images_for_branch.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
   - name: "python3-ds-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images_for_branch.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
 ##################################################################################################
 ############################## Deploy Images to public build cache ###############################
 ##################################################################################################
@@ -302,8 +302,9 @@ stages:
 - name: "Build --goal flavor_base_deps --goal build_run"
 - name: "Build --goal release"
 - name: "Run DB Test"
-- name: "Deploy Images for branch to build cache"
+- name: "Deploy Images for commit to build cache"
+  if: type = "push"
 - name: "Deploy Images to public build cache"
-  if: branch = new-docker-build-pipeline
+  if: branch = new-docker-build-pipeline and type = "push"
 - name: "Deploy exported Container"
   if: branch = new-docker-build-pipeline
