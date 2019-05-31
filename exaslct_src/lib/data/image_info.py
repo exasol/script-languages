@@ -32,7 +32,7 @@ class ImageDescription:
 
 class ImageInfo(Info):
     DOCKER_TAG_LENGTH_LIMIT=128
-    MAX_TAG_SURPLUS = 15
+    MAX_TAG_SURPLUS = 20
 
     def __init__(self,
                  source_repository_name: str, target_repository_name: str,
