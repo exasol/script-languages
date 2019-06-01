@@ -295,7 +295,7 @@ jobs:
       skip_cleanup: true
       draft: true
       on:
-        branch: new-docker-build-pipeline
+        branch: master
 stages:
 - name: "Test exaslct"
 - name: "Build --goal language_deps --goal build_deps"
@@ -305,6 +305,6 @@ stages:
 - name: "Deploy Images for commit to build cache"
   if: type = "push"
 - name: "Deploy Images to public build cache"
-  if: branch = new-docker-build-pipeline and type = "push"
+  if: branch = master and type = "push"
 - name: "Deploy exported Container"
-  if: branch = new-docker-build-pipeline
+  if: branch = master
