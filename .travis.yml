@@ -307,4 +307,4 @@ stages:
 - name: "Deploy Images to public build cache"
   if: branch = master and type = "push"
 - name: "Deploy exported Container"
-  if: branch = master
+  if: branch = master and type = "push"
