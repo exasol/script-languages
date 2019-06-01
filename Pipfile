@@ -1,0 +1,16 @@
+[requires]
+python_version = "3.6"
+
+[packages]
+luigi = "*"
+jinja2 = "*"
+humanfriendly = "*"
+jsonpickle = "*"
+simplejson = "*"
+docker = "==3.7.2"
+netaddr = "*"
+click = "*"
+requests = "*"
+networkx = "*"
+pydot = "*"
+"stopwatch.py" = "*"

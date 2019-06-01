@@ -7,3 +7,6 @@ odbc.ini
 .env
 Pipfile.lock
 emulator/zmqcontainer_pb2.py
+.idea
+.build_output/
+luigi.cfg

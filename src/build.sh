@@ -1,1 +1,1 @@
-bazel build $VERBOSE_BUILD $*
+bazel build --color=no --curses=no $VERBOSE_BUILD $*

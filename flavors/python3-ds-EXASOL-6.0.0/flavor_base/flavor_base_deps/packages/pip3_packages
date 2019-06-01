@@ -1,0 +1,17 @@
+pyexasol
+keras
+tensorflow
+kmodes
+seaborn
+matplotlib
+imbalanced-learn
+lifelines
+nltk
+gensim
+lxml
+ujson
+numpy
+scipy<=1.2.1 # due to https://github.com/CamDavidsonPilon/lifelines/issues/725
+scikit-learn
+pycurl
+statsmodels

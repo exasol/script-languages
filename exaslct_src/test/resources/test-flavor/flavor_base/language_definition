@@ -1,0 +1,1 @@
+language_definition=PYTHON=localzmq+protobuf:///{{ bucketfs_name }}/{{ bucket_name }}/{{ path_in_bucket }}/{{ release_name }}?lang=python#buckets/{{ bucketfs_name }}/{{ bucket_name }}/{{ path_in_bucket }}/{{ release_name }}/exaudf/exaudfclient JAVA=builtin_java R=builtin_r

@@ -1,40 +1,310 @@
-#
 language: python
-python: "2.7"
-dist: trusty
-
-sudo:  required
+python: '3.6'
+dist: xenial
+sudo: required
 services:
-    - docker
-
+- docker
 install:
-  - sudo apt-get -y install unixodbc unixodbc-dev
-  - sudo ln -s /usr/lib/x86_64-linux-gnu/libodbcinst.so.1 /usr/lib/x86_64-linux-gnu/libodbcinst.so.2
-
-before_script:
-  - docker pull exasol/docker-db:6.0.12-d1
-
-matrix:
+- sudo pip install pipenv
+env:
+  global:
+  - "FORCE_REBUILD=--force-rebuild"
+jobs:
   include:
-  - name: mini-EXASOL-6.0.0-python
-    env: MATRIX_FLAVOR=mini-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.0.0-python
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.0.0-r
-    env: MATRIX_FLAVOR=standard-EXASOL-6.0.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard-EXASOL-6.0.0-java
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
-  - name: python3-ds-EXASOL-6.0.0-python3
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.0.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
-  - name: python3-ds-EXASOL-6.1.0-python3
-    env: MATRIX_FLAVOR=python3-ds-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python3
-  - name: standard-EXASOL-6.1.0-python
-    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=python TEST_FOLDER=python
-  - name: standard-EXASOL-6.1.0-r
-    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=r TEST_FOLDER=r
-  - name: standard-EXASOL-6.1.0-java
-    env: MATRIX_FLAVOR=standard-EXASOL-6.1.0 GENERIC_TEST_LANG=java TEST_FOLDER=java
-
-script:
-  - ./test_complete --flavor=$MATRIX_FLAVOR --test-folder=$TEST_FOLDER --generic-test-lang=$GENERIC_TEST_LANG
-
+##################################################################################################
+########################################## Test exaslct ##########################################
+##################################################################################################
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_upload.py"
+    script:
+    - travis/exaslct_test.sh test_docker_upload.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_run_db_test.py"
+    script:
+    - travis/exaslct_test.sh test_docker_run_db_test.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_build.py"
+    script:
+    - travis/exaslct_test.sh test_docker_build.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_export.py"
+    script:
+    - travis/exaslct_test.sh test_docker_export.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_save.py"
+    script:
+    - travis/exaslct_test.sh test_docker_save.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_push.py"
+    script:
+    - travis/exaslct_test.sh test_docker_push.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_load.py"
+    script:
+    - travis/exaslct_test.sh test_docker_load.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_pull.py"
+    script:
+    - travis/exaslct_test.sh test_docker_pull.py
+  - stage: "Test exaslct"
+    name: "Test exaslct test_docker_registry_image_checker.py"
+    script:
+    - travis/exaslct_test.sh test_docker_registry_image_checker.py
+##################################################################################################
+########################## Build --goal language_deps --goal build_deps ##########################
+##################################################################################################
+  - stage: "Build --goal language_deps --goal build_deps"
+    name: "standard-EXASOL-6.1.0"
+    script:
+    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0"
+    script:
+    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0"
+    script:
+    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0"
+    script:
+    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0"
+    script:
+    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "fancyr-EXASOL-6.1.0"
+    script:
+    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+##################################################################################################
+################################# Build --goal flavor_base_deps ##################################
+##################################################################################################
+  - stage: "Build --goal flavor_base_deps --goal build_run"
+    name: "fancyr-EXASOL-6.0.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "fancyr-EXASOL-6.1.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.1.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0 --goal flavor_base_deps"
+    script:
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+##################################################################################################
+##################################### Build --goal build_run #####################################
+##################################################################################################
+  - stage: "Build --goal flavor_base_deps --goal build_run"
+    name: "standard-EXASOL-6.1.0 --goal build_run"
+    script:
+    - "travis/build_build_run.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0 --goal build_run"
+    script:
+    - "travis/build_build_run.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0 --goal build_run"
+    script:
+    - "travis/build_build_run.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0 --goal build_run"
+    script:
+    - "travis/build_build_run.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0 --goal build_run"
+    script:
+    - "travis/build_build_run.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "fancyr-EXASOL-6.1.0 --goal build_run"
+    script:
+    - "travis/build_build_run.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+##################################################################################################
+###################################### Build --goal release ######################################
+##################################################################################################
+  - stage: "Build --goal release"
+    name: "fancyr-EXASOL-6.1.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "standard-EXASOL-6.1.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0"
+    script:
+    - "travis/build_release.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+##################################################################################################
+################################ Run DB Test standard-EXASOL-6.0.0 ###############################
+##################################################################################################
+  - stage: "Run DB Test"
+    name: "standard-EXASOL-6.1.0 --generic-language-test=python --test-folder=python"
+    script:
+    - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.1.0
+    --generic-language-test=python
+    --test-folder=python"
+  - name: "standard-EXASOL-6.1.0 --generic-language-test=java --test-folder=java"
+    script:
+    - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.1.0
+    --generic-language-test=java
+    --test-folder=java"
+  - name: "standard-EXASOL-6.1.0 --generic-language-test=r --test-folder=r"
+    script:
+    - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.1.0
+    --generic-language-test=r
+    --test-folder=r"
+  - name: "standard-EXASOL-6.1.0 --generic-language-test=python3 --test-folder=python3"
+    script:
+    - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.1.0
+    --generic-language-test=python3
+    --test-folder=python3"
+  - name: "standard-EXASOL-6.1.0 --test-folder=standard-flavor"
+    script:
+    - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.1.0
+    --test-folder=standard-flavor"
+##################################################################################################
+################################ Run DB Test standard-EXASOL-6.0.0 ###############################
+##################################################################################################
+  - stage: "Run DB Test"
+    name: "standard-EXASOL-6.0.0 --generic-language-test=python --test-folder=python"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.0.0
+      --generic-language-test=python
+      --test-folder=python"
+  - name: "standard-EXASOL-6.0.0 --generic-language-test=java --test-folder=java"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.0.0
+      --generic-language-test=java
+      --test-folder=java"
+  - name: "standard-EXASOL-6.0.0 --generic-language-test=r --test-folder=r"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/standard-EXASOL-6.0.0
+      --generic-language-test=r
+      --test-folder=r"
+# TODO standard-flavor test with 6.0.0 doesn't work because the test expects python3 and makes no exception
+##################################################################################################
+############################### Run DB Test python3-ds-EXASOL-6.0.0 ##############################
+##################################################################################################
+  - stage: "Run DB Test"
+    name: "python3-ds-EXASOL-6.0.0 --generic-language-test=python3"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0
+      --generic-language-test=python3"
+  - name: "python3-ds-EXASOL-6.0.0 --test-folder=python3 --test-folder=python3-ds-flavor"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0
+      --test-folder=python3
+      --test-folder=python3-ds-flavor"
+##################################################################################################
+############################### Run DB Test python3-ds-EXASOL-6.1.0 ##############################
+##################################################################################################
+  - stage: "Run DB Test"
+    name: "python3-ds-EXASOL-6.1.0 --generic-language-test=python3"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0
+      --generic-language-test=python3"
+  - name: "python3-ds-EXASOL-6.1.0 --test-folder=python3 --test-folder=python3-ds-flavor"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0
+      --test-folder=python3
+      --test-folder=python3-ds-flavor"
+##################################################################################################
+############################### Run DB Test fancyr-EXASOL-6.0.0 ##################################
+##################################################################################################
+  - stage: "Run DB Test"
+    name: "fancyr-EXASOL-6.0.0 --generic-language-test=r --test-folder=r"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/fancyr-EXASOL-6.0.0
+      --generic-language-test=r
+      --test-folder=r"
+##################################################################################################
+############################### Run DB Test fancyr-EXASOL-6.1.0 ##################################
+##################################################################################################
+  - stage: "Run DB Test"
+    name: "fancyr-EXASOL-6.1.0 --generic-language-test=r --test-folder=r"
+    script:
+      - "travis/run_db_test.sh --flavor-path flavors/fancyr-EXASOL-6.1.0
+      --generic-language-test=r
+      --test-folder=r"
+##################################################################################################
+############################ Deploy Images for commit to build cache #############################
+##################################################################################################
+  - stage: "Deploy Images for commit to build cache"
+    name: "fancyr-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "standard-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+##################################################################################################
+############################## Deploy Images to public build cache ###############################
+##################################################################################################
+  - stage: "Deploy Images to public build cache"
+    name: "fancyr-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
+  - name: "fancyr-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/fancyr-EXASOL-6.0.0"
+  - name: "standard-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/standard-EXASOL-6.1.0"
+  - name: "standard-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/standard-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.0.0"
+    script:
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/python3-ds-EXASOL-6.0.0"
+  - name: "python3-ds-EXASOL-6.1.0"
+    script:
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+##################################################################################################
+################################### Deploy exported Container ####################################
+##################################################################################################
+  - stage: "Deploy exported Container"
+    name: "Export Containers"
+    script:
+    - "travis/export.sh
+      --flavor-path flavors/standard-EXASOL-6.0.0
+      --flavor-path flavors/standard-EXASOL-6.1.0
+      --flavor-path flavors/fancyr-EXASOL-6.0.0
+      --flavor-path flavors/fancyr-EXASOL-6.1.0
+      --flavor-path flavors/python3-ds-EXASOL-6.0.0
+      --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+    deploy:
+      provider: releases
+      api_key: "$GH_TOKEN"
+      file_glob: true
+      file: .build_output/exports/*.tar.gz
+      skip_cleanup: true
+      draft: true
+      on:
+        branch: master
+stages:
+- name: "Test exaslct"
+- name: "Build --goal language_deps --goal build_deps"
+- name: "Build --goal flavor_base_deps --goal build_run"
+- name: "Build --goal release"
+- name: "Run DB Test"
+- name: "Deploy Images for commit to build cache"
+  if: type = "push"
+- name: "Deploy Images to public build cache"
+  if: branch = master and type = "push"
+- name: "Deploy exported Container"
+  if: branch = master and type = "push"

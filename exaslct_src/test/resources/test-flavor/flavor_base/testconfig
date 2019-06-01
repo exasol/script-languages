@@ -1,0 +1,4 @@
+language_definition=PYTHON=builtin_python JAVA=builtin_java R=builtin_r
+generic_language_tests=
+test_folders=
+# ending new line required!

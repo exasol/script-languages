@@ -1,0 +1,3 @@
+language_definition=PYTHON=localzmq+protobuf:///bfsdefault/myudfs/standard-EXASOL-6.1.0?lang=python#exaudf/exaudfclient PYTHON3=localzmq+protobuf:///bfsdefault/myudfs/standard-EXASOL-6.1.0?lang=python#exaudf/exaudfclient_py3 JAVA=localzmq+protobuf:///bfsdefault/myudfs/standard-EXASOL-6.1.0?lang=java#exaudf/exaudfclient R=localzmq+protobuf:///bfsdefault/myudfs/standard-EXASOL-6.1.0?lang=r#exaudf/exaudfclient
+generic_language_tests=python3 python java r
+test_folders=python python3 java r standard-flavor

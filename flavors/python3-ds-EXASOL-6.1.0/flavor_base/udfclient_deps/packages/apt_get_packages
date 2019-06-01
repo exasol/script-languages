@@ -1,0 +1,7 @@
+software-properties-common
+coreutils
+locales
+libnss-db
+libzmq3-dev
+libprotobuf-dev
+libssl-dev

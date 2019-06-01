@@ -10,10 +10,10 @@
     Networks = private
     # Comma-separated list of nameservers for this cluster.
     NameServers =
-    ConfVersion = 6.0.12
-    OSVersion = 6.0.12
-    DBVersion = 6.0.12
-    ImageVersion = 6.0.12-d1
+    ConfVersion = {{ db_version }}
+    OSVersion = {{ db_version }}
+    DBVersion = {{ db_version }}
+    ImageVersion = {{ image_version }}
 
 # SSL options
 [SSL]
@@ -33,7 +33,7 @@
     DeviceType = file
 
 [Node : 11]
-    PrivateNet = 172.17.0.2/16
+    PrivateNet = {{private_network}}
     PublicNet =
     Name = n11
     UUID = 5D11CDFCDEA74475833F1892426428873D4BEB66
