@@ -18,6 +18,8 @@ class TensorflowBasics(udf.TestCase):
                 CREATE OR REPLACE python3 scalar SCRIPT tfbasic.import_keras()
                 returns varchar(1000) as
                 import keras
+                import tensorflow
+                import tensorflow_hub
                 
                 def run(ctx):
                     return str(keras.__version__)

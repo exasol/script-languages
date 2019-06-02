@@ -52,6 +52,7 @@ class AvailablePythonPackages(udf.TestCase):
     def test_17(self): self.import_test('pandas')
     def test_18(self): self.import_test('pyexasol')
     def test_19(self): self.import_test('pycurl')
+    def test_20(self): self.import_test('yaml') # package PyYAML
 
 
 if __name__ == '__main__':
