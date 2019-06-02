@@ -29,9 +29,9 @@ run () {
 }
 
 find_pip_bin () {
-    if python3 -m pip --list &> /dev/null
+    if python3 -m pip list &> /dev/null
     then
-        PIP_BIN="python3 -m pip"
+        PIP_BIN="python3 -m pip "
     else
         echo "ERROR: cant find pip"
 	exit 1
@@ -40,8 +40,8 @@ find_pip_bin () {
 
 find_and_run_via_pip () {
     find_pip_bin
-    local PIPENV_LOCATION=$(PIP_BIN show pipenv | grep 'Location:'  | cut -f 2 -d " ")
-    local PIPENV_BIN_IN_LOCATION=$($PIP show -f pipenv | grep 'bin/pipenv$' | awk '{$1=$1};1')
+    local PIPENV_LOCATION=$($PIP_BIN show pipenv | grep 'Location:'  | cut -f 2 -d " ")
+    local PIPENV_BIN_IN_LOCATION=$($PIP_BIN show -f pipenv | grep 'bin/pipenv$' | awk '{$1=$1};1')
     PIPENV_BIN=$(command -v "$PIPENV_LOCATION/$PIPENV_BIN_IN_LOCATION")
     if [ -n "$PIPENV_BIN" ];
     then
@@ -97,7 +97,8 @@ discover_pipenv_and_run() {
     then
         run "$PIPENV_BIN"
     else
-        if pip show pipenv &> /dev/null;
+        find_pip_bin
+        if $PIP_BIN show pipenv &> /dev/null;
         then
             find_and_run_via_pip
         else
