@@ -72,9 +72,9 @@ jobs:
   - name: "fancyr-EXASOL-6.1.0"
     script:
     - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
-  - name: "python3-ds-cuda-EXASOL-6.1.0"
+  - name: "python3-ds-cuda-preview-EXASOL-6.1.0"
     script:
-    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0"
+    - "travis/build_language_deps_and_build_deps.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
 ##################################################################################################
 ################################# Build --goal flavor_base_deps ##################################
 ##################################################################################################
@@ -97,9 +97,9 @@ jobs:
   - name: "python3-ds-EXASOL-6.1.0 --goal flavor_base_deps"
     script:
     - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
-  - name: "python3-ds-cuda-EXASOL-6.1.0 --goal flavor_base_deps"
+  - name: "python3-ds-cuda-preview-EXASOL-6.1.0 --goal flavor_base_deps"
     script:
-    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0"
+    - "travis/build_flavor_base_deps.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
 ##################################################################################################
 ##################################### Build --goal build_run #####################################
 ##################################################################################################
@@ -122,9 +122,9 @@ jobs:
   - name: "fancyr-EXASOL-6.1.0 --goal build_run"
     script:
     - "travis/build_build_run.sh --flavor-path flavors/fancyr-EXASOL-6.1.0"
-  - name: "python3-ds-cuda-EXASOL-6.1.0 --goal build_run"
+  - name: "python3-ds-cuda-preview-EXASOL-6.1.0 --goal build_run"
     script:
-    - "travis/build_build_run.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0"
+    - "travis/build_build_run.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
 ##################################################################################################
 ###################################### Build --goal release ######################################
 ##################################################################################################
@@ -147,9 +147,9 @@ jobs:
   - name: "python3-ds-EXASOL-6.1.0"
     script:
     - "travis/build_release.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
-  - name: "python3-ds-cuda-EXASOL-6.1.0"
+  - name: "python3-ds-cuda-preview-EXASOL-6.1.0"
     script:
-    - "travis/build_release.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0"
+    - "travis/build_release.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
 ##################################################################################################
 ################################ Run DB Test standard-EXASOL-6.0.0 ###############################
 ##################################################################################################
@@ -225,16 +225,16 @@ jobs:
       --test-folder=python3
       --test-folder=python3-ds-flavor"
 ##################################################################################################
-############################### Run DB Test python3-ds-cuda-EXASOL-6.1.0 ##############################
+############################### Run DB Test python3-ds-cuda-preview-EXASOL-6.1.0 ##############################
 ##################################################################################################
   - stage: "Run DB Test"
-    name: "python3-ds-cuda-EXASOL-6.1.0 --generic-language-test=python3"
+    name: "python3-ds-cuda-preview-EXASOL-6.1.0 --generic-language-test=python3"
     script:
-      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0
+      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0
       --generic-language-test=python3"
-  - name: "python3-ds-cuda-EXASOL-6.1.0 --test-folder=python3 --test-folder=python3-ds-flavor"
+  - name: "python3-ds-cuda-preview-EXASOL-6.1.0 --test-folder=python3 --test-folder=python3-ds-flavor"
     script:
-      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0
+      - "travis/run_db_test.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0
       --test-folder=python3
       --test-folder=python3-ds-flavor"
 ##################################################################################################
@@ -277,9 +277,9 @@ jobs:
   - name: "python3-ds-EXASOL-6.1.0"
     script:
     - "travis/deploy_images_for_commit.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
-  - name: "python3-ds-cuda-EXASOL-6.1.0"
+  - name: "python3-ds-cuda-preview-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images_for_commit.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0"
+    - "travis/deploy_images_for_commit.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
 ##################################################################################################
 ############################## Deploy Images to public build cache ###############################
 ##################################################################################################
@@ -302,9 +302,9 @@ jobs:
   - name: "python3-ds-EXASOL-6.1.0"
     script:
     - "travis/deploy_images_to_public.sh --flavor-path flavors/python3-ds-EXASOL-6.1.0"
-  - name: "python3-ds-cuda-EXASOL-6.1.0"
+  - name: "python3-ds-cuda-preview-EXASOL-6.1.0"
     script:
-    - "travis/deploy_images_to_public.sh --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0"
+    - "travis/deploy_images_to_public.sh --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
 ##################################################################################################
 ################################### Deploy exported Container ####################################
 ##################################################################################################
@@ -318,7 +318,7 @@ jobs:
       --flavor-path flavors/fancyr-EXASOL-6.1.0
       --flavor-path flavors/python3-ds-EXASOL-6.0.0
       --flavor-path flavors/python3-ds-EXASOL-6.1.0
-      --flavor-path flavors/python3-ds-cuda-EXASOL-6.1.0"
+      --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
     deploy:
       provider: releases
       api_key: "$GH_TOKEN"
