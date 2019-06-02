@@ -29,14 +29,11 @@ run () {
 }
 
 find_pip_bin () {
-    if pip &> /dev/null
+    if python3 -m pip --list &> /dev/null
     then
-        PIP_BIN=pip
-    elif pip3 &> /dev/null
-    then
-	PIP_BIN=pip3
+        PIP_BIN="python3 -m pip"
     else
-        echo "ERROR: cant find pip executable"
+        echo "ERROR: cant find pip"
 	exit 1
     fi
 }
