@@ -317,8 +317,8 @@ jobs:
       --flavor-path flavors/fancyr-EXASOL-6.0.0
       --flavor-path flavors/fancyr-EXASOL-6.1.0
       --flavor-path flavors/python3-ds-EXASOL-6.0.0
-      --flavor-path flavors/python3-ds-EXASOL-6.1.0
-      --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0"
+      --flavor-path flavors/python3-ds-EXASOL-6.1.0"
+#      --flavor-path flavors/python3-ds-cuda-preview-EXASOL-6.1.0" TODO container to large for upload https://github.com/travis-ci/travis-ci/issues/8553
     deploy:
       provider: releases
       api_key: "$GH_TOKEN"
