@@ -28,9 +28,20 @@ run () {
     $PIPENV_BIN run python3 exaslct_src/exaslct.py $COMMAND_LINE_ARGS
 }
 
+find_pip_bin () {
+    if python3 -m pip list &> /dev/null
+    then
+        PIP_BIN="python3 -m pip "
+    else
+        echo "ERROR: cant find pip"
+	exit 1
+    fi
+}
+
 find_and_run_via_pip () {
-    local PIPENV_LOCATION=$(pip show pipenv | grep 'Location:'  | cut -f 2 -d " ")
-    local PIPENV_BIN_IN_LOCATION=$(pip show -f pipenv | grep 'bin/pipenv$' | awk '{$1=$1};1')
+    find_pip_bin
+    local PIPENV_LOCATION=$($PIP_BIN show pipenv | grep 'Location:'  | cut -f 2 -d " ")
+    local PIPENV_BIN_IN_LOCATION=$($PIP_BIN show -f pipenv | grep 'bin/pipenv$' | awk '{$1=$1};1')
     PIPENV_BIN=$(command -v "$PIPENV_LOCATION/$PIPENV_BIN_IN_LOCATION")
     if [ -n "$PIPENV_BIN" ];
     then
@@ -46,7 +57,8 @@ request_install_to_virtual_env () {
     read ANSWER
     if [ "$ANSWER" == "yes" ];
     then
-        pip install pipenv
+        find_pip_bin
+        $PIP_BIN install pipenv
         find_and_run_via_pip
         run "$PIPENV_BIN"
     else
@@ -59,7 +71,8 @@ request_install_to_user () {
     read ANSWER
     if [ "$ANSWER" == "yes" ];
     then
-        pip install --user pipenv
+        find_pip_bin
+        $PIP_BIN install --user pipenv
         PIPENV_BIN="$(python3 -m site --user-base)/bin/pipenv"
         run "$PIPENV_BIN"
     else
@@ -67,8 +80,8 @@ request_install_to_user () {
     fi
 }
 
-request_install () {
-    IS_IN_VIRTUAL_ENV=$(python -c "import sys; print(hasattr(sys, 'real_prefix'))")
+request_install_and_run () {
+    IS_IN_VIRTUAL_ENV=$(python3 -c "import sys; print(hasattr(sys, 'real_prefix'))")
     if [ "$IS_IN_VIRTUAL_ENV" == "True" ];
     then
         request_install_to_virtual_env
@@ -84,7 +97,8 @@ discover_pipenv_and_run() {
     then
         run "$PIPENV_BIN"
     else
-        if pip show pipenv &> /dev/null;
+        find_pip_bin
+        if $PIP_BIN show pipenv &> /dev/null;
         then
             find_and_run_via_pip
         else

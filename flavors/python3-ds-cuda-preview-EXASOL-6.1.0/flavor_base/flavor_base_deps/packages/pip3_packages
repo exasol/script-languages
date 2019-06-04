@@ -1,7 +1,7 @@
 pyexasol
 keras
-tensorflow
-tensorflow-hub
+tensorflow-gpu==1.13.1 # due to the dependency of tensorflow's pip package to the fixed CUDA Driver Version 410.104
+tensorflow-hub==0.4.0
 kmodes
 seaborn
 matplotlib
