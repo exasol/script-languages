@@ -32,6 +32,7 @@ def spawn_test_environment(
                      False,
                      output_directory,
                      temporary_base_directory,
+                     None,
                      None)
     tasks = lambda: [SpawnTestDockerEnvironment(environment_name=environment_name,
                                                 database_port_forward=str(database_port_forward),
