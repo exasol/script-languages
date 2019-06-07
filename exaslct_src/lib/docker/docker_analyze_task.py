@@ -1,8 +1,9 @@
 import logging
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict
 
 import docker
+import git
 import luigi
 
 from exaslct_src.lib.build_config import build_config
@@ -11,9 +12,9 @@ from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector i
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState, ImageDescription
 from exaslct_src.lib.docker.docker_image_target import DockerImageTarget
 from exaslct_src.lib.docker.docker_registry_image_checker import DockerRegistryImageChecker
-from exaslct_src.lib.docker_config import docker_client_config, source_docker_repository_config
-from exaslct_src.lib.utils.build_context_hasher import BuildContextHasher
+from exaslct_src.lib.docker_config import docker_client_config, docker_build_arguments
 from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.utils.build_context_hasher import BuildContextHasher
 
 
 class DockerAnalyzeImageTask(StoppableTask):
@@ -25,11 +26,15 @@ class DockerAnalyzeImageTask(StoppableTask):
         self._target_repository_name = self.get_target_repository_name()
         self._source_image_tag = self.get_source_image_tag()
         self._target_image_tag = self.get_target_image_tag()
+        merged_transparent_build_arguments = {**self.get_transparent_build_arguments(),
+                                              **docker_build_arguments().transparent}
+        merged_image_changing_build_arguments = {**self.get_image_changing_build_arguments(),
+                                                 **docker_build_arguments().image_changing}
         self.image_description = ImageDescription(
             dockerfile=self.get_dockerfile(),
             mapping_of_build_files_and_directories=self.get_mapping_of_build_files_and_directories(),
-            image_changing_build_arguments=self.get_image_changing_build_arguments(),
-            transparent_build_arguments=self.get_transparent_build_arguments()
+            image_changing_build_arguments=merged_image_changing_build_arguments,
+            transparent_build_arguments=merged_transparent_build_arguments
         )
         self._dockerfile = self.get_dockerfile()
         self._prepare_outputs()
@@ -63,7 +68,6 @@ class DockerAnalyzeImageTask(StoppableTask):
         """
         pass
 
-
     def get_source_image_tag(self) -> str:
         """
         Called by the constructor to get the image tag for pulls. Sub classes need to implement this method.
@@ -77,7 +81,6 @@ class DockerAnalyzeImageTask(StoppableTask):
         :return: image tag
         """
         pass
-
 
     def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:
         """
@@ -97,7 +100,7 @@ class DockerAnalyzeImageTask(StoppableTask):
         """
         pass
 
-    def get_image_changing_build_arguments(self) -> Dict[str, Any]:
+    def get_image_changing_build_arguments(self) -> Dict[str, str]:
         """
         Called by the constructor to get the path image changing docker build arguments.
         Different values for these arguments might change the image, such that they
@@ -108,7 +111,7 @@ class DockerAnalyzeImageTask(StoppableTask):
         """
         return dict()
 
-    def get_transparent_build_arguments(self) -> Dict[str, Any]:
+    def get_transparent_build_arguments(self) -> Dict[str, str]:
         """
         Called by the constructor to get the path transparent docker build arguments.
         Transparent arguments do not change the contain of the images.
@@ -123,7 +126,7 @@ class DockerAnalyzeImageTask(StoppableTask):
         pass
 
     def output(self):
-        return {IMAGE_INFO:self._image_info_target}
+        return {IMAGE_INFO: self._image_info_target}
 
     def run_task(self):
         image_info_of_dependencies = DependencyImageInfoCollector().get_from_dict_of_inputs(self.input())
@@ -134,6 +137,8 @@ class DockerAnalyzeImageTask(StoppableTask):
             source_tag=self._source_image_tag,
             target_tag=self._target_image_tag,
             hash=image_hash,
+            commit=self.get_commit_id(),
+            build_name=build_config().build_name,
             depends_on_images=image_info_of_dependencies,
             image_state=None,
             image_description=self.image_description
@@ -143,9 +148,19 @@ class DockerAnalyzeImageTask(StoppableTask):
         image_state = self.get_image_state(source_image_target,
                                            target_image_target,
                                            image_info_of_dependencies)
-        image_info.image_state=image_state.name #TODO setter for image_state
+        image_info.image_state = image_state.name  # TODO setter for image_state
         with self._image_info_target.open("w") as f:
             f.write(image_info.to_json())
+
+    def get_commit_id(self):
+        try:
+            repo = git.Repo(search_parent_directories=True)
+            sha = repo.head.object.hexsha
+            return sha
+        except Exception as e:
+            self.logger.info("Task %s_ Not a Git Repository, can't determine the commit id for the image_info",
+                             self.__repr__())
+            return ""
 
     def get_image_state(self,
                         source_image_target: DockerImageTarget,
@@ -198,7 +213,7 @@ class DockerAnalyzeImageTask(StoppableTask):
     def get_path_to_cached_image(self, image_target):
         image_path = \
             Path(build_config().cache_directory) \
-                .joinpath(Path(image_target.get_complete_name()+".tar"))
+                .joinpath(Path(image_target.get_complete_name() + ".tar"))
         return image_path
 
     def is_image_in_registry(self, image_target: DockerImageTarget):

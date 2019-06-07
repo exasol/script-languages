@@ -20,7 +20,8 @@ def set_build_config(force_rebuild: bool,
                      log_build_context_content: bool,
                      output_directory: str,
                      temporary_base_directory: str,
-                     cache_directory: str):
+                     cache_directory: str,
+                     build_name: str, ):
     luigi.configuration.get_config().set('build_config', 'force_rebuild', str(force_rebuild))
     luigi.configuration.get_config().set('build_config', 'force_rebuild_from', json.dumps(force_rebuild_from))
     luigi.configuration.get_config().set('build_config', 'force_pull', str(force_pull))
@@ -29,6 +30,8 @@ def set_build_config(force_rebuild: bool,
         luigi.configuration.get_config().set('build_config', 'temporary_base_directory', temporary_base_directory)
     if cache_directory is not None:
         luigi.configuration.get_config().set('build_config', 'cache_directory', cache_directory)
+    if build_name is not None:
+        luigi.configuration.get_config().set('build_config', 'build_name', build_name)
     luigi.configuration.get_config().set('build_config', 'log_build_context_content', str(log_build_context_content))
 
 
@@ -37,7 +40,8 @@ def set_output_directory(output_directory):
         luigi.configuration.get_config().set('build_config', 'output_directory', output_directory)
 
 
-def set_docker_repository_config(docker_password: str, docker_repository_name: str, docker_username: str, tag_prefix: str,
+def set_docker_repository_config(docker_password: str, docker_repository_name: str, docker_username: str,
+                                 tag_prefix: str,
                                  kind: str):
     config_class = f'{kind}_docker_repository_config'
     luigi.configuration.get_config().set(config_class, 'tag_prefix', tag_prefix)

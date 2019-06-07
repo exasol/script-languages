@@ -1,12 +1,13 @@
 import os
 import pathlib
 import shutil
+import textwrap
 from pathlib import Path
 
 from jinja2 import Template
 
 from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.data.image_info import ImageInfo
+from exaslct_src.lib.data.image_info import ImageInfo, ImageState
 
 
 class BuildContextCreator:
@@ -23,7 +24,13 @@ class BuildContextCreator:
     def prepare_build_context_to_temp_dir(self):
         self._copy_build_files_and_directories()
         self._prepare_dockerfile()
+        self._prepare_image_info()
         self._log_build_context()
+
+    def _prepare_image_info(self):
+        self._image_info.image_state = ImageState.WAS_BUILD.name
+        with open(self._temp_directory + "/image_info", "wt") as file:
+            file.write(self._image_info.to_json())
 
     def _prepare_dockerfile(self):
         with open(self._image_description.dockerfile, "rt") as file:
@@ -34,6 +41,12 @@ class BuildContextCreator:
              for key, image_info
              in self._image_info_of_dependencies.items()}
         final_dockerfile = template.render(**image_names_of_dependencies)
+        final_dockerfile += textwrap.dedent(f"""
+        RUN mkdir -p /build_info/image_info
+        COPY image_info /build_info/image_info/{self._image_info.target_tag}
+        RUN mkdir -p /build_info/dockerfiles
+        COPY Dockerfile /build_info/dockerfiles/{self._image_info.target_tag}
+        """)
         with open(self._temp_directory + "/Dockerfile", "wt") as file:
             file.write(final_dockerfile)
 

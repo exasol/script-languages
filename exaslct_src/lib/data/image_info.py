@@ -1,7 +1,9 @@
+from datetime import datetime
 from enum import Enum
 from typing import Dict, Any
 
 from exaslct_src.lib.data.info import Info
+
 
 class ImageState(Enum):
     NOT_EXISTING = 0,
@@ -18,6 +20,7 @@ class ImageState(Enum):
     WAS_LOADED = 9
     WAS_TAGED = 10
 
+
 class ImageDescription:
     def __init__(self,
                  dockerfile: str,
@@ -31,21 +34,27 @@ class ImageDescription:
 
 
 class ImageInfo(Info):
-    DOCKER_TAG_LENGTH_LIMIT=128
+    DOCKER_TAG_LENGTH_LIMIT = 128
     MAX_TAG_SURPLUS = 30
 
     def __init__(self,
                  source_repository_name: str, target_repository_name: str,
-                 source_tag: str, target_tag: str, hash: str,
+                 source_tag: str, target_tag: str,
+                 hash: str, commit: str,
                  image_description: ImageDescription,
+                 build_name:str= "",
+                 build_date_time: datetime=datetime.utcnow(),
                  image_state: ImageState = ImageState.NOT_EXISTING,
                  depends_on_images: Dict[str, "ImageInfo"] = None):
+        self.build_name = build_name
+        self.date_time = str(build_date_time)
+        self.commit = commit
         self.target_repository_name = target_repository_name
         self.source_repository_name = source_repository_name
         self.image_description = image_description
         if isinstance(image_state, ImageState):
             self.image_state = image_state.name
-        elif isinstance(image_state,str):
+        elif isinstance(image_state, str):
             self.image_state = ImageState[image_state].name
         elif image_state is None:
             self.image_state = None
@@ -62,7 +71,7 @@ class ImageInfo(Info):
         complete_tag_length_limit = self.DOCKER_TAG_LENGTH_LIMIT + self.MAX_TAG_SURPLUS
         complete_tag = self._create_complete_tag(tag)
         if len(complete_tag) > complete_tag_length_limit:
-            raise Exception(f"Complete Tag to long by {len(complete_tag)-complete_tag_length_limit}:  {complete_tag}")
+            raise Exception(f"Complete Tag to long by {len(complete_tag) - complete_tag_length_limit}:  {complete_tag}")
 
     def get_target_complete_name(self):
         return f"{self.target_repository_name}:{self.get_target_complete_tag()}"
@@ -76,7 +85,7 @@ class ImageInfo(Info):
     def get_target_complete_tag(self):
         return self._create_truncated_complete_tag(self.target_tag)
 
-    def _create_truncated_complete_tag(self, tag:str)->str:
+    def _create_truncated_complete_tag(self, tag: str) -> str:
         # we must truncate the tag to 128 characters, because this is the limit of docker tags
         # refer here https://docs.docker.com/engine/reference/commandline/tag/
         complete_tag = self._create_complete_tag(tag)

@@ -11,7 +11,7 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker.build_context_creator import BuildContextCreator
 from exaslct_src.lib.docker.build_log_handler import BuildLogHandler
-from exaslct_src.lib.docker_config import docker_client_config, target_docker_repository_config
+from exaslct_src.lib.docker_config import docker_client_config, target_docker_repository_config, docker_build_arguments
 from exaslct_src.lib.log_config import log_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 
@@ -20,8 +20,6 @@ class DockerImageBuilder:
     logger = logging.getLogger('luigi-interface')
 
     def __init__(self, task_id: str):
-
-
         self._log_config = log_config()
         self._low_level_client = docker_client_config().get_low_level_client()
         self._task_id = task_id
@@ -45,8 +43,9 @@ class DockerImageBuilder:
                 self._low_level_client.build(path=temp_directory,
                                              tag=image_info.get_target_complete_name(),
                                              rm=True,
-                                             **image_description.transparent_build_arguments,
-                                             **image_description.image_changing_build_arguments)
+                                             buildargs=dict(**image_description.transparent_build_arguments,
+                                                            **image_description.image_changing_build_arguments,
+                                                            **docker_build_arguments().secret))
             self._handle_output(output_generator, image_info, log_file_path)
         finally:
             shutil.rmtree(temp_directory)
@@ -73,5 +72,3 @@ class DockerImageBuilder:
             shutil.rmtree(log_file_path)
         log_file_path.mkdir(parents=True)
         return log_file_path
-
-

@@ -37,6 +37,7 @@ def build(flavor_path: Tuple[str, ...],
           temporary_base_directory: str,
           log_build_context_content: bool,
           cache_directory: str,
+          build_name:str,
           source_docker_repository_name: str,
           source_docker_tag_prefix: str,
           source_docker_username: str,
@@ -59,7 +60,8 @@ def build(flavor_path: Tuple[str, ...],
                      log_build_context_content,
                      output_directory,
                      temporary_base_directory,
-                     cache_directory)
+                     cache_directory,
+                     build_name)
     set_docker_repository_config(source_docker_password, source_docker_repository_name, source_docker_username,
                                  source_docker_tag_prefix, "source")
     set_docker_repository_config(target_docker_password, target_docker_repository_name, target_docker_username,

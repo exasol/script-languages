@@ -17,3 +17,5 @@ COPY src/ /exaudf_src/
 WORKDIR /exaudf_src/
 RUN ["/bin/bash", "-c", "source /env && bash build.sh -c opt --define r=true --define python=true --define java=true //:exaudfclient"]
 RUN cp -r -L bazel-bin/* /exaudf
+
+COPY --from={{build_deps}} /build_info /build_info

@@ -175,7 +175,7 @@ class SpawnTestDockerDatabase(StoppableTask):
             source_repository_name=image_name,
             source_tag=image_tag,
             target_tag=image_tag,
-            hash="",
+            hash="", commit = "",
             image_description=None)
         try:
 
