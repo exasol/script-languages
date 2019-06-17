@@ -12,6 +12,7 @@ COPY --from={{flavor_customization}} /lib /lib
 COPY --from={{flavor_customization}} /bin /bin
 COPY --from={{flavor_customization}} /opt /opt
 COPY --from={{flavor_customization}} /etc /etc
+COPY --from={{flavor_customization}} /build_info /build_info
 
 COPY --from={{build_run}} /exaudf /exaudf
-
+COPY --from={{build_run}} /build_info /build_info

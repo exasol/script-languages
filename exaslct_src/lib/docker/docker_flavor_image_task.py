@@ -5,7 +5,7 @@ import luigi
 
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
-from exaslct_src.lib.docker_config import docker_client_config, source_docker_repository_config, target_docker_repository_config
+from exaslct_src.lib.docker_config import source_docker_repository_config, target_docker_repository_config
 from exaslct_src.lib.flavor import flavor
 
 
@@ -19,7 +19,6 @@ class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask):
         self.build_step = self.get_build_step()
         self.additional_build_directories_mapping = self.get_additional_build_directories_mapping()
         super().__init__(*args, **kwargs)
-
 
     def is_rebuild_requested(self) -> bool:
         config = build_config()

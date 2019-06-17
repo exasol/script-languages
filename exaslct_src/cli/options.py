@@ -101,6 +101,8 @@ build_options = [
                  help="For Debugging: Logs the files and directories in the build context of a stage"),
     click.option('--cache-directory', default=None, type=click.Path(file_okay=False, dir_okay=True, exists=False),
                  help="Directory from where saved docker images can be loaded"),
+    click.option('--build-name', default=None, type=str,
+                 help="Name of the build. For example: Repository + CI Build Number"),
 ]
 
 system_options = [

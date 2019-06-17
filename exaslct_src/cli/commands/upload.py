@@ -6,7 +6,8 @@ from click._unicodefun import click
 
 from exaslct_src.lib.upload_container import UploadContainer
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, import_build_steps
+from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, \
+    import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
     docker_repository_options
@@ -46,6 +47,7 @@ def upload(flavor_path: Tuple[str, ...],
            temporary_base_directory: str,
            log_build_context_content: bool,
            cache_directory: str,
+           build_name: str,
            source_docker_repository_name: str,
            source_docker_tag_prefix: str,
            source_docker_username: str,
@@ -68,7 +70,8 @@ def upload(flavor_path: Tuple[str, ...],
                      log_build_context_content,
                      output_directory,
                      temporary_base_directory,
-                     cache_directory)
+                     cache_directory,
+                     build_name)
     set_docker_repository_config(source_docker_password, source_docker_repository_name, source_docker_username,
                                  source_docker_tag_prefix, "source")
     set_docker_repository_config(target_docker_password, target_docker_repository_name, target_docker_username,

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+echo "TravisCI_${TRAVIS_REPO_SLUG}_${TRAVIS_BUILD_NUMBER}_${TRAVIS_BUILD_ID}_${TRAVIS_BUILD_WEB_URL}"
