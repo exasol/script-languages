@@ -1,6 +1,6 @@
 pyexasol
 keras
-tensorflow
+tensorflow==1.13.1
 tensorflow-hub
 kmodes
 seaborn
