@@ -17,7 +17,7 @@ then
         if [[ -n "$package" ]]
         then
             echo "$package_type: Installing package '$package'"
-            command=$(echo "$command_template" | sed "s/<<package>>/$package/")
+            command="${command_template/<<package>>/$package}"
             echo "Executing: $command"
             if $command
             then

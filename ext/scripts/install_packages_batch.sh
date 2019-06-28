@@ -23,7 +23,7 @@ then
         if [[ -n "$package" ]]
         then
             echo "$package_type: Adding package '$package' to list"
-            wrapped_package=$(echo "$package_template" | sed "s/<<package>>/$package/")
+            wrapped_package="${package_template/<<package>>/$package}"
             if [[ -z "$list" ]]
             then
                 list="$wrapped_package"
@@ -35,7 +35,7 @@ then
     echo "$package_type: Installing packages"
     if [[ -n "$list" ]]
     then
-        command=$(echo "$command_template" | sed "s/<<list>>/$list/")
+        command="${command_template/<<list>>/$list}"
         echo "Executing: $command"
         if bash -c "$command"
         then
