@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o pipefail
+set -o errexit
+set -o nounset
+
 # This script installs a list of packages given by a file with a given command template
 
 # Package Type, only for useful output necessary
