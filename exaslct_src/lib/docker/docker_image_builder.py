@@ -41,6 +41,7 @@ class DockerImageBuilder:
             build_context_creator.prepare_build_context_to_temp_dir()
             output_generator = \
                 self._low_level_client.build(path=temp_directory,
+                                             nocache=docker_client_config.no_cache,
                                              tag=image_info.get_target_complete_name(),
                                              rm=True,
                                              buildargs=dict(**image_description.transparent_build_arguments,
