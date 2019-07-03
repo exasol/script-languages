@@ -15,6 +15,6 @@ COPY scripts /scripts
 COPY flavor_base_deps/packages/cran_packages /build_info/packages/flavor_base_deps
 RUN /scripts/install_packages_batch.sh "CRAN" "Rscript -e 'install.packages(c(<<list>>),repos=\"http://cran.r-project.org\")'" '"<<package>>"' "," /build_info/packages/flavor_base_deps/cran_packages
 COPY flavor_base_deps/packages/pip_packages /build_info/packages/flavor_base_deps
-RUN /scripts/install_packages_batch.sh "PYTHON2-PIP" "pip install <<list>>" "<<package>>" " " /build_info/packages/flavor_base_deps/pip_packages
+RUN /scripts/install_packages_batch.sh "PYTHON2-PIP" "pip install <<list>>" "'<<package>>'" " " /build_info/packages/flavor_base_deps/pip_packages
 COPY flavor_base_deps/packages/pip3_packages /build_info/packages/flavor_base_deps
-RUN /scripts/install_packages_batch.sh "PYTHON3-PIP3" "pip3 install <<list>>" "<<package>>" " " /build_info/packages/flavor_base_deps/pip3_packages
+RUN /scripts/install_packages_batch.sh "PYTHON3-PIP3" "pip3 install <<list>>" "'<<package>>'" " " /build_info/packages/flavor_base_deps/pip3_packages
