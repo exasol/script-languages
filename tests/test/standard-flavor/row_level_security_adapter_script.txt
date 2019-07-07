@@ -1,0 +1,139 @@
+CREATE OR REPLACE PYTHON ADAPTER SCRIPT ROW_LEVEL_SECURITY_ADAPTER.rls_adapter AS
+import json
+import string
+import os
+
+os.environ["USER"] = "exasolution"
+
+
+# For this example, we only support the data types VARCHAR and BOOLEAN in the wrapped tables
+def get_datatype(name, maxsize, prec, scale):
+    if name.startswith("VARCHAR"):
+        return {"type": "VARCHAR", "size": maxsize}
+    if name == "BOOLEAN":
+        return {"type": "BOOLEAN"}
+    raise ValueError("Datatype '" + name + "' yet not supported in RLS virtual schema")
+
+
+# This function reads all the meta data for all the tables in the wrapped schema
+def get_meta_for_schema(meta_connection, table_schema):
+    import sys
+    import glob
+    import EXASOL
+    c = exa.get_connection(meta_connection)
+
+    tabs = []
+    with EXASOL.connect(c.address, c.user, c.password) as connection:
+        with connection.cursor() as cursor:
+            query = "select table_name from EXA_ALL_TABLES where table_schema='%s'" % table_schema
+            #print("get_meta_for_schema tables query", query)
+            result = cursor.execute(query)
+            #print("get_meta_for_schema table result", result)
+            if result > 0:
+                for row in cursor:
+                    tabs.append(row[0])
+            else:
+                print("Didn't found tables in %s, query %s, result %s" % (table_schema,query,result))
+
+        rtabs = []
+        for t in tabs:
+            with connection.cursor() as cursor:
+                query = """
+                    select column_name, column_type, column_maxsize, column_num_prec, column_num_scale
+                    from EXA_ALL_COLUMNS 
+                    where column_schema='%s' and column_table='%s' 
+                    order by column_ordinal_position;""" % (table_schema, t)
+                #print("get_meta_for_schema table query", query)
+                cursor.execute(query)
+                cols = []
+                for row in cursor:
+                    cols.append({"name": row[0], "dataType": get_datatype(row[1], row[2], row[3], row[4])})
+                rtabs.append({"name": t, "columns": cols})
+        return rtabs
+
+
+# This function gets the user preference regarding the ACTIVE column
+def user_wants_only_active(username, meta_connection, adapter_schema):
+    import sys
+    import glob
+    import EXASOL
+    c = exa.get_connection(meta_connection)
+
+    with EXASOL.connect(c.address, c.user, c.password) as connection:
+        with connection.cursor() as cursor:
+            query = """select wants_only_active from "%s".user_pref where username='%s'""" % (adapter_schema, username)
+            #print("user_wants_only_active", query)
+            cursor.execute(query)
+            if cursor.rowcount == 0: raise ValueError(
+                """Config error: no preference for user %s defined in %s.user_pref'""" % (username, adapter_schema))
+            if cursor.rowcount > 1: raise ValueError(
+                """Config error: more than one preference row for user %s in %s.user_pref""" % (
+                    username, adapter_schema))
+            row = cursor.fetchone()
+            return row[0]
+
+
+# This function implements the virtual schema adapter callback
+def adapter_call(request):
+    try:
+        # database expects utf-8 encoded string of type str. unicode not yet supported
+        root = json.loads(request)
+        if root["type"] == "createVirtualSchema":
+            if not "properties" in root["schemaMetadataInfo"]: raise ValueError(
+                'Config error: required properties: "TABLE_SCHEMA" and "META_CONNECTION" not given')
+            if not "TABLE_SCHEMA" in root["schemaMetadataInfo"]["properties"]: raise ValueError(
+                'Config error: required property "TABLE_SCHEMA" not given')
+            if not "META_CONNECTION" in root["schemaMetadataInfo"]["properties"]: raise ValueError(
+                'Config error: required property "META_CONNECTION" not given')
+            table_schema = root["schemaMetadataInfo"]["properties"]["TABLE_SCHEMA"]
+            meta_connection = root["schemaMetadataInfo"]["properties"]["META_CONNECTION"]
+            res = {
+                "type": "createVirtualSchema",
+                "schemaMetadata": {"tables": get_meta_for_schema(meta_connection, table_schema)}
+            }
+            return json.dumps(res).encode('utf-8')
+        elif root["type"] == "dropVirtualSchema":
+            return json.dumps({"type": "dropVirtualSchema"}).encode('utf-8')
+        elif root["type"] == "setProperties":
+            return json.dumps({"type": "setProperties"}).encode('utf-8')
+        elif root["type"] == "refresh":
+            table_schema = root["schemaMetadataInfo"]["properties"]["TABLE_SCHEMA"]
+            meta_connection = root["schemaMetadataInfo"]["properties"]["META_CONNECTION"]
+            adapter_schema = root["schemaMetadataInfo"]["properties"]["ADAPTER_SCHEMA"]
+            return json.dumps({"type": "refresh",
+                               "schemaMetadata": {
+                                   "tables": get_meta_for_schema(meta_connection, table_schema, adapter_schema)}}) \
+                .encode('utf-8')
+        if root["type"] == "getCapabilities":
+            return json.dumps({
+                "type": "getCapabilities",
+                "capabilities": []
+            }).encode('utf-8')  # database expects utf-8 encoded string of type str. unicode not yet supported.
+        elif root["type"] == "pushdown":
+            req = root["pushdownRequest"]
+            if req["type"] != "select": raise ValueError('Unsupported pushdown type: ' + req["type"])
+            from_ = req["from"]
+            if from_["type"] != "table": raise ValueError('Unsupported pushdown from: ' + from_["type"])
+            table_ = from_["name"]
+            active_filter = ""
+            table_schema = root["schemaMetadataInfo"]["properties"]["TABLE_SCHEMA"]
+            meta_connection = root["schemaMetadataInfo"]["properties"]["META_CONNECTION"]
+            adapter_schema = root["schemaMetadataInfo"]["properties"]["ADAPTER_SCHEMA"]
+            if user_wants_only_active(exa.meta.current_user, meta_connection, adapter_schema):
+                active_filter = "and active=True"
+            query = """SELECT * FROM "%s"."%s" WHERE (userName = current_user or current_user = 'SYS')%s""" \
+                    % (table_schema, table_, active_filter)
+            #print("pushdown query", query)
+            res = {
+                "type": "pushdown",
+                "sql": query
+            }
+            return json.dumps(res).encode('utf-8')
+        else:
+            raise ValueError('Unsupported callback')
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise e
+
+/
