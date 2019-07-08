@@ -28,6 +28,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
     environment_name = luigi.Parameter()
     reuse_database_setup = luigi.BoolParameter(False, significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
+    reuse_test_container = luigi.BoolParameter(False, significant=False)
     database_port_forward = luigi.OptionalParameter(None, significant=False)
     bucketfs_port_forward = luigi.OptionalParameter(None, significant=False)
     max_start_attempts = luigi.IntParameter(2, significant=False)
@@ -54,9 +55,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
         }
 
     def run_task(self):
-
         test_environment_info = yield from self.attempt_database_start()
-
         test_environment_info_dict = test_environment_info.to_dict()
         yield from self.setup_test_database(test_environment_info_dict)
         self.write_output(test_environment_info)
@@ -131,6 +130,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
                     test_container_name=self.test_container_name,
                     network_info_dict=network_info_dict,
                     ip_address_index_in_subnet=1,
+                    reuse_test_container=self.reuse_test_container,
                     attempt=attempt),
                 "database": SpawnTestDockerDatabase(
                     environment_name=self.environment_name,
@@ -139,6 +139,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
                     ip_address_index_in_subnet=0,
                     database_port_forward=self.database_port_forward,
                     bucketfs_port_forward=self.bucketfs_port_forward,
+                    reuse_database=self.reuse_database,
                     attempt=attempt
                 )
             }

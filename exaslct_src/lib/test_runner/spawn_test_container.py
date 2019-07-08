@@ -24,6 +24,7 @@ class SpawnTestContainer(StoppableTask):
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
     attempt = luigi.IntParameter(1)
+    reuse_test_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -54,10 +55,30 @@ class SpawnTestContainer(StoppableTask):
                 "export_directory": CreateExportDirectory()}
 
     def run_task(self):
-        test_container_image_info = self.get_test_container_image_info(self.input())
         network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
         subnet = netaddr.IPNetwork(network_info.subnet)
         ip_address = str(subnet[2 + self.ip_address_index_in_subnet])
+        container_info = None
+        if network_info.reused and self.reuse_test_container:
+            container_info = self.try_to_reuse_test_container(ip_address, network_info)
+        if container_info is None:
+            container_info = self.create_test_container(ip_address, network_info)
+        with self.output()[CONTAINER_INFO].open("w") as file:
+            file.write(container_info.to_json())
+
+    def try_to_reuse_test_container(self, ip_address: str, network_info: DockerNetworkInfo) -> ContainerInfo:
+        self.logger.info("Task %s: Try to reuse test container %s",
+                         self.__repr__(), self.test_container_name)
+        container_info = None
+        try:
+            container_info = self.get_container_info(ip_address, network_info)
+        except Exception as e:
+            self.logger.warning("Task %s: Tried to reuse test container %s, but got Exeception %s. "
+                                "Fallback to create new database.", self.__repr__(), self.test_container_name, e)
+        return container_info
+
+    def create_test_container(self, ip_address, network_info) -> ContainerInfo:
+        test_container_image_info = self.get_test_container_image_info(self.input())
         # A later task which uses the test_container needs the exported container,
         # but to access exported container from inside the test_container,
         # we need to mount the release directory into the test_container.
@@ -83,16 +104,22 @@ class SpawnTestContainer(StoppableTask):
         self._client.networks.get(network_info.network_name).connect(test_container, ipv4_address=ip_address)
         test_container.start()
         test_container.exec_run(cmd="cp -r /tests_src /tests")
-        with self.output()[CONTAINER_INFO].open("w") as file:
-            container_info = ContainerInfo(container_name=self.test_container_name,
-                                           ip_address=ip_address,
-                                           network_info=network_info)
-            file.write(container_info.to_json())
+        container_info = self.get_container_info(ip_address, network_info)
+        return container_info
+
+    def get_container_info(self, ip_address, network_info:DockerNetworkInfo)->ContainerInfo:
+        test_container = self._client.containers.get(self.test_container_name)
+        if test_container.status != "running":
+            raise Exception(f"Container {self.test_container_name} not running")
+        container_info = ContainerInfo(container_name=self.test_container_name,
+                                       ip_address=ip_address,
+                                       network_info=network_info)
+        return container_info
 
     def get_release_directory(self):
         return pathlib.Path(self.input()["export_directory"].path).absolute().parent
 
-    def get_test_container_image_info(self, input: Dict[str, LocalTarget])->ImageInfo:
+    def get_test_container_image_info(self, input: Dict[str, LocalTarget]) -> ImageInfo:
         with input["test_container_image"].open("r") as f:
             jsonpickle.set_preferred_backend('simplejson')
             jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)

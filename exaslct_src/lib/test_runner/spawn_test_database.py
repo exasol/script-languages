@@ -99,7 +99,7 @@ class SpawnTestDockerDatabase(StoppableTask):
                           network_info: DockerNetworkInfo) -> DatabaseInfo:
         db_container = self._client.containers.get(self.db_container_name)
         if db_container.status != "running":
-            raise Exception("Container not running")
+            raise Exception(f"Container {self.db_container_name} not running")
         container_info = \
             ContainerInfo(container_name=self.db_container_name,
                           ip_address=db_ip_address,

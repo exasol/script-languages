@@ -45,6 +45,7 @@ class TestContainer(FlavorTask):
     reuse_database = luigi.BoolParameter(False, significant=False)
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
     reuse_database_setup = luigi.BoolParameter(False, significant=False)
+    reuse_test_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -66,6 +67,7 @@ class TestContainer(FlavorTask):
                     reuse_database=self.reuse_database,
                     reuse_uploaded_container=self.reuse_uploaded_container,
                     reuse_database_setup=self.reuse_database_setup,
+                    reuse_test_container=self.reuse_test_container,
                     generic_language_tests=self.generic_language_tests,
                     test_folders=self.test_folders,
                     test_restrictions=self.test_restrictions,

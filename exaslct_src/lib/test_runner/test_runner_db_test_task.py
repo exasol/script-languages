@@ -56,6 +56,7 @@ class TestRunnerDBTestTask(StoppableTask):
     reuse_database = luigi.BoolParameter(False, significant=False)
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
     reuse_database_setup = luigi.BoolParameter(False, significant=False)
+    reuse_test_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,6 +83,7 @@ class TestRunnerDBTestTask(StoppableTask):
             "release": ExportContainers(release_types=[self.release_type], flavor_path=self.flavor_path),
             "test_environment": SpawnTestDockerEnvironment(environment_name=test_environment_name,
                                                            reuse_database=self.reuse_database,
+                                                           reuse_test_container=self.reuse_test_container,
                                                            reuse_database_setup=self.reuse_database_setup)
         }
 
