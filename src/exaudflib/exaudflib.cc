@@ -41,6 +41,7 @@ static SWIGVM_params_t * SWIGVM_params_ref = nullptr;
 
 
 static pid_t my_pid; //parent_pid,
+static const char *socket_name_file;
 
 static const char *socket_name_str;
 
@@ -92,8 +93,9 @@ void init_socket_name(const char* the_socket_name) {
 
 static void external_process_check()
 {
+    DBGVAR(cerr,&(socket_name_file));
     if (remote_client) return;
-    if (::access(&(socket_name_str[6]), F_OK) != 0) {
+    if (::access(socket_name_file, F_OK) != 0) {
         ::sleep(1); // give me a chance to die with my parent process
         cerr << "exaudfclient aborting ... cannot access socket file " << socket_name_str+6 << "." << endl;
 #ifdef SWIGVM_LOG_CLIENT
@@ -1474,7 +1476,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
 #endif
     string socket_name = argv[1];
     char* socket_name_str = argv[1];
-    const char *socket_name_file = argv[1];
+    socket_name_file = argv[1];
 
     init_socket_name(socket_name_str);
 
@@ -1514,8 +1516,11 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
     }
 
     if (socket_name.length() > 6 && strncmp(socket_name_str, "ipc:", 4) == 0)
-    {
+    {        
 #ifdef PROTEGRITY_PLUGIN_CLIENT
+/*
+    DO NOT REMOVE, required for Exasol 6.2
+*/
         if (strncmp(socket_name_str, "ipc:///tmp/", 11) == 0) {
             socket_name_ss << "ipc://" << getenv("NSEXEC_TMP_PATH") << '/' << &(socket_name_file[11]);
             socket_name = socket_name_ss.str();
@@ -1552,6 +1557,8 @@ reinit:
     socket.setsockopt(ZMQ_LINGER, &linger_timeout, sizeof(linger_timeout));
     socket.setsockopt(ZMQ_RCVTIMEO, &recv_sock_timeout, sizeof(recv_sock_timeout));
     socket.setsockopt(ZMQ_SNDTIMEO, &send_sock_timeout, sizeof(send_sock_timeout));
+
+    std::cerr << "stm652:: exaudflib_main: connection socket: " << socket_name << std::endl;
 
     if (get_remote_client()) socket.bind(socket_name_str);
     else socket.connect(socket_name_str);
