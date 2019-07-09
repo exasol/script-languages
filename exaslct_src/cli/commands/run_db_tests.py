@@ -55,6 +55,11 @@ from exaslct_src.cli.options \
               help="Reuse a previous executed database setup in a reused database")
 @click.option('--reuse-uploaded-container/--no-reuse-uploaded-container', default=False,
               help="Reuse the uploaded script-langauge-container in a reused database.")
+@click.option('--reuse-test-container/--no-reuse-test-container', default=False,
+              help="Reuse the test container which is used for test execution.")
+@click.option('--reuse-test-environment/--no-reuse-test-environment', default=False,
+              help="Reuse the whole test environment with docker network, test container, "
+                   "database, database setup and uploaded container")
 @add_options(build_options)
 @add_options(docker_repository_options)
 @add_options(system_options)
@@ -70,6 +75,8 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 reuse_database: bool,
                 reuse_database_setup: bool,
                 reuse_uploaded_container: bool,
+                reuse_test_container:bool,
+                reuse_test_environment: bool,
                 force_rebuild: bool,
                 force_rebuild_from: Tuple[str, ...],
                 force_pull: bool,
@@ -109,6 +116,11 @@ def run_db_test(flavor_path: Tuple[str, ...],
     set_docker_repository_config(target_docker_password, target_docker_repository_name, target_docker_username,
                                  target_docker_tag_prefix, "target")
 
+    if reuse_test_environment:
+        reuse_database=True
+        reuse_uploaded_container=True
+        reuse_test_container=True
+        reuse_database_setup=True
     tasks = lambda: [TestContainer(flavor_paths=list(flavor_path),
                                    release_types=list([release_type]),
                                    generic_language_tests=list(generic_language_test),
@@ -120,6 +132,7 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                    test_log_level=test_log_level,
                                    reuse_database=reuse_database,
                                    reuse_uploaded_container=reuse_uploaded_container,
+                                   reuse_test_container=reuse_test_container,
                                    reuse_database_setup=reuse_database_setup
                                    )]
 

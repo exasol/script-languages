@@ -44,7 +44,7 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         if self.reuse:
             self.logger.info("Task %s: Try to reuse network %s", self.__repr__(), self.network_name)
             try:
-                self.network_info = self.reuse_network()
+                self.network_info = self.get_network_info(reused=True)
             except Exception as e:
                 self.logger.warning("Task %s: Tried to reuse network %s, but got Exeception %s. "
                                     "Fallback to create new network.", self.__repr__(), self.network_name, e)
@@ -55,10 +55,6 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     def write_output(self, network_info: DockerNetworkInfo):
         with self.output()[DOCKER_NETWORK_INFO].open("w") as file:
             file.write(network_info.to_json())
-
-    def reuse_network(self) -> DockerNetworkInfo:
-        self.remove_container(self.test_container_name)
-        return self.get_network_info(reused=True)
 
     def get_network_info(self, reused: bool):
         network_properties = self._low_level_client.inspect_network(self.network_name)

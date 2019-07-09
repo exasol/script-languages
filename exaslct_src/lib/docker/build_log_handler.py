@@ -15,10 +15,14 @@ class BuildLogHandler(AbstractLogHandler):
 
     def handle_log_line(self, log_line, error: bool = False):
         log_line = log_line.decode("utf-8")
-        self._log_file.write(log_line)
         log_line = log_line.strip('\r\n')
         self._complete_log.append(log_line)
         json_output = json.loads(log_line)
+        if "stream" in json_output:
+            self._complete_log.append(json_output["stream"])
+            self._log_file.write(json_output["stream"])
+            self._log_file.write("\n")
+            self._log_file.flush()
         if 'errorDetail' in json_output:
             self._error_message = json_output["errorDetail"]["message"]
 

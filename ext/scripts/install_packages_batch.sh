@@ -1,5 +1,13 @@
 #!/bin/bash
 
+set -o pipefail
+set -o errexit
+set -o nounset
+set -x
+
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "$SCRIPT_DIR/parse_single_line_package_list_with_comments.sh"
+
 # This script installs a list of packages given by a file with a given command template
 
 # Package Type, only for useful output necessary
@@ -16,14 +24,13 @@ package_list_file="$5"
 if [[ -f "$package_list_file" ]]
 then
     list=""
-    while IFS= read -r package || [ -n "$package" ]
+    while IFS= read -r line || [ -n "$line" ]
     do
-        package=$(echo "$package" | cut -f 1 -d "#")
-        package=$(echo "$package" | awk '{$1=$1;print}')
+        package=$(parse_single_line_package_list_with_comments "$line")
         if [[ -n "$package" ]]
         then
             echo "$package_type: Adding package '$package' to list"
-            wrapped_package=$(echo "$package_template" | sed "s/<<package>>/$package/")
+            wrapped_package="${package_template/<<package>>/$package}"
             if [[ -z "$list" ]]
             then
                 list="$wrapped_package"
@@ -35,7 +42,7 @@ then
     echo "$package_type: Installing packages"
     if [[ -n "$list" ]]
     then
-        command=$(echo "$command_template" | sed "s/<<list>>/$list/")
+        command="${command_template/<<list>>/$list}"
         echo "Executing: $command"
         if bash -c "$command"
         then
