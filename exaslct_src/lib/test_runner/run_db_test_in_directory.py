@@ -70,7 +70,7 @@ class RunDBTestsInDirectory(StoppableTask):
         test_files = ls_output.decode("utf-8").split("\n")
         result = [(test_file, self.create_config_for_test(directory, test_file))
                   for test_file in test_files
-                  if test_file != ""]
+                  if test_file != "" and test_file.endswith(".py")]
         return result
 
     def create_config_for_test(self, directory, test_file):

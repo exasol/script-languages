@@ -1,2 +1,3 @@
 pytz
 azure-storage
+git+http://github.com/EXASOL/websocket-api.git#egg=exasol-ws-api&subdirectory=python
