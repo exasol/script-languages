@@ -62,22 +62,39 @@ external cloud service for caching.
 Because a build of a flavor already consists of a sequence of docker images, 
 we decided to use docker registries as build cache. You can use either docker hub or 
 your own docker registry as cache. We encode the information about the docker registry
-as encrypted environment variables in the .travis.yml. If you want to use Travis in 
-your fork of this repository you have to set your own encrypted environment variables.
-Please, revert the environment variables before you create pull request to the original ones, 
-used in [exasol/script-languages](https://github.com/exasol/script-languages) repository, 
-such that we can test your changes before the merge.
+as encrypted environment variables in the 
+[repository settings in Travis](https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings). 
+If you want to use Travis in your fork of this repository 
+you have to set your own encrypted environment variables.
+
+**NOTE: These values are used directly in your build, 
+so make sure to escape special characters (for bash) 
+accordingly. In particular, if a value contains spaces, 
+you should put quotes around that value. E.g. my secret 
+passphrase should be written "my secret passphrase".**
 
 We use the following encrypted Environment Variables 
-to provide the Information for the docker registry to the build:
+to provide the Information for the Docker Registry to the build.
 
-- DOCKER_REPOSITORY
-- DOCKER_USERNAME
-- DOCKER_PASSWORD
+Environment Variables for the Docker Repository which is used by the Build 
+to share Docker Images between the Build Stages: 
+- BUILD_DOCKER_REPOSITORY (.e.g. for Docker Hub exasol/script-language-container-build)
+- BUILD_DOCKER_USERNAME
+- BUILD_DOCKER_PASSWORD
+
+Environment Variables for the Docker Repository which is used to 
+upload the final images to the public Build Cache for a Release: 
+- DEPLOY_DOCKER_REPOSITORY (.e.g. for Docker Hub exasol/script-language-container)
+- DEPLOY_DOCKER_USERNAME
+- DEPLOY_DOCKER_PASSWORD
+
+Environment Variable for the Personal Github Token with the rights 'public repo':
+
+GH_TOKEN
 
 The DOCKER_REPOSITORY needs to be of the following form 
 
-    <hostname>[:port]/<user>/<repository-name>
+    [<hostname>[:port]/]<user>/<repository-name>
     
 For more information, about encrypted Environment Variables in travis, 
 please check the [travis documentation](https://docs.travis-ci.com/user/environment-variables/#defining-encrypted-variables-in-travisyml)
