@@ -106,7 +106,8 @@ genrule(
     cmd = """
         touch $(location exaudfclient)
         cat $(location exaudfclient.sh) >> $(location exaudfclient)
-        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient)
+        echo >> $(location exaudfclient)
+        echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient)
         echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient)
         echo ./`basename $(location exaudfclient_wrong_rpath_py2)` '$$*' >>  $(location exaudfclient)
     """,
@@ -122,7 +123,7 @@ genrule(
         touch $(location exaudfclient_py3)
         cat $(location exaudfclient.sh) >> $(location exaudfclient_py3)
         echo >> $(location exaudfclient_py3)
-        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient_py3)
+        echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient_py3)
         echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient_py3)
         echo ./`basename $(location exaudfclient_wrong_rpath_py3)` '$$*' >>  $(location exaudfclient_py3)
     """,
