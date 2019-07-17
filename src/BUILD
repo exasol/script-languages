@@ -77,7 +77,7 @@ VM_PYTHON3_DEPS=select({
     }) 
 
 cc_binary(
-    name = "exaudfclient_wrong_rpath_py2",
+    name = "exaudfclient",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
@@ -86,7 +86,7 @@ cc_binary(
 )
 
 cc_binary(
-    name = "exaudfclient_wrong_rpath_py3",
+    name = "exaudfclient_py3",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
@@ -101,37 +101,37 @@ cc_binary(
 # but JNI truncates pathes with @ character. In the end, 
 # it was nearly impossible to convince JNI from other pathes for its libraries, 
 # as the original pathes where apt installed the files.
-genrule(
-    name = "gen-exaudfclient",
-    cmd = """
-        touch $(location exaudfclient)
-        cat $(location exaudfclient.sh) >> $(location exaudfclient)
-        echo >> $(location exaudfclient)
-        echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient)
-        #echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient)
-        echo ./`basename $(location exaudfclient_wrong_rpath_py2)` '$$*' >>  $(location exaudfclient)
-    """,
-    outs = ["exaudfclient"],
-    srcs = [":exaudfclient_wrong_rpath_py2", "libexaudflib_complete.so", "exaudfclient.sh"],
-    #executable = True,
-    output_to_bindir = True
-)
+# genrule(
+#     name = "gen-exaudfclient",
+#     cmd = """
+#         touch $(location exaudfclient)
+#         cat $(location exaudfclient.sh) >> $(location exaudfclient)
+#         echo >> $(location exaudfclient)
+#         echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient)
+#         #echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient)
+#         echo ./`basename $(location exaudfclient_wrong_rpath_py2)` '$$*' >>  $(location exaudfclient)
+#     """,
+#     outs = ["exaudfclient"],
+#     srcs = [":exaudfclient_wrong_rpath_py2", "libexaudflib_complete.so", "exaudfclient.sh"],
+#     #executable = True,
+#     output_to_bindir = True
+# )
 
-genrule(
-    name = "gen-exaudfclient-py3",
-    cmd = """
-        touch $(location exaudfclient_py3)
-        cat $(location exaudfclient.sh) >> $(location exaudfclient_py3)
-        echo >> $(location exaudfclient_py3)
-        echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient_py3)
-        #echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient_py3)
-        echo ./`basename $(location exaudfclient_wrong_rpath_py3)` '$$*' >>  $(location exaudfclient_py3)
-    """,
-    outs = ["exaudfclient_py3"],
-    srcs = [":exaudfclient_wrong_rpath_py3", "libexaudflib_complete.so", "exaudfclient.sh"],
-    #executable = True,
-    output_to_bindir = True
-)
+# genrule(
+#     name = "gen-exaudfclient-py3",
+#     cmd = """
+#         touch $(location exaudfclient_py3)
+#         cat $(location exaudfclient.sh) >> $(location exaudfclient_py3)
+#         echo >> $(location exaudfclient_py3)
+#         echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient_py3)
+#         #echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient_py3)
+#         echo ./`basename $(location exaudfclient_wrong_rpath_py3)` '$$*' >>  $(location exaudfclient_py3)
+#     """,
+#     outs = ["exaudfclient_py3"],
+#     srcs = [":exaudfclient_wrong_rpath_py3", "libexaudflib_complete.so", "exaudfclient.sh"],
+#     #executable = True,
+#     output_to_bindir = True
+# )
 
 # Failed attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 
 # However, JNI has problems with this attempt, too. 
