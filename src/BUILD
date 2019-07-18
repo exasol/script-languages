@@ -77,7 +77,7 @@ VM_PYTHON3_DEPS=select({
     }) 
 
 cc_binary(
-    name = "exaudfclient",
+    name = "exaudfclient_wrong_rpath_py2",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
@@ -86,7 +86,7 @@ cc_binary(
 )
 
 cc_binary(
-    name = "exaudfclient_py3",
+    name = "exaudfclient_wrong_rpath_py3",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
@@ -94,7 +94,50 @@ cc_binary(
     data = [":libexaudflib_complete.so"]
 )
 
-# Workaround for the problems of JNI with rpath's used by Bazel
+# Workaround based on rewriting the rpath (faster than bash script) for the problems of JNI with rpath's used by Bazel
+# Bazel creates for all external local repositories symlinks and 
+# the path of these symlinks may contain a @ character.
+# Bazel than write during compilation these paths to the rpath of the binary,
+# but JNI truncates pathes with @ character. In the end, 
+# it was nearly impossible to convince JNI from other pathes for its libraries, 
+# as the original pathes where apt installed the files.
+genrule(
+    name = "gen-exaudfclient",
+    cmd = """
+        cp  $(location exaudfclient_wrong_rpath_py2) $(location exaudfclient)
+        if [ -n "$$JAVA_PREFIX" ]
+        then
+            echo "Fixing rpath"
+            $(location fix_rpath.sh) "$$JAVA_PREFIX" $(location exaudfclient)
+        else
+            echo "RPath doesn't need a fix"
+        fi
+    """,
+    outs = ["exaudfclient"],
+    srcs = [":exaudfclient_wrong_rpath_py2", "fix_rpath.sh",":libexaudflib_complete.so"],
+    #executable = True,
+    output_to_bindir = True
+)
+
+genrule(
+    name = "gen-exaudfclient-py3",
+    cmd = """
+        cp  $(location exaudfclient_wrong_rpath_py3) $(location exaudfclient_py3)
+        if [ -n "$$JAVA_PREFIX" ]
+        then
+            echo "Fixing rpath for JAVA_PREFIX: $$JAVA_PREFIX"
+            $(location fix_rpath.sh) "$$JAVA_PREFIX" $(location exaudfclient_py3)
+        else
+            echo "RPath doesn't need a fix for JAVA_PREFIX: $$JAVA_PREFIX"
+        fi
+    """,
+    outs = ["exaudfclient_py3"],
+    srcs = [":exaudfclient_wrong_rpath_py3", "fix_rpath.sh",":libexaudflib_complete.so"],
+    #executable = True,
+    output_to_bindir = True
+)
+
+# Workaround based on bash script (slower than rpath) for the problems of JNI with rpath's used by Bazel
 # Bazel creates for all external local repositories symlinks and 
 # the path of these symlinks may contain a @ character.
 # Bazel than write during compilation these paths to the rpath of the binary,
