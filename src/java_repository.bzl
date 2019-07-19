@@ -9,7 +9,7 @@ def _java_local_repository_impl(repository_ctx):
     build_file_content = """
 cc_library(
     name = "{name}",
-    srcs = ["{prefix}/lib/server/libjvm.so"],
+    srcs = ["{prefix}/lib/server/libjvm.so","{prefix}/lib/libjava.so"],
     hdrs = glob(["{prefix}/include/*.h","{prefix}/include/linux/*.h"]),
     includes = ["{prefix}/include","{prefix}/include/linux"],
     defines = [{defines}],
