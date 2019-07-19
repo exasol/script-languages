@@ -18,4 +18,6 @@ WORKDIR /exaudf_src/
 RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty --config optimize --config optimize-r --config fast-binary-py2"]
 RUN cp -r -L bazel-bin/* /exaudf
 
+RUN ./test_udfclient.sh /exaudf/exaudfclient
+
 COPY --from={{build_deps}} /build_info /build_info

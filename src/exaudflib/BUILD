@@ -33,7 +33,7 @@ cc_library(
 # A collection target for the case that language container want to depent on all public libraries of exaudflib
 # which won't leak protobuf through linker namespaces. Caution: Can't be used for the target libexaudflib-complete.so,
 # because this target declares the libraries only as deps.
-cc_library(
+cc_library( #TODO might be not working as expected
     name = "exaudflib-deps",
     deps = [":script_data_transfer_objects",":script_data_transfer_objects_wrapper",":scriptoptionlines"],
 )

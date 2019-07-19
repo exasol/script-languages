@@ -78,18 +78,27 @@ VM_PYTHON3_DEPS=select({
 
 cc_binary(
     name = "exaudfclient",
-    srcs = ["exaudfclient.cc"],
+    srcs = ["exaudfclient.cc"]+
+            ["//exaudflib:scriptoptionlines"], # needed to avoid compiler/linker errors with -flto with languages with optimize
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
+    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
+            ["//exaudflib:scriptoptionlines"]+ # needed to avoid compiler/linker errors with -flto with languages with optimize
+            ["//exaudflib:exaudflib-deps"], # needed for compiling without language
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
 
+#TODO 172.17.0.2:60292> exaudf/exaudfclient: error while loading shared libraries: libscriptoptionlines.so: cannot open shared object file: No such file or directory
+
+
 cc_binary(
     name = "exaudfclient_py3",
-    srcs = ["exaudfclient.cc"],
+    srcs = ["exaudfclient.cc"]+
+            ["//exaudflib:scriptoptionlines"], # needed to avoid compiler/linker errors with -flto with languages with optimize          
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
+    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
+            ["//exaudflib:scriptoptionlines"]+ # needed to avoid compiler/linker errors with -flto with languages with optimize
+            ["//exaudflib:exaudflib-deps"], # needed for compiling without language
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
@@ -104,9 +113,9 @@ cc_binary(
 genrule(
     name = "exaudfclient_py2_bash_wrapper",
     cmd = """
-        $(location create_binary_wrapper.sh) "$(location exaudfclient)" "$(location exaudfclient_py2.sh)" "$(location exaudfclient.template.sh)"
+        $(location create_binary_wrapper.sh) "$(location exaudfclient)" "$(location exaudfclient.sh)" "$(location exaudfclient.template.sh)"
     """,
-    outs = ["exaudfclient_py2.sh"],
+    outs = ["exaudfclient.sh"],
     srcs = [":exaudfclient", "libexaudflib_complete.so", "exaudfclient.template.sh","create_binary_wrapper.sh"],
     output_to_bindir = True
 )
