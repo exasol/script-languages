@@ -4,7 +4,7 @@ genrule(
     name = "exascript_python_tmp_cc",
     cmd = """
         INCLUDES=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION-config --includes`
-        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //exaudflib:exascript.i)"
+        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //exaudflib:exascript.i)"
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
     srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
@@ -14,7 +14,7 @@ genrule(
     name = "exascript_python_tmp_h",
     cmd = """
         INCLUDES=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION-config --includes`
-        swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -py3 -external-runtime "$(location exascript_python_tmp.h)"
+        swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -external-runtime "$(location exascript_python_tmp.h)"
         """,
     outs = ["exascript_python_tmp.h"],
     srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp_cc"]
