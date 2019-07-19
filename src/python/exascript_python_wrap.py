@@ -15,11 +15,11 @@ else:
 if isPython3:
     if 'LIBPYEXADATAFRAME_DIR' in os.environ:
         path_to_pyexadataframe=os.environ['LIBPYEXADATAFRAME_DIR']
-        print("sys.path append",path_to_pyexadataframe)
+        #print("sys.path append",path_to_pyexadataframe)
         sys.path.append(path_to_pyexadataframe)
     else:
         path_to_pyexadataframe="/exaudf/python/python3"
-        print("sys.path append",path_to_pyexadataframe)
+        #print("sys.path append",path_to_pyexadataframe)
         sys.path.append(path_to_pyexadataframe)
     import pyextdataframe
 

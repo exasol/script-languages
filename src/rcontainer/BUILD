@@ -44,18 +44,30 @@ genrule(
     tools = ["//:filter_swig_code.py"]
 )
 
+config_setting(
+    name = "r-unroll-loops",
+    define_values = {
+        "r-unroll-loops": "true",
+    },
+)
+
+optimize_copts=select({
+        ":r-unroll-loops": ["-funroll-loops"],
+        "//conditions:default": []
+    })
+
 cc_library(
     name = "exascript_r",
     srcs = [":filter_swig_code_exascript_r_cc",":filter_swig_code_exascript_r_h"],
     hdrs = [":filter_swig_code_exascript_r_h"],
-    copts = ["-DENABLE_R_VM"],
+    copts = ["-DENABLE_R_VM"]+optimize_copts,
     deps = ["@R_linux//:r-lib","//exaudflib:exaudflib-deps","//exaudflib:header"]
 )
 
 cc_library(
     name = "rcontainer",
     srcs = ["rcontainer.cc"],
-    copts = ["-DENABLE_R_VM"],
+    copts = ["-DENABLE_R_VM"]+optimize_copts,
     include_prefix = ".",
     data = ["exascript_r_wrap.R", "exascript_r_preset.R"], #TODO do we need this, because build_integreted
     hdrs = ["filter_swig_code_exascript_r_h","exascript_r_int"],
