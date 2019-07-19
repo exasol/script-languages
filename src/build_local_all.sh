@@ -1,1 +1,1 @@
-bash build_local.sh $* --define python=true --define java=true --define benchmark=true --define r=true //:all
+bash build_local.sh $* -config no-tty --config python --config r --config java --config slow-wrappers-and-fast-binaries

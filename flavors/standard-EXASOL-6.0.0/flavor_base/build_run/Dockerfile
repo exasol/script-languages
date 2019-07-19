@@ -15,7 +15,7 @@ COPY src/ /exaudf_src/
 ENV VERBOSE_BUILD "--subcommands --verbose_failures"
 
 WORKDIR /exaudf_src/
-RUN ["/bin/bash", "-c", "source /env && bash build.sh --config=opt --define r=true --define python=true --define java=true //:exaudfclient"]
+RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty --config optimize --config python --config java --config optimize-r --config fast-binary-py2"]
 RUN cp -r -L bazel-bin/* /exaudf
 RUN cp debug_message.h exaudfclient.cc exaudflib/exaudflib.cc exaudflib/exaudflib.h exaudflib/zmqcontainer.proto /exaudf/src
 

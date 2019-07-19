@@ -94,106 +94,72 @@ cc_binary(
     data = [":libexaudflib_complete.so"]
 )
 
-# Workaround based on rewriting the rpath (faster than bash script) for the problems of JNI with rpath's used by Bazel
-# Bazel creates for all external local repositories symlinks and 
-# the path of these symlinks may contain a @ character.
-# Bazel than write during compilation these paths to the rpath of the binary,
-# but JNI truncates pathes with @ character. In the end, 
-# it was nearly impossible to convince JNI from other pathes for its libraries, 
-# as the original pathes where apt installed the files.
+# Workarounds for the problems of JNI/JVM with rpath's used by Bazel.
+# Problem Description:
+# - Bazel creates for all external local repositories symlinks into its build directory
+# - Bazel than writes during compilation these paths to the rpath of the binary
+# - JNI/JVM uses the rpath for loading additonal shared libraries, 
+#   but for a unknown reason it seems to truncate these pathes. 
+# - We assume two possible reason, the symlink paths of bazel contain a @, or
+#   the paths are to long and get for that reason truncated
+# - In the end, it we wasn't able to convinve JNI/JVM from other pathes 
+#   for its libraries, as the original pathes where apt installed the files.
+# - We developed two workarrounds:
+#   1. Replace the paths for java in the rpath of the binary (//:exaudfclient_replace_rpath, //:exaudfclient_py3_replace_rpath)
+#       - faster than the second workarround, because starting a script to setup the environment variables takes a moment
+#       - with this workarround the paths for exaudflib-complete.so and python_ext_dataframe.so need to be hard coded into the binary,
+#         whith the consequence that the binary only works in the UDF container in the database or in docker in a very specific directory
+#       - Doesn't change the LD_LIBRARY_PATH environment variable
+#       - 
+#   2. Wrap the binary into a bash script which setups the LD_LIBRARY_PATH (used when libraries not found in the rpath) 
+#      and environment variables for exaudflib-complete.so and python_ext_dataframe.so
+#       - slower than the first workarround
+#       - binaries work everywhere
+#       - Java libraries directories are appended to LD_LIBRARY_PATH
+#       - better for local testing and debugging
+
+###########################################################################################
+################################## Workarround 1 ##########################################
+###########################################################################################
 genrule(
-    name = "gen-exaudfclient",
+    name = "exaudfclient_py2_replace_rpath",
     cmd = """
-        cp  $(location exaudfclient_wrong_rpath_py2) $(location exaudfclient)
-        if [ -n "$$JAVA_PREFIX" ]
-        then
-            echo "Fixing rpath"
-            $(location fix_rpath.sh) "$$JAVA_PREFIX" $(location exaudfclient)
-        else
-            echo "RPath doesn't need a fix"
-        fi
+        $(location fix_rpath.sh) "$(location exaudfclient_wrong_rpath_py2)" "$(location exaudfclient)"
     """,
     outs = ["exaudfclient"],
     srcs = [":exaudfclient_wrong_rpath_py2", "fix_rpath.sh",":libexaudflib_complete.so"],
-    #executable = True,
     output_to_bindir = True
 )
 
 genrule(
-    name = "gen-exaudfclient-py3",
+    name = "exaudfclient_py3_replace_rpath",
     cmd = """
-        cp  $(location exaudfclient_wrong_rpath_py3) $(location exaudfclient_py3)
-        if [ -n "$$JAVA_PREFIX" ]
-        then
-            echo "Fixing rpath for JAVA_PREFIX: $$JAVA_PREFIX"
-            $(location fix_rpath.sh) "$$JAVA_PREFIX" $(location exaudfclient_py3)
-        else
-            echo "RPath doesn't need a fix for JAVA_PREFIX: $$JAVA_PREFIX"
-        fi
+        $(location fix_rpath.sh) "$(location exaudfclient_wrong_rpath_py3)" "$(location exaudfclient_py3)"
     """,
     outs = ["exaudfclient_py3"],
     srcs = [":exaudfclient_wrong_rpath_py3", "fix_rpath.sh",":libexaudflib_complete.so"],
-    #executable = True,
     output_to_bindir = True
 )
 
-# Workaround based on bash script (slower than rpath) for the problems of JNI with rpath's used by Bazel
-# Bazel creates for all external local repositories symlinks and 
-# the path of these symlinks may contain a @ character.
-# Bazel than write during compilation these paths to the rpath of the binary,
-# but JNI truncates pathes with @ character. In the end, 
-# it was nearly impossible to convince JNI from other pathes for its libraries, 
-# as the original pathes where apt installed the files.
-# genrule(
-#     name = "gen-exaudfclient",
-#     cmd = """
-#         touch $(location exaudfclient)
-#         cat $(location exaudfclient.sh) >> $(location exaudfclient)
-#         echo >> $(location exaudfclient)
-#         echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient)
-#         #echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient)
-#         echo ./`basename $(location exaudfclient_wrong_rpath_py2)` '$$*' >>  $(location exaudfclient)
-#     """,
-#     outs = ["exaudfclient"],
-#     srcs = [":exaudfclient_wrong_rpath_py2", "libexaudflib_complete.so", "exaudfclient.sh"],
-#     #executable = True,
-#     output_to_bindir = True
-# )
+###########################################################################################
+################################## Workarround 2 ##########################################
+###########################################################################################
+genrule(
+    name = "exaudfclient_py2_bash_wrapper",
+    cmd = """
+        $(location create_binary_wrapper.sh) "$(location exaudfclient_wrong_rpath_py2)" "$(location exaudfclient_py2.sh)" "$(location exaudfclient.template.sh)"
+    """,
+    outs = ["exaudfclient_py2.sh"],
+    srcs = [":exaudfclient_wrong_rpath_py2", "libexaudflib_complete.so", "exaudfclient.template.sh","create_binary_wrapper.sh"],
+    output_to_bindir = True
+)
 
-# genrule(
-#     name = "gen-exaudfclient-py3",
-#     cmd = """
-#         touch $(location exaudfclient_py3)
-#         cat $(location exaudfclient.sh) >> $(location exaudfclient_py3)
-#         echo >> $(location exaudfclient_py3)
-#         echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient_py3)
-#         #echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient_py3)
-#         echo ./`basename $(location exaudfclient_wrong_rpath_py3)` '$$*' >>  $(location exaudfclient_py3)
-#     """,
-#     outs = ["exaudfclient_py3"],
-#     srcs = [":exaudfclient_wrong_rpath_py3", "libexaudflib_complete.so", "exaudfclient.sh"],
-#     #executable = True,
-#     output_to_bindir = True
-# )
-
-# Failed attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 
-# However, JNI has problems with this attempt, too. 
-# Unitl now only the path under /usr/lib/jvm worked.
-#
-# genrule(
-#     name = "gen-java-lib",
-#     cmd = """
-#         mkdir $(location java-lib)
-#         cd $(location java-lib)
-#         LIB_NAMES=`find $$JAVA_PREFIX -name '*.so' | xargs -n 1 basename | sort | uniq`
-#         #echo LIB_NAMES:  $$LIB_NAMES
-#         for I in $$LIB_NAMES
-#         do
-#             FILE_TO_LINK=`find $$JAVA_PREFIX -name $$I -type f | head -n 1`
-#             #echo FILE_TO_LINK: $$FILE_TO_LINK
-#             ln -s $$FILE_TO_LINK
-#         done
-#     """,
-#     outs = ["java-lib"],
-#     output_to_bindir = True
-# )
+genrule(
+    name = "exaudfclient_py3_bash_wrapper",
+    cmd = """
+        $(location create_binary_wrapper.sh) "$(location exaudfclient_wrong_rpath_py3)" "$(location exaudfclient_py3.sh)" "$(location exaudfclient.template.sh)"
+    """,
+    outs = ["exaudfclient_py3.sh"],
+    srcs = [":exaudfclient_wrong_rpath_py3", "libexaudflib_complete.so", "exaudfclient.template.sh", "create_binary_wrapper.sh"],
+    output_to_bindir = True
+)
