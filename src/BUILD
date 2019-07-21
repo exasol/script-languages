@@ -78,12 +78,10 @@ VM_PYTHON3_DEPS=select({
 
 cc_binary(
     name = "exaudfclient",
-    srcs = ["exaudfclient.cc"]+
-            ["//exaudflib:scriptoptionlines"], # needed to avoid compiler/linker errors with -flto with languages with optimize
+    srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
-            ["//exaudflib:scriptoptionlines"]+ # needed to avoid compiler/linker errors with -flto with languages with optimize
-            ["//exaudflib:exaudflib-deps"], # needed for compiling without language
+            ["//exaudflib:exaudflib-deps"],
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
@@ -93,12 +91,10 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_py3",
-    srcs = ["exaudfclient.cc"]+
-            ["//exaudflib:scriptoptionlines"], # needed to avoid compiler/linker errors with -flto with languages with optimize          
+    srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
-            ["//exaudflib:scriptoptionlines"]+ # needed to avoid compiler/linker errors with -flto with languages with optimize
-            ["//exaudflib:exaudflib-deps"], # needed for compiling without language
+            ["//exaudflib:exaudflib-deps"],
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )

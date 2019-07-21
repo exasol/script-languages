@@ -80,7 +80,7 @@ cc_library(
     data = [":extend_exascript_python_preset_py"], 
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
-    deps = ["@python3//:python3",":exascript_python","//exaudflib:header", "//:debug_message_h"],
+    deps = ["@python3//:python3",":exascript_python","//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"]
 )
 
 #workaround to build pyextdataframe.so together with pythoncontainer c++ library

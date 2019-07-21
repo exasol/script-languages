@@ -7,26 +7,44 @@ cc_library(
     name = "scriptoptionlines",
     hdrs = ["scriptoptionlines.h"],
     srcs = ["scriptoptionlines.cc","scriptoptionlines.h"],
+    copts= ["-fno-lto"],
+    # We deactivate link time optimization, because otherwise we get the following linker/compiler error while linking/compiling exaudfclient
+    # function ExecutionGraph::extractOptionLine(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long&, std::function<void (char const*)>): error: undefined reference to 'std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)'
 )
 
 cc_library(
     name = "script_data_transfer_objects",
     srcs = ["script_data_transfer_objects.cc","script_data_transfer_objects.h"],
     hdrs = ["script_data_transfer_objects.h"],
+    copts= select({
+        "//:benchmark": ["-fno-lto"],
+        "//conditions:default": []
+    })
+    # We deactivate link time optimization for benchmark, 
+    # because otherwise we get linker/compiler error while linking/compiling exaudfclient
+    # Benchmark causes this, because it doesn't refer it its implementation.
+
 )
 
 cc_library(
     name = "script_data_transfer_objects_wrapper",
     srcs = ["script_data_transfer_objects_wrapper.cc","script_data_transfer_objects_wrapper.h"],
     deps = [":script_data_transfer_objects"],
-    hdrs = ["script_data_transfer_objects_wrapper.h"]
+    hdrs = ["script_data_transfer_objects_wrapper.h"],
+    copts= select({
+        "//:benchmark": ["-fno-lto"],
+        "//conditions:default": []
+    })
+    # We deactivate link time optimization for benchmark,
+    # because otherwise we get linker/compiler error while linking/compiling exaudfclient
+    # Benchmark causes this, because it doesn't refer it its implementation.
 )
 
 # A collection target for the case that language container want to include all public headers of exaudflib
 cc_library(
     name = "header",
     hdrs = [
-        "exaudflib.h"
+        "exaudflib.h",
     ],
 )
 
@@ -35,7 +53,7 @@ cc_library(
 # because this target declares the libraries only as deps.
 cc_library( #TODO might be not working as expected
     name = "exaudflib-deps",
-    deps = [":script_data_transfer_objects",":script_data_transfer_objects_wrapper",":scriptoptionlines"],
+    deps = [":script_data_transfer_objects",":script_data_transfer_objects_wrapper"],
 )
 
 genrule(

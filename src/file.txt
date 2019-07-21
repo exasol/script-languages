@@ -1,0 +1,790 @@
+INFO: Options provided by the client:
+  Inherited 'common' options: --isatty=0 --terminal_columns=80
+INFO: Reading rc options for 'build' from /home/tkilias/script-languages-tkilias/src/.bazelrc:
+  'build' options: --copt=-std=c++14 --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX
+INFO: Found applicable config definition build:optimize in file /home/tkilias/script-languages-tkilias/src/.bazelrc: --copt=-g0 --copt=-DNDEBUG --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt=-O3 --copt=-U_FORTIFY_SOURCE --copt=-flto
+INFO: Found applicable config definition build:slow-wrapper-py3 in file /home/tkilias/script-languages-tkilias/src/.bazelrc: //:exaudfclient_py3_bash_wrapper
+INFO: Found applicable config definition build:java in file /home/tkilias/script-languages-tkilias/src/.bazelrc: --define java=true --action_env=JAVA_PREFIX
+INFO: Found applicable config definition build:verbose in file /home/tkilias/script-languages-tkilias/src/.bazelrc: --copt=-v --subcommands --verbose_failures --announce_rc
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //:exaudfclient_py3_bash_wrapper (1 packages loaded, 0 targets configured)
+DEBUG: /home/tkilias/script-languages-tkilias/src/protobuf_repository.bzl:6:5: protobuf library prefix in environment specified; /usr/lib/x86_64-linux-gnu
+DEBUG: /home/tkilias/script-languages-tkilias/src/protobuf_repository.bzl:12:5: protobuf include prefix in environment specified; /usr/include/google/protobuf/
+DEBUG: /home/tkilias/script-languages-tkilias/src/protobuf_repository.bzl:21:5: 
+cc_library(
+    name = "protobuf",
+    srcs = glob(["protobuf/lib/libprotobuf*.so"]),
+    hdrs = glob(["protobuf/include/*"]),
+    includes = ["protobuf/include/"],
+    visibility = ["//visibility:public"]
+)
+DEBUG: /home/tkilias/script-languages-tkilias/src/java_repository.bzl:29:5: java prefix in environment specified; /usr/lib/jvm/java-11-openjdk-amd64
+DEBUG: /home/tkilias/script-languages-tkilias/src/java_repository.bzl:22:5: path to libjvm.so: /usr/lib/jvm/java-11-openjdk-amd64/lib/server/libjvm.so
+DEBUG: /home/tkilias/script-languages-tkilias/src/java_repository.bzl:44:5: 
+cc_library(
+    name = "java",
+    srcs = glob(["java/lib/**/libjvm.so"], allow_empty=False),
+    hdrs = glob(["java/include/*.h","java/include/linux/*.h"], allow_empty=False),
+    includes = ["java/include","java/include/linux"],
+    defines = ["ENABLE_JAVA_VM"],
+    linkopts = ["-ljvm",'-Wl,-rpath','/usr/lib/jvm/java-11-openjdk-amd64/lib/server'],
+    visibility = ["//visibility:public"]
+)
+INFO: Analyzed target //:exaudfclient_py3_bash_wrapper (23 packages loaded, 599 targets configured).
+INFO: Found 1 target...
+[0 / 1] [Prepa] BazelWorkspaceStatusAction stable-status.txt
+SUBCOMMAND: # //exaudflib:script_data_transfer_objects [action 'Compiling exaudflib/script_data_transfer_objects.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o' -fPIC -iquote . -iquote bazel-out/k8-fastbuild/bin '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c exaudflib/script_data_transfer_objects.cc -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o)
+SUBCOMMAND: # //javacontainer:exascript_java_tmp_cc [action 'Executing genrule //javacontainer:exascript_java_tmp_cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; 
+        mkdir -p bazel-out/k8-fastbuild/bin/javacontainer/java_src/com/exasol/swig
+        swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -java -addextern -module exascript_java -package com.exasol.swig -outdir bazel-out/k8-fastbuild/bin/javacontainer/java_src/com/exasol/swig -o "bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_tmp.cc" "exaudflib/exascript.i"
+        ')
+SUBCOMMAND: # //exaudflib:script_data_transfer_objects_wrapper [action 'Compiling exaudflib/script_data_transfer_objects_wrapper.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o' -fPIC -iquote . -iquote bazel-out/k8-fastbuild/bin '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c exaudflib/script_data_transfer_objects_wrapper.cc -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o)
+SUBCOMMAND: # @bazel_tools//tools/jdk:platformclasspath [action 'Action external/bazel_tools/tools/jdk/platformclasspath_classes/DumpPlatformClassPath.class']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+  external/remotejdk11_linux/bin/javac -source 8 -target 8 -Xlint:-options -cp external/remotejdk11_linux/lib/tools.jar -d bazel-out/k8-fastbuild/bin/external/bazel_tools/tools/jdk/platformclasspath_classes external/bazel_tools/tools/jdk/DumpPlatformClassPath.java)
+WARNING: /home/tkilias/script-languages-tkilias/src/javacontainer/BUILD:3:1: output 'javacontainer/java_src' of //javacontainer:exascript_java_tmp_cc is a directory; dependency checking of directories is unsound
+INFO: From Executing genrule //javacontainer:exascript_java_tmp_cc:
+Language subdirectory: java
+Search paths:
+   ./
+   ./swig_lib/java/
+   /usr/share/swig3.0/java/
+   ./swig_lib/
+   /usr/share/swig3.0/
+Preprocessing...
+Starting language-specific parse...
+Processing types...
+C++ analysis...
+Processing nested classes...
+Generating wrappers...
+SUBCOMMAND: # //javacontainer:exaudf-api [action 'Building source jar javacontainer/libexaudf-api-src.jar']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+  external/remote_java_tools_linux/java_tools/src/tools/singlejar/singlejar_local @bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-api-src.jar-0.params)
+SUBCOMMAND: # //javacontainer:exascript_java_tmp_h [action 'Executing genrule //javacontainer:exascript_java_tmp_h']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; 
+        swig -v -DEXTERNAL_PROCESS -c++ -java -external-runtime "bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_tmp.h"
+        ')
+INFO: From Executing genrule //javacontainer:exascript_java_tmp_h:
+Language subdirectory: java
+Search paths:
+   ./
+   ./swig_lib/java/
+   /usr/share/swig3.0/java/
+   ./swig_lib/
+   /usr/share/swig3.0/
+SUBCOMMAND: # //javacontainer:exascript_java_int [action 'Executing genrule //javacontainer:exascript_java_int']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; 
+        cp -r bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_tmp.cc bazel-out/k8-fastbuild/bin/javacontainer/java_src .
+        FILES=`ls java_src/com/exasol/swig/*.java`
+        python build_integrated.py "bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_int.h" $FILES
+    ')
+INFO: From Compiling exaudflib/script_data_transfer_objects_wrapper.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.d -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.d -MQ bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin exaudflib/script_data_transfer_objects_wrapper.cc -quiet -dumpbase script_data_transfer_objects_wrapper.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o -g0 -O3 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -flto -fno-canonical-system-headers -Wformat-security -o /tmp/ccLydkI9.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+#include <...> search starts here:
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o /tmp/ccLydkI9.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects_wrapper/script_data_transfer_objects_wrapper.pic.o' '-mtune=generic' '-march=x86-64'
+SUBCOMMAND: # //javacontainer:filter_swig_code_exascript_java_cc [action 'Executing genrule //javacontainer:filter_swig_code_exascript_java_cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; 
+            TMPDIR=`mktemp -d`
+            cp -r -L filter_swig_code.py bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_tmp.cc bazel-out/k8-fastbuild/bin/javacontainer/java_src $TMPDIR
+            (cd $TMPDIR &&
+            python ./filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
+            cp $TMPDIR/exascript_java.cc "bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.cc"
+            cp -r $TMPDIR/java_src/com/exasol/swig/ConnectionInformationWrapper.java "bazel-out/k8-fastbuild/bin/javacontainer/ConnectionInformationWrapper.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/exascript_java.java "bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/exascript_javaJNI.java "bazel-out/k8-fastbuild/bin/javacontainer/exascript_javaJNI.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/ExportSpecificationWrapper.java "bazel-out/k8-fastbuild/bin/javacontainer/ExportSpecificationWrapper.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/ImportSpecificationWrapper.java "bazel-out/k8-fastbuild/bin/javacontainer/ImportSpecificationWrapper.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/Metadata.java "bazel-out/k8-fastbuild/bin/javacontainer/Metadata.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/ResultHandler.java "bazel-out/k8-fastbuild/bin/javacontainer/ResultHandler.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/SWIGTYPE_p_ExecutionGraph__ExportSpecification.java "bazel-out/k8-fastbuild/bin/javacontainer/SWIGTYPE_p_ExecutionGraph__ExportSpecification.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/SWIGTYPE_p_ExecutionGraph__ImportSpecification.java "bazel-out/k8-fastbuild/bin/javacontainer/SWIGTYPE_p_ExecutionGraph__ImportSpecification.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/SWIGVM_datatype_e.java "bazel-out/k8-fastbuild/bin/javacontainer/SWIGVM_datatype_e.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/SWIGVM_itertype_e.java "bazel-out/k8-fastbuild/bin/javacontainer/SWIGVM_itertype_e.java"
+            cp -r $TMPDIR/java_src/com/exasol/swig/TableIterator.java "bazel-out/k8-fastbuild/bin/javacontainer/TableIterator.java"
+            rm -rf $TMPDIR
+            ')
+SUBCOMMAND: # //javacontainer:filter_swig_code_exascript_java_h [action 'Executing genrule //javacontainer:filter_swig_code_exascript_java_h']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; python ./filter_swig_code.py "bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.h" "bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_tmp.h"')
+INFO: From Executing genrule //javacontainer:filter_swig_code_exascript_java_h:
+filtering swig code  ['bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.h'] ['bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_tmp.h']
+filter_swig_code: reading file  bazel-out/k8-fastbuild/bin/javacontainer/exascript_java_tmp.h
+filter_swig_code: wrote file  bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.h
+SUBCOMMAND: # //exaudflib:scriptoptionlines [action 'Compiling exaudflib/scriptoptionlines.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o' -fPIC -iquote . -iquote bazel-out/k8-fastbuild/bin '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -fno-lto -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c exaudflib/scriptoptionlines.cc -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o)
+INFO: From Compiling exaudflib/script_data_transfer_objects.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.d -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.d -MQ bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin exaudflib/script_data_transfer_objects.cc -quiet -dumpbase script_data_transfer_objects.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o -g0 -O3 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -flto -fno-canonical-system-headers -Wformat-security -o /tmp/cc7umMj9.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+#include <...> search starts here:
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o /tmp/cc7umMj9.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/script_data_transfer_objects/script_data_transfer_objects.pic.o' '-mtune=generic' '-march=x86-64'
+SUBCOMMAND: # //exaudflib:zmqcontainer_proto [action 'Executing genrule //exaudflib:zmqcontainer_proto']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; 
+            TMPDIR=`mktemp -d`
+            cp exaudflib/zmqcontainer.proto "$TMPDIR"
+            (cd "$TMPDIR"
+            $PROTOBUF_BIN -I. zmqcontainer.proto --cpp_out=.)
+            cp "$TMPDIR"/zmqcontainer.pb.cc bazel-out/k8-fastbuild/bin/exaudflib/zmqcontainer.pb.cc
+            cp "$TMPDIR"/zmqcontainer.pb.h bazel-out/k8-fastbuild/bin/exaudflib/zmqcontainer.pb.h')
+INFO: From Executing genrule //javacontainer:filter_swig_code_exascript_java_cc:
+filtering swig code  ['exascript_java.cc'] ['exascript_java_tmp.cc']
+filter_swig_code: reading file  exascript_java_tmp.cc
+filter_swig_code: wrote file  exascript_java.cc
+SUBCOMMAND: # //javacontainer:exascript_java [action 'Compiling javacontainer/exascript_java.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o' -fPIC -DENABLE_JAVA_VM -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/java -iquote bazel-out/k8-fastbuild/bin/external/java -isystem external/java/java/include -isystem bazel-out/k8-fastbuild/bin/external/java/java/include -isystem external/java/java/include/linux -isystem bazel-out/k8-fastbuild/bin/external/java/java/include/linux '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -O0 -fno-lto -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.cc -o bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o)
+[14 / 43] Action external/bazel_tools/tools/jdk/platformclasspath_classes/DumpPlatformClassPath.class; 1s linux-sandbox ... (4 actions, 3 running)
+SUBCOMMAND: # //javacontainer:exaudf [action 'Building source jar javacontainer/libexaudf-src.jar']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+  external/remote_java_tools_linux/java_tools/src/tools/singlejar/singlejar_local @bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-src.jar-0.params)
+SUBCOMMAND: # //exaudflib:zmqcontainer [action 'Compiling exaudflib/zmqcontainer.pb.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o' -fPIC -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/protobuf -iquote bazel-out/k8-fastbuild/bin/external/protobuf -isystem external/protobuf/protobuf/include -isystem bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c bazel-out/k8-fastbuild/bin/exaudflib/zmqcontainer.pb.cc -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o)
+INFO: From Compiling exaudflib/scriptoptionlines.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-v' '-fno-lto' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.d -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.d -MQ bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin exaudflib/scriptoptionlines.cc -quiet -dumpbase scriptoptionlines.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o -g0 -O3 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -fno-lto -fno-canonical-system-headers -Wformat-security -o /tmp/ccSdbnuS.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+#include <...> search starts here:
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-v' '-fno-lto' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o /tmp/ccSdbnuS.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-v' '-fno-lto' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/scriptoptionlines/scriptoptionlines.pic.o' '-mtune=generic' '-march=x86-64'
+SUBCOMMAND: # //exaudflib:script_data_transfer_objects_wrapper [action 'Linking exaudflib/libscript_data_transfer_objects_wrapper.a']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/ar @bazel-out/k8-fastbuild/bin/exaudflib/libscript_data_transfer_objects_wrapper.a-2.params)
+SUBCOMMAND: # //exaudflib:script_data_transfer_objects [action 'Linking exaudflib/libscript_data_transfer_objects.so']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc @bazel-out/k8-fastbuild/bin/exaudflib/libscript_data_transfer_objects.so-2.params)
+[23 / 46] Compiling javacontainer/exascript_java.cc; 1s linux-sandbox ... (4 actions, 3 running)
+SUBCOMMAND: # @bazel_tools//tools/jdk:platformclasspath [action 'Action external/bazel_tools/tools/jdk/platformclasspath.jar']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+  external/remotejdk11_linux/bin/java -XX:+IgnoreUnrecognizedVMOptions '--add-exports=jdk.compiler/com.sun.tools.javac.platform=ALL-UNNAMED' -cp bazel-out/k8-fastbuild/bin/external/bazel_tools/tools/jdk/platformclasspath_classes:external/remotejdk11_linux/lib/tools.jar DumpPlatformClassPath bazel-out/k8-fastbuild/bin/external/bazel_tools/tools/jdk/platformclasspath.jar external/local_jdk)
+INFO: From Compiling javacontainer/exascript_java.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-v' '-O0' '-fno-lto' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.d -MF bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.d -MQ bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D ENABLE_JAVA_VM -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/java -iquote bazel-out/k8-fastbuild/bin/external/java -isystem external/java/java/include -isystem bazel-out/k8-fastbuild/bin/external/java/java/include -isystem external/java/java/include/linux -isystem bazel-out/k8-fastbuild/bin/external/java/java/include/linux bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.cc -quiet -dumpbase exascript_java.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o -g0 -O3 -O0 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -fno-lto -fno-canonical-system-headers -Wformat-security -o /tmp/cci27WBZ.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java/java/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java/java/include/linux"
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+ external/java
+#include <...> search starts here:
+ external/java/java/include
+ external/java/java/include/linux
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-v' '-O0' '-fno-lto' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o /tmp/cci27WBZ.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-v' '-O0' '-fno-lto' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/exascript_java/exascript_java.pic.o' '-mtune=generic' '-march=x86-64'
+SUBCOMMAND: # //exaudflib:script_data_transfer_objects_wrapper [action 'Linking exaudflib/libscript_data_transfer_objects_wrapper.so']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc @bazel-out/k8-fastbuild/bin/exaudflib/libscript_data_transfer_objects_wrapper.so-2.params)
+SUBCOMMAND: # //exaudflib:exaudflib [action 'Compiling exaudflib/exaudflib.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o' -fPIC -DENABLE_JAVA_VM -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/protobuf -iquote bazel-out/k8-fastbuild/bin/external/protobuf -iquote external/zmq -iquote bazel-out/k8-fastbuild/bin/external/zmq -isystem external/protobuf/protobuf/include -isystem bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include -isystem external/zmq/usr/include -isystem bazel-out/k8-fastbuild/bin/external/zmq/usr/include '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c exaudflib/exaudflib.cc -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o)
+SUBCOMMAND: # //exaudflib:script_data_transfer_objects [action 'Linking exaudflib/libscript_data_transfer_objects.a']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/ar @bazel-out/k8-fastbuild/bin/exaudflib/libscript_data_transfer_objects.a-2.params)
+[35 / 52] Compiling exaudflib/zmqcontainer.pb.cc; 2s linux-sandbox ... (3 actions running)
+INFO: From Compiling exaudflib/zmqcontainer.pb.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/protobuf' '-iquote' 'bazel-out/k8-fastbuild/bin/external/protobuf' '-isystem' 'external/protobuf/protobuf/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.d -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.d -MQ bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/protobuf -iquote bazel-out/k8-fastbuild/bin/external/protobuf -isystem external/protobuf/protobuf/include -isystem bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include bazel-out/k8-fastbuild/bin/exaudflib/zmqcontainer.pb.cc -quiet -dumpbase zmqcontainer.pb.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o -g0 -O3 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -flto -fno-canonical-system-headers -Wformat-security -o /tmp/ccQifNZq.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include"
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/protobuf"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+ external/protobuf
+#include <...> search starts here:
+ external/protobuf/protobuf/include
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/protobuf' '-iquote' 'bazel-out/k8-fastbuild/bin/external/protobuf' '-isystem' 'external/protobuf/protobuf/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o /tmp/ccQifNZq.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o' '-fPIC' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/protobuf' '-iquote' 'bazel-out/k8-fastbuild/bin/external/protobuf' '-isystem' 'external/protobuf/protobuf/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/zmqcontainer/zmqcontainer.pb.pic.o' '-mtune=generic' '-march=x86-64'
+SUBCOMMAND: # //exaudflib:zmqcontainer [action 'Linking exaudflib/libzmqcontainer.a']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/ar @bazel-out/k8-fastbuild/bin/exaudflib/libzmqcontainer.a-2.params)
+SUBCOMMAND: # //exaudflib:zmqcontainer [action 'Linking exaudflib/libzmqcontainer.so']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc @bazel-out/k8-fastbuild/bin/exaudflib/libzmqcontainer.so-2.params)
+[37 / 52] Action external/bazel_tools/tools/jdk/platformclasspath.jar; 2s linux-sandbox ... (3 actions running)
+SUBCOMMAND: # //javacontainer:exaudf [action 'Building javacontainer/libexaudf.jar (29 source files)']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    LC_CTYPE=en_US.UTF-8 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  external/remotejdk11_linux/bin/java -XX:+UseParallelOldGC -XX:-CompactStrings '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED' '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED' '--patch-module=java.compiler=external/remote_java_tools_linux/java_tools/java_compiler.jar' '--patch-module=jdk.compiler=external/remote_java_tools_linux/java_tools/jdk_compiler.jar' '--add-opens=java.base/java.nio=ALL-UNNAMED' '--add-opens=java.base/java.lang=ALL-UNNAMED' -jar external/remote_java_tools_linux/java_tools/JavaBuilder_deploy.jar @bazel-out/k8-fastbuild/bin/javacontainer/libexaudf.jar-0.params @bazel-out/k8-fastbuild/bin/javacontainer/libexaudf.jar-1.params)
+SUBCOMMAND: # //javacontainer:exaudf [action 'Compiling Java headers javacontainer/libexaudf-hjar.jar (29 files)']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    LC_CTYPE=en_US.UTF-8 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  external/remotejdk11_linux/bin/java -Xverify:none -XX:+UseParallelOldGC -XX:-CompactStrings '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED' '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED' '--patch-module=java.compiler=external/remote_java_tools_linux/java_tools/java_compiler.jar' '--patch-module=jdk.compiler=external/remote_java_tools_linux/java_tools/jdk_compiler.jar' '--add-opens=java.base/java.nio=ALL-UNNAMED' '--add-opens=java.base/java.lang=ALL-UNNAMED' -jar external/remote_java_tools_linux/java_tools/turbine_direct_binary_deploy.jar --output bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-hjar.jar --output_deps bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-hjar.jdeps --temp_dir bazel-out/k8-fastbuild/bin/javacontainer/_javac/exaudf/libexaudf-hjar_temp --bootclasspath bazel-out/k8-fastbuild/bin/external/bazel_tools/tools/jdk/platformclasspath.jar --sources bazel-out/k8-fastbuild/bin/javacontainer/ConnectionInformationWrapper.java javacontainer/ExaCompilationException.java javacontainer/ExaCompiler.java javacontainer/ExaConnectionAccessException.java javacontainer/ExaConnectionInformation.java javacontainer/ExaConnectionInformationImpl.java javacontainer/ExaDataTypeException.java javacontainer/ExaExportSpecification.java javacontainer/ExaExportSpecificationImpl.java javacontainer/ExaImportSpecification.java javacontainer/ExaImportSpecificationImpl.java javacontainer/ExaIterationException.java javacontainer/ExaIterator.java javacontainer/ExaIteratorImpl.java javacontainer/ExaMetadata.java javacontainer/ExaMetadataImpl.java javacontainer/ExaUndefinedSingleCallException.java javacontainer/ExaWrapper.java bazel-out/k8-fastbuild/bin/javacontainer/ExportSpecificationWrapper.java bazel-out/k8-fastbuild/bin/javacontainer/ImportSpecificationWrapper.java bazel-out/k8-fastbuild/bin/javacontainer/Metadata.java bazel-out/k8-fastbuild/bin/javacontainer/ResultHandler.java bazel-out/k8-fastbuild/bin/javacontainer/SWIGTYPE_p_ExecutionGraph__ExportSpecification.java bazel-out/k8-fastbuild/bin/javacontainer/SWIGTYPE_p_ExecutionGraph__ImportSpecification.java bazel-out/k8-fastbuild/bin/javacontainer/SWIGVM_datatype_e.java bazel-out/k8-fastbuild/bin/javacontainer/SWIGVM_itertype_e.java bazel-out/k8-fastbuild/bin/javacontainer/TableIterator.java bazel-out/k8-fastbuild/bin/javacontainer/exascript_java.java bazel-out/k8-fastbuild/bin/javacontainer/exascript_javaJNI.java --javacopts -source 8 -target 8 '-XDskipDuplicateBridges=true' -g -parameters -- --target_label //javacontainer:exaudf --nojavac_fallback)
+INFO: From Compiling exaudflib/exaudflib.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/protobuf' '-iquote' 'bazel-out/k8-fastbuild/bin/external/protobuf' '-iquote' 'external/zmq' '-iquote' 'bazel-out/k8-fastbuild/bin/external/zmq' '-isystem' 'external/protobuf/protobuf/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include' '-isystem' 'external/zmq/usr/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/zmq/usr/include' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.d -MF bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.d -MQ bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D ENABLE_JAVA_VM -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/protobuf -iquote bazel-out/k8-fastbuild/bin/external/protobuf -iquote external/zmq -iquote bazel-out/k8-fastbuild/bin/external/zmq -isystem external/protobuf/protobuf/include -isystem bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include -isystem external/zmq/usr/include -isystem bazel-out/k8-fastbuild/bin/external/zmq/usr/include exaudflib/exaudflib.cc -quiet -dumpbase exaudflib.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o -g0 -O3 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -flto -fno-canonical-system-headers -Wformat-security -o /tmp/ccO3P7RW.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/zmq/usr/include"
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/protobuf"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/zmq"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+ external/protobuf
+ external/zmq
+#include <...> search starts here:
+ external/protobuf/protobuf/include
+ external/zmq/usr/include
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/protobuf' '-iquote' 'bazel-out/k8-fastbuild/bin/external/protobuf' '-iquote' 'external/zmq' '-iquote' 'bazel-out/k8-fastbuild/bin/external/zmq' '-isystem' 'external/protobuf/protobuf/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include' '-isystem' 'external/zmq/usr/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/zmq/usr/include' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o /tmp/ccO3P7RW.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/protobuf' '-iquote' 'bazel-out/k8-fastbuild/bin/external/protobuf' '-iquote' 'external/zmq' '-iquote' 'bazel-out/k8-fastbuild/bin/external/zmq' '-isystem' 'external/protobuf/protobuf/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/protobuf/protobuf/include' '-isystem' 'external/zmq/usr/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/zmq/usr/include' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/exaudflib/_objs/exaudflib/exaudflib.pic.o' '-mtune=generic' '-march=x86-64'
+SUBCOMMAND: # //exaudflib:exaudflib [action 'Linking exaudflib/libexaudflib.a']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/ar @bazel-out/k8-fastbuild/bin/exaudflib/libexaudflib.a-2.params)
+[41 / 52] Linking exaudflib/libzmqcontainer.so; 2s linux-sandbox ... (3 actions, 2 running)
+SUBCOMMAND: # //javacontainer:exaudf-api [action 'Building javacontainer/libexaudf-api-class.jar (9 source files)']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    LC_CTYPE=en_US.UTF-8 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  external/remotejdk11_linux/bin/java -XX:+UseParallelOldGC -XX:-CompactStrings '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED' '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED' '--patch-module=java.compiler=external/remote_java_tools_linux/java_tools/java_compiler.jar' '--patch-module=jdk.compiler=external/remote_java_tools_linux/java_tools/jdk_compiler.jar' '--add-opens=java.base/java.nio=ALL-UNNAMED' '--add-opens=java.base/java.lang=ALL-UNNAMED' -jar external/remote_java_tools_linux/java_tools/JavaBuilder_deploy.jar @bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-api-class.jar-0.params @bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-api-class.jar-1.params)
+[41 / 52] Linking exaudflib/libzmqcontainer.so; 3s linux-sandbox ... (3 actions running)
+SUBCOMMAND: # //:libexaudflib_complete.so [action 'Linking libexaudflib_complete.so']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc @bazel-out/k8-fastbuild/bin/libexaudflib_complete.so-2.params)
+[43 / 52] Building javacontainer/libexaudf.jar (29 source files); 3s worker ... (3 actions running)
+SUBCOMMAND: # //javacontainer:exaudf-api [action 'Building Java resource jar']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+  external/remote_java_tools_linux/java_tools/src/tools/singlejar/singlejar_local --normalize --dont_change_compression --exclude_build_data --output bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-api.jar --sources bazel-out/k8-fastbuild/bin/javacontainer/libexaudf-api-class.jar --resources LICENSE-exasol-script-api.txt)
+SUBCOMMAND: # //javacontainer:dummy [action 'Executing genrule //javacontainer:dummy']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; touch "bazel-out/k8-fastbuild/bin/javacontainer/dummy.h"')
+SUBCOMMAND: # //javacontainer:javacontainer [action 'Compiling javacontainer/javacontainer.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o' -fPIC -DENABLE_JAVA_VM -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/ssl -iquote bazel-out/k8-fastbuild/bin/external/ssl -iquote external/java -iquote bazel-out/k8-fastbuild/bin/external/java -isystem external/ssl/usr/include/openssl -isystem bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl -isystem external/java/java/include -isystem bazel-out/k8-fastbuild/bin/external/java/java/include -isystem external/java/java/include/linux -isystem bazel-out/k8-fastbuild/bin/external/java/java/include/linux '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c javacontainer/javacontainer.cc -o bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o)
+SUBCOMMAND: # //:exaudfclient_py3 [action 'Compiling exaudfclient.cc']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc -U_FORTIFY_SOURCE -fstack-protector -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -fno-omit-frame-pointer '-std=c++0x' -MD -MF bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.d '-frandom-seed=bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o' -fPIC -DENABLE_JAVA_VM -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/ssl -iquote bazel-out/k8-fastbuild/bin/external/ssl -iquote external/java -iquote bazel-out/k8-fastbuild/bin/external/java -iquote external/bazel_tools -iquote bazel-out/k8-fastbuild/bin/external/bazel_tools -isystem external/ssl/usr/include/openssl -isystem bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl -isystem external/java/java/include -isystem bazel-out/k8-fastbuild/bin/external/java/java/include -isystem external/java/java/include/linux -isystem bazel-out/k8-fastbuild/bin/external/java/java/include/linux '-std=c++14' -g0 -DNDEBUG -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -O3 -U_FORTIFY_SOURCE -flto -v -fno-canonical-system-headers -Wno-builtin-macro-redefined '-D__DATE__="redacted"' '-D__TIMESTAMP__="redacted"' '-D__TIME__="redacted"' -c exaudfclient.cc -o bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o)
+INFO: From Compiling exaudfclient.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/ssl' '-iquote' 'bazel-out/k8-fastbuild/bin/external/ssl' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-iquote' 'external/bazel_tools' '-iquote' 'bazel-out/k8-fastbuild/bin/external/bazel_tools' '-isystem' 'external/ssl/usr/include/openssl' '-isystem' 'bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.d -MF bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.d -MQ bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D ENABLE_JAVA_VM -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/ssl -iquote bazel-out/k8-fastbuild/bin/external/ssl -iquote external/java -iquote bazel-out/k8-fastbuild/bin/external/java -iquote external/bazel_tools -iquote bazel-out/k8-fastbuild/bin/external/bazel_tools -isystem external/ssl/usr/include/openssl -isystem bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl -isystem external/java/java/include -isystem bazel-out/k8-fastbuild/bin/external/java/java/include -isystem external/java/java/include/linux -isystem bazel-out/k8-fastbuild/bin/external/java/java/include/linux exaudfclient.cc -quiet -dumpbase exaudfclient.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o -g0 -O3 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -flto -fno-canonical-system-headers -Wformat-security -o /tmp/ccFHUvxh.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java/java/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java/java/include/linux"
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/ssl"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/bazel_tools"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+ external/ssl
+ external/java
+ external/bazel_tools
+#include <...> search starts here:
+ external/ssl/usr/include/openssl
+ external/java/java/include
+ external/java/java/include/linux
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+exaudfclient.cc: In function 'int main(int, char**)':
+exaudfclient.cc:86:13: warning: unused variable 'my_namespace_id' [-Wunused-variable]
+     Lmid_t  my_namespace_id;
+             ^~~~~~~~~~~~~~~
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/ssl' '-iquote' 'bazel-out/k8-fastbuild/bin/external/ssl' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-iquote' 'external/bazel_tools' '-iquote' 'bazel-out/k8-fastbuild/bin/external/bazel_tools' '-isystem' 'external/ssl/usr/include/openssl' '-isystem' 'bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o /tmp/ccFHUvxh.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/ssl' '-iquote' 'bazel-out/k8-fastbuild/bin/external/ssl' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-iquote' 'external/bazel_tools' '-iquote' 'bazel-out/k8-fastbuild/bin/external/bazel_tools' '-isystem' 'external/ssl/usr/include/openssl' '-isystem' 'bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/_objs/exaudfclient_py3/exaudfclient.pic.o' '-mtune=generic' '-march=x86-64'
+INFO: From Compiling javacontainer/javacontainer.cc:
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/ssl' '-iquote' 'bazel-out/k8-fastbuild/bin/external/ssl' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-isystem' 'external/ssl/usr/include/openssl' '-isystem' 'bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -MD bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.d -MF bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.d -MQ bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o -D_GNU_SOURCE -U _FORTIFY_SOURCE -D ENABLE_JAVA_VM -D NDEBUG -U _FORTIFY_SOURCE -D __DATE__="redacted" -D __TIMESTAMP__="redacted" -D __TIME__="redacted" -iquote . -iquote bazel-out/k8-fastbuild/bin -iquote external/ssl -iquote bazel-out/k8-fastbuild/bin/external/ssl -iquote external/java -iquote bazel-out/k8-fastbuild/bin/external/java -isystem external/ssl/usr/include/openssl -isystem bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl -isystem external/java/java/include -isystem bazel-out/k8-fastbuild/bin/external/java/java/include -isystem external/java/java/include/linux -isystem bazel-out/k8-fastbuild/bin/external/java/java/include/linux javacontainer/javacontainer.cc -quiet -dumpbase javacontainer.cc -mtune=generic -march=x86-64 -auxbase-strip bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o -g0 -O3 -Wall -Wunused-but-set-parameter -Wno-free-nonheap-object -Wno-builtin-macro-redefined -std=c++11 -std=c++14 -version -fstack-protector -frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o -fPIC -fstack-protector-strong -fomit-frame-pointer -ffunction-sections -fdata-sections -flto -fno-canonical-system-headers -Wformat-security -o /tmp/ccRqdtGh.s
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java/java/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java/java/include/linux"
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/7"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/ssl"
+ignoring nonexistent directory "bazel-out/k8-fastbuild/bin/external/java"
+#include "..." search starts here:
+ .
+ bazel-out/k8-fastbuild/bin
+ external/ssl
+ external/java
+#include <...> search starts here:
+ external/ssl/usr/include/openssl
+ external/java/java/include
+ external/java/java/include/linux
+ /usr/include/c++/7
+ /usr/include/x86_64-linux-gnu/c++/7
+ /usr/include/c++/7/backward
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++14 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 38816e3807cdcb3c59571e251bd6c090
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/ssl' '-iquote' 'bazel-out/k8-fastbuild/bin/external/ssl' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-isystem' 'external/ssl/usr/include/openssl' '-isystem' 'bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o' '-mtune=generic' '-march=x86-64'
+ as -v --64 -o bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o /tmp/ccRqdtGh.s
+GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-U' '_FORTIFY_SOURCE' '-fstack-protector' '-Wall' '-Wunused-but-set-parameter' '-Wno-free-nonheap-object' '-std=c++11' '-MD' '-MF' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.d' '-frandom-seed=bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o' '-fPIC' '-D' 'ENABLE_JAVA_VM' '-iquote' '.' '-iquote' 'bazel-out/k8-fastbuild/bin' '-iquote' 'external/ssl' '-iquote' 'bazel-out/k8-fastbuild/bin/external/ssl' '-iquote' 'external/java' '-iquote' 'bazel-out/k8-fastbuild/bin/external/java' '-isystem' 'external/ssl/usr/include/openssl' '-isystem' 'bazel-out/k8-fastbuild/bin/external/ssl/usr/include/openssl' '-isystem' 'external/java/java/include' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include' '-isystem' 'external/java/java/include/linux' '-isystem' 'bazel-out/k8-fastbuild/bin/external/java/java/include/linux' '-std=c++14' '-g0' '-D' 'NDEBUG' '-fstack-protector-strong' '-fomit-frame-pointer' '-ffunction-sections' '-fdata-sections' '-O3' '-U' '_FORTIFY_SOURCE' '-flto' '-v' '-fno-canonical-system-headers' '-Wno-builtin-macro-redefined' '-D' '__DATE__="redacted"' '-D' '__TIMESTAMP__="redacted"' '-D' '__TIME__="redacted"' '-c' '-o' 'bazel-out/k8-fastbuild/bin/javacontainer/_objs/javacontainer/javacontainer.pic.o' '-mtune=generic' '-march=x86-64'
+[49 / 52] Linking libexaudflib_complete.so; 2s linux-sandbox ... (2 actions, 1 running)
+SUBCOMMAND: # //:exaudfclient_py3 [action 'Linking exaudfclient_py3']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+    PWD=/proc/self/cwd \
+  /usr/bin/gcc @bazel-out/k8-fastbuild/bin/exaudfclient_py3-2.params)
+[51 / 52] [Prepa] Executing genrule //:exaudfclient_py3_bash_wrapper
+SUBCOMMAND: # //:exaudfclient_py3_bash_wrapper [action 'Executing genrule //:exaudfclient_py3_bash_wrapper']
+(cd /home/tkilias/.cache/bazel/_bazel_tkilias/931544885a9237f951b64a8fbf931d46/execroot/__main__ && \
+  exec env - \
+    JAVA_PREFIX=/usr/lib/jvm/java-11-openjdk-amd64 \
+    PATH=/home/tkilias/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tkilias/.local/bin \
+    PROTOBUF_BIN=/usr/bin/protoc \
+    PROTOBUF_INCLUDE_PREFIX=/usr/include/google/protobuf/ \
+    PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu \
+  /bin/bash -c 'source external/bazel_tools/tools/genrule/genrule-setup.sh; 
+        ./create_binary_wrapper.sh "bazel-out/k8-fastbuild/bin/exaudfclient_py3" "bazel-out/k8-fastbuild/bin/exaudfclient_py3.sh" "./exaudfclient.template.sh"
+    ')
+Target //:exaudfclient_py3_bash_wrapper up-to-date:
+  bazel-bin/exaudfclient_py3.sh
+INFO: Elapsed time: 13.535s, Critical Path: 12.69s
+INFO: 33 processes: 31 linux-sandbox, 2 worker.
+INFO: Build completed successfully, 52 total actions
+INFO: Build completed successfully, 52 total actions

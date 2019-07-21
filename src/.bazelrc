@@ -1,5 +1,6 @@
 build --copt='-std=c++14' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX 
 # TODO add environment variables for R libraries
+build:benchmark --define benchmark=true
 build:r --define r=true
 build:java  --define java=true --action_env=JAVA_PREFIX
 build:python --define python=true  --action_env=PYTHON2_SYSPATH --action_env=PYTHON2_PREFIX --action_env=PYTHON2_VERSION --action_env=NUMPY_PREFIX --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION

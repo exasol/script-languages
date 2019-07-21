@@ -96,7 +96,7 @@ cc_library(
     name = "javacontainer",
     srcs = [":javacontainer.cc", ":dummy"],
     hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h"],
-    deps = ["@ssl//:ssl","@java//:java", ":exascript_java", "//exaudflib:header", "//:debug_message_h"],
+    deps = ["@ssl//:ssl","@java//:java", ":exascript_java", "//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"]
 )
 
 #workaround to build jars together with javacontainer c++ library
