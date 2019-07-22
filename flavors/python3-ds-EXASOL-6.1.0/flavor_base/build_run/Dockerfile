@@ -12,8 +12,6 @@ RUN ldconfig
 RUN mkdir /exaudf_src /exaudf
 COPY src/ /exaudf_src/
 
-#ENV VERBOSE_BUILD "--subcommands --verbose_failures"
-
 WORKDIR /exaudf_src/
 RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty --config optimize --config python --config fast-binary-py3"]
 RUN cp -r -L bazel-bin/* /exaudf
