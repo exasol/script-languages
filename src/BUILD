@@ -77,79 +77,51 @@ VM_PYTHON3_DEPS=select({
     }) 
 
 cc_binary(
-    name = "exaudfclient_wrong_rpath_py2",
+    name = "exaudfclient",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS,
+    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
+            ["//exaudflib:exaudflib-deps"],
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
+
+#TODO 172.17.0.2:60292> exaudf/exaudfclient: error while loading shared libraries: libscriptoptionlines.so: cannot open shared object file: No such file or directory
+
 
 cc_binary(
-    name = "exaudfclient_wrong_rpath_py3",
+    name = "exaudfclient_py3",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS,
+    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
+            ["//exaudflib:exaudflib-deps"],
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"]
 )
 
-# Workaround for the problems of JNI with rpath's used by Bazel
-# Bazel creates for all external local repositories symlinks and 
-# the path of these symlinks may contain a @ character.
-# Bazel than write during compilation these paths to the rpath of the binary,
-# but JNI truncates pathes with @ character. In the end, 
-# it was nearly impossible to convince JNI from other pathes for its libraries, 
-# as the original pathes where apt installed the files.
+# Workarround for the hardcoded paths in exaudfclient for libexaudflib_complete.so and python_ext_dataframe.cc
+# - libexaudflib_complete.so and python_ext_dataframe.cc get dynamically loaded, therefore the exaudfclient needs to know their paths
+# - Most flexible way to provides these paths would environment variables
+# - The exasol database can't provide these paths, because they depend on the container
+# - A workarround to provide these paths would be wrapper bash script which set these environment variables
+# - For performance reason, we can not wrap the binary into a shell script, as such this is only for local debugging and testing
+#   and we hardcode the paths for the production container
 genrule(
-    name = "gen-exaudfclient",
+    name = "exaudfclient_py2_bash_wrapper",
     cmd = """
-        touch $(location exaudfclient)
-        cat $(location exaudfclient.sh) >> $(location exaudfclient)
-        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient)
-        echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient)
-        echo ./`basename $(location exaudfclient_wrong_rpath_py2)` '$$*' >>  $(location exaudfclient)
+        $(location create_binary_wrapper.sh) "$(location exaudfclient)" "$(location exaudfclient.sh)" "$(location exaudfclient.template.sh)"
     """,
-    outs = ["exaudfclient"],
-    srcs = [":exaudfclient_wrong_rpath_py2", "libexaudflib_complete.so", "exaudfclient.sh"],
-    #executable = True,
+    outs = ["exaudfclient.sh"],
+    srcs = [":exaudfclient", "libexaudflib_complete.so", "exaudfclient.template.sh","create_binary_wrapper.sh"],
     output_to_bindir = True
 )
 
 genrule(
-    name = "gen-exaudfclient-py3",
+    name = "exaudfclient_py3_bash_wrapper",
     cmd = """
-        touch $(location exaudfclient_py3)
-        cat $(location exaudfclient.sh) >> $(location exaudfclient_py3)
-        echo >> $(location exaudfclient_py3)
-        echo export LD_LIBRARY_PATH=`find "$$JAVA_PREFIX" -name *.so -type f |  xargs -n 1 dirname | sort | uniq | paste -sd ":" -` >> $(location exaudfclient_py3)
-        echo 'echo "LD_LIBRARY_PATH: $$LD_LIBRARY_PATH"' >> $(location exaudfclient_py3)
-        echo ./`basename $(location exaudfclient_wrong_rpath_py3)` '$$*' >>  $(location exaudfclient_py3)
+        $(location create_binary_wrapper.sh) "$(location exaudfclient_py3)" "$(location exaudfclient_py3.sh)" "$(location exaudfclient.template.sh)"
     """,
-    outs = ["exaudfclient_py3"],
-    srcs = [":exaudfclient_wrong_rpath_py3", "libexaudflib_complete.so", "exaudfclient.sh"],
-    #executable = True,
+    outs = ["exaudfclient_py3.sh"],
+    srcs = [":exaudfclient_py3", "libexaudflib_complete.so", "exaudfclient.template.sh", "create_binary_wrapper.sh"],
     output_to_bindir = True
 )
-
-# Failed attempt to make java depdendency local independently to bazel, because JNI has problems with paths which contain a @. 
-# However, JNI has problems with this attempt, too. 
-# Unitl now only the path under /usr/lib/jvm worked.
-#
-# genrule(
-#     name = "gen-java-lib",
-#     cmd = """
-#         mkdir $(location java-lib)
-#         cd $(location java-lib)
-#         LIB_NAMES=`find $$JAVA_PREFIX -name '*.so' | xargs -n 1 basename | sort | uniq`
-#         #echo LIB_NAMES:  $$LIB_NAMES
-#         for I in $$LIB_NAMES
-#         do
-#             FILE_TO_LINK=`find $$JAVA_PREFIX -name $$I -type f | head -n 1`
-#             #echo FILE_TO_LINK: $$FILE_TO_LINK
-#             ln -s $$FILE_TO_LINK
-#         done
-#     """,
-#     outs = ["java-lib"],
-#     output_to_bindir = True
-# )

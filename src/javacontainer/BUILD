@@ -82,21 +82,21 @@ genrule(
 
 cc_library(
     name = "exascript_java",
-    srcs = [":filter_swig_code_exascript_java_cc"],
+    srcs = [":filter_swig_code_exascript_java_cc",],
     deps = ["@java//:java","//exaudflib:exaudflib-deps","//exaudflib:header"],
-    copts = ["-O0"], 
-    # We limit this target to -O0 (no optimization). because otherwise we get compiler warnings of the sort 
-    # "dereferencing type-punned pointer will break strict-aliasing rules". Normally, this indicates that
-    # compiling with higher optimizations levels may break your progrom. Unitl now, we don't have enough tests
-    # to verify if higher levels of optimizations might work
+    copts= ["-O0","-fno-lto"],
+    # We limit this target to -O0 (no optimization) and -fno-lto. because otherwise we get compiler warnings of the sort 
+    # note: "code may be misoptimized unless -fno-strict-aliasing is used." 
+    # Normally, this indicates that compiling with higher optimizations levels may break your progrom. Unitl now, we don't have enough tests
+    # to verify if higher levels of optimizations might work. We needed to deactivate link time optimization, too, because this delay the compilation
+    # until the exaudfclient binary is build and causes than there the same problem.
 )
 
 cc_library(
     name = "javacontainer",
     srcs = [":javacontainer.cc", ":dummy"],
     hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h"],
-#    data = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
-    deps = ["@ssl//:ssl","@java//:java", ":exascript_java", "//exaudflib:header", "//:debug_message_h"]
+    deps = ["@ssl//:ssl","@java//:java", ":exascript_java", "//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"]
 )
 
 #workaround to build jars together with javacontainer c++ library

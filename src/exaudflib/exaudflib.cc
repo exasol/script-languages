@@ -1558,8 +1558,6 @@ reinit:
     socket.setsockopt(ZMQ_RCVTIMEO, &recv_sock_timeout, sizeof(recv_sock_timeout));
     socket.setsockopt(ZMQ_SNDTIMEO, &send_sock_timeout, sizeof(send_sock_timeout));
 
-    std::cerr << "stm652:: exaudflib_main: connection socket: " << socket_name << std::endl;
-
     if (get_remote_client()) socket.bind(socket_name_str);
     else socket.connect(socket_name_str);
 

@@ -72,11 +72,7 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 #endif
 
 int main(int argc, char **argv) {
-#ifdef CUSTOM_PROTOBUF_PREFIX
-    string libProtobufPath= string(CUSTOM_PROTOBUF_PREFIX) + "/libprotobuf.so";
-#else
-    string libProtobufPath = "/usr/lib/x86_64-linux-gnu/libprotobuf.so";
-#endif
+#ifndef PROTEGRITY_PLUGIN_CLIENT
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
     string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
@@ -85,7 +81,6 @@ int main(int argc, char **argv) {
     //string libexaudflibPath = string(argv[3]);
     //string libexaudflibPath = string("/exaudf/libexaudflib_complete.so");
 #endif
-#ifndef PROTEGRITY_PLUGIN_CLIENT
 #if 1
 
     Lmid_t  my_namespace_id;

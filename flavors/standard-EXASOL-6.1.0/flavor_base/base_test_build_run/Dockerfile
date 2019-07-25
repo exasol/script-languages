@@ -12,11 +12,12 @@ RUN ldconfig
 RUN mkdir /exaudf_src /exaudf
 COPY src/ /exaudf_src/
 
-#ENV VERBOSE_BUILD "--subcommands --verbose_failures"
-
 WORKDIR /exaudf_src/
-RUN ["/bin/bash", "-c", "source /env && bash build.sh -c dbg --define r=true --define python=true --define java=true //:exaudfclient //:exaudfclient_py3"]
+RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty -c dbg --config python --config java --config r --config slow-wrapper-both"]
 RUN cp -r -L bazel-bin/* /exaudf
+
+RUN ./test_udfclient.sh /exaudf/exaudfclient.sh
+RUN ./test_udfclient.sh /exaudf/exaudfclient_py3.sh
 
 RUN mkdir /exasol_emulator
 COPY emulator/ /exasol_emulator
