@@ -17,3 +17,8 @@ ENV PYTHON3_PREFIX /usr
 ENV PYTHON3_VERSION python3.6
 ENV JAVA_PREFIX /usr/lib/jvm/java-11-openjdk-amd64
 
+# Add certificates of AWS RDS to the Java truststore
+RUN cd tmp && \
+    wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem && \
+    openssl x509 -outform der -in rds-combined-ca-bundle.pem -out rds-combined-ca-bundle.der && \
+    keytool -keystore /etc/ssl/certs/java/cacerts -import -file rds-combined-ca-bundle.der -alias awsrds
