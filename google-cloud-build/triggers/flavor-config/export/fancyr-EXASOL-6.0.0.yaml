@@ -1,0 +1,2 @@
+flavor: "fancyr-EXASOL-6.0.0"
+trigger_template_file: "export.json.jinja2"

@@ -1,0 +1,51 @@
+steps:
+- id: 'Build build-container'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [
+          'build', 
+          '-t', 
+          'gcr.io/script-languages/build-container', 
+          'google-cloud-build/ci-scripts/scripts/'
+          ]
+- id: 'Decrypt Docker password'
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: bash
+  args: [
+          '-x',
+          'google-cloud-build/ci-scripts/scripts/decrypt.sh',
+          '${_DOCKER_PASSWORD}',
+          'DOCKER_PASSWORD',
+          '${_KEY_RING_NAME}',
+          '${_KEY_NAME}'
+          ]
+- id: 'Export container'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash',
+          'google-cloud-build/ci-scripts/scripts/export.sh',
+          '${_FLAVOR}',
+          '${_BUILD_DOCKER_REPOSITORY}',
+          '$COMMIT_SHA',
+          '""',
+          '""',
+          '${_DOCKER_USER}',
+          ]
+- id: 'Check export'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
+          '${_LOG_BUCKET}', 
+          '${_FLAVOR}', 
+          '$BUILD_ID'
+          ]
+- id: 'Upload exported container'
+  name: 'gcr.io/cloud-builders/gsutil'
+  args: [
+          'cp',
+          '.build_output/exports/*',
+          '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/$BUILD_ID/'
+          ]
+timeout: "7200s"
+options:
+  diskSizeGb: "50"

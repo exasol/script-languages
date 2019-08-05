@@ -170,19 +170,13 @@ class DockerAnalyzeImageTask(StoppableTask):
         if self.is_rebuild_necessary(image_info_of_dependencies):
             return ImageState.NEEDS_TO_BE_BUILD
         else:
-            if target_image_target.exists() \
+            if self.is_image_locally_available(target_image_target) \
                     and not build_config().force_pull \
                     and not build_config().force_load:
-                self.logger.info(
-                    f"Task {self.__repr__()}: Checking if target image {target_image_target.get_complete_name()} "
-                    f"is locally available, result {target_image_target.exists()}")
                 return ImageState.TARGET_LOCALLY_AVAILABLE
-            if source_image_target.exists() \
+            if self.is_image_locally_available(source_image_target) \
                     and not build_config().force_pull \
                     and not build_config().force_load:
-                self.logger.info(
-                    f"Task {self.__repr__()}: Checking if source image {source_image_target.get_complete_name()} "
-                    f"is locally available, result {source_image_target.exists()}")
                 return ImageState.SOURCE_LOCALLY_AVAILABLE
             elif self.can_image_be_loaded(source_image_target):
                 return ImageState.CAN_BE_LOADED
@@ -199,6 +193,13 @@ class DockerAnalyzeImageTask(StoppableTask):
     def is_rebuild_necessary(self, image_info_of_dependencies: Dict[str, ImageInfo]):
         return self.needs_any_dependency_to_be_build(image_info_of_dependencies) or \
                self.is_rebuild_requested()
+
+    def is_image_locally_available(self, image_target: DockerImageTarget):
+        exists=image_target.exists()
+        self.logger.info(
+                f"Task {self.__repr__()}: Checking if image {image_target.get_complete_name()} "
+                f"is locally available, result {exists}")
+        return exists
 
     def can_image_be_loaded(self, image_target: DockerImageTarget):
         if build_config().cache_directory is not None:

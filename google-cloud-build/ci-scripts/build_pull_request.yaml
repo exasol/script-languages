@@ -1,0 +1,45 @@
+steps:
+- id: 'Build build-container'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [
+          'build', 
+          '-t', 
+          'gcr.io/script-languages/build-container', 
+          'google-cloud-build/ci-scripts/scripts/'
+          ]
+- id: 'Build images'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash', 
+          'google-cloud-build/ci-scripts/scripts/build.sh', 
+          '${_FLAVOR}'
+          ]
+- id: 'Check build'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
+          "${_LOG_BUCKET}", 
+          "${_FLAVOR}", 
+          "$BUILD_ID"
+          ]
+- id: 'Run tests'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash', 
+          'google-cloud-build/ci-scripts/scripts/test.sh', 
+          '${_FLAVOR}'
+          ]
+- id: 'Check tests'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
+          '${_LOG_BUCKET}', 
+          '${_FLAVOR}', 
+          '$BUILD_ID'
+          ]
+timeout: "7200s"
+options:
+  machineType: 'N1_HIGHCPU_8'
+  diskSizeGb: "50"

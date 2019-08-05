@@ -1,0 +1,2 @@
+flavor: "standard-EXASOL-6.1.0"
+trigger_template_file: "export.json.jinja2"
