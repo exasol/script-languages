@@ -4,6 +4,7 @@ set -o errexit
 set -o pipefail
 
 function check_output(){
+  echo $OUTPUT
   if echo "$OUTPUT" | grep -q "ERROR" && \
     ! echo "$OUTPUT" | grep -q "already exists"
   then
@@ -18,6 +19,7 @@ setup_scripts=setup-scripts
 env_file=".env/env.yaml"
 KEY_RING_NAME=$(cat "$env_file" | yq -r .key_ring_name)
 KEY_NAME=$(cat "$env_file" | yq -r .key_name)
+PROJECT_NAME=$(cat "$env_file" | yq -r .gcloud_project_name)
 
 echo "Create key ring"
 OUTPUT=$(gcloud kms keyrings create $KEY_RING_NAME --location global 2>&1 || true)
@@ -43,5 +45,5 @@ OUTPUT=$(gcloud beta iam service-accounts create build-cloud-functions --display
 check_output
 
 echo "Grant key to Cloud Functions"
-OUTPUT=$(gcloud kms keys add-iam-policy-binding "$KEY_NAME" --location=global --keyring="$KEY_RING_NAME" --member=serviceAccount:build-cloud-functions@tpu-integration.iam.gserviceaccount.com  --role=roles/cloudkms.cryptoKeyDecrypter 2>&1 || true)
+OUTPUT=$(gcloud kms keys add-iam-policy-binding "$KEY_NAME" --location=global --keyring="$KEY_RING_NAME" --member=serviceAccount:build-cloud-functions@$PROJECT_NAME.iam.gserviceaccount.com  --role=roles/cloudkms.cryptoKeyDecrypter 2>&1 || true)
 check_output
