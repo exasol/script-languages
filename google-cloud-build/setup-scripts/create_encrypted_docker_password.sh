@@ -8,4 +8,5 @@ if [ ! -f "$OUTPUT_FILE" ]
 then
         echo "Enter the Docker Passowrd"
         echo "docker_password: \"$($SCRIPT_DIR/encrypt.sh)\"" > "$OUTPUT_FILE"
+        echo "Stored encryped Docker password in $OUTPUT_FILE"
 fi
