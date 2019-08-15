@@ -1,0 +1,27 @@
+{
+  {% if trigger_id is defined %}
+  "id": "{{ trigger_id }}",
+  {% endif %}
+  "disabled": "true",
+  "triggerTemplate": {
+    "projectId": "{{ gcloud_project_name }}",
+    "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
+    "branchName": ".*"
+  }, 
+  "description": "Export {{ flavor }}",
+  "substitutions": {
+    "_JOB_ID": "{{ job_id }}",
+    "_FLAVOR": "{{ flavor }}",
+    "_LOG_BUCKET": "{{ log_bucket }}",
+    "_CONTAINER_BUCKET": "{{ container_bucket }}",
+    "_KEY_RING_NAME": "{{ key_ring_name }}",
+    "_KEY_NAME": "{{ key_name }}",
+    "_BUILD_DOCKER_REPOSITORY": "{{ build_docker_repository }}",
+    "_DOCKER_USER": "{{ docker_user }}",
+    "_DOCKER_PASSWORD": "{{ docker_password }}",
+    "_GITHUB_USER_NAME": "{{ github_user_name }}",
+    "_GITHUB_REPOSITORY": "{{ github_repository }}",
+    "_JOB_TYPE": "export"
+  },
+  "filename": "google-cloud-build/ci-scripts/export.yaml"
+}

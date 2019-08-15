@@ -1,0 +1,5 @@
+{
+  "projectId": "{{ gcloud_project_name }}",
+  "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
+  "commitSha": "{{ commitSha }}"
+}
