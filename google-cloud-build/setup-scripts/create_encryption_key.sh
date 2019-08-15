@@ -4,7 +4,6 @@ set -o errexit
 set -o pipefail
 
 function check_output(){
-  echo $OUTPUT
   if echo "$OUTPUT" | grep -q "ERROR" && \
     ! echo "$OUTPUT" | grep -q "already exists"
   then
