@@ -3,11 +3,11 @@ import multiprocessing as mp
 from typing import Dict
 
 import docker
-
+from docker.errors import DockerException
 
 class DockerRegistryImageChecker:
     def map(self, image: str, queue: mp.Queue):
-        client = docker.from_env()
+        client = docker.from_env() # TODO replace by docker_config
         try:
             generator = client.api.pull(
                 repository=image,
@@ -18,6 +18,7 @@ class DockerRegistryImageChecker:
                 log_line = log_line.strip('\r\n')
                 json_output = json.loads(log_line)
                 queue.put(json_output)
+            queue.put(None)
         except Exception as e:
             queue.put(e)
         finally:
@@ -35,7 +36,12 @@ class DockerRegistryImageChecker:
                 elif isinstance(value, Dict):
                     if "status" in value and value["status"].startswith("Pulling"):
                         return True
+                    elif "errorDetail" in value:
+                        # TODO logger debug
+                        return False
+                elif value is None:
+                    return False
                 else:
-                    raise Exception(f"Unknown value {value}")
+                    raise RuntimeError(f"Should not happen. Programming Error. Unknown value {value}")
         finally:
             process.terminate()

@@ -27,7 +27,7 @@ If you are interested in the script client you find more details [here](src/READ
 ## Prerequisites
 In order to build this project, you need:
 * Linux or Mac OS X (experimental)
-* Docker
+* Docker >= 17.05 [multi-stage builds required](https://docs.docker.com/develop/develop-images/multistage-build/)
 * Python >=3.6 with pip
 * We recommend at least 50 GB free disk space on the partition 
   where Docker stores its images, on linux Docker typically stores 
