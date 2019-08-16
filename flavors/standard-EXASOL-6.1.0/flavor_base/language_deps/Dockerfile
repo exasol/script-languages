@@ -19,6 +19,7 @@ ENV JAVA_PREFIX /usr/lib/jvm/java-11-openjdk-amd64
 
 # Add certificates of AWS RDS to the Java truststore
 RUN cd tmp && \
-    wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem && \
+    curl -L -o rds-combined-ca-bundle.pem https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem && \
     openssl x509 -outform der -in rds-combined-ca-bundle.pem -out rds-combined-ca-bundle.der && \
-    keytool -keystore /etc/ssl/certs/java/cacerts -import -file rds-combined-ca-bundle.der -alias awsrds
+    keytool -keystore /etc/ssl/certs/java/cacerts -import -file rds-combined-ca-bundle.der -alias awsrds && \
+    rm rds-combined-ca-bundle.pem
