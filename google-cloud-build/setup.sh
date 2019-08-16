@@ -11,3 +11,4 @@ gcloud config set project "$PROJECT"
 ./setup-scripts/create_encryption_key.sh
 ./setup-scripts/deploy-github-status-notifications.sh
 ./setup-scripts/update_triggers.sh
+./setup-scripts/copy_config.sh
