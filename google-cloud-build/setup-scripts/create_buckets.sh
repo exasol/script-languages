@@ -21,10 +21,14 @@ function check_output(){
 env_file=".env/env.yaml"
 LOG_BUCKET=$(cat "$env_file" | yq -r .log_bucket)
 CONTAINER_BUCKET=$(cat "$env_file" | yq -r .container_bucket)
+CONFIG_BUCKET=$(cat "$env_file" | yq -r .config_bucket)
 
 echo "Create Log Bucket $LOG_BUCKET"
 OUTPUT=$(gsutil mb $LOG_BUCKET 2>&1 || true)
 check_output
 echo "Create Container Bucket $CONTAINER_BUCKET"
 OUTPUT=$(gsutil mb $CONTAINER_BUCKET 2>&1 || true)
+check_output
+echo "Create Config Bucket $CONFIG_BUCKET"
+OUTPUT=$(gsutil mb $CONFIG_BUCKET 2>&1 || true)
 check_output
