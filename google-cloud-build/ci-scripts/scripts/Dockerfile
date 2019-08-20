@@ -1,5 +1,8 @@
 FROM ubuntu:18.04
 
+RUN sed --in-place "s#http://.*.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#g" /etc/apt/sources.list
+RUN cat /etc/apt/sources.list
+
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN apt-get update && \
