@@ -4,7 +4,10 @@ genrule(
     name = "exascript_python_tmp_cc",
     cmd = """
         INCLUDES=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION-config --includes`
-        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o "$(location exascript_python_tmp.cc)" "$(location //exaudflib:exascript.i)"
+        mkdir -p build_exascript_python_tmp_cc/exaudflib
+        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_python_tmp_cc/exaudflib
+        cd build_exascript_python_tmp_cc
+        swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o "../$(location exascript_python_tmp.cc)" exaudflib/exascript.i
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
     srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
@@ -14,10 +17,14 @@ genrule(
     name = "exascript_python_tmp_h",
     cmd = """
         INCLUDES=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION-config --includes`
-        swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -external-runtime "$(location exascript_python_tmp.h)"
+        mkdir build_exascript_python_tmp_h
+        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_python_tmp_h
+        cp "$(location exascript_python_tmp.cc)"  "$(location exascript_python.py)" build_exascript_python_tmp_h
+        cd build_exascript_python_tmp_h
+        swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -external-runtime "../$(location exascript_python_tmp.h)"
         """,
     outs = ["exascript_python_tmp.h"],
-    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp_cc"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp.cc", "exascript_python.py"]
 )
 
 genrule(
@@ -30,7 +37,10 @@ genrule(
 
 genrule(
     name = "exascript_python_int",
-    cmd = 'cp $(SRCS) . && python build_integrated.py "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"',
+    cmd = """
+      cp $(SRCS) .
+      python $(location //:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"
+    """,
     outs = ["exascript_python_int.h"],
     srcs = [":exascript_python_tmp_cc", "//python:exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
     tools = ["//:build_integrated.py"]
@@ -41,7 +51,7 @@ genrule(
     cmd = """
         ACTUAL_PYTHON_VERSION=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
         if [[ $$ACTUAL_PYTHON_VERSION == 2* ]] ; then
-            python ./filter_swig_code.py "$@" "$<"
+            python $(location //:filter_swig_code.py) "$@" "$<"
         else
             cp "$<" "$@" 
         fi
@@ -57,7 +67,7 @@ genrule(
         ACTUAL_PYTHON_VERSION=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
         cp $(locations exascript_python_tmp_cc) .
         if [[ $$ACTUAL_PYTHON_VERSION == 2* ]] ; then
-            python ./filter_swig_code.py "$@" exascript_python_tmp.cc
+            python $(location //:filter_swig_code.py) "$@" exascript_python_tmp.cc
         else
             cp exascript_python_tmp.cc "$@" 
         fi
