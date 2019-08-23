@@ -1,3 +1,0 @@
-FROM exaudf/baseimage_python3-ds-exasol-6.1.0
-ARG extract_dir
-COPY $extract_dir/exaudf /exaudf

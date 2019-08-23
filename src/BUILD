@@ -12,11 +12,6 @@ config_setting(
 )
 
 config_setting(
-    name = "r",
-    define_values = {"r": "true"},
-)
-
-config_setting(
     name = "java",
     define_values = {"java": "true"},
 )
@@ -54,9 +49,6 @@ cc_binary(
 
 VM_ENABLED_DEPS=select({
         ":benchmark": ["//benchmark_container:benchmark_container"],
-        "//conditions:default": []
-    }) + select({
-        ":r": ["//rcontainer:rcontainer"],
         "//conditions:default": []
     }) + select({
         ":java": ["//javacontainer:javacontainer"],

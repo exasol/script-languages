@@ -2,7 +2,9 @@
   {% if trigger_id is defined %}
   "id": "{{ trigger_id }}",
   {% endif %}
-  {% if build_mode == "rebuild"  %}
+  {% if disabled == true %}
+  "disabled": "true",
+  {% elif build_mode == "rebuild"  %}
   "disabled": "true",
   {% elif build_mode == "build" %}
   "disabled": "false",

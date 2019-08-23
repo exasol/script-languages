@@ -21,20 +21,6 @@ load("//:protobuf_repository.bzl", "protobuf_local_repository")
 protobuf_local_repository(name = "protobuf")
 
 new_local_repository(
-    name = "R_linux",
-    path = "/usr",
-    build_file_content = """
-cc_library(
-    name = "r-lib",
-    srcs = glob(["lib/R/lib/libR.so"]),
-    hdrs = glob(["share/R/include/*/*.h","share/R/include/*.h"]),
-    includes = ["share/R/include"],
-    visibility = ["//visibility:public"]
-)
-    """
-)
-
-new_local_repository(
     name = "zmq",
     path = "/",
     build_file_content = """

@@ -1,7 +1,6 @@
 build --copt='-std=c++14' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX 
 # TODO add environment variables for R libraries
 build:benchmark --define benchmark=true
-build:r --define r=true
 build:java  --define java=true --action_env=JAVA_PREFIX
 build:python --define python=true  --action_env=PYTHON2_SYSPATH --action_env=PYTHON2_PREFIX --action_env=PYTHON2_VERSION --action_env=NUMPY_PREFIX --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION
 build:fast-binary-py2 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' //:exaudfclient
@@ -13,6 +12,5 @@ build:slow-wrapper-both --config=slow-wrapper-py2 --config=slow-wrapper-py3
 build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
 #TODO test linkopts="-flto"
 build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-O3" --copt="-U_FORTIFY_SOURCE" --copt="-flto"
-build:optimize-r --define r-unroll-loops=true --config=r
 build:no-tty --curses=no --color=no
 build:debug-build --sandbox_debug --config=verbose

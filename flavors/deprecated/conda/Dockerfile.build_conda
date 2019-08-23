@@ -1,9 +1,0 @@
-FROM exaudf/baseimage_conda
-
-RUN mkdir /exaudf_src /exaudf_src/build /exaudf
-
-COPY src/ /exaudf_src/
-
-RUN /exaudf_src/build_client.sh --src-dir=/exaudf_src --build-dir=/exaudf_src/build --output-dir=/exaudf --enable-python --python-prefix=/opt/conda 
-
-#--python-syspath="['', '/opt/conda/lib/python27.zip', '/opt/conda/lib/python2.7', '/opt/conda/lib/python2.7/plat-linux2', '/opt/conda/lib/python2.7/lib-tk', '/opt/conda/lib/python2.7/lib-old', '/opt/conda/lib/python2.7/lib-dynload', '/opt/conda/lib/python2.7/site-packages']"

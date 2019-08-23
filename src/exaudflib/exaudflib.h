@@ -465,22 +465,6 @@ class PythonVM: public SWIGVM {
 #endif
 
 
-#ifdef ENABLE_R_VM
-class RVMImpl;
-
-class RVM: public SWIGVM {
-    public:
-        RVM(bool checkOnly);
-        virtual ~RVM() {};
-        virtual bool run();
-        virtual void shutdown();
-        virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
-    private:
-        RVMImpl *m_impl;
-};
-
-#endif
-
 #ifdef ENABLE_JAVA_VM
 class JavaVMImpl;
 
