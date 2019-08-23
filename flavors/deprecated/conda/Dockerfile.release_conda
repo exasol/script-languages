@@ -1,5 +1,0 @@
-FROM exaudf/baseimage_conda
-ARG extract_dir
-COPY $extract_dir/exaudf /exaudf
-
-

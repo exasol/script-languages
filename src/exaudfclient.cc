@@ -163,13 +163,6 @@ int main(int argc, char **argv) {
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Python support");
 #endif
-    } else if (strcmp(argv[2], "lang=r")==0)
-    {
-#ifdef ENABLE_R_VM
-        vmMaker = [](){return new RVM(false);};
-#else
-        throw SWIGVM::exception("this exaudfclient has been compilied without R support");
-#endif
     } else if (strcmp(argv[2], "lang=java")==0)
     {
 #ifdef ENABLE_JAVA_VM

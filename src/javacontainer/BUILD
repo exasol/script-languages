@@ -3,8 +3,11 @@ package(default_visibility = ["//visibility:public"])
 genrule(
     name = "exascript_java_tmp_cc",
     cmd = """
-        mkdir -p $(location java_src)/com/exasol/swig
-        swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -java -addextern -module exascript_java -package com.exasol.swig -outdir $(location java_src)/com/exasol/swig -o "$(location exascript_java_tmp.cc)" "$(location //exaudflib:exascript.i)"
+        mkdir -p $(location java_src)/com/exasol/swig        
+        mkdir -p build_exascript_java_tmp_cc/exaudflib
+        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_cc/exaudflib
+        cd build_exascript_java_tmp_cc     
+        swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -java -addextern -module exascript_java -package com.exasol.swig -outdir "../$(location java_src)/com/exasol/swig" -o "../$(location exascript_java_tmp.cc)" exaudflib/exascript.i
         """,
     outs = ["exascript_java_tmp.cc","java_src"],
     srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
@@ -13,10 +16,14 @@ genrule(
 genrule(
     name = "exascript_java_tmp_h",
     cmd = """
-        swig -v -DEXTERNAL_PROCESS -c++ -java -external-runtime "$(location exascript_java_tmp.h)"
+        mkdir build_exascript_java_tmp_h
+        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_h
+        cp -r "$(location exascript_java_tmp.cc)"  "$(location java_src)" build_exascript_java_tmp_h
+        cd build_exascript_java_tmp_h
+        swig -v -DEXTERNAL_PROCESS -c++ -java -external-runtime "../$(location exascript_java_tmp.h)"
         """,
     outs = ["exascript_java_tmp.h"],
-    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_java_tmp_cc"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_java_tmp.cc", ":java_src"]
 )
 
 genrule(
@@ -24,7 +31,7 @@ genrule(
     cmd = """
         cp -r $(locations :exascript_java_tmp_cc) .
         FILES=`ls java_src/com/exasol/swig/*.java`
-        python build_integrated.py "$(location exascript_java_int.h)" $$FILES
+        python $(location //:build_integrated.py) "$(location exascript_java_int.h)" $$FILES
     """,
     outs = ["exascript_java_int.h"],
     srcs = [":exascript_java_tmp_cc"],
@@ -33,7 +40,7 @@ genrule(
 
 genrule(
     name = "filter_swig_code_exascript_java_h",
-    cmd = 'python ./filter_swig_code.py "$@" "$<"',
+    cmd = 'python $(location //:filter_swig_code.py) "$@" "$<"',
     outs = ["exascript_java.h"],
     srcs = [":exascript_java_tmp_h"],
     tools = ["//:filter_swig_code.py"]
@@ -43,9 +50,9 @@ genrule(
     name = "filter_swig_code_exascript_java_cc",
     cmd = """
             TMPDIR=`mktemp -d`
-            cp -r -L filter_swig_code.py $(locations :exascript_java_tmp_cc) $$TMPDIR
+            cp -r -L $(location //:filter_swig_code.py) $(locations :exascript_java_tmp_cc) $$TMPDIR
             (cd $$TMPDIR &&
-            python ./filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
+            python filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
             cp $$TMPDIR/exascript_java.cc "$(location exascript_java.cc)"
             cp -r $$TMPDIR/java_src/com/exasol/swig/ConnectionInformationWrapper.java "$(location ConnectionInformationWrapper.java)"
             cp -r $$TMPDIR/java_src/com/exasol/swig/exascript_java.java "$(location exascript_java.java)"

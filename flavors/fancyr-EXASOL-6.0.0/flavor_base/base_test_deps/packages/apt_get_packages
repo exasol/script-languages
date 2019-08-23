@@ -1,9 +1,0 @@
-python-protobuf
-python-zmq
-gdb
-valgrind
-gdbserver
-binutils
-patchelf
-chrpath
-strace

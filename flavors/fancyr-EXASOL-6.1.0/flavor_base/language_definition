@@ -1,1 +1,0 @@
-R=localzmq+protobuf:///{{ bucketfs_name }}/{{ bucket_name }}/{{ path_in_bucket }}/{{ release_name }}?lang=r#buckets/{{ bucketfs_name }}/{{ bucket_name }}/{{ path_in_bucket }}/{{ release_name }}/exaudf/exaudfclient
