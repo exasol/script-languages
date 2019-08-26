@@ -1,0 +1,101 @@
+#!/bin/bash
+
+show_usage()
+{
+  cat <<'EOF'
+Usage:
+
+    ccc make
+    ccc make [TARGET...] [OPTIONS]
+
+Targets:
+
+    make
+    install
+    package
+
+
+Details:
+
+This working copy is a runtime, and it the building process of it
+slightly differs from the building process of exasolution or cos.
+For instance, it has special several stages, and several targets
+
+The runtime building process consists of several steps:
+
+* seed (initial chroot environment)     (building time: 5m)
+* toolchain (glibc + gcc)               (building time: 15m)
+* ports (the rest)                      (building time: 20m)
+
+On each step, the target can be either built, or fetched
+from the special location if it was built and saved before.
+
+To build seed:
+
+    ccc make seed (sudo bash toolchain/builder install)
+
+To build the toolchain:
+
+    ccc make toolchain
+
+And to build the ports:
+
+    ccc make ports [all|continue|PORTS...]
+
+If no argument is specifed, `all` is implied.
+In this case all ports are rebuilt from scratch.
+Special target `continue` means, that the build process should
+continue from the point where it was interrupted.
+
+Please note that for the first two steps you need the root rights,
+and the building script uses `sudo` on that stages.
+EOF
+}
+
+make_container()
+{
+mkdir -p $HOME/docker-data
+sudo mount --bind /var/lib/docker $HOME/docker-data/ 
+
+sudo usermod -aG docker $USER
+
+$HOME/ccc/bin/ccc extract -m @EXARuntime-7.0.dev1
+
+sed -i 's/python_version = "3.6"/python_version = "3.7"/g' Pipfile
+export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
+./exaslct export --flavor-path=flavors/python3-ds-EXASOL-6.1.0 --export-path output
+
+exit "$?"
+}
+
+
+case "$1" in
+  make)
+		make_container
+    exit "$?"
+  ;;
+#  install)
+#    export BUILDSYSTEM_PKGDIR=/x/pkg
+#    export SRC_DIR=${PWD}
+#    mkdir -p .build/
+#    cd .build || exit 1
+#    bash "${BUILDER}" install
+#    exit "$?"
+#  ;;
+#  package)
+#    export BUILDSYSTEM_PKGDIR=/x/pkg
+#    export SRC_DIR=${PWD}
+#    mkdir -p .build/
+#    cd .build || exit 1
+#    bash "${BUILDER}" package
+#    exit "$?"
+#  ;;
+#  clean)
+#    rm -rf .build/
+#    exit "$?"
+#  ;;
+  help)
+    show_usage
+    exit 0
+  ;;
+esac
