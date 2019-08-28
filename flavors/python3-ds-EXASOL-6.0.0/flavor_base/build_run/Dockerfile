@@ -9,13 +9,17 @@ COPY --from={{build_deps}} /env /env
 
 RUN ldconfig
 
-RUN mkdir /exaudf_src /exaudf
-COPY src/ /exaudf_src/
+RUN mkdir /exaudfclient /exaudf
+COPY exaudfclient/base /exaudfclient/base
 
-WORKDIR /exaudf_src/
+WORKDIR /exaudfclient/base
 RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty --config optimize --config python --config fast-binary-py3"]
 RUN cp -r -L bazel-bin/* /exaudf
 
 RUN ./test_udfclient.sh /exaudf/exaudfclient_py3
+
+WORKDIR /exaudf
+
+RUN rm -r /exaudfclient
 
 COPY --from={{build_deps}} /build_info /build_info
