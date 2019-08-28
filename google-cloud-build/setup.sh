@@ -4,11 +4,12 @@ set -o nounset
 set -o pipefail
 
 env_file=".env/env.yaml"
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 PROJECT=$(cat "$env_file" | yq -r .gcloud_project_name)
 gcloud config set project "$PROJECT"
-./setup-scripts/activate_services.sh
-./setup-scripts/create_buckets.sh
-./setup-scripts/create_encryption_key.sh
-./setup-scripts/deploy-github-status-notifications.sh
-./setup-scripts/update_triggers.sh
-./setup-scripts/copy_config.sh
+$SCRIPT_DIR/setup-scripts/activate_services.sh
+$SCRIPT_DIR/setup-scripts/create_buckets.sh
+$SCRIPT_DIR/setup-scripts/create_encryption_key.sh
+$SCRIPT_DIR/setup-scripts/deploy-github-status-notifications.sh
+$SCRIPT_DIR/setup-scripts/update_triggers.sh
+$SCRIPT_DIR/setup-scripts/copy_config.sh

@@ -19,7 +19,7 @@
     {% elif build_mode == "build" %}
     "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
     {% elif build_mode == "release" %} 
-    "branchName": "^develop"
+    "branchName": "^(develop|master)$"
     {% endif %}
   },
   {% if build_mode == "rebuild"  %}

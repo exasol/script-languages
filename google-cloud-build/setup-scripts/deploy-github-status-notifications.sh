@@ -3,10 +3,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 echo "Setup githubBuildStatusNotification"
-setup_scripts=setup-scripts
 triggers=triggers
-$setup_scripts/create_encrypted_github_token.sh
+$SCRIPT_DIR/create_encrypted_github_token.sh
 env_file=".env/env.yaml"
 encrypted_github_token_file=".env/encrypted_github_token.yaml"
 ENCRYPTED_GITHUB_TOKEN=$(cat "$encrypted_github_token_file" | yq -r .github_token)

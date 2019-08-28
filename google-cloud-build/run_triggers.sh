@@ -15,14 +15,13 @@ function run(){
   TRIGGER_ID=$(cat $env_flavor_config_path | yq -r .trigger_id)
   generate_run_json
   cat run.json
-  $setup_scripts/run_build_trigger.sh $TRIGGER_ID run.json
+  $SCRIPT_DIR/setup-scripts/run_build_trigger.sh $TRIGGER_ID run.json
   rm run.json
 }
 
 function main(){
   commitSha=$2
   filter=$1
-	setup_scripts=setup-scripts
 	triggers=triggers
 	env_file=".env/env.yaml"
 	for I in $(find $triggers/flavor-config -name '*.yaml' | grep $filter)
@@ -35,4 +34,5 @@ function main(){
 	done
 }
 
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 main $*

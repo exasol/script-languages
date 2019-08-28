@@ -36,7 +36,7 @@ function check_output(){
 function create(){
 	echo "creating" $TRIGGER_CONFIG_PATH
 	generate_build_json "$TRIGGER_CONFIG_PATH"
-	OUTPUT=$($SETUP_SCRIPTS/create_build_trigger.sh build.json)
+	OUTPUT=$($SCRIPT_DIR/create_build_trigger.sh build.json)
   check_output
   rm build.json
 	echo "$OUTPUT"
@@ -48,7 +48,7 @@ function create(){
 function update(){
 	echo "updating" $TRIGGER_CONFIG_PATH
   generate_build_json "$ENV_FLAVOR_CONFIG_PATH" "$TRIGGER_CONFIG_PATH"
-  OUTPUT=$($SETUP_SCRIPTS/update_build_trigger.sh build.json)
+  OUTPUT=$($SCRIPT_DIR/update_build_trigger.sh build.json)
   check_output
 	rm build.json
 }
@@ -65,10 +65,9 @@ function create_or_update(){
 
 
 function main(){
-	SETUP_SCRIPTS=setup-scripts
 	TRIGGERS=triggers
-	$SETUP_SCRIPTS/create_encrypted_docker_password.sh
-	$SETUP_SCRIPTS/create_encrypted_github_token.sh
+	$SCRIPT_DIR/create_encrypted_docker_password.sh
+	$SCRIPT_DIR/create_encrypted_github_token.sh
 	ENV_FILE=".env/env.yaml"
 	ENCRYPTED_DOCKER_PASSWORD_FILE=".env/encrypted_docker_password.yaml"
 	ENCRYPTED_GITHUB_TOKEN_FILE=".env/encrypted_github_token.yaml"
@@ -78,4 +77,5 @@ function main(){
 	done
 }
 
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 main
