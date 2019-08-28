@@ -55,7 +55,7 @@ EOF
 make_container()
 {
 mkdir -p $HOME/docker-data
-sudo mount --bind /var/lib/docker $HOME/docker-data/ 
+sudo mount --bind $HOME/docker-data /var/lib/docker
 
 sudo usermod -aG docker $USER
 
@@ -63,15 +63,25 @@ $HOME/ccc/bin/ccc extract -m @EXARuntime-7.0.dev1
 
 sed -i 's/python_version = "3.6"/python_version = "3.7"/g' Pipfile
 export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
-./exaslct export --flavor-path=flavors/python3-ds-EXASOL-6.1.0 --export-path output
+./exaslct export --flavor-path=flavors/standard-EXASOL-6.1.0 --export-path output
 
 exit "$?"
 }
 
+test_container()
+{
+  export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
+  ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0
+  exit "$?"
+}
 
 case "$1" in
   make)
 		make_container
+    exit "$?"
+  ;;
+  test)
+		test_container
     exit "$?"
   ;;
 #  install)
