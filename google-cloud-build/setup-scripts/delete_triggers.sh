@@ -6,11 +6,10 @@ set -o pipefail
 function update(){
 	echo "deleting" $I
 	trigger_id=$(cat "$env_flavor_config_path" | yq -r .trigger_id)
-	$setup_scripts/delete_build_trigger.sh "$trigger_id"
+	$SCRIPT_DIR/delete_build_trigger.sh "$trigger_id"
 }
 
 function main(){
-	setup_scripts=setup-scripts
 	triggers=triggers
 	for I in $(find $triggers/flavor-config -name '*.yaml')
 	do
@@ -22,4 +21,5 @@ function main(){
 	done
 }
 
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 main

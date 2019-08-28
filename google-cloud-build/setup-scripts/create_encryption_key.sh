@@ -14,7 +14,6 @@ function check_output(){
   fi
 }
 
-setup_scripts=setup-scripts
 env_file=".env/env.yaml"
 KEY_RING_NAME=$(cat "$env_file" | yq -r .key_ring_name)
 KEY_NAME=$(cat "$env_file" | yq -r .key_name)
