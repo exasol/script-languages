@@ -55,10 +55,8 @@ EOF
 make_container()
 {
 mkdir -p $HOME/docker-data
-#sudo mount --bind $HOME/docker-data /var/lib/docker
 sudo cp config/docker-daemon.json /etc/docker/daemon.json
-mkdir -p $HOME/tmp
-sudo mount --bind $HOME/tmp /tmp
+mkdir -p $HOME/exaslct-tmp
 sudo systemctl restart docker
 
 sudo usermod -aG docker $USER
@@ -67,7 +65,7 @@ $HOME/ccc/bin/ccc extract -m @EXARuntime-7.0.dev1
 
 sed -i 's/python_version = "3.6"/python_version = "3.7"/g' Pipfile
 export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
-./exaslct export --flavor-path=flavors/standard-EXASOL-6.1.0 --export-path output
+./exaslct export --flavor-path=flavors/standard-EXASOL-6.1.0 --export-path output --temporary-base-directory $HOME/exaslct-tmp
 
 exit "$?"
 }
