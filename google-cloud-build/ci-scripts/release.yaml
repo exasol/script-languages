@@ -82,11 +82,11 @@ steps:
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash',
-          '-x',
           'google-cloud-build/ci-scripts/scripts/create_github_release.sh', 
           '$TAG_NAME',
           '$COMMIT_SHA',
           '${_GITHUB_USER_NAME}',
+          '${_GITHUB_REPOSITORY}'
           ]
 timeout: "7200s"
 options:
