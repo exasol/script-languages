@@ -15,6 +15,6 @@ GITHUB_TOKEN="$(cat secrets/GITHUB_TOKEN)"
 GITHUB_REPOSITORY="$4"
 github-release "$TAG_NAME" $EXPORTED_CONTAINERS --commit $COMMIT \
                                      --tag "$TAG_NAME" \
-                                     --prerelease \
+                                     --draft \
                                      --github-repository "$GITHUB_USER/$GITHUB_REPOSITORY" \
                                      --github-access-token "$GITHUB_TOKEN"
