@@ -63,8 +63,19 @@ class SpawnTestContainer(StoppableTask):
             container_info = self.try_to_reuse_test_container(ip_address, network_info)
         if container_info is None:
             container_info = self.create_test_container(ip_address, network_info)
+        self.copy_tests()
         with self.output()[CONTAINER_INFO].open("w") as file:
             file.write(container_info.to_json())
+
+    def copy_tests(self):
+        self.logger.warning("Task %s: Copy tests in test container %s.", self.__repr__(), self.test_container_name)
+        test_container = \
+            self._client.containers.get(self.test_container_name)
+        try:
+            test_container.exec_run(cmd="rm -r /tests")
+        except:
+            pass
+        test_container.exec_run(cmd="cp -r /tests_src /tests")
 
     def try_to_reuse_test_container(self, ip_address: str, network_info: DockerNetworkInfo) -> ContainerInfo:
         self.logger.info("Task %s: Try to reuse test container %s",
@@ -78,6 +89,7 @@ class SpawnTestContainer(StoppableTask):
         return container_info
 
     def create_test_container(self, ip_address, network_info) -> ContainerInfo:
+        self.remove_container(self.test_container_name)
         test_container_image_info = self.get_test_container_image_info(self.input())
         # A later task which uses the test_container needs the exported container,
         # but to access exported container from inside the test_container,
@@ -103,7 +115,6 @@ class SpawnTestContainer(StoppableTask):
                 })
         self._client.networks.get(network_info.network_name).connect(test_container, ipv4_address=ip_address)
         test_container.start()
-        test_container.exec_run(cmd="cp -r /tests_src /tests")
         container_info = self.get_container_info(ip_address, network_info)
         return container_info
 
@@ -125,3 +136,12 @@ class SpawnTestContainer(StoppableTask):
             jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
             object = jsonpickle.decode(f.read())
         return object["test-container"]["test-container"]
+
+    def remove_container(self, container_name: str):
+        try:
+            container = self._client.containers.get(container_name)
+            container.remove(force=True)
+            self.logger.info("Task %s: Removed container %s", self.__repr__(), container_name)
+        except Exception as e:
+            pass
+

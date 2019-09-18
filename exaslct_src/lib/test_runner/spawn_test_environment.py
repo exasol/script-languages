@@ -26,6 +26,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
+    docker_db_image_version = luigi.OptionalParameter(None)
     reuse_database_setup = luigi.BoolParameter(False, significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
     reuse_test_container = luigi.BoolParameter(False, significant=False)
@@ -135,6 +136,7 @@ class SpawnTestDockerEnvironment(StoppableTask):
                 "database": SpawnTestDockerDatabase(
                     environment_name=self.environment_name,
                     db_container_name=self.db_container_name,
+                    docker_db_image_version = self.docker_db_image_version,
                     network_info_dict=network_info_dict,
                     ip_address_index_in_subnet=0,
                     database_port_forward=self.database_port_forward,

@@ -33,6 +33,7 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     environment_name = luigi.Parameter()
     db_container_name = luigi.Parameter()
+    docker_db_image_version = luigi.Parameter("6.2.1-d1")
     reuse_database = luigi.BoolParameter(False, significant=False)
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
@@ -50,6 +51,9 @@ class SpawnTestDockerDatabase(StoppableTask):
                 "ip_address_index_in_subnet needs to be greater than 0 got %s"
                 % self.ip_address_index_in_subnet)
         self._prepare_outputs()
+        self.db_version = "-".join(self.docker_db_image_version.split("-")[0:-1])
+        self.docker_db_config_path = f"docker_db_config/{self.db_version}"
+        print("self.docker_db_config_path",self.docker_db_config_path)
 
     def __del__(self):
         self._client.close()
@@ -169,12 +173,11 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     def pull_docker_db_images_if_necassary(self):
         image_name = "exasol/docker-db"
-        image_tag = "6.0.12-d1"
         docker_db_image_info = ImageInfo(
             target_repository_name=image_name,
             source_repository_name=image_name,
-            source_tag=image_tag,
-            target_tag=image_tag,
+            source_tag=self.docker_db_image_version,
+            target_tag=self.docker_db_image_version,
             hash="", commit = "",
             image_description=None)
         try:
@@ -245,22 +248,19 @@ class SpawnTestDockerDatabase(StoppableTask):
                              docker_db_image_info: ImageInfo):
         file_like_object = io.BytesIO()
         with tarfile.open(fileobj=file_like_object, mode="x") as tar:
-            tar.add("exaslct_src/lib/test_runner/init_db.sh", "init_db.sh")
+            tar.add(f"{self.docker_db_config_path}/init_db.sh", "init_db.sh")
             self.add_exa_conf(tar, db_private_network, docker_db_image_info)
         volume_preperation_container.put_archive("/", file_like_object.getbuffer().tobytes())
 
     def add_exa_conf(self, tar: tarfile.TarFile,
                      db_private_network: str,
                      docker_db_image_info: ImageInfo):
-        with open("ext/EXAConf") as file:
+        with open(f"{self.docker_db_config_path}/EXAConf") as file:
             template_str = file.read()
         template = Template(template_str)
-
-        db_version = "-".join(docker_db_image_info.source_tag.split("-")[0:-1])
-        image_version = docker_db_image_info.source_tag
         rendered_template = template.render(private_network=db_private_network,
-                                            db_version=db_version,
-                                            image_version=image_version)
+                                            db_version=self.db_version,
+                                            image_version=self.docker_db_image_version)
         self.add_string_to_tarfile(tar, "EXAConf", rendered_template)
 
     def add_string_to_tarfile(self, tar: tarfile.TarFile, name: str, string: str):

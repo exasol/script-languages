@@ -50,7 +50,7 @@ class TestRunnerDBTestTask(StoppableTask):
     languages = luigi.ListParameter([None])
     test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
     release_type = luigi.Parameter()
-
+    docker_db_image_version = luigi.OptionalParameter()
 
     log_level = luigi.Parameter("critical", significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
@@ -82,6 +82,7 @@ class TestRunnerDBTestTask(StoppableTask):
         return {
             "release": ExportContainers(release_types=[self.release_type], flavor_path=self.flavor_path),
             "test_environment": SpawnTestDockerEnvironment(environment_name=test_environment_name,
+                                                           docker_db_image_version=self.docker_db_image_version,
                                                            reuse_database=self.reuse_database,
                                                            reuse_test_container=self.reuse_test_container,
                                                            reuse_database_setup=self.reuse_database_setup)

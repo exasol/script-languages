@@ -40,6 +40,7 @@ class TestContainer(FlavorTask):
     test_restrictions = luigi.ListParameter([])
     languages = luigi.ListParameter([None])
     test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
+    docker_db_image_version = luigi.OptionalParameter()
 
     test_log_level = luigi.Parameter("critical", significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
@@ -75,7 +76,8 @@ class TestContainer(FlavorTask):
                     test_environment_vars=self.test_environment_vars,
                     languages=self.languages,
                     test_files=self.test_files,
-                    release_type=release_type.name)
+                    release_type=release_type.name,
+                    docker_db_image_version=self.docker_db_image_version)
         return TestRunnerDBTestTask(**args)
 
     def _prepare_outputs(self):
