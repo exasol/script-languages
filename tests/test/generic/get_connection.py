@@ -120,6 +120,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
     def testUseConnectionInOldImportWithNewRight(self):
         self.createUser("foo", "foo")
         self.query('grant insert any table to foo')
+        self.query('grant import to foo', ignore_errors=True) # only supported and needed since 6.1
         self.query('GRANT ACCESS ON CONNECTION ac_fooconn to foo')
         self.commit()
         foo_conn = self.getConnection('foo', 'foo')
