@@ -4,7 +4,7 @@ from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, run_tasks, add_options
 from exaslct_src.cli.options \
     import system_options, output_directory, tempory_base_directory
-from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestDockerEnvironment
+from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironmentWithDockerDB
 
 
 @cli.command()
@@ -34,7 +34,8 @@ def spawn_test_environment(
                      temporary_base_directory,
                      None,
                      None)
-    tasks = lambda: [SpawnTestDockerEnvironment(environment_name=environment_name,
+    tasks = lambda: [SpawnTestEnvironmentWithDockerDB(
+                                                environment_name=environment_name,
                                                 database_port_forward=str(database_port_forward),
                                                 bucketfs_port_forward=str(bucketfs_port_forward))]
 

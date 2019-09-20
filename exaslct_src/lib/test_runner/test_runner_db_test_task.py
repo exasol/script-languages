@@ -15,7 +15,7 @@ from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.export_containers import ExportContainers
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
-from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestDockerEnvironment
+from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironmentWithDockerDB
 from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
 from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.release_type import ReleaseType
@@ -81,11 +81,12 @@ class TestRunnerDBTestTask(StoppableTask):
         test_environment_name = f"""{self.flavor_name}_{self.release_type}"""
         return {
             "release": ExportContainers(release_types=[self.release_type], flavor_path=self.flavor_path),
-            "test_environment": SpawnTestDockerEnvironment(environment_name=test_environment_name,
-                                                           docker_db_image_version=self.docker_db_image_version,
-                                                           reuse_database=self.reuse_database,
-                                                           reuse_test_container=self.reuse_test_container,
-                                                           reuse_database_setup=self.reuse_database_setup)
+            "test_environment": SpawnTestEnvironmentWithDockerDB(
+                                                            environment_name=test_environment_name,
+                                                            docker_db_image_version=self.docker_db_image_version,
+                                                            reuse_database=self.reuse_database,
+                                                            reuse_test_container=self.reuse_test_container,
+                                                            reuse_database_setup=self.reuse_database_setup)
         }
 
     def run_task(self):

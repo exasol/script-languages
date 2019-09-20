@@ -33,7 +33,8 @@ class SpawnTestDockerDatabase(StoppableTask):
 
     environment_name = luigi.Parameter()
     db_container_name = luigi.Parameter()
-    docker_db_image_version = luigi.Parameter("6.2.1-d1")
+    docker_db_image_version = luigi.OptionalParameter("6.2.1-d1")
+    docker_db_image_name = luigi.OptionalParameter("exasol/docker-db")
     reuse_database = luigi.BoolParameter(False, significant=False)
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
