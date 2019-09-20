@@ -260,9 +260,9 @@ class DynamicOutputCreateTableAs(Test):
         rows = self.query('''
             describe targetcreated;
             ''')
-        self.assertRowEqual(('A', 'DECIMAL(20,0)', 'TRUE', 'FALSE'), rows[0])
-        self.assertRowEqual(('B', 'DOUBLE', 'TRUE', 'FALSE'), rows[1])
-        self.assertRowEqual(('C', 'VARCHAR(100) UTF8', 'TRUE', 'FALSE'), rows[2])
+        self.assertRowEqual(('A', 'DECIMAL(20,0)'), rows[0][0:2])
+        self.assertRowEqual(('B', 'DOUBLE'), rows[1][0:2])
+        self.assertRowEqual(('C', 'VARCHAR(100) UTF8'), rows[2][0:2])
 
 ## #####################################################
 ## The same as above but now with default output columns
@@ -537,9 +537,9 @@ class DefaultDynamicOutputCreateTableAs(Test):
         rows = self.query('''
             describe targetcreated;
             ''')
-        self.assertRowEqual(('A', 'DECIMAL(20,0)', 'TRUE', 'FALSE'), rows[0])
-        self.assertRowEqual(('B', 'DOUBLE', 'TRUE', 'FALSE'), rows[1])
-        self.assertRowEqual(('C', 'VARCHAR(100) UTF8', 'TRUE', 'FALSE'), rows[2])
+        self.assertRowEqual(('A', 'DECIMAL(20,0)'), rows[0][0:2])
+        self.assertRowEqual(('B', 'DOUBLE'), rows[1][0:2])
+        self.assertRowEqual(('C', 'VARCHAR(100) UTF8'), rows[2][0:2])
 
 
 class DefaultDynamicOutputEmptyStringResult(Test):
@@ -585,7 +585,7 @@ class DynamicOutFromConnectionsAndViews(Test):
         self.query('''create table targetcreated as ''' + str(query))
         rows = self.query('''describe targetcreated''')
         for i in xrange(len(expected_rows)):
-            self.assertRowEqual(expected_rows[i], rows[i])
+            self.assertRowEqual(expected_rows[i][0:2], rows[i][0:2])
         self.query('''drop schema spot4245_tmp cascade''')
         #('A', 'DECIMAL(20,0)', 'TRUE', 'FALSE'), rows[0])
         #self.assertRowEqual(('B', 'DOUBLE', 'TRUE', 'FALSE'), rows[1])

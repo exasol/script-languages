@@ -41,6 +41,9 @@ from exaslct_src.cli.options \
                    "The option can be repeated with different restrictions. "
                    "The test runner will run the test files with all specified restrictions."
               )
+@click.option('--docker-db-image-version', type=str, default="""6.2.1-d1""",
+              show_default=True,
+              help="""Docker DB Image Version against which the tests should run.""")
 @click.option('--test-environment-vars', type=str, default="""{"TRAVIS": ""}""",
               show_default=True,
               help="""Specifies the environment variables for the test runner as a json 
@@ -70,6 +73,7 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 test_file: Tuple[str, ...],
                 test_language: Tuple[str, ...],
                 test: Tuple[str, ...],
+                docker_db_image_version: str,
                 test_environment_vars: str,
                 test_log_level: str,
                 reuse_database: bool,
@@ -133,7 +137,8 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                    reuse_database=reuse_database,
                                    reuse_uploaded_container=reuse_uploaded_container,
                                    reuse_test_container=reuse_test_container,
-                                   reuse_database_setup=reuse_database_setup
+                                   reuse_database_setup=reuse_database_setup,
+                                   docker_db_image_version=docker_db_image_version
                                    )]
 
     def on_success():
