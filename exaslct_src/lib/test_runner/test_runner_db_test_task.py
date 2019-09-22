@@ -15,7 +15,7 @@ from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.export_containers import ExportContainers
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
-from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironmentWithDockerDB
+from exaslct_src.lib.test_runner.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
 from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
 from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.release_type import ReleaseType
@@ -51,6 +51,7 @@ class TestRunnerDBTestTask(StoppableTask):
     test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
     release_type = luigi.Parameter()
     docker_db_image_version = luigi.OptionalParameter()
+    docker_db_image_name = luigi.OptionalParameter()
 
     log_level = luigi.Parameter("critical", significant=False)
     reuse_database = luigi.BoolParameter(False, significant=False)
@@ -84,6 +85,7 @@ class TestRunnerDBTestTask(StoppableTask):
             "test_environment": SpawnTestEnvironmentWithDockerDB(
                                                             environment_name=test_environment_name,
                                                             docker_db_image_version=self.docker_db_image_version,
+                                                            docker_db_image_name=self.docker_db_image_name,
                                                             reuse_database=self.reuse_database,
                                                             reuse_test_container=self.reuse_test_container,
                                                             reuse_database_setup=self.reuse_database_setup)

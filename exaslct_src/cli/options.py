@@ -62,6 +62,15 @@ simple_docker_repository_options = [
                  help="Prefix for the tags of the images"),
 ]
 
+docker_db_options = [
+    click.option('--docker-db-image-version', type=str, default="""6.2.1-d1""",
+                  show_default=True,
+                  help="""Docker DB Image Version against which the tests should run."""),
+    click.option('--docker-db-image-name', type=str, default="""exasol/docker-db""",
+                  show_default=True,
+                  help="""Docker DB Image Name against which the tests should run.""")
+]
+
 output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),
                                 default=".build_output",
                                 show_default=True,

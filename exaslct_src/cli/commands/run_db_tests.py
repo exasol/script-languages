@@ -10,7 +10,7 @@ from exaslct_src.cli.common import set_build_config, set_docker_repository_confi
     import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
-    docker_repository_options
+    docker_repository_options, docker_db_options
 
 
 @cli.command()
@@ -41,9 +41,7 @@ from exaslct_src.cli.options \
                    "The option can be repeated with different restrictions. "
                    "The test runner will run the test files with all specified restrictions."
               )
-@click.option('--docker-db-image-version', type=str, default="""6.2.1-d1""",
-              show_default=True,
-              help="""Docker DB Image Version against which the tests should run.""")
+@add_options(docker_db_options)
 @click.option('--test-environment-vars', type=str, default="""{"TRAVIS": ""}""",
               show_default=True,
               help="""Specifies the environment variables for the test runner as a json 
@@ -74,12 +72,13 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 test_language: Tuple[str, ...],
                 test: Tuple[str, ...],
                 docker_db_image_version: str,
+                docker_db_image_name: str,
                 test_environment_vars: str,
                 test_log_level: str,
                 reuse_database: bool,
                 reuse_database_setup: bool,
                 reuse_uploaded_container: bool,
-                reuse_test_container:bool,
+                reuse_test_container: bool,
                 reuse_test_environment: bool,
                 force_rebuild: bool,
                 force_rebuild_from: Tuple[str, ...],
@@ -121,10 +120,10 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                  target_docker_tag_prefix, "target")
 
     if reuse_test_environment:
-        reuse_database=True
-        reuse_uploaded_container=True
-        reuse_test_container=True
-        reuse_database_setup=True
+        reuse_database = True
+        reuse_uploaded_container = True
+        reuse_test_container = True
+        reuse_database_setup = True
     tasks = lambda: [TestContainer(flavor_paths=list(flavor_path),
                                    release_types=list([release_type]),
                                    generic_language_tests=list(generic_language_test),
@@ -138,7 +137,8 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                    reuse_uploaded_container=reuse_uploaded_container,
                                    reuse_test_container=reuse_test_container,
                                    reuse_database_setup=reuse_database_setup,
-                                   docker_db_image_version=docker_db_image_version
+                                   docker_db_image_version=docker_db_image_version,
+                                   docker_db_image_name=docker_db_image_name
                                    )]
 
     def on_success():
