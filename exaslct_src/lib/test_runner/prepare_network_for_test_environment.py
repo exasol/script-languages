@@ -16,7 +16,7 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     environment_name = luigi.Parameter()
     network_name = luigi.Parameter()
     test_container_name = luigi.Parameter(significant=False)
-    db_container_name = luigi.Parameter(significant=False)
+    db_container_name = luigi.OptionalParameter(None,significant=False)
     reuse = luigi.BoolParameter(False, significant=False)
     attempt = luigi.IntParameter(-1)
 
@@ -64,7 +64,8 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
 
     def create_docker_network(self) -> DockerNetworkInfo:
         self.remove_container(self.test_container_name)
-        self.remove_container(self.db_container_name)
+        if self.db_container_name is not None:
+            self.remove_container(self.db_container_name)
         self.remove_network(self.network_name)
         network = self._client.networks.create(
             name=self.network_name,

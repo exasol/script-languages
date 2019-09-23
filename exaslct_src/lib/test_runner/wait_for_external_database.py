@@ -17,12 +17,12 @@ from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
 from exaslct_src.lib.test_runner.is_database_ready_thread import IsDatabaseReadyThread
 
 
-class WaitForTestDockerDatabase(StoppableTask):
+class WaitForTestExternalDatabase(StoppableTask):
     logger = logging.getLogger('luigi-interface')
     environment_name = luigi.Parameter()
     test_container_info_dict = luigi.DictParameter(significant=False)
     database_info_dict = luigi.DictParameter(significant=False)
-    db_startup_timeout_in_seconds = luigi.IntParameter(10*60, significant=False)
+    db_startup_timeout_in_seconds = luigi.IntParameter(1*60, significant=False)
     attempt = luigi.IntParameter(1)
 
     def __init__(self, *args, **kwargs):
@@ -39,9 +39,9 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def _prepare_outputs(self):
         if self._database_info.container_info is None:
-            raise Exception("container_info not set for database_info %s"%self.database_info_dict)
+            database_name = "external-db"
         else:
-            database_name = "docker-db/"+self._database_info.container_info.container_name
+            raise Exception("container_info not set for database_info %s" % self.database_info_dict)
         self._database_ready_target = luigi.LocalTarget(
             "%s/info/environment/%s/database/%s/%s/ready"
             % (build_config().output_directory,
@@ -56,67 +56,30 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def run_task(self):
         test_container = self._client.containers.get(self._test_container_info.container_name)
-        db_container_name = self._database_info.container_info.container_name
-        db_container = self._client.containers.get(db_container_name)
-        database_log_path = \
-            pathlib.Path("%s/logs/environment/%s/database/%s/"
-                         % (build_config().output_directory,
-                            self.environment_name,
-                            db_container_name))
-
-        is_database_ready = \
-            self.wait_for_database_startup(database_log_path, test_container, db_container)
-        after_startup_db_log_file = database_log_path.joinpath("after_startup_db_log.tar.gz")
-        self.save_db_log_files_as_gzip_tar(after_startup_db_log_file, db_container)
+        is_database_ready = self.wait_for_database_startup(test_container)
         self.write_output(is_database_ready)
 
-    def wait_for_database_startup(self, database_log_path,
-                                  test_container: Container,
-                                  db_container: Container):
-        container_log_thread, is_database_ready_thread = \
-            self.start_wait_threads(database_log_path, db_container, test_container)
-        is_database_ready = \
-            self.wait_for_threads(container_log_thread, is_database_ready_thread)
-        self.join_threads(container_log_thread, is_database_ready_thread)
+    def wait_for_database_startup(self, test_container: Container):
+        is_database_ready_thread = self.start_wait_threads(test_container)
+        is_database_ready = self.wait_for_threads(is_database_ready_thread)
+        self.join_threads(is_database_ready_thread)
         return is_database_ready
 
-    def start_wait_threads(self, database_log_path, db_container, test_container):
-        startup_log_file = self.prepare_startup_log_file(database_log_path)
-        container_log_thread = ContainerLogThread(db_container,
-                                                  self.__repr__(),
-                                                  self.logger,
-                                                  startup_log_file,
-                                                  "Database Startup %s" % db_container.name)
-        container_log_thread.start()
+    def start_wait_threads(self, test_container):
         is_database_ready_thread = IsDatabaseReadyThread(self.__repr__(),
                                                          self._database_info, test_container)
         is_database_ready_thread.start()
-        return container_log_thread, is_database_ready_thread
+        return is_database_ready_thread
 
-    def prepare_startup_log_file(self, database_log_path):
-        if database_log_path.exists():
-            shutil.rmtree(database_log_path)
-        database_log_path.mkdir(parents=True)
-        startup_log_file = database_log_path.joinpath("startup.log")
-        return startup_log_file
-
-    def join_threads(self, container_log_thread: ContainerLogThread,
-                     is_database_ready_thread: IsDatabaseReadyThread):
-        container_log_thread.stop()
+    def join_threads(self, is_database_ready_thread: IsDatabaseReadyThread):
         is_database_ready_thread.stop()
-        container_log_thread.join()
         is_database_ready_thread.join()
 
-    def wait_for_threads(self, container_log_thread: ContainerLogThread,
-                         is_database_ready_thread: IsDatabaseReadyThread):
+    def wait_for_threads(self, is_database_ready_thread: IsDatabaseReadyThread):
         is_database_ready = False
         reason = None
         start_time = datetime.now()
         while (True):
-            if container_log_thread.error_message != None:
-                is_database_ready = False
-                reason = "error message in container log"
-                break
             if is_database_ready_thread.finish:
                 is_database_ready = True
                 break
@@ -126,20 +89,16 @@ class WaitForTestDockerDatabase(StoppableTask):
                 break
             time.sleep(1)
         if not is_database_ready:
-            self.log_database_not_ready(container_log_thread, is_database_ready_thread, reason)
-        container_log_thread.stop()
+            self.log_database_not_ready(is_database_ready_thread, reason)
         is_database_ready_thread.stop()
         return is_database_ready
 
-    def log_database_not_ready(self, container_log_thread, is_database_ready_thread, reason):
-        container_log = '\n'.join(container_log_thread.complete_log)
+    def log_database_not_ready(self, is_database_ready_thread, reason):
         log_information = f"""
 ========== IsDatabaseReadyThread output db connection: ============
 {is_database_ready_thread.output_db_connection}
 ========== IsDatabaseReadyThread output bucketfs connection: ============
 {is_database_ready_thread.output_bucketfs_connection}
-========== Container-Log: ============ 
-{container_log}
 """
         self.logger.warning(
             'Task %s: Database startup failed for following reason "%s", here some debug information \n%s',
@@ -148,12 +107,6 @@ class WaitForTestDockerDatabase(StoppableTask):
     def timeout_occured(self, start_time):
         timeout = timedelta(seconds=self.db_startup_timeout_in_seconds)
         return datetime.now() - start_time > timeout
-
-    def save_db_log_files_as_gzip_tar(self, path: pathlib.Path, database_container: Container):
-        stream, stat = database_container.get_archive("/exa/logs/db")
-        with gzip.open(path, "wb") as file:
-            for chunk in stream:
-                file.write(chunk)
 
     def write_output(self, is_database_ready: bool):
         with self.output().open("w") as file:

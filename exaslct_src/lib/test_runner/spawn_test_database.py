@@ -54,7 +54,6 @@ class SpawnTestDockerDatabase(StoppableTask):
         self._prepare_outputs()
         self.db_version = "-".join(self.docker_db_image_version.split("-")[0:-1])
         self.docker_db_config_path = f"docker_db_config/{self.db_version}"
-        print("self.docker_db_config_path",self.docker_db_config_path)
 
     def __del__(self):
         self._client.close()
@@ -147,9 +146,9 @@ class SpawnTestDockerDatabase(StoppableTask):
         db_volume = self.prepare_db_volume(db_private_network, docker_db_image_info)
         ports = {}
         if self.database_port_forward is not None:
-            ports[f"{DB_PORT}/tcp"] = ('127.0.0.1', int(self.database_port_forward))
+            ports[f"{DB_PORT}/tcp"] = ('0.0.0.0', int(self.database_port_forward))
         if self.bucketfs_port_forward is not None:
-            ports[f"{BUCKETFS_PORT}/tcp"] = ('127.0.0.1', int(self.bucketfs_port_forward))
+            ports[f"{BUCKETFS_PORT}/tcp"] = ('0.0.0.0', int(self.bucketfs_port_forward))
         db_container = \
             self._client.containers.create(
                 image="%s" % (docker_db_image_info.get_source_complete_name()),

@@ -62,6 +62,16 @@ simple_docker_repository_options = [
                  help="Prefix for the tags of the images"),
 ]
 
+test_environment_options=[
+    click.option('--environment-type', type=click.Choice(['docker_db', 'external_db']), default="""docker_db""",
+                 show_default=True,
+                 help="""Environment type for tests."""),
+    click.option('--max_start_attempts', type=int, default=2,
+                 show_default=True,
+                 help="""Maximum start attempts for environment""")
+
+]
+
 docker_db_options = [
     click.option('--docker-db-image-version', type=str, default="""6.2.1-d1""",
                   show_default=True,
@@ -69,6 +79,15 @@ docker_db_options = [
     click.option('--docker-db-image-name', type=str, default="""exasol/docker-db""",
                   show_default=True,
                   help="""Docker DB Image Name against which the tests should run.""")
+]
+
+external_db_options = [
+    click.option('--external-exasol-db-host', type=str,
+                  help="""Host name or IP of external Exasol DB, needs to be set if --environment-type=external_db"""),
+    click.option('--external-exasol-db-port', type=str,
+                  help="""Database port of external Exasol DB, needs to be set if --environment-type=external_db"""),
+    click.option('--external-exasol-bucketfs-port', type=str,
+                 help="""Bucketfs port of external Exasol DB, needs to be set if --environment-type=external_db""")
 ]
 
 output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),

@@ -2,23 +2,20 @@ import datetime
 import logging
 import pathlib
 
-import docker
 import jsonpickle
 import luigi
 
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_environment_info_collector import \
     DependencyEnvironmentInfoCollector
-from exaslct_src.lib.data.dependency_collector.dependency_release_info_collector import DependencyExportInfoCollector
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.export_containers import ExportContainers
 from exaslct_src.lib.flavor import flavor
-from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
-from exaslct_src.lib.test_runner.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
-from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
 from exaslct_src.lib.stoppable_task import StoppableTask
-from exaslct_src.lib.release_type import ReleaseType
+from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
+from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironment, SpawnTestEnvironmentParameter
+from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
 
 
 class StopTestEnvironment():
@@ -36,12 +33,13 @@ class StopTestEnvironment():
         network = _client.networks.get(test_environment_info.test_container_info.network_info.network_name)
         network.remove()
 
+
 # TODO execute tests only if the exported container is new build
 #       - a pulled one is ok,
 #       - needs change in image-info and export-info)
 #       - add options force tests
 #       - only possible if the hash of exaslc also goes into the image hashes
-class TestRunnerDBTestTask(StoppableTask):
+class TestRunnerDBTestTask(StoppableTask, SpawnTestEnvironmentParameter):
     flavor_path = luigi.Parameter()
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
@@ -50,14 +48,9 @@ class TestRunnerDBTestTask(StoppableTask):
     languages = luigi.ListParameter([None])
     test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
     release_type = luigi.Parameter()
-    docker_db_image_version = luigi.OptionalParameter()
-    docker_db_image_name = luigi.OptionalParameter()
 
     log_level = luigi.Parameter("critical", significant=False)
-    reuse_database = luigi.BoolParameter(False, significant=False)
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
-    reuse_database_setup = luigi.BoolParameter(False, significant=False)
-    reuse_test_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,13 +75,20 @@ class TestRunnerDBTestTask(StoppableTask):
         test_environment_name = f"""{self.flavor_name}_{self.release_type}"""
         return {
             "release": ExportContainers(release_types=[self.release_type], flavor_path=self.flavor_path),
-            "test_environment": SpawnTestEnvironmentWithDockerDB(
-                                                            environment_name=test_environment_name,
-                                                            docker_db_image_version=self.docker_db_image_version,
-                                                            docker_db_image_name=self.docker_db_image_name,
-                                                            reuse_database=self.reuse_database,
-                                                            reuse_test_container=self.reuse_test_container,
-                                                            reuse_database_setup=self.reuse_database_setup)
+            "test_environment": SpawnTestEnvironment(
+                environment_name=test_environment_name,
+                environment_type=self.environment_type,
+                reuse_database_setup=self.reuse_database_setup,
+                reuse_test_container=self.reuse_test_container,
+                docker_db_image_name=self.docker_db_image_name,
+                docker_db_image_version=self.docker_db_image_version,
+                reuse_database=self.reuse_database,
+                database_port_forward=self.database_port_forward,
+                bucketfs_port_forward=self.bucketfs_port_forward,
+                max_start_attempts=self.max_start_attempts,
+                external_exasol_db_host=self.external_exasol_db_host,
+                external_exasol_db_port=self.external_exasol_db_port,
+                external_exasol_bucketfs_port=self.external_exasol_bucketfs_port)
         }
 
     def run_task(self):

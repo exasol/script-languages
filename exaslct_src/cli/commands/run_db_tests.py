@@ -10,7 +10,8 @@ from exaslct_src.cli.common import set_build_config, set_docker_repository_confi
     import_build_steps
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
-    docker_repository_options, docker_db_options
+    docker_repository_options, docker_db_options, test_environment_options, external_db_options
+from exaslct_src.lib.test_runner.environment_type import EnvironmentType
 
 
 @cli.command()
@@ -41,7 +42,9 @@ from exaslct_src.cli.options \
                    "The option can be repeated with different restrictions. "
                    "The test runner will run the test files with all specified restrictions."
               )
+@add_options(test_environment_options)
 @add_options(docker_db_options)
+@add_options(external_db_options)
 @click.option('--test-environment-vars', type=str, default="""{"TRAVIS": ""}""",
               show_default=True,
               help="""Specifies the environment variables for the test runner as a json 
@@ -71,8 +74,13 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 test_file: Tuple[str, ...],
                 test_language: Tuple[str, ...],
                 test: Tuple[str, ...],
+                environment_type:str,
+                max_start_attempts:int,
                 docker_db_image_version: str,
                 docker_db_image_name: str,
+                external_exasol_db_host:str,
+                external_exasol_db_port:int,
+                external_exasol_bucketfs_port:int,
                 test_environment_vars: str,
                 test_log_level: str,
                 reuse_database: bool,
@@ -124,6 +132,14 @@ def run_db_test(flavor_path: Tuple[str, ...],
         reuse_uploaded_container = True
         reuse_test_container = True
         reuse_database_setup = True
+    if environment_type == EnvironmentType.external_db.name:
+        if external_exasol_db_host is None:
+            handle_commandline_error("Commandline parameter --external-exasol-db-host not set")
+        if external_exasol_db_port is None:
+            handle_commandline_error("Commandline parameter --external-exasol_db-port not set")
+        if external_exasol_bucketfs_port is None:
+            handle_commandline_error("Commandline parameter --external-exasol-bucketfs-port not set")
+
     tasks = lambda: [TestContainer(flavor_paths=list(flavor_path),
                                    release_types=list([release_type]),
                                    generic_language_tests=list(generic_language_test),
@@ -133,12 +149,17 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                    languages=list(test_language),
                                    test_environment_vars=json.loads(test_environment_vars),
                                    test_log_level=test_log_level,
-                                   reuse_database=reuse_database,
                                    reuse_uploaded_container=reuse_uploaded_container,
-                                   reuse_test_container=reuse_test_container,
+                                   environment_type=EnvironmentType[environment_type],
                                    reuse_database_setup=reuse_database_setup,
+                                   reuse_test_container=reuse_test_container,
+                                   docker_db_image_name=docker_db_image_name,
                                    docker_db_image_version=docker_db_image_version,
-                                   docker_db_image_name=docker_db_image_name
+                                   reuse_database=reuse_database,
+                                   max_start_attempts=max_start_attempts,
+                                   external_exasol_db_host=external_exasol_db_host,
+                                   external_exasol_db_port=external_exasol_db_port,
+                                   external_exasol_bucketfs_port=external_exasol_bucketfs_port
                                    )]
 
     def on_success():
@@ -150,3 +171,10 @@ def run_db_test(flavor_path: Tuple[str, ...],
             print(f.read())
 
     run_tasks(tasks, workers, task_dependencies_dot_file, on_success=on_success)
+
+
+def handle_commandline_error(error):
+    print(error)
+    ctx = click.get_current_context()
+    click.echo(ctx.get_help())
+    exit(-1)

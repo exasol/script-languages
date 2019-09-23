@@ -29,10 +29,11 @@ from exaslct_src.lib.release_type import ReleaseType
 #     def get_release_type(self):
 #         return ReleaseType.FlavorTest
 #
+from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask, StopTestEnvironment
 
 
-class TestContainer(FlavorTask):
+class TestContainer(FlavorTask, SpawnTestEnvironmentParameter):
     release_types = luigi.ListParameter(["Release"])
     generic_language_tests = luigi.ListParameter([])
     test_folders = luigi.ListParameter([])
@@ -40,14 +41,9 @@ class TestContainer(FlavorTask):
     test_restrictions = luigi.ListParameter([])
     languages = luigi.ListParameter([None])
     test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
-    docker_db_image_version = luigi.OptionalParameter()
-    docker_db_image_name = luigi.OptionalParameter()
 
     test_log_level = luigi.Parameter("critical", significant=False)
-    reuse_database = luigi.BoolParameter(False, significant=False)
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
-    reuse_database_setup = luigi.BoolParameter(False, significant=False)
-    reuse_test_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,16 +56,13 @@ class TestContainer(FlavorTask):
         self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
 
     def requires_tasks(self):
-        return [self.generate_tasks_for_flavor(flavor_path,release_type)
+        return [self.generate_tasks_for_flavor(flavor_path, release_type)
                 for flavor_path in self.actual_flavor_paths
                 for release_type in self.actual_release_types]
 
-    def generate_tasks_for_flavor(self, flavor_path, release_type:ReleaseType):
+    def generate_tasks_for_flavor(self, flavor_path, release_type: ReleaseType):
         args = dict(flavor_path=flavor_path,
-                    reuse_database=self.reuse_database,
                     reuse_uploaded_container=self.reuse_uploaded_container,
-                    reuse_database_setup=self.reuse_database_setup,
-                    reuse_test_container=self.reuse_test_container,
                     generic_language_tests=self.generic_language_tests,
                     test_folders=self.test_folders,
                     test_restrictions=self.test_restrictions,
@@ -78,8 +71,18 @@ class TestContainer(FlavorTask):
                     languages=self.languages,
                     test_files=self.test_files,
                     release_type=release_type.name,
+                    environment_type=self.environment_type,
+                    reuse_database_setup=self.reuse_database_setup,
+                    reuse_test_container=self.reuse_test_container,
+                    docker_db_image_name=self.docker_db_image_name,
                     docker_db_image_version=self.docker_db_image_version,
-                    docker_db_image_name=self.docker_db_image_name
+                    reuse_database=self.reuse_database,
+                    database_port_forward=self.database_port_forward,
+                    bucketfs_port_forward=self.bucketfs_port_forward,
+                    max_start_attempts=self.max_start_attempts,
+                    external_exasol_db_host=self.external_exasol_db_host,
+                    external_exasol_db_port=self.external_exasol_db_port,
+                    external_exasol_bucketfs_port=self.external_exasol_bucketfs_port
                     )
         return TestRunnerDBTestTask(**args)
 
