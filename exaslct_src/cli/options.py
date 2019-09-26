@@ -87,7 +87,13 @@ external_db_options = [
     click.option('--external-exasol-db-port', type=str,
                   help="""Database port of external Exasol DB, needs to be set if --environment-type=external_db"""),
     click.option('--external-exasol-bucketfs-port', type=str,
-                 help="""Bucketfs port of external Exasol DB, needs to be set if --environment-type=external_db""")
+                 help="""Bucketfs port of external Exasol DB, needs to be set if --environment-type=external_db"""),
+    click.option('--external-exasol-db-user', type=str,
+                 help="""User for external Exasol DB, needs to be set if --environment-type=external_db"""),
+    click.option('--external-exasol-db-password', type=str,
+                 help="""Database Password for external Exasol DB"""),
+    click.option('--external-exasol-bucketfs-write-password', type=str,
+                 help="""BucketFS write Password for external Exasol DB""")
 ]
 
 output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),

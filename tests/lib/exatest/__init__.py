@@ -14,6 +14,7 @@ import socket
 
 from unittest import (
         SkipTest,
+        suite
         )
 
 import pyodbc
@@ -48,6 +49,9 @@ def timer():
 class TestLoader(unittest.TestLoader):
     '''Load tests like the default TestLoader, but sorted by line numbers'''
 
+    def __init__(self, **kwargs):
+        self.kwargs=kwargs
+
     def getTestCaseNames(self, testCaseClass):
         '''Return a sorted sequence of method names found within testCaseClass'''
         def isTestMethod(attrname, testCaseClass=testCaseClass,
@@ -77,6 +81,25 @@ class TestLoader(unittest.TestLoader):
                 return unittest._make_failed_load_tests(module.__name__, e,
                                                self.suiteClass)
         return tests
+
+    def loadTestsFromTestCase(self, testCaseClass):
+        """Return a suite of all tests cases contained in 
+           testCaseClass."""
+        if issubclass(testCaseClass, suite.TestSuite):
+            raise TypeError("Test cases should not be derived from "
+                            "TestSuite. Maybe you meant to derive from"
+                            " TestCase?")
+        testCaseNames = self.getTestCaseNames(testCaseClass)
+        if not testCaseNames and hasattr(testCaseClass, 'runTest'):
+            testCaseNames = ['runTest']
+
+        # Modification here: parse keyword arguments to testCaseClass.
+        test_cases = []
+        for test_case_name in testCaseNames:
+            test_cases.append(testCaseClass(test_case_name, **self.kwargs))
+        loaded_suite = self.suiteClass(test_cases)
+
+        return loaded_suite 
 
 class TestProgram(object):
     logger_name = 'exatest.main'
@@ -125,6 +148,8 @@ class TestProgram(object):
 
         odbc = parser.add_argument_group('ODBC specific')
         odbc.add_argument('--server', help='connection string')
+        odbc.add_argument('--user', help='connection user', nargs="?", type=str, default="sys")
+        odbc.add_argument('--password', help='connection password', nargs="?", type=str, default="exasol")
         odbc.add_argument('--driver',
             help='path to ODBC driver (default: %(default)s)')
         odbcloglevel = ('off', 'error', 'normal', 'verbose')
@@ -201,7 +226,7 @@ class TestProgram(object):
                 argv=self.opts.unittest_args,
                 failfast=self.opts.failfast,
                 verbosity=self.opts.verbosity,
-                testLoader=TestLoader(),
+                testLoader=TestLoader(dsn="exatest",user=self.opts.user,password=self.opts.password),
                 exit=False,
                 )
         self.opts.log.info('finished tests')
@@ -221,8 +246,8 @@ class TestProgram(object):
             tmp.write('[exatest]\n')
             tmp.write('Driver = %s\n' % self.opts.driver)
             tmp.write('EXAHOST = %s\n' % server)
-            tmp.write('EXAUID = sys\n')
-            tmp.write('EXAPWD = exasol\n')
+            tmp.write('EXAUID = %s\n' % self.opts.user)
+            tmp.write('EXAPWD = %s\n' % self.opts.password)
             tmp.write('CONNECTIONLCCTYPE = en_US.UTF-8\n')      # TODO Maybe make this optional
             tmp.write('CONNECTIONLCNUMERIC = en_US.UTF-8\n')
             if self.opts.odbc_log != 'off':

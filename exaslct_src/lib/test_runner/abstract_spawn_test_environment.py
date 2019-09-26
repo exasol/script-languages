@@ -4,6 +4,7 @@ from typing import Dict
 import luigi
 from luigi import LocalTarget
 
+from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.dependency_collector.dependency_container_info_collector import \
     DependencyContainerInfoCollector
@@ -12,21 +13,21 @@ from exaslct_src.lib.data.dependency_collector.dependency_docker_network_info_co
     DependencyDockerNetworkInfoCollector
 from exaslct_src.lib.data.dependency_collector.dependency_environment_info_collector import ENVIRONMENT_INFO
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
+from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_runner.general_spawn_test_environment_parameter import GeneralSpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.populate_data import PopulateEngineSmallTestDataToDatabase
 from exaslct_src.lib.test_runner.spawn_test_container import SpawnTestContainer
 from exaslct_src.lib.test_runner.upload_exa_jdbc import UploadExaJDBC
 from exaslct_src.lib.test_runner.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
-from exaslct_src.lib.test_runner.wait_for_test_docker_database import WaitForTestDockerDatabase
-from exaslct_src.lib.stoppable_task import StoppableTask
 
 
-class AbstractSpawnTestEnvironment(StoppableTask):
+class AbstractSpawnTestEnvironment(StoppableTask,
+                                   GeneralSpawnTestEnvironmentParameter,
+                                   DatabaseCredentialsParameter):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
-    reuse_database_setup = luigi.BoolParameter(False, significant=False)
-    reuse_test_container = luigi.BoolParameter(False, significant=False)
-    max_start_attempts = luigi.IntParameter(2, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,7 +86,7 @@ class AbstractSpawnTestEnvironment(StoppableTask):
         return network_info_dict
 
     def create_network_task(self, attempt):
-        pass
+        raise AbstractMethodException()
 
     def get_network_info(self, network_info_target):
         network_info = \
@@ -113,7 +114,7 @@ class AbstractSpawnTestEnvironment(StoppableTask):
                test_container_info, test_container_info_dict
 
     def create_spawn_database_task(self, network_info_dict, attempt):
-        pass
+        raise AbstractMethodException()
 
     def get_test_container_info(self, input: Dict[str, Dict[str, LocalTarget]]):
         container_info_of_dependencies = \
@@ -131,28 +132,37 @@ class AbstractSpawnTestEnvironment(StoppableTask):
 
     def wait_for_database(self, database_info_dict, test_container_info_dict, attempt):
         database_ready_target = \
-            yield from self.create_wait_for_database_task(attempt, database_info_dict, test_container_info_dict)
+            yield self.create_wait_for_database_task(attempt, database_info_dict, test_container_info_dict)
         with database_ready_target.open("r") as file:
-            is_database_ready = file.read() == str(True)
+            wait_status = file.read()
+            is_database_ready = wait_status == str(True)
         return is_database_ready
 
     def create_wait_for_database_task(self, attempt, database_info_dict, test_container_info_dict):
-        pass
+        raise AbstractMethodException()
 
     def setup_test_database(self, test_environment_info_dict):
         # TODO check if database is setup
-        yield [UploadExaJDBC(environment_name=self.environment_name,
-                             test_environment_info_dict=test_environment_info_dict,
-                             reuse_uploaded=self.reuse_database_setup),
-               UploadVirtualSchemaJDBCAdapter(
-                   environment_name=self.environment_name,
-                   test_environment_info_dict=test_environment_info_dict,
-                   reuse_uploaded=self.reuse_database_setup),
-               PopulateEngineSmallTestDataToDatabase(
-                   environment_name=self.environment_name,
-                   test_environment_info_dict=test_environment_info_dict,
-                   reuse_data=self.reuse_database_setup
-               )]
+        self.logger.info("Task %s: Setup database",self.__repr__())
+        yield [
+            UploadExaJDBC(
+                environment_name=self.environment_name,
+                test_environment_info_dict=test_environment_info_dict,
+                reuse_uploaded=self.reuse_database_setup,
+                bucketfs_write_password=self.bucketfs_write_password),
+            UploadVirtualSchemaJDBCAdapter(
+                environment_name=self.environment_name,
+                test_environment_info_dict=test_environment_info_dict,
+                reuse_uploaded=self.reuse_database_setup,
+                bucketfs_write_password=self.bucketfs_write_password),
+            PopulateEngineSmallTestDataToDatabase(
+                environment_name=self.environment_name,
+                test_environment_info_dict=test_environment_info_dict,
+                reuse_data=self.reuse_database_setup,
+                db_user=self.db_user,
+                db_password=self.db_password,
+                bucketfs_write_password=self.bucketfs_write_password
+            )]
 
     def write_output(self, environment_info: EnvironmentInfo):
         with self.output()[ENVIRONMENT_INFO].open("w") as file:

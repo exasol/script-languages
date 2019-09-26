@@ -81,6 +81,9 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 external_exasol_db_host:str,
                 external_exasol_db_port:int,
                 external_exasol_bucketfs_port:int,
+                external_exasol_db_user:str,
+                external_exasol_db_password:str,
+                external_exasol_bucketfs_write_password:str,
                 test_environment_vars: str,
                 test_log_level: str,
                 reuse_database: bool,
@@ -159,7 +162,10 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                    max_start_attempts=max_start_attempts,
                                    external_exasol_db_host=external_exasol_db_host,
                                    external_exasol_db_port=external_exasol_db_port,
-                                   external_exasol_bucketfs_port=external_exasol_bucketfs_port
+                                   external_exasol_bucketfs_port=external_exasol_bucketfs_port,
+                                   external_exasol_db_user=external_exasol_db_user,
+                                   external_exasol_db_password=external_exasol_db_password,
+                                   external_exasol_bucketfs_write_password=external_exasol_bucketfs_write_password
                                    )]
 
     def on_success():

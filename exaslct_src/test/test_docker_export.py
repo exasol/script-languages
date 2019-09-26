@@ -12,7 +12,7 @@ from exaslct_src.test import utils
 class DockerExportTest(unittest.TestCase):
     def setUp(self):
         print(f"SetUp {self.__class__.__name__}")
-        self.test_environment = utils.TestEnvironment(self)
+        self.test_environment = utils.ExaslctTestEnvironment(self)
         self.export_path = self.test_environment.temp_dir + "/export_dir"
         self.test_environment.clean_images()
 

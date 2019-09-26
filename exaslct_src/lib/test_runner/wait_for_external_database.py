@@ -14,10 +14,12 @@ from exaslct_src.lib.data.database_info import DatabaseInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.is_database_ready_thread import IsDatabaseReadyThread
 
 
-class WaitForTestExternalDatabase(StoppableTask):
+class WaitForTestExternalDatabase(StoppableTask,
+                                  DatabaseCredentialsParameter):
     logger = logging.getLogger('luigi-interface')
     environment_name = luigi.Parameter()
     test_container_info_dict = luigi.DictParameter(significant=False)
@@ -67,7 +69,9 @@ class WaitForTestExternalDatabase(StoppableTask):
 
     def start_wait_threads(self, test_container):
         is_database_ready_thread = IsDatabaseReadyThread(self.__repr__(),
-                                                         self._database_info, test_container)
+                                                         self._database_info,
+                                                         self.get_database_credentials(),
+                                                         test_container)
         is_database_ready_thread.start()
         return is_database_ready_thread
 

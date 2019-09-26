@@ -1,17 +1,13 @@
 import luigi
 
+from exaslct_src.lib.test_runner.docker_db_test_environment_parameter import DockerDBTestEnvironmentParameter
 from exaslct_src.lib.test_runner.prepare_network_for_test_environment import PrepareDockerNetworkForTestEnvironment
 from exaslct_src.lib.test_runner.spawn_test_database import SpawnTestDockerDatabase
 from exaslct_src.lib.test_runner.abstract_spawn_test_environment import AbstractSpawnTestEnvironment
 from exaslct_src.lib.test_runner.wait_for_test_docker_database import WaitForTestDockerDatabase
 
 
-class SpawnTestEnvironmentWithDockerDB(AbstractSpawnTestEnvironment):
-    docker_db_image_name = luigi.OptionalParameter(None)
-    docker_db_image_version = luigi.OptionalParameter(None)
-    reuse_database = luigi.BoolParameter(False, significant=False)
-    database_port_forward = luigi.OptionalParameter(None, significant=False)
-    bucketfs_port_forward = luigi.OptionalParameter(None, significant=False)
+class SpawnTestEnvironmentWithDockerDB(AbstractSpawnTestEnvironment, DockerDBTestEnvironmentParameter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,8 +39,11 @@ class SpawnTestEnvironmentWithDockerDB(AbstractSpawnTestEnvironment):
         )
 
     def create_wait_for_database_task(self, attempt, database_info_dict, test_container_info_dict):
-        task = yield WaitForTestDockerDatabase(environment_name=self.environment_name,
-                                               test_container_info_dict=test_container_info_dict,
-                                               database_info_dict=database_info_dict,
-                                               attempt=attempt)
-        return task
+        return WaitForTestDockerDatabase(
+            environment_name=self.environment_name,
+            test_container_info_dict=test_container_info_dict,
+            database_info_dict=database_info_dict,
+            attempt=attempt,
+            db_user=self.db_user,
+            db_password=self.db_password,
+            bucketfs_write_password=self.bucketfs_write_password)

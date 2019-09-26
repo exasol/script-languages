@@ -13,4 +13,7 @@ class UploadVirtualSchemaJDBCAdapter(UploadFileToBucketFS):
         return "downloads/virtualschema-jdbc-adapter/virtualschema-jdbc-adapter.jar"
 
     def get_upload_target(self):
-        return "jdbc-adapter/virtualschema-jdbc-adapter.jar"
+        return "jdbc_adapter/virtualschema-jdbc-adapter.jar"
+
+    def get_sync_time_estimation(self) -> int:
+        return 10

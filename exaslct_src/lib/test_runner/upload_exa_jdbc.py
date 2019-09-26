@@ -13,4 +13,7 @@ class UploadExaJDBC(UploadFileToBucketFS):
         return "downloads/JDBC/exajdbc.jar"
 
     def get_upload_target(self):
-        return "jdbc-adapter/exajdbc.jar"
+        return "jdbc_adapter/exajdbc.jar"
+
+    def get_sync_time_estimation(self) -> int:
+        return 10

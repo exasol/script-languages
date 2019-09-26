@@ -5,13 +5,18 @@ from threading import Thread
 from docker.models.containers import Container
 
 from exaslct_src.lib.data.database_info import DatabaseInfo
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentials
 
 
 class IsDatabaseReadyThread(Thread):
     logger = logging.getLogger('luigi-interface')
 
-    def __init__(self, task_id, database_info: DatabaseInfo, test_container: Container):
+    def __init__(self, task_id,
+                 database_info: DatabaseInfo,
+                 database_credentials: DatabaseCredentials,
+                 test_container: Container):
         super().__init__()
+        self.database_credentials = database_credentials
         self.task_id = task_id
         self._database_info = database_info
         self.test_container = test_container
@@ -35,11 +40,11 @@ class IsDatabaseReadyThread(Thread):
             if exit_code_db_connection == 0 and exit_code_bucketfs_connection == 0:
                 self.finish = True
                 self.is_ready = True
-            time.sleep(10)
+            time.sleep(1)
 
     def create_db_connection_command(self):
-        username = "sys"
-        password = "exasol"
+        username = self.database_credentials.db_user
+        password = self.database_credentials.db_password
         connection_options = f"""-c '{self._database_info.host}:{self._database_info.db_port}' -u '{username}' -p '{password}'"""
         cmd = f"""$EXAPLUS {connection_options}  -sql 'select 1;'"""
         bash_cmd = f"""bash -c "{cmd}" """
@@ -47,7 +52,7 @@ class IsDatabaseReadyThread(Thread):
 
     def create_bucketfs_connection_command(self):
         username = "w"
-        password = "write"
-        cmd = f"""curl '{username}:{password}@{self._database_info.host}:{self._database_info.bucketfs_port}'"""
+        password = self.database_credentials.bucketfs_write_password
+        cmd = f"""curl --fail '{username}:{password}@{self._database_info.host}:{self._database_info.bucketfs_port}'"""
         bash_cmd = f"""bash -c "{cmd}" """
         return bash_cmd

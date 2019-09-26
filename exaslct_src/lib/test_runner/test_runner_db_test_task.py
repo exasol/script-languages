@@ -13,8 +13,11 @@ from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.export_containers import ExportContainers
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentials
+from exaslct_src.lib.test_runner.environment_type import EnvironmentType
 from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
-from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironment, SpawnTestEnvironmentParameter
+from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironment
+from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
 
 
@@ -26,8 +29,9 @@ class StopTestEnvironment():
         cls.logger.info("Stopping environment %s", test_environment_info.name)
         _docker_config = docker_client_config()
         _client = docker_client_config().get_client()
-        db_container = _client.containers.get(test_environment_info.database_info.container_info.container_name)
-        db_container.remove(force=True, v=True)
+        if test_environment_info.database_info.container_info is not None:
+            db_container = _client.containers.get(test_environment_info.database_info.container_info.container_name)
+            db_container.remove(force=True, v=True)
         test_container = _client.containers.get(test_environment_info.test_container_info.container_name)
         test_container.remove(force=True, v=True)
         network = _client.networks.get(test_environment_info.test_container_info.network_info.network_name)
@@ -88,7 +92,11 @@ class TestRunnerDBTestTask(StoppableTask, SpawnTestEnvironmentParameter):
                 max_start_attempts=self.max_start_attempts,
                 external_exasol_db_host=self.external_exasol_db_host,
                 external_exasol_db_port=self.external_exasol_db_port,
-                external_exasol_bucketfs_port=self.external_exasol_bucketfs_port)
+                external_exasol_bucketfs_port=self.external_exasol_bucketfs_port,
+                external_exasol_db_user=self.external_exasol_db_user,
+                external_exasol_db_password=self.external_exasol_db_password,
+                external_exasol_bucketfs_write_password=self.external_exasol_bucketfs_write_password
+            )
         }
 
     def run_task(self):
@@ -97,13 +105,16 @@ class TestRunnerDBTestTask(StoppableTask, SpawnTestEnvironmentParameter):
         reuse_release_container = self.reuse_database and \
                                   self.reuse_uploaded_container and \
                                   not release_info.is_new
+        database_credentials = self.get_database_credentials()
         yield UploadExportedContainer(
             environment_name=self.test_environment_info.name,
             release_name=release_info.name,
             release_type=release_info.release_type,
             test_environment_info_dict=test_environment_info_dict,
             release_info_dict=release_info.to_dict(),
-            reuse_uploaded=reuse_release_container)
+            reuse_uploaded=reuse_release_container,
+            bucketfs_write_password=database_credentials.bucketfs_write_password
+        )
 
         result_status, summary = yield from self.run_test(test_environment_info_dict)
 
@@ -112,24 +123,41 @@ class TestRunnerDBTestTask(StoppableTask, SpawnTestEnvironmentParameter):
         if result_status == "FAILED":
             raise Exception("Some test failed.")
 
+    def get_database_credentials(self) -> DatabaseCredentials:
+        if self.environment_type == EnvironmentType.external_db:
+            return \
+                DatabaseCredentials(db_user=self.external_exasol_db_user,
+                                    db_password=self.external_exasol_db_password,
+                                    bucketfs_write_password=self.external_exasol_bucketfs_write_password)
+        else:
+            return \
+                DatabaseCredentials(db_user=SpawnTestEnvironment.DEFAULT_DB_USER,
+                                    db_password=SpawnTestEnvironment.DEFAULT_DATABASE_PASSWORD,
+                                    bucketfs_write_password=SpawnTestEnvironment.DEFAULT_BUCKETFS_WRITE_PASSWORD)
+
     def run_test(self, test_environment_info_dict):
         test_config = self.read_test_config()
         generic_language_tests = self.get_generic_language_tests(test_config)
         test_folders = self.get_test_folders(test_config)
-        test_output = yield RunDBTestsInTestConfig(
-            flavor_name=self.flavor_name,
-            release_type=self.release_type,
-            log_path=self.log_path,
-            log_level=self.log_level,
-            test_environment_info_dict=test_environment_info_dict,
-            test_environment_vars=self.test_environment_vars,
-            test_restrictions=self.test_restrictions,
-            generic_language_tests=generic_language_tests,
-            test_folders=test_folders,
-            language_definition=test_config["language_definition"],
-            test_files=self.test_files,
-            languages=self.languages
-        )
+        database_credentials = self.get_database_credentials()
+        test_output = \
+            yield RunDBTestsInTestConfig(
+                flavor_name=self.flavor_name,
+                release_type=self.release_type,
+                log_path=self.log_path,
+                log_level=self.log_level,
+                test_environment_info_dict=test_environment_info_dict,
+                test_environment_vars=self.test_environment_vars,
+                test_restrictions=self.test_restrictions,
+                generic_language_tests=generic_language_tests,
+                test_folders=test_folders,
+                language_definition=test_config["language_definition"],
+                test_files=self.test_files,
+                languages=self.languages,
+                db_user=database_credentials.db_user,
+                db_password=database_credentials.db_password,
+                bucketfs_write_password=database_credentials.bucketfs_write_password
+            )
         with test_output.open("r") as test_output_file:
             summary = test_output_file.read()
         result_status = self.get_result_status(summary)

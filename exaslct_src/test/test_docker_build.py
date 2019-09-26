@@ -10,7 +10,7 @@ class DockerBuildTest(unittest.TestCase):
 
     def setUp(self):
         print(f"SetUp {self.__class__.__name__}")
-        self.test_environment = utils.TestEnvironment(self)
+        self.test_environment = utils.ExaslctTestEnvironment(self)
         self.docker_client = docker.from_env()
         self.test_environment.clean_images()
 

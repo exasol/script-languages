@@ -37,12 +37,16 @@ def spawn_test_environment(
                      temporary_base_directory,
                      None,
                      None)
-    tasks = lambda: [SpawnTestEnvironmentWithDockerDB(
-                                                environment_name=environment_name,
-                                                database_port_forward=str(database_port_forward),
-                                                bucketfs_port_forward=str(bucketfs_port_forward),
-                                                docker_db_image_version=docker_db_image_version,
-                                                docker_db_image_name=docker_db_image_name
-    )]
+    tasks = lambda: [
+        SpawnTestEnvironmentWithDockerDB(
+            environment_name=environment_name,
+            database_port_forward=str(database_port_forward),
+            bucketfs_port_forward=str(bucketfs_port_forward),
+            docker_db_image_version=docker_db_image_version,
+            docker_db_image_name=docker_db_image_name,
+            db_user="sys",
+            db_password="exasol",
+            bucketfs_write_password="write"
+        )]
 
     run_tasks(tasks, workers, task_dependencies_dot_file)

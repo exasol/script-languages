@@ -4,32 +4,8 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.flavor_task import FlavorTask
 from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.release_type import ReleaseType
-#
-#
-# class TestContainer_Release(TestRunnerDBTestTask):
-#     def get_release_task(self, flavor_path):
-#         return ExportContainer_Release(flavor_path=flavor_path)
-#
-#     def get_release_type(self):
-#         return ReleaseType.Release
-#
-#
-# class TestContainer_BaseTest(TestRunnerDBTestTask):
-#     def get_release_task(self, flavor_path):
-#         return ExportContainer_BaseTest(flavor_path=flavor_path)
-#
-#     def get_release_type(self):
-#         return ReleaseType.BaseTest
-#
-#
-# class TestContainer_FlavorTest(TestRunnerDBTestTask):
-#     def get_release_task(self, flavor_path):
-#         return ExportContainer_FlavorTest(flavor_path=flavor_path)
-#
-#     def get_release_type(self):
-#         return ReleaseType.FlavorTest
-#
-from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironmentParameter
+
+from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask, StopTestEnvironment
 
 
@@ -51,7 +27,6 @@ class TestContainer(FlavorTask, SpawnTestEnvironmentParameter):
         self._prepare_outputs()
         stoppable_task = StoppableTask()
         if stoppable_task.failed_target.exists():
-            print("removed failed target")
             stoppable_task.failed_target.remove()
         self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
 
@@ -82,7 +57,10 @@ class TestContainer(FlavorTask, SpawnTestEnvironmentParameter):
                     max_start_attempts=self.max_start_attempts,
                     external_exasol_db_host=self.external_exasol_db_host,
                     external_exasol_db_port=self.external_exasol_db_port,
-                    external_exasol_bucketfs_port=self.external_exasol_bucketfs_port
+                    external_exasol_bucketfs_port=self.external_exasol_bucketfs_port,
+                    external_exasol_db_user=self.external_exasol_db_user,
+                    external_exasol_db_password=self.external_exasol_db_password,
+                    external_exasol_bucketfs_write_password=self.external_exasol_bucketfs_write_password
                     )
         return TestRunnerDBTestTask(**args)
 

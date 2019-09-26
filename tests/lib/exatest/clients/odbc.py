@@ -5,13 +5,13 @@ class ClientError(Exception):
     pass
 
 class ODBCClient(object):
-    def __init__(self, dsn):
+    def __init__(self, dsn, user="sys", password="exasol"):
         self.dsn = dsn
         self.cursor = None
         self.params = {}
         self.params['dsn'] = dsn
-        self.params['uid'] = 'sys'
-        self.params['pwd'] = 'exasol'
+        self.params['uid'] = user
+        self.params['pwd'] = password
 
     def connect(self, **kwargs):
         params = self.params.copy()

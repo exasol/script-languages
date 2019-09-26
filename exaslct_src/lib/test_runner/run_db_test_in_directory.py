@@ -5,11 +5,12 @@ from docker.models.containers import Container
 
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_client_config
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test import RunDBTest
 from exaslct_src.lib.stoppable_task import StoppableTask
 
 
-class RunDBTestsInDirectory(StoppableTask):
+class RunDBTestsInDirectory(StoppableTask, DatabaseCredentialsParameter):
     directory = luigi.Parameter()
     flavor_name = luigi.Parameter()
     release_type = luigi.Parameter()
@@ -82,5 +83,9 @@ class RunDBTestsInDirectory(StoppableTask):
                       test_environment_vars=self.test_environment_vars,
                       log_path=self.log_path,
                       test_restrictions=self.test_restrictions,
-                      test_file=directory + "/" + test_file)
+                      test_file=directory + "/" + test_file,
+                      db_user=self.db_user,
+                      db_password=self.db_password,
+                      bucketfs_write_password=self.bucketfs_write_password
+                      )
         return config

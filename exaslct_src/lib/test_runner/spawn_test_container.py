@@ -1,5 +1,5 @@
 import pathlib
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 import jsonpickle
 import luigi
@@ -82,7 +82,8 @@ class SpawnTestContainer(StoppableTask):
                          self.__repr__(), self.test_container_name)
         container_info = None
         try:
-            container_info = self.get_container_info(ip_address, network_info)
+            network_aliases = self.get_network_aliases()
+            container_info = self.create_container_info(ip_address, network_aliases, network_info)
         except Exception as e:
             self.logger.warning("Task %s: Tried to reuse test container %s, but got Exeception %s. "
                                 "Fallback to create new database.", self.__repr__(), self.test_container_name, e)
@@ -113,17 +114,25 @@ class SpawnTestContainer(StoppableTask):
                         "mode": "ro"
                     }
                 })
-        self._client.networks.get(network_info.network_name).connect(test_container, ipv4_address=ip_address)
+        docker_network = self._client.networks.get(network_info.network_name)
+        network_aliases = self.get_network_aliases()
+        docker_network.connect(test_container, ipv4_address=ip_address, aliases=network_aliases)
         test_container.start()
-        container_info = self.get_container_info(ip_address, network_info)
+        container_info = self.create_container_info(ip_address, network_aliases, network_info)
         return container_info
 
-    def get_container_info(self, ip_address, network_info:DockerNetworkInfo)->ContainerInfo:
+    def get_network_aliases(self):
+        network_aliases = ["test_container", self.test_container_name]
+        return network_aliases
+
+    def create_container_info(self, ip_address: str, network_aliases: List[str],
+                              network_info: DockerNetworkInfo) -> ContainerInfo:
         test_container = self._client.containers.get(self.test_container_name)
         if test_container.status != "running":
             raise Exception(f"Container {self.test_container_name} not running")
         container_info = ContainerInfo(container_name=self.test_container_name,
                                        ip_address=ip_address,
+                                       network_aliases=network_aliases,
                                        network_info=network_info)
         return container_info
 
@@ -144,4 +153,3 @@ class SpawnTestContainer(StoppableTask):
             self.logger.info("Task %s: Removed container %s", self.__repr__(), container_name)
         except Exception as e:
             pass
-

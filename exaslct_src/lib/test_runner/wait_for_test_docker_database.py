@@ -14,15 +14,16 @@ from exaslct_src.lib.data.database_info import DatabaseInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.is_database_ready_thread import IsDatabaseReadyThread
 
 
-class WaitForTestDockerDatabase(StoppableTask):
+class WaitForTestDockerDatabase(StoppableTask, DatabaseCredentialsParameter):
     logger = logging.getLogger('luigi-interface')
     environment_name = luigi.Parameter()
     test_container_info_dict = luigi.DictParameter(significant=False)
     database_info_dict = luigi.DictParameter(significant=False)
-    db_startup_timeout_in_seconds = luigi.IntParameter(10*60, significant=False)
+    db_startup_timeout_in_seconds = luigi.IntParameter(10 * 60, significant=False)
     attempt = luigi.IntParameter(1)
 
     def __init__(self, *args, **kwargs):
@@ -39,9 +40,9 @@ class WaitForTestDockerDatabase(StoppableTask):
 
     def _prepare_outputs(self):
         if self._database_info.container_info is None:
-            raise Exception("container_info not set for database_info %s"%self.database_info_dict)
+            raise Exception("container_info not set for database_info %s" % self.database_info_dict)
         else:
-            database_name = "docker-db/"+self._database_info.container_info.container_name
+            database_name = "docker-db/" + self._database_info.container_info.container_name
         self._database_ready_target = luigi.LocalTarget(
             "%s/info/environment/%s/database/%s/%s/ready"
             % (build_config().output_directory,
@@ -89,7 +90,9 @@ class WaitForTestDockerDatabase(StoppableTask):
                                                   "Database Startup %s" % db_container.name)
         container_log_thread.start()
         is_database_ready_thread = IsDatabaseReadyThread(self.__repr__(),
-                                                         self._database_info, test_container)
+                                                         self._database_info,
+                                                         self.get_database_credentials(),
+                                                         test_container)
         is_database_ready_thread.start()
         return container_log_thread, is_database_ready_thread
 
@@ -131,7 +134,8 @@ class WaitForTestDockerDatabase(StoppableTask):
         is_database_ready_thread.stop()
         return is_database_ready
 
-    def log_database_not_ready(self, container_log_thread, is_database_ready_thread, reason):
+    def log_database_not_ready(self, container_log_thread: ContainerLogThread,
+                               is_database_ready_thread: IsDatabaseReadyThread, reason):
         container_log = '\n'.join(container_log_thread.complete_log)
         log_information = f"""
 ========== IsDatabaseReadyThread output db connection: ============
