@@ -105,6 +105,7 @@ class TestProgram(object):
     logger_name = 'exatest.main'
 
     def __init__(self):
+        self.dsn = "exatest"
         self.opts = self._parse_opts()
         self.init_logger()
         self.opts.log = logging.getLogger(self.logger_name)
@@ -226,7 +227,7 @@ class TestProgram(object):
                 argv=self.opts.unittest_args,
                 failfast=self.opts.failfast,
                 verbosity=self.opts.verbosity,
-                testLoader=TestLoader(dsn="exatest",user=self.opts.user,password=self.opts.password),
+                testLoader=TestLoader(dsn=self.dsn,user=self.opts.user,password=self.opts.password),
                 exit=False,
                 )
         self.opts.log.info('finished tests')
@@ -241,9 +242,9 @@ class TestProgram(object):
         server=self._resolve_host_to_ipv4(self.opts.server)
         with open(name, 'w') as tmp:
             tmp.write('[ODBC Data Sources]\n')
-            tmp.write('exatest=EXASolution\n')
+            tmp.write('%s=EXASolution\n'%self.dsn)
             tmp.write('\n')
-            tmp.write('[exatest]\n')
+            tmp.write('[%s]\n'%self.dsn)
             tmp.write('Driver = %s\n' % self.opts.driver)
             tmp.write('EXAHOST = %s\n' % server)
             tmp.write('EXAUID = %s\n' % self.opts.user)

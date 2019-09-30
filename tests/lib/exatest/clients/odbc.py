@@ -6,7 +6,6 @@ class ClientError(Exception):
 
 class ODBCClient(object):
     def __init__(self, dsn, user="sys", password="exasol"):
-        self.dsn = dsn
         self.cursor = None
         self.params = {}
         self.params['dsn'] = dsn
