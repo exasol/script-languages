@@ -121,7 +121,7 @@ class TestProgram(exatest.TestProgram):
         global opts
         opts = self.opts
         if opts.lang is not None:
-            client = ODBCClient(self.dsn, self.user, self.password)
+            client = ODBCClient(self.dsn, opts.user, opts.password)
             client.connect(autocommit=True)
             return load_functions(client=client, lang=opts.lang, schema='FN1', redirector=opts.redirector_url)
         return True
