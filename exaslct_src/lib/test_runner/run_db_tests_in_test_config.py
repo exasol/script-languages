@@ -4,12 +4,14 @@ from typing import TextIO
 import luigi
 from luigi import LocalTarget
 
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test import RunDBTest
 from exaslct_src.lib.test_runner.run_db_test_in_directory import RunDBTestsInDirectory
 from exaslct_src.lib.stoppable_task import StoppableTask
 
+
 # TODO fetch database logs after test execution
-class RunDBTestsInTestConfig(StoppableTask):
+class RunDBTestsInTestConfig(StoppableTask, DatabaseCredentialsParameter):
     flavor_name = luigi.Parameter()
     release_type = luigi.Parameter()
     generic_language_tests = luigi.ListParameter()
@@ -46,18 +48,22 @@ class RunDBTestsInTestConfig(StoppableTask):
     def run_generic_tests(self, output_file):
         for language in self.generic_language_tests:
             log_path = pathlib.Path(self.log_path).joinpath("generic_tests").joinpath(language)
-            test_output = yield RunDBTestsInDirectory(
-                flavor_name=self.flavor_name,
-                release_type=self.release_type,
-                log_path=str(log_path),
-                language_definition=self.language_definition,
-                language=language,
-                test_environment_info_dict=self.test_environment_info_dict,
-                log_level=self.log_level,
-                test_environment_vars=self.test_environment_vars,
-                test_restrictions=self.test_restrictions,
-                directory="generic"
-            )
+            test_output = \
+                yield RunDBTestsInDirectory(
+                    flavor_name=self.flavor_name,
+                    release_type=self.release_type,
+                    log_path=str(log_path),
+                    language_definition=self.language_definition,
+                    language=language,
+                    test_environment_info_dict=self.test_environment_info_dict,
+                    log_level=self.log_level,
+                    test_environment_vars=self.test_environment_vars,
+                    test_restrictions=self.test_restrictions,
+                    directory="generic",
+                    db_user=self.db_user,
+                    db_password=self.db_password,
+                    bucketfs_write_password=self.bucketfs_write_password
+                )
             self.write_output("generic_tests", language, output_file, test_output)
 
     def run_test_folders(self, output_file: TextIO):
@@ -76,7 +82,10 @@ class RunDBTestsInTestConfig(StoppableTask):
                     log_level=self.log_level,
                     test_environment_vars=self.test_environment_vars,
                     test_restrictions=self.test_restrictions,
-                    directory=test_folder
+                    directory=test_folder,
+                    db_user=self.db_user,
+                    db_password=self.db_password,
+                    bucketfs_write_password=self.bucketfs_write_password
                 )
                 test_name = test_folder
                 if language is not None:
@@ -101,7 +110,10 @@ class RunDBTestsInTestConfig(StoppableTask):
                     test_environment_vars=self.test_environment_vars,
                     test_restrictions=self.test_restrictions,
                     test_file=test_file,
-                    language=language
+                    language=language,
+                    db_user=self.db_user,
+                    db_password=self.db_password,
+                    bucketfs_write_password=self.bucketfs_write_password
                 )
                 test_name = test_file
                 if language is not None:

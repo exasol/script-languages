@@ -129,9 +129,17 @@ class TestCase(ParameterizedTestCase):
     __metaclass__ = _DBConnectionTestCaseMetaclass
 
     def __init__(self, *args, **kwargs):
+        self.dsn = kwargs["dsn"]
+        self.user = kwargs["user"]
+        self.password= kwargs["password"]
+        # We need to remove dsn, user and password before we forward the kwargs, because the base class doesn't expect these parameters and throws an error
+        del kwargs["dsn"]
+        del kwargs["user"]
+        del kwargs["password"]
         super(TestCase, self).__init__(*args, **kwargs)
         self._expectations = []
         self._needs_assertExpectations = False
+
 
     def __setUpWrapper(self):
         self.__preSetUp()
@@ -148,8 +156,8 @@ class TestCase(ParameterizedTestCase):
     def __preSetUp(self):
         self.log = logging.getLogger(
                 '%s.%s' % (self.__class__.__name__, self._testMethodName))
-        self._client = ODBCClient('exatest')
-        self.log.debug('connecting to DSN "exa"')
+        self._client = ODBCClient(self.dsn,self.user,self.password)
+        self.log.debug('connecting to DSN %s with User %s'%(self.dsn,self.user))
         try:
             self._client.connect()
         except Exception as e:
@@ -163,7 +171,7 @@ class TestCase(ParameterizedTestCase):
         pass
 
     def __postTearDown(self):
-        self.log.info('disconnection from DSN "exa"')
+        self.log.info('disconnection from DSN %s'% self.dsn)
         self._client.close()
         if self._needs_assertExpectations:
             self.assertExpectations()
@@ -245,8 +253,8 @@ class TestCase(ParameterizedTestCase):
         self.expectEqual(lrows, rrows, msg)
 
     def getConnection(self, username, password):
-        client = ODBCClient('exatest')
-        self.log.debug('connecting to DSN "exa" for user {username}'.format(username=username))
+        client = ODBCClient(self.dsn,self.user,self.password)
+        self.log.debug('connecting to {dsn} for user {username}'.format(dsn=self.dsn, username=username))
         client.connect(uid = username, pwd = password)
         return client
 

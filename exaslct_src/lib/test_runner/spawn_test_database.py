@@ -23,22 +23,19 @@ from exaslct_src.lib.docker.pull_log_handler import PullLogHandler
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.test_runner.docker_db_test_environment_parameter import DockerDBTestEnvironmentParameter
 
 BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
 
 
-class SpawnTestDockerDatabase(StoppableTask):
+class SpawnTestDockerDatabase(StoppableTask, DockerDBTestEnvironmentParameter):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
     db_container_name = luigi.Parameter()
-    docker_db_image_version = luigi.Parameter("6.2.1-d1")
-    reuse_database = luigi.BoolParameter(False, significant=False)
     network_info_dict = luigi.DictParameter(significant=False)
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
-    database_port_forward = luigi.OptionalParameter(None, significant=False)
-    bucketfs_port_forward = luigi.OptionalParameter(None, significant=False)
     attempt = luigi.IntParameter(1)
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +50,6 @@ class SpawnTestDockerDatabase(StoppableTask):
         self._prepare_outputs()
         self.db_version = "-".join(self.docker_db_image_version.split("-")[0:-1])
         self.docker_db_config_path = f"docker_db_config/{self.db_version}"
-        print("self.docker_db_config_path",self.docker_db_config_path)
 
     def __del__(self):
         self._client.close()
@@ -89,7 +85,7 @@ class SpawnTestDockerDatabase(StoppableTask):
                          self.__repr__(), self.db_container_name)
         database_info = None
         try:
-            database_info = self.get_database_info(db_ip_address, network_info)
+            database_info = self.create_database_info(db_ip_address, network_info)
         except Exception as e:
             self.logger.warning("Task %s: Tried to reuse database container %s, but got Exeception %s. "
                                 "Fallback to create new database.", self.__repr__(), self.db_container_name, e)
@@ -98,21 +94,6 @@ class SpawnTestDockerDatabase(StoppableTask):
     def write_output(self, database_info: DatabaseInfo):
         with self.output()[DATABASE_INFO].open("w") as file:
             file.write(database_info.to_json())
-
-    def get_database_info(self, db_ip_address: str,
-                          network_info: DockerNetworkInfo) -> DatabaseInfo:
-        db_container = self._client.containers.get(self.db_container_name)
-        if db_container.status != "running":
-            raise Exception(f"Container {self.db_container_name} not running")
-        container_info = \
-            ContainerInfo(container_name=self.db_container_name,
-                          ip_address=db_ip_address,
-                          network_info=network_info,
-                          volume_name=self.get_db_volume_name())
-        database_info = \
-            DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,
-                         container_info=container_info)
-        return database_info
 
     def _handle_output(self, output_generator, image_info: ImageInfo):
         log_file_path = self.prepate_log_file_path(image_info)
@@ -146,9 +127,9 @@ class SpawnTestDockerDatabase(StoppableTask):
         db_volume = self.prepare_db_volume(db_private_network, docker_db_image_info)
         ports = {}
         if self.database_port_forward is not None:
-            ports[f"{DB_PORT}/tcp"] = ('127.0.0.1', int(self.database_port_forward))
+            ports[f"{DB_PORT}/tcp"] = ('0.0.0.0', int(self.database_port_forward))
         if self.bucketfs_port_forward is not None:
-            ports[f"{BUCKETFS_PORT}/tcp"] = ('127.0.0.1', int(self.bucketfs_port_forward))
+            ports[f"{BUCKETFS_PORT}/tcp"] = ('0.0.0.0', int(self.bucketfs_port_forward))
         db_container = \
             self._client.containers.create(
                 image="%s" % (docker_db_image_info.get_source_complete_name()),
@@ -159,13 +140,29 @@ class SpawnTestDockerDatabase(StoppableTask):
                 network_mode=None,
                 ports=ports
             )
-        self._client.networks.get(network_info.network_name).connect(db_container, ipv4_address=db_ip_address)
+        docker_network = self._client.networks.get(network_info.network_name)
+        network_aliases = self.get_network_aliases()
+        docker_network.connect(db_container, ipv4_address=db_ip_address, aliases=network_aliases)
         db_container.start()
+        database_info = self.create_database_info(db_ip_address, network_info)
+        return database_info
+
+    def get_network_aliases(self):
+        network_aliases = ["exasol_test_database", self.db_container_name]
+        return network_aliases
+
+    def create_database_info(self, db_ip_address: str,
+                             network_info: DockerNetworkInfo) -> DatabaseInfo:
+        db_container = self._client.containers.get(self.db_container_name)
+        if db_container.status != "running":
+            raise Exception(f"Container {self.db_container_name} not running")
+        network_aliases = self.get_network_aliases()
         container_info = \
-            ContainerInfo(container_name=db_container.name,
+            ContainerInfo(container_name=self.db_container_name,
                           ip_address=db_ip_address,
+                          network_aliases=network_aliases,
                           network_info=network_info,
-                          volume_name=db_volume.name)
+                          volume_name=self.get_db_volume_name())
         database_info = \
             DatabaseInfo(host=db_ip_address, db_port=DB_PORT, bucketfs_port=BUCKETFS_PORT,
                          container_info=container_info)
@@ -178,7 +175,7 @@ class SpawnTestDockerDatabase(StoppableTask):
             source_repository_name=image_name,
             source_tag=self.docker_db_image_version,
             target_tag=self.docker_db_image_version,
-            hash="", commit = "",
+            hash="", commit="",
             image_description=None)
         try:
 

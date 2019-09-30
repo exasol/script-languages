@@ -6,9 +6,10 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 
 
-class PopulateEngineSmallTestDataToDatabase(StoppableTask):
+class PopulateEngineSmallTestDataToDatabase(StoppableTask, DatabaseCredentialsParameter):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
@@ -46,8 +47,8 @@ class PopulateEngineSmallTestDataToDatabase(StoppableTask):
 
     def populate_data(self):
         self.logger.warning("Task %s: Uploading data", self.__repr__())
-        username = "sys"
-        password = "exasol"
+        username = self.db_user
+        password = self.db_password
         test_container = self._client.containers.get(self._test_container_info.container_name)
         cmd = f"""cd /tests/test/enginedb_small; $EXAPLUS -c '{self._database_info.host}:{self._database_info.db_port}' -u '{username}' -p '{password}' -f import.sql"""
         bash_cmd = f"""bash -c "{cmd}" """

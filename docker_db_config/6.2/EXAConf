@@ -170,7 +170,7 @@
         Public = True
         Name = myudfs
 
-    [[Bucket : jdbc-adapter]]
+    [[Bucket : jdbc_adapter]]
         # ReadPasswd is "read" (without quotes)
         ReadPasswd = cmVhZAo=
         # WritePasswd is "write" (without quotes)

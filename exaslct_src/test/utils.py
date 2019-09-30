@@ -10,12 +10,31 @@ from pathlib import Path
 import docker
 
 
-class TestEnvironment():
+class ExaslctDockerTestEnvironment():
+    def __init__(self, name: str, database_host: str,
+                 db_username: str, db_password: str,
+                 bucketfs_username: str, bucketfs_password: str,
+                 database_port: int, bucketfs_port: str):
+        self.db_password = db_password
+        self.db_username = db_username
+        self.database_port = database_port
+        self.bucketfs_port = bucketfs_port
+        self.bucketfs_username = bucketfs_username
+        self.bucketfs_password = bucketfs_password
+        self.database_host = database_host
+        self.name = name
+
+    def close(self):
+        remove_docker_container([f"test_container_{self.name}",
+                                 f"db_container_{self.name}"])
+
+
+class ExaslctTestEnvironment():
 
     def __init__(self, test_object):
         self.flavor_path = get_test_flavor()
         self.name = test_object.__class__.__name__
-        self._repository_prefix="exaslct_test"
+        self._repository_prefix = "exaslct_test"
         self.temp_dir = tempfile.mkdtemp()
         self._update_attributes()
 
@@ -67,6 +86,23 @@ class TestEnvironment():
             shutil.rmtree(self.temp_dir)
         except Exception as e:
             print(e)
+
+    def spawn_docker_test_environment(self,name) -> ExaslctDockerTestEnvironment:
+        parameter = ExaslctDockerTestEnvironment(
+            name=self.name+"_"+name,
+            database_host="localhost",
+            db_username="sys",
+            db_password="exasol",
+            bucketfs_username="w",
+            bucketfs_password="write",
+            database_port=find_free_port(),
+            bucketfs_port=find_free_port())
+        arguments = " ".join([f"--environment-name {self.name}",
+                              f"--database-port-forward {parameter.database_port}",
+                              f"--bucketfs-port-forward {parameter.bucketfs_port}"])
+        command = f"./exaslct spawn-test-environment {arguments}"
+        self.run_command(command, use_flavor_path=False, use_docker_repository=False)
+        return parameter
 
 
 def find_free_port():

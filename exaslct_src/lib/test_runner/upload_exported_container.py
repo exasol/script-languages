@@ -27,3 +27,6 @@ class UploadExportedContainer(UploadFileToBucketFS):
 
     def get_upload_target(self):
         return "myudfs/"+self.release_info.name+".tar.gz"
+
+    def get_sync_time_estimation(self) -> int:
+        return 1*60

@@ -37,7 +37,7 @@ class DockerPushTest(unittest.TestCase):
 
     def setUp(self):
         print(f"SetUp {self.__class__.__name__}")
-        self.test_environment = utils.TestEnvironment(self)
+        self.test_environment = utils.ExaslctTestEnvironment(self)
         self.create_registry()
         self.test_environment.clean_images()
 

@@ -121,14 +121,14 @@ class TestProgram(exatest.TestProgram):
         global opts
         opts = self.opts
         if opts.lang is not None:
-            return load_functions(lang=opts.lang, schema='FN1', redirector=opts.redirector_url)
+            client = ODBCClient(self.dsn, opts.user, opts.password)
+            client.connect(autocommit=True)
+            return load_functions(client=client, lang=opts.lang, schema='FN1', redirector=opts.redirector_url)
         return True
 
 main = TestProgram
 
-def load_functions(lang=None, schema='FN1', redirector=None):
-    client = ODBCClient('exatest')
-    client.connect(autocommit=True)
+def load_functions(client, lang=None, schema='FN1', redirector=None):
     path = os.path.realpath(os.path.join(os.path.abspath(__file__),
             '../../../lang', lang))
     if not os.path.isdir(path):

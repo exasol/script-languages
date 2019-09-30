@@ -13,11 +13,9 @@ class DockerImageTarget(luigi.Target):
 
     def exists(self) -> bool:
         try:
-            print(f"DockerImageTarget: Looking up image {self.get_complete_name()}")
             image = self._client.images.get(self.get_complete_name())
             return True
         except docker.errors.DockerException as e:
-            print(f"DockerImageTarget: Exception while looking up image {self.get_complete_name()}",e)
             return False
 
     def __del__(self):

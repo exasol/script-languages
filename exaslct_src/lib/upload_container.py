@@ -59,7 +59,6 @@ class UploadContainer(DockerFlavorBuildBase):
         self.write_command_line_output(uploads_of_flavors)
 
     def write_command_line_output(self, exports_for_flavors):
-        print("AAAAAAAA",exports_for_flavors)
         with self._upload_target.open("w") as out_file:
             for releases in exports_for_flavors.values():
                 for in_target in releases.values():

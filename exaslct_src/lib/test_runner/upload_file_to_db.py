@@ -1,15 +1,16 @@
 import logging
-import time
-from datetime import datetime
 
 import luigi
 from docker.models.containers import Container
 
+from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.still_running_logger import StillRunningLoggerThread, StillRunningLogger
 from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.test_runner.docker_db_log_based_bucket_sync_checker import DockerDBLogBasedBucketFSSyncChecker
+from exaslct_src.lib.test_runner.time_based_bucketfs_sync_waiter import TimeBasedBucketFSSyncWaiter
 
 
 # TODO add timeout, because sometimes the upload stucks
@@ -19,6 +20,7 @@ class UploadFileToBucketFS(StoppableTask):
     environment_name = luigi.Parameter()
     test_environment_info_dict = luigi.DictParameter(significant=False)
     reuse_uploaded = luigi.BoolParameter(False, significant=False)
+    bucketfs_write_password = luigi.Parameter(significant=False, visibility=luigi.parameter.ParameterVisibility.HIDDEN)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -47,129 +49,128 @@ class UploadFileToBucketFS(StoppableTask):
         upload_target = self.get_upload_target()
         pattern_to_wait_for = self.get_pattern_to_wait_for()
         log_file = self.get_log_file()
-        database_container = self._client.containers.get(
-            self._database_info.container_info.container_name)
-        if not self.should_be_reused(database_container, log_file, pattern_to_wait_for):
-            output = self.upload_and_wait(database_container, file_to_upload, log_file,
-                                          pattern_to_wait_for, upload_target)
-            self.write_logs(output)
+        sync_time_estimation = self.get_sync_time_estimation()
+
+        if self._database_info.container_info is not None:
+            database_container = self._client.containers.get(
+                self._database_info.container_info.container_name)
+        else:
+            database_container = None
+        if not self.should_be_reused(upload_target):
+            self.upload_and_wait(database_container,
+                                 file_to_upload,
+                                 upload_target,
+                                 log_file,
+                                 pattern_to_wait_for,
+                                 sync_time_estimation)
         else:
             self.logger.warning("Task %s: Reusing uploaded target %s instead of file %s",
                                 self.__repr__(), upload_target, file_to_upload)
             self.write_logs("Reusing")
 
-    def should_be_reused(self, database_container: Container, log_file: str,
-                         pattern_to_wait_for: str):
-        if self.reuse_uploaded:
-            exit_code, output = self.find_pattern_in_logfile(
-                database_container=database_container,
-                log_file=log_file,
-                pattern_to_wait_for=pattern_to_wait_for)
-            return exit_code == 0
-        else:
-            return False
-
-    def upload_and_wait(self, database_container: Container, file_to_upload: str,
-                        log_file: str, pattern_to_wait_for: str, upload_target: str):
+    def upload_and_wait(self, database_container,
+                        file_to_upload:str, upload_target:str,
+                        log_file:str, pattern_to_wait_for:str,
+                        sync_time_estimation:int):
         still_running_logger = StillRunningLogger(self.logger, self.__repr__(),
                                                   "file upload of %s to %s"
                                                   % (file_to_upload, upload_target))
         thread = StillRunningLoggerThread(still_running_logger)
         thread.start()
-        utc_now = datetime.utcnow()
-        start_exit_code, start_output = \
-            self.find_pattern_in_logfile(
-                database_container, log_file, pattern_to_wait_for)
+        sync_checker = self.get_sync_checker(database_container, sync_time_estimation,
+                                             log_file, pattern_to_wait_for)
+        sync_checker.prepare_upload()
         output = self.upload_file(file_to_upload=file_to_upload, upload_target=upload_target)
-        self.wait_for_upload(
-            database_container=database_container,
-            pattern_to_wait_for=pattern_to_wait_for,
-            log_file=log_file, start_time=utc_now,
-            start_exit_code=start_exit_code,
-            start_output=start_output)
+        sync_checker.wait_for_bucketfs_sync()
         thread.stop()
         thread.join()
-        return output
+        self.write_logs(output)
 
-    def get_log_file(self) -> str:
-        pass
+    def get_sync_checker(self, database_container:Container,
+                         sync_time_estimation: int,
+                         log_file:str,
+                         pattern_to_wait_for:str):
+        if database_container is not None:
+            return DockerDBLogBasedBucketFSSyncChecker(
+                database_container=database_container,
+                log_file_to_check=log_file,
+                pattern_to_wait_for=pattern_to_wait_for,
+                task_id=self.__repr__(),
+                bucketfs_write_password=self.bucketfs_write_password
+            )
+        else:
+            return TimeBasedBucketFSSyncWaiter(sync_time_estimation)
 
-    def get_pattern_to_wait_for(self) -> str:
-        pass
 
-    def get_file_to_upload(self) -> str:
-        pass
+    def should_be_reused(self, upload_target: str):
+        return self.reuse_uploaded and self.exist_file_in_bucketfs(upload_target)
 
-    def get_upload_target(self) -> str:
-        pass
+    def exist_file_in_bucketfs(self, upload_target: str) -> bool:
+        self.logger.info("Task %s: Check if file %s exist in bucketfs", self.__repr__(),
+                         upload_target)
+        command = self.generate_list_command(upload_target)
+        exit_code, log_output = self.run_command("list", command)
+
+        if exit_code != 0:
+            self.write_logs(log_output)
+            raise Exception("Task %s: List files in bucketfs failed, got following output %s"
+                            % (self.task_id, log_output))
+        upload_target_in_bucket="/".join(upload_target.split("/")[1:])
+        if upload_target_in_bucket in log_output.splitlines():
+            return True
+        else:
+            return False
+
+    def generate_list_command(self, upload_target: str):
+        bucket = upload_target.split("/")[0]
+        url = "http://w:{password}@{host}:{port}/{bucket}".format(
+            host=self._database_info.host, port=self._database_info.bucketfs_port,
+            bucket=bucket, password=self.bucketfs_write_password)
+        cmd = f"curl --fail '{url}'"
+        return cmd
 
     def upload_file(self, file_to_upload: str, upload_target: str):
         self.logger.info("Task %s: upload file %s to %s", self.__repr__(),
                          file_to_upload, upload_target)
         command = self.generate_upload_command(file_to_upload, upload_target)
-        exit_code, log_output = self.run_command(command)
-
+        exit_code, log_output = self.run_command("upload", command)
         if exit_code != 0:
             self.write_logs(log_output)
             raise Exception("Task %s: Upload of %s failed, got following output %s"
                             % (self.task_id, file_to_upload, log_output))
         return log_output
 
-    def run_command(self, cmd):
-        test_container = self._client.containers.get(self._test_container_info.container_name)
-        self.logger.info("Task %s: start upload command %s", self.__repr__(), cmd)
-        exit_code, output = test_container.exec_run(cmd=cmd)
-        self.logger.info("Task %s: finish upload command %s", self.__repr__(), cmd)
-        log_output = cmd + "\n\n" + output.decode("utf-8")
-        return exit_code, log_output
-
     def generate_upload_command(self, file_to_upload, upload_target):
-
-        url = "http://w:write@{host}:{port}/{target}".format(
+        url = "http://w:{password}@{host}:{port}/{target}".format(
             host=self._database_info.host, port=self._database_info.bucketfs_port,
-            target=upload_target)
-        cmd = "curl -v -X PUT -T {jar} {url}".format(jar=file_to_upload, url=url)
+            target=upload_target, password=self.bucketfs_write_password)
+        cmd = f"curl --fail -X PUT -T '{file_to_upload}' '{url}'"
         return cmd
 
-    def wait_for_upload(self,
-                        database_container: Container,
-                        pattern_to_wait_for: str,
-                        log_file: str,
-                        start_time: datetime,
-                        start_exit_code, start_output):
-        self.logger.info("Task %s: wait for upload of file", self.__repr__())
-
-        ready = False
-        while not ready:
-            exit_code, output = self.find_pattern_in_logfile(
-                database_container, log_file, pattern_to_wait_for)
-            if self.exit_code_changed(exit_code, start_exit_code) or \
-                    self.found_new_log_line(exit_code, start_exit_code,
-                                            start_output, output):
-                ready = True
-            time.sleep(1)
-
-    def exit_code_changed(self,exit_code, start_exit_code):
-        return exit_code == 0 and start_exit_code != 0
-
-    def found_new_log_line(self, exit_code, start_exit_code,
-                           start_output, output):
-        return exit_code == 0 and start_exit_code == 0 and len(start_output) < len(output)
-
-    def find_pattern_in_logfile(self, database_container: Container,
-                                log_file: str, pattern_to_wait_for: str):
-        cmd = f"""grep '{pattern_to_wait_for}' {log_file}"""
-        bash_cmd = f"""bash -c "{cmd}" """
-        exit_code, output = \
-            database_container.exec_run(bash_cmd)
-        return exit_code, output
-
-    def output_happened_after_start_time(self, output, start_time):
-        time_str_from_output = " ".join(output.decode("utf-8").split(" ")[1:3])
-        time_from_output = datetime.strptime(time_str_from_output, "%y%m%d %H:%M:%S")
-        happened_after = time_from_output > start_time
-        return happened_after
+    def run_command(self, command_type, cmd):
+        test_container = self._client.containers.get(self._test_container_info.container_name)
+        self.logger.info("Task %s: start %s command %s", self.__repr__(), command_type, cmd)
+        exit_code, output = test_container.exec_run(cmd=cmd)
+        self.logger.info("Task %s: finish %s command %s", self.__repr__(), command_type, cmd)
+        log_output = cmd + "\n\n" + output.decode("utf-8")
+        return exit_code, log_output
 
     def write_logs(self, output):
         with self._log_target.open("w") as file:
             file.write(output)
+
+    def get_log_file(self) -> str:
+        raise AbstractMethodException()
+
+    def get_pattern_to_wait_for(self) -> str:
+        raise AbstractMethodException()
+
+    def get_file_to_upload(self) -> str:
+        raise AbstractMethodException()
+
+    def get_upload_target(self) -> str:
+        raise AbstractMethodException()
+
+    def get_sync_time_estimation(self) -> int:
+        """Estimated time in seconds which the bucketfs needs to extract and sync a uploaded file"""
+        raise AbstractMethodException()
