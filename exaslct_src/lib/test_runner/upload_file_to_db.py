@@ -1,48 +1,32 @@
-import logging
+from pathlib import Path
 
 import luigi
 from docker.models.containers import Container
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
-from exaslct_src.lib.build_config import build_config
+from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.still_running_logger import StillRunningLoggerThread, StillRunningLogger
-from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.test_runner.docker_db_log_based_bucket_sync_checker import DockerDBLogBasedBucketFSSyncChecker
 from exaslct_src.lib.test_runner.time_based_bucketfs_sync_waiter import TimeBasedBucketFSSyncWaiter
 
 
 # TODO add timeout, because sometimes the upload stucks
-class UploadFileToBucketFS(StoppableTask):
-    logger = logging.getLogger('luigi-interface')
-
+class UploadFileToBucketFS(DependencyLoggerBaseTask):
     environment_name = luigi.Parameter()
-    test_environment_info_dict = luigi.DictParameter(significant=False)
+    test_environment_info = JsonPickleParameter(
+        EnvironmentInfo, significant=False)  # type: EnvironmentInfo
     reuse_uploaded = luigi.BoolParameter(False, significant=False)
-    bucketfs_write_password = luigi.Parameter(significant=False, visibility=luigi.parameter.ParameterVisibility.HIDDEN)
+    bucketfs_write_password = luigi.Parameter(
+        significant=False, visibility=luigi.parameter.ParameterVisibility.HIDDEN)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self._client = docker_client_config().get_client()
-
-        self._test_environment_info = test_environment_info = EnvironmentInfo.from_dict(self.test_environment_info_dict)
-        self._test_container_info = test_environment_info.test_container_info
-        self._database_info = test_environment_info.database_info
-        self._prepare_outputs()
-
-    def _prepare_outputs(self):
-        self._log_target = luigi.LocalTarget(
-            "%s/logs/environment/%s/bucketfs-upload/%s"
-            % (build_config().output_directory,
-               self._test_environment_info.name,
-               self.task_id))
-        if self._log_target.exists():
-            self._log_target.remove()
-
-    def output(self):
-        return self._log_target
+        self._test_container_info = self.test_environment_info.test_container_info
+        self._database_info = self.test_environment_info.database_info
 
     def run_task(self):
         file_to_upload = self.get_file_to_upload()
@@ -64,15 +48,15 @@ class UploadFileToBucketFS(StoppableTask):
                                  pattern_to_wait_for,
                                  sync_time_estimation)
         else:
-            self.logger.warning("Task %s: Reusing uploaded target %s instead of file %s",
-                                self.__repr__(), upload_target, file_to_upload)
+            self.logger.warning("Reusing uploaded target %s instead of file %s",
+                                upload_target, file_to_upload)
             self.write_logs("Reusing")
 
     def upload_and_wait(self, database_container,
-                        file_to_upload:str, upload_target:str,
-                        log_file:str, pattern_to_wait_for:str,
-                        sync_time_estimation:int):
-        still_running_logger = StillRunningLogger(self.logger, self.__repr__(),
+                        file_to_upload: str, upload_target: str,
+                        log_file: str, pattern_to_wait_for: str,
+                        sync_time_estimation: int):
+        still_running_logger = StillRunningLogger(self.logger,
                                                   "file upload of %s to %s"
                                                   % (file_to_upload, upload_target))
         thread = StillRunningLoggerThread(still_running_logger)
@@ -86,36 +70,34 @@ class UploadFileToBucketFS(StoppableTask):
         thread.join()
         self.write_logs(output)
 
-    def get_sync_checker(self, database_container:Container,
+    def get_sync_checker(self, database_container: Container,
                          sync_time_estimation: int,
-                         log_file:str,
-                         pattern_to_wait_for:str):
+                         log_file: str,
+                         pattern_to_wait_for: str):
         if database_container is not None:
             return DockerDBLogBasedBucketFSSyncChecker(
                 database_container=database_container,
                 log_file_to_check=log_file,
                 pattern_to_wait_for=pattern_to_wait_for,
-                task_id=self.__repr__(),
+                logger=self.logger,
                 bucketfs_write_password=self.bucketfs_write_password
             )
         else:
             return TimeBasedBucketFSSyncWaiter(sync_time_estimation)
 
-
     def should_be_reused(self, upload_target: str):
         return self.reuse_uploaded and self.exist_file_in_bucketfs(upload_target)
 
     def exist_file_in_bucketfs(self, upload_target: str) -> bool:
-        self.logger.info("Task %s: Check if file %s exist in bucketfs", self.__repr__(),
-                         upload_target)
+        self.logger.info("Check if file %s exist in bucketfs", upload_target)
         command = self.generate_list_command(upload_target)
         exit_code, log_output = self.run_command("list", command)
 
         if exit_code != 0:
             self.write_logs(log_output)
-            raise Exception("Task %s: List files in bucketfs failed, got following output %s"
-                            % (self.task_id, log_output))
-        upload_target_in_bucket="/".join(upload_target.split("/")[1:])
+            raise Exception("List files in bucketfs failed, got following output %s"
+                            % (log_output))
+        upload_target_in_bucket = "/".join(upload_target.split("/")[1:])
         if upload_target_in_bucket in log_output.splitlines():
             return True
         else:
@@ -130,14 +112,14 @@ class UploadFileToBucketFS(StoppableTask):
         return cmd
 
     def upload_file(self, file_to_upload: str, upload_target: str):
-        self.logger.info("Task %s: upload file %s to %s", self.__repr__(),
+        self.logger.info("upload file %s to %s",
                          file_to_upload, upload_target)
         command = self.generate_upload_command(file_to_upload, upload_target)
         exit_code, log_output = self.run_command("upload", command)
         if exit_code != 0:
             self.write_logs(log_output)
-            raise Exception("Task %s: Upload of %s failed, got following output %s"
-                            % (self.task_id, file_to_upload, log_output))
+            raise Exception("Upload of %s failed, got following output %s"
+                            % (file_to_upload, log_output))
         return log_output
 
     def generate_upload_command(self, file_to_upload, upload_target):
@@ -149,14 +131,15 @@ class UploadFileToBucketFS(StoppableTask):
 
     def run_command(self, command_type, cmd):
         test_container = self._client.containers.get(self._test_container_info.container_name)
-        self.logger.info("Task %s: start %s command %s", self.__repr__(), command_type, cmd)
+        self.logger.info("start %s command %s", command_type, cmd)
         exit_code, output = test_container.exec_run(cmd=cmd)
-        self.logger.info("Task %s: finish %s command %s", self.__repr__(), command_type, cmd)
+        self.logger.info("finish %s command %s", command_type, cmd)
         log_output = cmd + "\n\n" + output.decode("utf-8")
         return exit_code, log_output
 
     def write_logs(self, output):
-        with self._log_target.open("w") as file:
+        log_file = Path(self.get_log_path(), "log")
+        with log_file.open("w") as file:
             file.write(output)
 
     def get_log_file(self) -> str:

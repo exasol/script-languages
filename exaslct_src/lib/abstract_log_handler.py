@@ -3,9 +3,8 @@ from exaslct_src.lib.log_config import log_config
 
 class AbstractLogHandler:
 
-    def __init__(self, log_file_path, logger, task_id):
+    def __init__(self, log_file_path, logger):
         self._log_file_path = log_file_path
-        self._task_id = task_id
         self._logger = logger
         self._complete_log = []
         self._error_message = None

@@ -1,16 +1,15 @@
 import getpass
 from typing import Tuple
 
-import luigi
 from click._unicodefun import click
 
-from exaslct_src.lib.upload_container import UploadContainer
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, \
-    import_build_steps
+from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
+    import_build_steps, set_job_id
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
     docker_repository_options
+from exaslct_src.lib.upload_containers import UploadContainers
 
 
 @cli.command()
@@ -30,7 +29,7 @@ from exaslct_src.cli.options \
 @add_options(docker_repository_options)
 @add_options(system_options)
 def upload(flavor_path: Tuple[str, ...],
-           release_type: str,
+           release_goal: str,
            database_host: str,
            bucketfs_port: int,
            bucketfs_username: str,
@@ -79,24 +78,23 @@ def upload(flavor_path: Tuple[str, ...],
     if bucketfs_password is None:
         bucketfs_password = getpass.getpass(
             "BucketFS Password for BucketFS %s and User %s:" % (bucketfs_name, bucketfs_username))
-    tasks = lambda: [UploadContainer(flavor_paths=list(flavor_path),
-                                     release_types=list([release_type]),
-                                     database_host=database_host,
-                                     bucketfs_port=bucketfs_port,
-                                     bucketfs_username=bucketfs_username,
-                                     bucketfs_password=bucketfs_password,
-                                     bucket_name=bucket_name,
-                                     path_in_bucket=path_in_bucket,
-                                     bucketfs_https=bucketfs_https,
-                                     release_name=release_name,
-                                     bucketfs_name=bucketfs_name
-                                     )]
 
-    def on_success():
-        target = luigi.LocalTarget(
-            "%s/uploads/command_line_output" % (output_directory))
+    set_job_id(UploadContainers.__name__)
+    task_creator = lambda: UploadContainers(flavor_paths=list(flavor_path),
+                                            release_goals=list([release_goal]),
+                                            database_host=database_host,
+                                            bucketfs_port=bucketfs_port,
+                                            bucketfs_username=bucketfs_username,
+                                            bucketfs_password=bucketfs_password,
+                                            bucket_name=bucket_name,
+                                            path_in_bucket=path_in_bucket,
+                                            bucketfs_https=bucketfs_https,
+                                            release_name=release_name,
+                                            bucketfs_name=bucketfs_name)
 
-        with target.open("r") as f:
+    success, task = run_task(task_creator, workers, task_dependencies_dot_file)
+    if success:
+        with task.command_line_output_target.open("r") as f:
             print(f.read())
-
-    run_tasks(tasks, workers, task_dependencies_dot_file, on_success=on_success)
+    else:
+        exit(1)

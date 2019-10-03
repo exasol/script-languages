@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import docker
 
@@ -9,14 +10,13 @@ from exaslct_src.lib.log_config import WriteLogFilesToConsole
 
 class BuildLogHandler(AbstractLogHandler):
 
-    def __init__(self, log_file_path, logger, task_id, image_info: ImageInfo):
-        super().__init__(log_file_path, logger, task_id)
+    def __init__(self, log_file_path: Path, logger, image_info: ImageInfo):
+        super().__init__(log_file_path, logger)
         self._image_info = image_info
 
     def handle_log_line(self, log_line, error: bool = False):
         log_line = log_line.decode("utf-8")
         log_line = log_line.strip('\r\n')
-        self._complete_log.append(log_line)
         json_output = json.loads(log_line)
         if "stream" in json_output:
             self._complete_log.append(json_output["stream"])
@@ -32,8 +32,7 @@ class BuildLogHandler(AbstractLogHandler):
 
     def write_log_to_console_if_requested(self):
         if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.all:
-            self._logger.info("Task %s: Build Log of image %s\n%s",
-                              self._task_id,
+            self._logger.info("Build Log of image %s\n%s",
                               self._image_info.get_target_complete_name(),
                               "\n".join(self._complete_log))
 
@@ -50,7 +49,6 @@ class BuildLogHandler(AbstractLogHandler):
 
     def write_error_log_to_console_if_requested(self):
         if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
-            self._logger.error("Task %s: Build of image %s failed\nBuild Log:\n%s",
-                               self._task_id,
+            self._logger.error("Build of image %s failed\nBuild Log:\n%s",
                                self._image_info.get_target_complete_name(),
                                "\n".join(self._complete_log))

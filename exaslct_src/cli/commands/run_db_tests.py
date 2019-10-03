@@ -6,8 +6,8 @@ from click._unicodefun import click
 
 from exaslct_src import TestContainer
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, \
-    import_build_steps
+from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
+    import_build_steps, set_job_id
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
     docker_repository_options, docker_db_options, test_environment_options, external_db_options
@@ -68,22 +68,22 @@ from exaslct_src.lib.test_runner.environment_type import EnvironmentType
 @add_options(docker_repository_options)
 @add_options(system_options)
 def run_db_test(flavor_path: Tuple[str, ...],
-                release_type: str,
+                release_goal: str,
                 generic_language_test: Tuple[str, ...],
                 test_folder: Tuple[str, ...],
                 test_file: Tuple[str, ...],
                 test_language: Tuple[str, ...],
                 test: Tuple[str, ...],
-                environment_type:str,
-                max_start_attempts:int,
+                environment_type: str,
+                max_start_attempts: int,
                 docker_db_image_version: str,
                 docker_db_image_name: str,
-                external_exasol_db_host:str,
-                external_exasol_db_port:int,
-                external_exasol_bucketfs_port:int,
-                external_exasol_db_user:str,
-                external_exasol_db_password:str,
-                external_exasol_bucketfs_write_password:str,
+                external_exasol_db_host: str,
+                external_exasol_db_port: int,
+                external_exasol_bucketfs_port: int,
+                external_exasol_db_user: str,
+                external_exasol_db_password: str,
+                external_exasol_bucketfs_write_password: str,
                 test_environment_vars: str,
                 test_log_level: str,
                 reuse_database: bool,
@@ -142,45 +142,41 @@ def run_db_test(flavor_path: Tuple[str, ...],
             handle_commandline_error("Commandline parameter --external-exasol_db-port not set")
         if external_exasol_bucketfs_port is None:
             handle_commandline_error("Commandline parameter --external-exasol-bucketfs-port not set")
-
-    tasks = lambda: [TestContainer(flavor_paths=list(flavor_path),
-                                   release_types=list([release_type]),
-                                   generic_language_tests=list(generic_language_test),
-                                   test_folders=list(test_folder),
-                                   test_files=list(test_file),
-                                   test_restrictions=list(test),
-                                   languages=list(test_language),
-                                   test_environment_vars=json.loads(test_environment_vars),
-                                   test_log_level=test_log_level,
-                                   reuse_uploaded_container=reuse_uploaded_container,
-                                   environment_type=EnvironmentType[environment_type],
-                                   reuse_database_setup=reuse_database_setup,
-                                   reuse_test_container=reuse_test_container,
-                                   docker_db_image_name=docker_db_image_name,
-                                   docker_db_image_version=docker_db_image_version,
-                                   reuse_database=reuse_database,
-                                   max_start_attempts=max_start_attempts,
-                                   external_exasol_db_host=external_exasol_db_host,
-                                   external_exasol_db_port=external_exasol_db_port,
-                                   external_exasol_bucketfs_port=external_exasol_bucketfs_port,
-                                   external_exasol_db_user=external_exasol_db_user,
-                                   external_exasol_db_password=external_exasol_db_password,
-                                   external_exasol_bucketfs_write_password=external_exasol_bucketfs_write_password
-                                   )]
-
-    def on_success():
-        target = luigi.LocalTarget(
-            "%s/logs/test-runner/db-test/tests/current" % (output_directory))
-
+    set_job_id(TestContainer.__name__)
+    task_creator = lambda: TestContainer(flavor_paths=list(flavor_path),
+                                         release_goals=list(release_goal),
+                                         generic_language_tests=list(generic_language_test),
+                                         test_folders=list(test_folder),
+                                         test_files=list(test_file),
+                                         test_restrictions=list(test),
+                                         languages=list(test_language),
+                                         test_environment_vars=json.loads(test_environment_vars),
+                                         test_log_level=test_log_level,
+                                         reuse_uploaded_container=reuse_uploaded_container,
+                                         environment_type=EnvironmentType[environment_type],
+                                         reuse_database_setup=reuse_database_setup,
+                                         reuse_test_container=reuse_test_container,
+                                         docker_db_image_name=docker_db_image_name,
+                                         docker_db_image_version=docker_db_image_version,
+                                         reuse_database=reuse_database,
+                                         max_start_attempts=max_start_attempts,
+                                         external_exasol_db_host=external_exasol_db_host,
+                                         external_exasol_db_port=external_exasol_db_port,
+                                         external_exasol_bucketfs_port=external_exasol_bucketfs_port,
+                                         external_exasol_db_user=external_exasol_db_user,
+                                         external_exasol_db_password=external_exasol_db_password,
+                                         external_exasol_bucketfs_write_password=external_exasol_bucketfs_write_password)
+    success, task = run_task(task_creator, workers, task_dependencies_dot_file)
+    if success:
         print("Test Results:")
-        with target.open("r") as f:
+        with task.command_line_output_target.open("r") as f:
             print(f.read())
-
-    run_tasks(tasks, workers, task_dependencies_dot_file, on_success=on_success)
+    else:
+        exit(1)
 
 
 def handle_commandline_error(error):
     print(error)
     ctx = click.get_current_context()
     click.echo(ctx.get_help())
-    exit(-1)
+    exit(1)

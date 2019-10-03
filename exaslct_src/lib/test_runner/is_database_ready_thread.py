@@ -9,15 +9,15 @@ from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentials
 
 
 class IsDatabaseReadyThread(Thread):
-    logger = logging.getLogger('luigi-interface')
 
-    def __init__(self, task_id,
+    def __init__(self,
+                 logger,
                  database_info: DatabaseInfo,
                  database_credentials: DatabaseCredentials,
                  test_container: Container):
         super().__init__()
+        self.logger = logger
         self.database_credentials = database_credentials
-        self.task_id = task_id
         self._database_info = database_info
         self.test_container = test_container
         self.finish = False
@@ -26,7 +26,7 @@ class IsDatabaseReadyThread(Thread):
         self.output_bucketfs_connection = None
 
     def stop(self):
-        self.logger.info("Task %s: Stop IsDatabaseReadyThread", self.task_id)
+        self.logger.info("Stop IsDatabaseReadyThread")
         self.finish = True
 
     def run(self):

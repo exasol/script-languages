@@ -1,7 +1,7 @@
 from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, run_tasks, add_options
+from exaslct_src.cli.common import set_build_config, run_task, add_options, set_job_id
 from exaslct_src.cli.options \
     import system_options, output_directory, tempory_base_directory, docker_db_options
 from exaslct_src.lib.test_runner.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
@@ -37,16 +37,18 @@ def spawn_test_environment(
                      temporary_base_directory,
                      None,
                      None)
-    tasks = lambda: [
-        SpawnTestEnvironmentWithDockerDB(
-            environment_name=environment_name,
-            database_port_forward=str(database_port_forward),
-            bucketfs_port_forward=str(bucketfs_port_forward),
-            docker_db_image_version=docker_db_image_version,
-            docker_db_image_name=docker_db_image_name,
-            db_user="sys",
-            db_password="exasol",
-            bucketfs_write_password="write"
-        )]
+    task_creator = lambda: SpawnTestEnvironmentWithDockerDB(
+        environment_name=environment_name,
+        database_port_forward=str(database_port_forward),
+        bucketfs_port_forward=str(bucketfs_port_forward),
+        docker_db_image_version=docker_db_image_version,
+        docker_db_image_name=docker_db_image_name,
+        db_user="sys",
+        db_password="exasol",
+        bucketfs_write_password="write"
+    )
 
-    run_tasks(tasks, workers, task_dependencies_dot_file)
+    set_job_id(SpawnTestEnvironmentWithDockerDB.__name__)
+    success, task = run_task(task_creator, workers, task_dependencies_dot_file)
+    if not success:
+        exit(1)

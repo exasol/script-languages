@@ -8,7 +8,7 @@ class DockerUploadTest(unittest.TestCase):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment=utils.ExaslctTestEnvironment(self)
         self.test_environment.clean_images()
-        self.docker_environment = self.test_environment.spawn_docker_test_environment()
+        self.docker_environment = self.test_environment.spawn_docker_test_environment("DockerUploadTest")
 
     def tearDown(self):
         try:
@@ -23,8 +23,8 @@ class DockerUploadTest(unittest.TestCase):
     def test_docker_upload(self):
         self.path_in_bucket = "test"
         self.release_name = "TEST"
-        self.bucketfs_name = "bfsdefault",
-        self.bucket_name = "default",
+        self.bucketfs_name = "bfsdefault"
+        self.bucket_name = "default"
         arguments = " ".join([
                               f"--database-host {self.docker_environment.database_host}",
                               f"--bucketfs-port {self.docker_environment.bucketfs_port}",

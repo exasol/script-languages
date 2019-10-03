@@ -1,10 +1,11 @@
 import luigi
+from luigi import Config
 from luigi.parameter import ParameterVisibility
 
-class ExternalDatabaseHostParameter():
+class ExternalDatabaseHostParameter(Config):
     external_exasol_db_host = luigi.OptionalParameter()
     external_exasol_db_port = luigi.OptionalParameter()
-    external_exasol_bucketfs_port = luigi.Parameter()
+    external_exasol_bucketfs_port = luigi.OptionalParameter()
 
 class ExternalTestEnvironmentParameter(ExternalDatabaseHostParameter):
     external_exasol_db_user = luigi.OptionalParameter()

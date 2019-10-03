@@ -1,21 +1,21 @@
-import datetime
 import logging
 import pathlib
+from typing import Generator, Any, Dict
 
-import jsonpickle
 import luigi
+from luigi import LocalTarget
 
-from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.data.dependency_collector.dependency_environment_info_collector import \
-    DependencyEnvironmentInfoCollector
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
+from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.docker_config import docker_client_config
-from exaslct_src.lib.export_containers import ExportContainers
-from exaslct_src.lib.flavor import flavor
-from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.export_containers import ExportFlavorContainer
+from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentials
 from exaslct_src.lib.test_runner.environment_type import EnvironmentType
+from exaslct_src.lib.test_runner.run_db_test_result import RunDBTestsInTestConfigResult
 from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
+from exaslct_src.lib.test_runner.run_db_tests_parameter import RunDBTestsInTestConfigParameter
 from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironment
 from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
@@ -43,85 +43,60 @@ class StopTestEnvironment():
 #       - needs change in image-info and export-info)
 #       - add options force tests
 #       - only possible if the hash of exaslc also goes into the image hashes
-class TestRunnerDBTestTask(StoppableTask, SpawnTestEnvironmentParameter):
-    flavor_path = luigi.Parameter()
-    generic_language_tests = luigi.ListParameter([])
-    test_folders = luigi.ListParameter([])
-    test_files = luigi.ListParameter([])
-    test_restrictions = luigi.ListParameter([])
-    languages = luigi.ListParameter([None])
-    test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
-    release_type = luigi.Parameter()
-
-    log_level = luigi.Parameter("critical", significant=False)
+class TestRunnerDBTestTask(FlavorBaseTask,
+                           SpawnTestEnvironmentParameter,
+                           RunDBTestsInTestConfigParameter):
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
+    release_goal = luigi.Parameter()
 
     def __init__(self, *args, **kwargs):
+        self.test_environment_info = None
         super().__init__(*args, **kwargs)
 
-        self.test_environment_info = None
-        self._prepare_outputs()
+    def register_required(self):
+        self.register_export_container()
+        self.register_spawn_test_environment()
 
-    def _prepare_outputs(self):
-        self.flavor_name = flavor.get_name_from_path(str(self.flavor_path))
-        self.log_path = "%s/logs/test-runner/db-test/tests/%s/%s/%s/" % (
-            build_config().output_directory,
-            self.flavor_name, self.release_type,
-            datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
-        self._status_target = luigi.LocalTarget(self.log_path + "status.log")
-        if self._status_target.exists():
-            self._status_target.remove()
+    def register_export_container(self):
+        export_container_task = self.create_child_task(ExportFlavorContainer,
+                                                       release_goals=[self.release_goal],
+                                                       flavor_path=self.flavor_path)
+        self._export_infos_future = self.register_dependency(export_container_task)
 
-    def output(self):
-        return self._status_target
-
-    def requires_tasks(self):
-        test_environment_name = f"""{self.flavor_name}_{self.release_type}"""
-        return {
-            "release": ExportContainers(release_types=[self.release_type], flavor_path=self.flavor_path),
-            "test_environment": SpawnTestEnvironment(
-                environment_name=test_environment_name,
-                environment_type=self.environment_type,
-                reuse_database_setup=self.reuse_database_setup,
-                reuse_test_container=self.reuse_test_container,
-                docker_db_image_name=self.docker_db_image_name,
-                docker_db_image_version=self.docker_db_image_version,
-                reuse_database=self.reuse_database,
-                database_port_forward=self.database_port_forward,
-                bucketfs_port_forward=self.bucketfs_port_forward,
-                max_start_attempts=self.max_start_attempts,
-                external_exasol_db_host=self.external_exasol_db_host,
-                external_exasol_db_port=self.external_exasol_db_port,
-                external_exasol_bucketfs_port=self.external_exasol_bucketfs_port,
-                external_exasol_db_user=self.external_exasol_db_user,
-                external_exasol_db_password=self.external_exasol_db_password,
-                external_exasol_bucketfs_write_password=self.external_exasol_bucketfs_write_password
-            )
-        }
+    def register_spawn_test_environment(self):
+        test_environment_name = f"""{self.get_flavor_name()}_{self.release_goal}"""
+        spawn_test_environment_task = \
+            self.create_child_task_with_common_params(
+                SpawnTestEnvironment,
+                environment_name=test_environment_name)
+        self._test_environment_info_future = self.register_dependency(spawn_test_environment_task)
 
     def run_task(self):
-        release_info = self.get_release_info()
-        self.test_environment_info, test_environment_info_dict = self.get_test_environment_info()
+        export_infos = self.get_values_from_future(self._export_infos_future)  # type: Dict[str,ExportInfo]
+        export_info = export_infos[self.release_goal]
+        self.test_environment_info = self.get_values_from_future(
+            self._test_environment_info_future)  # type: EnvironmentInfo
         reuse_release_container = self.reuse_database and \
                                   self.reuse_uploaded_container and \
-                                  not release_info.is_new
+                                  not export_info.is_new
         database_credentials = self.get_database_credentials()
-        yield UploadExportedContainer(
+        yield from self.upload_container(database_credentials,
+                              export_info,
+                              reuse_release_container)
+        test_results = yield from self.run_test(self.test_environment_info)
+        self.return_object(test_results)
+
+    def upload_container(self, database_credentials, export_info, reuse_release_container):
+        upload_task = self.create_child_task_with_common_params(
+            UploadExportedContainer,
+            export_info=export_info,
             environment_name=self.test_environment_info.name,
-            release_name=release_info.name,
-            release_type=release_info.release_type,
-            test_environment_info_dict=test_environment_info_dict,
-            release_info_dict=release_info.to_dict(),
+            test_environment_info=self.test_environment_info,
+            release_name=export_info.name,
             reuse_uploaded=reuse_release_container,
             bucketfs_write_password=database_credentials.bucketfs_write_password
         )
-
-        result_status, summary = yield from self.run_test(test_environment_info_dict)
-
-        with self.output().open("w") as output_file:
-            output_file.write(f"""{self.flavor_name} {self.release_type} {result_status}\n""")
-        if result_status == "FAILED":
-            raise Exception("Some test failed.")
+        yield from self.run_dependencies(upload_task)
 
     def get_database_credentials(self) -> DatabaseCredentials:
         if self.environment_type == EnvironmentType.external_db:
@@ -135,33 +110,25 @@ class TestRunnerDBTestTask(StoppableTask, SpawnTestEnvironmentParameter):
                                     db_password=SpawnTestEnvironment.DEFAULT_DATABASE_PASSWORD,
                                     bucketfs_write_password=SpawnTestEnvironment.DEFAULT_BUCKETFS_WRITE_PASSWORD)
 
-    def run_test(self, test_environment_info_dict):
+    def run_test(self, test_environment_info: EnvironmentInfo) -> \
+            Generator[RunDBTestsInTestConfig, Any, RunDBTestsInTestConfigResult]:
         test_config = self.read_test_config()
         generic_language_tests = self.get_generic_language_tests(test_config)
         test_folders = self.get_test_folders(test_config)
         database_credentials = self.get_database_credentials()
-        test_output = \
-            yield RunDBTestsInTestConfig(
-                flavor_name=self.flavor_name,
-                release_type=self.release_type,
-                log_path=self.log_path,
-                log_level=self.log_level,
-                test_environment_info_dict=test_environment_info_dict,
-                test_environment_vars=self.test_environment_vars,
-                test_restrictions=self.test_restrictions,
-                generic_language_tests=generic_language_tests,
-                test_folders=test_folders,
-                language_definition=test_config["language_definition"],
-                test_files=self.test_files,
-                languages=self.languages,
-                db_user=database_credentials.db_user,
-                db_password=database_credentials.db_password,
-                bucketfs_write_password=database_credentials.bucketfs_write_password
-            )
-        with test_output.open("r") as test_output_file:
-            summary = test_output_file.read()
-        result_status = self.get_result_status(summary)
-        return result_status, summary
+        task = self.create_child_task_with_common_params(
+            RunDBTestsInTestConfig,
+            test_environment_info=test_environment_info,
+            generic_language_tests=generic_language_tests,
+            test_folders=test_folders,
+            language_definition=test_config["language_definition"],
+            db_user=database_credentials.db_user,
+            db_password=database_credentials.db_password,
+            bucketfs_write_password=database_credentials.bucketfs_write_password
+        )
+        test_output_future = yield from self.run_dependencies(task)
+        test_output = self.get_values_from_future(test_output_future)  # type: RunDBTestsInTestConfigResult
+        return test_output
 
     def get_result_status(self, status):
         result_status = "OK"
@@ -192,20 +159,6 @@ class TestRunnerDBTestTask(StoppableTask, SpawnTestEnvironmentParameter):
         if self.tests_specified_in_parameters():
             generic_language_tests = self.generic_language_tests
         return generic_language_tests
-
-    def get_release_info(self):
-        with self.input()["release"].open("r") as f:
-            jsonpickle.set_preferred_backend('simplejson')
-            jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
-            object = jsonpickle.decode(f.read())
-        return object[next(object.keys().__iter__())]["release"]
-
-    def get_test_environment_info(self):
-        test_environment_info_of_dependencies = \
-            DependencyEnvironmentInfoCollector().get_from_dict_of_inputs(self.input())
-        test_environment_info = test_environment_info_of_dependencies["test_environment"]
-        test_environment_info_dict = test_environment_info.to_dict()
-        return test_environment_info, test_environment_info_dict
 
     def read_test_config(self):
         with pathlib.Path(self.flavor_path).joinpath("flavor_base").joinpath("testconfig").open("r") as file:

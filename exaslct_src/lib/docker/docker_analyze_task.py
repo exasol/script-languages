@@ -1,27 +1,24 @@
-import logging
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Type
 
 import docker
 import git
-import luigi
 
+from exaslct_src.AbstractMethodException import AbstractMethodException
+from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector, \
-    IMAGE_INFO
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState, ImageDescription
 from exaslct_src.lib.docker.docker_image_target import DockerImageTarget
 from exaslct_src.lib.docker.docker_registry_image_checker import DockerRegistryImageChecker
 from exaslct_src.lib.docker_config import docker_client_config, docker_build_arguments
-from exaslct_src.lib.stoppable_task import StoppableTask
 from exaslct_src.lib.utils.build_context_hasher import BuildContextHasher
 
 
-class DockerAnalyzeImageTask(StoppableTask):
-    logger = logging.getLogger('luigi-interface')
+class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._client = docker_client_config().get_client()
         self._source_repository_name = self.get_source_repository_name()
         self._target_repository_name = self.get_target_repository_name()
         self._source_image_tag = self.get_source_image_tag()
@@ -37,50 +34,40 @@ class DockerAnalyzeImageTask(StoppableTask):
             transparent_build_arguments=merged_transparent_build_arguments
         )
         self._dockerfile = self.get_dockerfile()
-        self._prepare_outputs()
         self._build_context_hasher = \
-            BuildContextHasher(self.__repr__(),
+            BuildContextHasher(self.logger,
                                self.image_description)
-        self._client = docker_client_config().get_client()
 
     def __del__(self):
         self._client.close()
-
-    def _prepare_outputs(self):
-        self._image_info_target = luigi.LocalTarget(
-            "%s/info/image/analyze/%s/%s"
-            % (build_config().output_directory,
-               self._target_repository_name, self._source_image_tag))
-        if self._image_info_target.exists():
-            self._image_info_target.remove()
 
     def get_source_repository_name(self) -> str:
         """
         Called by the constructor to get the image name for pulls. Sub classes need to implement this method.
         :return: image name
         """
-        pass
+        raise AbstractMethodException()
 
     def get_target_repository_name(self) -> str:
         """
         Called by the constructor to get the image name for pushs. Sub classes need to implement this method.
         :return: image name
         """
-        pass
+        raise AbstractMethodException()
 
     def get_source_image_tag(self) -> str:
         """
         Called by the constructor to get the image tag for pulls. Sub classes need to implement this method.
         :return: image tag
         """
-        pass
+        raise AbstractMethodException()
 
     def get_target_image_tag(self) -> str:
         """
         Called by the constructor to get the image tag for pushs. Sub classes need to implement this method.
         :return: image tag
         """
-        pass
+        raise AbstractMethodException()
 
     def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:
         """
@@ -90,7 +77,7 @@ class DockerAnalyzeImageTask(StoppableTask):
         Sub classes need to implement this method.
         :return: dictionaries with destination path as keys and source paths in values
         """
-        pass
+        raise AbstractMethodException()
 
     def get_dockerfile(self) -> str:
         """
@@ -98,7 +85,7 @@ class DockerAnalyzeImageTask(StoppableTask):
         Sub classes need to implement this method.
         :return: path to the dockerfile
         """
-        pass
+        raise AbstractMethodException()
 
     def get_image_changing_build_arguments(self) -> Dict[str, str]:
         """
@@ -123,13 +110,39 @@ class DockerAnalyzeImageTask(StoppableTask):
         return dict()
 
     def is_rebuild_requested(self) -> bool:
+        raise AbstractMethodException()
+
+    def register_required(self):
+        task_classes = self.requires_tasks()
+        if task_classes is not None:
+            if not isinstance(task_classes, dict) or \
+                    not self.keys_are_string(task_classes) or \
+                    not self.values_are_subclass_of_baseclass(task_classes):
+                print(isinstance(task_classes, dict),
+                      self.keys_are_string(task_classes),
+                      self.values_are_subclass_of_baseclass(task_classes))
+                raise TypeError(f"Expected Dict[str,DockerAnalyzeImageTask] got {task_classes}")
+            tasks = {key: self.create_child_task_with_common_params(value)
+                     for key, value in task_classes.items()}
+        else:
+            tasks = None
+        self.dependencies_futures = self.register_dependencies(tasks)
+
+    def keys_are_string(self, task_classes):
+        return all(isinstance(key, str)
+                   for key in task_classes.keys())
+
+    def values_are_subclass_of_baseclass(self, task_classes):
+        return all(issubclass(value, DockerAnalyzeImageTask)
+                   for value in task_classes.values())
+
+    def requires_tasks(self) -> Dict[str, Type["DockerAnalyzeImageTask"]]:
         pass
 
-    def output(self):
-        return {IMAGE_INFO: self._image_info_target}
-
     def run_task(self):
-        image_info_of_dependencies = DependencyImageInfoCollector().get_from_dict_of_inputs(self.input())
+        image_info_of_dependencies = self.get_values_from_futures(self.dependencies_futures)
+        if image_info_of_dependencies is None:
+            image_info_of_dependencies = dict()
         image_hash = self._build_context_hasher.generate_image_hash(image_info_of_dependencies)
         image_info = ImageInfo(
             source_repository_name=self._source_repository_name,
@@ -149,8 +162,7 @@ class DockerAnalyzeImageTask(StoppableTask):
                                            target_image_target,
                                            image_info_of_dependencies)
         image_info.image_state = image_state.name  # TODO setter for image_state
-        with self._image_info_target.open("w") as f:
-            f.write(image_info.to_json())
+        self.return_object(image_info)
 
     def get_commit_id(self):
         try:
@@ -158,8 +170,7 @@ class DockerAnalyzeImageTask(StoppableTask):
             sha = repo.head.object.hexsha
             return sha
         except Exception as e:
-            self.logger.info("Task %s_ Not a Git Repository, can't determine the commit id for the image_info",
-                             self.__repr__())
+            self.logger.info("Not a Git Repository, can't determine the commit id for the image_info")
             return ""
 
     def get_image_state(self,
@@ -195,16 +206,16 @@ class DockerAnalyzeImageTask(StoppableTask):
                self.is_rebuild_requested()
 
     def is_image_locally_available(self, image_target: DockerImageTarget):
-        exists=image_target.exists()
+        exists = image_target.exists()
         self.logger.info(
-                f"Task {self.__repr__()}: Checking if image {image_target.get_complete_name()} "
-                f"is locally available, result {exists}")
+            f"Checking if image {image_target.get_complete_name()} "
+            f"is locally available, result {exists}")
         return exists
 
     def can_image_be_loaded(self, image_target: DockerImageTarget):
         if build_config().cache_directory is not None:
             image_path = self.get_path_to_cached_image(image_target)
-            self.logger.info(f"Task {self.__repr__()}: Checking if image archive {image_path} "
+            self.logger.info(f"Checking if image archive {image_path} "
                              f"is available in cache directory, "
                              f"result {image_path.exists()}")
             return image_path.exists()
@@ -219,14 +230,14 @@ class DockerAnalyzeImageTask(StoppableTask):
 
     def is_image_in_registry(self, image_target: DockerImageTarget):
         try:
-            self.logger.info("Task %s: Try to find image %s in registry", self.__repr__(),
+            self.logger.info("Try to find image %s in registry",
                              image_target.get_complete_name())
             exists = DockerRegistryImageChecker().check(image_target.get_complete_name())
             if exists:
-                self.logger.info("Task %s: Found image %s in registry", self.__repr__(),
+                self.logger.info("Found image %s in registry",
                                  image_target.get_complete_name())
             return exists
         except docker.errors.DockerException as e:
-            self.logger.warning("Task %s: Image %s not in registry, got exception %s", self.__repr__(),
+            self.logger.warning("Image %s not in registry, got exception %s",
                                 image_target.get_complete_name(), e)
             return False

@@ -1,85 +1,156 @@
+from typing import Dict
+
 import luigi
 
-from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.flavor_task import FlavorTask
-from exaslct_src.lib.stoppable_task import StoppableTask
-from exaslct_src.lib.release_type import ReleaseType
-
+from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
+from exaslct_src.lib.flavor_task import FlavorBaseTask, FlavorsBaseTask
+from exaslct_src.lib.test_runner.run_db_test_result import RunDBTestsInTestConfigResult
+from exaslct_src.lib.test_runner.run_db_tests_parameter import GeneralRunDBTestParameter, \
+    RunDBTestsInTestConfigParameter
 from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
-from exaslct_src.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask, StopTestEnvironment
+from exaslct_src.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
+
+STATUS_INDENT = 2
 
 
-class TestContainer(FlavorTask, SpawnTestEnvironmentParameter):
-    release_types = luigi.ListParameter(["Release"])
-    generic_language_tests = luigi.ListParameter([])
-    test_folders = luigi.ListParameter([])
-    test_files = luigi.ListParameter([])
-    test_restrictions = luigi.ListParameter([])
+class TestContainerParameter(RunDBTestsInTestConfigParameter,
+                             GeneralRunDBTestParameter):
+    release_goals = luigi.ListParameter(["release"])
     languages = luigi.ListParameter([None])
-    test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
-
-    test_log_level = luigi.Parameter("critical", significant=False)
     reuse_uploaded_container = luigi.BoolParameter(False, significant=False)
 
+
+class FlavorTestResult:
+    def __init__(self, flavor_path: str, test_results_per_release_goal: Dict[str, RunDBTestsInTestConfigResult]):
+        self.flavor_path = str(flavor_path)
+        self.test_results_per_release_goal = test_results_per_release_goal
+        self.tests_are_ok = all(test_result.tests_are_ok
+                                for test_result
+                                in test_results_per_release_goal.values())
+
+
+class AllTestsResult:
+    def __init__(self, test_results_per_flavor: Dict[str, FlavorTestResult]):
+        self.test_results_per_flavor = test_results_per_flavor
+        self.tests_are_ok = all(test_result.tests_are_ok
+                                for test_result
+                                in test_results_per_flavor.values())
+
+
+class TestStatusPrinter():
+    def __init__(self, file):
+        self.file = file
+
+    def print_status_for_all_tests(self, test_result: AllTestsResult):
+        for flavor, test_result_of_flavor in test_result.test_results_per_flavor.items():
+            print(f"- Tests: {self.get_status_string(test_result_of_flavor.tests_are_ok)}",
+                  file=self.file)
+            self.print_status_for_flavor(flavor, test_result_of_flavor, indent=STATUS_INDENT)
+
+    def print_status_for_flavor(self,
+                                flavor_path: str,
+                                test_result_of_flavor: FlavorTestResult,
+                                indent: int):
+        print(self.get_indent_str(indent) +
+              f"- Tests for flavor {flavor_path}: {self.get_status_string(test_result_of_flavor.tests_are_ok)}",
+              file=self.file)
+        for release_goal, test_results_of_release_goal \
+                in test_result_of_flavor.test_results_per_release_goal.items():
+            self.print_status_for_release_goal(release_goal, test_results_of_release_goal,
+                                               indent=indent + STATUS_INDENT)
+
+    def print_status_for_release_goal(self,
+                                      release_goal: str,
+                                      test_results_of_release_goal: RunDBTestsInTestConfigResult,
+                                      indent: int):
+        print(self.get_indent_str(indent) +
+              f"- Tests for release goal {release_goal}: " +
+              self.get_status_string(test_results_of_release_goal.tests_are_ok),
+              file=self.file)
+        self.print_status_for_generic_language_tests(test_results_of_release_goal, indent=indent + STATUS_INDENT)
+        self.print_status_for_test_folders(test_results_of_release_goal, indent=indent + STATUS_INDENT)
+        self.print_status_for_test_files(test_results_of_release_goal, indent=indent + STATUS_INDENT)
+
+    def print_status_for_test_files(self,
+                                    test_result_of_flavor: RunDBTestsInTestConfigResult,
+                                    indent: int):
+        for test_results_for_test_files in test_result_of_flavor.test_files_output.test_results:
+            print(self.get_indent_str(indent) +
+                  f"- Tests in test files "
+                  f"with language {test_results_for_test_files.language}: "
+                  f"{self.get_status_string(test_results_for_test_files.tests_are_ok)}",
+                  file=self.file)
+
+    def print_status_for_test_folders(self,
+                                      test_result_of_flavor: RunDBTestsInTestConfigResult,
+                                      indent: int):
+        for test_results_for_test_folder in test_result_of_flavor.test_folders_output.test_results:
+            print(self.get_indent_str(indent) +
+                  f"- Tests in test folder {test_results_for_test_folder.test_folder} "
+                  f"with language {test_results_for_test_folder.test_folder}: "
+                  f"{self.get_status_string(test_results_for_test_folder.tests_are_ok)}",
+                  file=self.file)
+
+    def print_status_for_generic_language_tests(self,
+                                                test_result_of_flavor: RunDBTestsInTestConfigResult,
+                                                indent: int):
+        for test_results_for_test_folder in test_result_of_flavor.generic_language_tests_output.test_results:
+            print(self.get_indent_str(indent) +
+                  f"- Tests in test folder {test_results_for_test_folder.test_folder}"
+                  f"with language {test_results_for_test_folder.language}: "
+                  f"{self.get_status_string(test_results_for_test_folder.tests_are_ok)}",
+                  file=self.file)
+
+    def get_indent_str(self, indent: int):
+        return " " * indent
+
+    def get_status_string(self, status: bool):
+        return 'OK' if status else 'FAILED'
+
+
+class TestContainer(FlavorsBaseTask,
+                    TestContainerParameter,
+                    SpawnTestEnvironmentParameter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        command_line_output_path = self.get_output_path().joinpath("command_line_output")
+        self.command_line_output_target = luigi.LocalTarget(str(command_line_output_path))
 
-        self._prepare_outputs()
-        stoppable_task = StoppableTask()
-        if stoppable_task.failed_target.exists():
-            stoppable_task.failed_target.remove()
-        self.actual_release_types = [ReleaseType[release_type] for release_type in self.release_types]
+    def register_required(self):
+        tasks = self.create_tasks_for_flavors_with_common_params(
+            TestFlavorContainer)  # type: Dict[str,TestFlavorContainer]
+        self.test_results_futures = self.register_dependencies(tasks)
 
-    def requires_tasks(self):
-        return [self.generate_tasks_for_flavor(flavor_path, release_type)
-                for flavor_path in self.actual_flavor_paths
-                for release_type in self.actual_release_types]
+    def run_task(self):
+        test_results = self.get_values_from_futures(
+            self.test_results_futures)  # type: Dict[str,FlavorTestResult]
+        test_result = AllTestsResult(test_results_per_flavor=test_results)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results, 4)
 
-    def generate_tasks_for_flavor(self, flavor_path, release_type: ReleaseType):
-        args = dict(flavor_path=flavor_path,
-                    reuse_uploaded_container=self.reuse_uploaded_container,
-                    generic_language_tests=self.generic_language_tests,
-                    test_folders=self.test_folders,
-                    test_restrictions=self.test_restrictions,
-                    log_level=self.test_log_level,
-                    test_environment_vars=self.test_environment_vars,
-                    languages=self.languages,
-                    test_files=self.test_files,
-                    release_type=release_type.name,
-                    environment_type=self.environment_type,
-                    reuse_database_setup=self.reuse_database_setup,
-                    reuse_test_container=self.reuse_test_container,
-                    docker_db_image_name=self.docker_db_image_name,
-                    docker_db_image_version=self.docker_db_image_version,
-                    reuse_database=self.reuse_database,
-                    database_port_forward=self.database_port_forward,
-                    bucketfs_port_forward=self.bucketfs_port_forward,
-                    max_start_attempts=self.max_start_attempts,
-                    external_exasol_db_host=self.external_exasol_db_host,
-                    external_exasol_db_port=self.external_exasol_db_port,
-                    external_exasol_bucketfs_port=self.external_exasol_bucketfs_port,
-                    external_exasol_db_user=self.external_exasol_db_user,
-                    external_exasol_db_password=self.external_exasol_db_password,
-                    external_exasol_bucketfs_write_password=self.external_exasol_bucketfs_write_password
-                    )
-        return TestRunnerDBTestTask(**args)
+        with self.command_line_output_target.open("w") as file:
+            TestStatusPrinter(file).print_status_for_all_tests(test_result)
 
-    def _prepare_outputs(self):
-        self._target = luigi.LocalTarget(
-            "%s/logs/test-runner/db-test/tests/current"
-            % (build_config().output_directory))
-        if self._target.exists():
-            self._target.remove()
+        if not test_result.tests_are_ok:
+            raise Exception("Some tests failed")
 
-    def output(self):
-        return self._target
 
-    def run(self):
-        with self.output().open("w") as out_file:
-            for release in self.input():
-                # for in_target in releases:
-                with release.open("r") as in_file:
-                    out_file.write(in_file.read())
-                    out_file.write("\n")
-                    out_file.write("=================================================")
-                    out_file.write("\n")
+class TestFlavorContainer(FlavorBaseTask,
+                          TestContainerParameter,
+                          SpawnTestEnvironmentParameter):
+
+    def register_required(self):
+        tasks = {release_goal: self.generate_tasks_for_flavor(release_goal)
+                 for release_goal in self.release_goals}
+        self.test_result_futures = self.register_dependencies(tasks)
+
+    def generate_tasks_for_flavor(self, release_goal: str):
+        task = self.create_child_task_with_common_params(TestRunnerDBTestTask,
+                                                         release_goal=release_goal)
+        return task
+
+    def run_task(self):
+        test_results = self.get_values_from_futures(
+            self.test_result_futures)  # type: Dict[str,RunDBTestsInTestConfigResult]
+        result = FlavorTestResult(self.flavor_path, test_results)
+        JsonPickleTarget(self.get_output_path().joinpath("test_results.json")).write(test_results, 4)
+        self.return_object(result)

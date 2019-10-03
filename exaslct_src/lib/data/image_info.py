@@ -32,6 +32,8 @@ class ImageDescription:
         self.mapping_of_build_files_and_directories = mapping_of_build_files_and_directories
         self.dockerfile = dockerfile
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.__dict__})"
 
 class ImageInfo(Info):
     DOCKER_TAG_LENGTH_LIMIT = 128
