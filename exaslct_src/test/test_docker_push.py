@@ -1,10 +1,5 @@
-import os
-import shlex
-import shutil
-import subprocess
-import tempfile
+import time
 import unittest
-from pathlib import Path
 
 import docker
 
@@ -30,6 +25,7 @@ class DockerPushTest(unittest.TestCase):
                 ports={5000: self.registry_port},
                 detach=True
             )
+            time.sleep(10)
             print(f"Finished start container of {registry_container_name}")
             self.test_environment.repository_prefix = f"localhost:{self.registry_port}"
         finally:
@@ -39,6 +35,7 @@ class DockerPushTest(unittest.TestCase):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment = utils.ExaslctTestEnvironment(self)
         self.create_registry()
+        print("registry:", utils.request_registry_repositories(self.registry_port))
         self.test_environment.clean_images()
 
     def tearDown(self):
@@ -47,7 +44,12 @@ class DockerPushTest(unittest.TestCase):
 
     def test_docker_push(self):
         command = f"./exaslct push "
-        self.test_environment.run_command(command,track_task_dependencies=True)
+        self.test_environment.run_command(command, track_task_dependencies=True)
+        print("repos:", utils.request_registry_repositories(self.registry_port))
+        images = utils.request_registry_images(self.registry_port, "dockerpushtest")
+        print("images", images)
+        self.assertEqual(len(images["tags"]),10, f"{images} doesn't have the expected 10 tags, it only has {len(images['tags'])}")
+
 
 if __name__ == '__main__':
     unittest.main()

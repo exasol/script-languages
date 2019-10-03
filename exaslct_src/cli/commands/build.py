@@ -3,11 +3,11 @@ from typing import Tuple
 from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_tasks, add_options, \
-    import_build_steps
+from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
+    import_build_steps, set_job_id
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, docker_repository_options, goal_options
-from exaslct_src.lib.docker_build import DockerBuild
+from exaslct_src.lib.docker_build import DockerFlavorBuild, DockerBuild
 
 
 @cli.command()
@@ -37,7 +37,7 @@ def build(flavor_path: Tuple[str, ...],
           temporary_base_directory: str,
           log_build_context_content: bool,
           cache_directory: str,
-          build_name:str,
+          build_name: str,
           source_docker_repository_name: str,
           source_docker_tag_prefix: str,
           source_docker_username: str,
@@ -66,5 +66,8 @@ def build(flavor_path: Tuple[str, ...],
                                  source_docker_tag_prefix, "source")
     set_docker_repository_config(target_docker_password, target_docker_repository_name, target_docker_username,
                                  target_docker_tag_prefix, "target")
-    tasks = lambda: [DockerBuild(flavor_paths=list(flavor_path), goals=list(goal), shortcut_build=shortcut_build)]
-    run_tasks(tasks, workers, task_dependencies_dot_file)
+    set_job_id(DockerBuild.__name__)
+    task_creator = lambda: DockerBuild(flavor_paths=list(flavor_path), goals=list(goal), shortcut_build=shortcut_build)
+    success, task = run_task(task_creator, workers, task_dependencies_dot_file)
+    if not success:
+        exit(1)

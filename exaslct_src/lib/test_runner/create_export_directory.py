@@ -1,23 +1,16 @@
-import luigi
+from pathlib import Path
 
-from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.stoppable_task import StoppableTask
+from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+
 
 # This task is needed because ExportContainerTask and SpawnTestContainer
 # requires the releases directory which stores the exported container.
 # However, we wanted to avoid that SpawnTestContainer depends on ExportContainerTask,
 # because ExportContainerTask has a high runtime and SpawnTestContainer is port of SpawnTestEnvironment
 # which has a long runtime, too.
-class CreateExportDirectory(StoppableTask):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class CreateExportDirectory(DependencyLoggerBaseTask):
 
-
-    def output(self):
-        self.directory = "%s/exports/" % build_config().output_directory
-        release_directory = luigi.LocalTarget(self.directory + ".created")
-        return release_directory
-
-    def run(self):
-        with self.output().open("w") as f:
-            f.write(self.directory)
+    def run_task(self):
+        export_directory = Path(self.get_cache_path(), "exports")
+        export_directory.mkdir(parents=True, exist_ok=True)
+        self.return_object(export_directory)

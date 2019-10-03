@@ -8,24 +8,23 @@ from exaslct_src.lib.test_runner.bucketfs_sync_checker import BucketFSSyncChecke
 
 
 class DockerDBLogBasedBucketFSSyncChecker(BucketFSSyncChecker):
-    logger = logging.getLogger('luigi-interface')
 
-    def __init__(self, task_id,
+    def __init__(self, logger,
                  database_container: Container,
                  pattern_to_wait_for: str,
                  log_file_to_check: str,
                  bucketfs_write_password: str):
+        self.logger = logger
         self.pattern_to_wait_for = pattern_to_wait_for
         self.log_file_to_check = log_file_to_check
         self.database_container = database_container
-        self.task_id = task_id
         self.bucketfs_write_password = bucketfs_write_password
 
     def prepare_upload(self):
         self.start_exit_code, self.start_output = self.find_pattern_in_logfile()
 
     def wait_for_bucketfs_sync(self):
-        self.logger.info("Task %s: wait for upload of file", self.task_id)
+        self.logger.info("wait for upload of file")
 
         ready = False
         while not ready:

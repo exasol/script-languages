@@ -7,6 +7,8 @@ import netaddr
 from luigi import LocalTarget
 
 from exaslct_src.lib.analyze_test_container import AnalyzeTestContainer, DockerTestContainerBuild
+from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.dependency_collector.dependency_container_info_collector import CONTAINER_INFO
@@ -15,60 +17,43 @@ from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
-from exaslct_src.lib.stoppable_task import StoppableTask
 
 
-class SpawnTestContainer(StoppableTask):
+
+class SpawnTestContainer(DependencyLoggerBaseTask):
     environment_name = luigi.Parameter()
     test_container_name = luigi.Parameter()
-    network_info_dict = luigi.DictParameter(significant=False)
+    network_info = JsonPickleParameter(
+        DockerNetworkInfo, significant=False) # type: DockerNetworkInfo
     ip_address_index_in_subnet = luigi.IntParameter(significant=False)
     attempt = luigi.IntParameter(1)
     reuse_test_container = luigi.BoolParameter(False, significant=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self._client = docker_client_config().get_client()
-
         if self.ip_address_index_in_subnet < 0:
             raise Exception(
                 "ip_address_index_in_subnet needs to be greater than 0 got %s"
                 % self.ip_address_index_in_subnet)
-        self._prepare_outputs()
 
-    def _prepare_outputs(self):
-        self._test_container_info_target = luigi.LocalTarget(
-            "%s/info/environment/%s/test-container/%s/%s/container_info"
-            % (build_config().output_directory,
-               self.environment_name,
-               self.test_container_name,
-               self.attempt))
-        if self._test_container_info_target.exists():
-            self._test_container_info_target.remove()
-
-    def output(self):
-        return {CONTAINER_INFO: self._test_container_info_target}
-
-    def requires_tasks(self):
-        return {"test_container_image": DockerTestContainerBuild(),
-                "export_directory": CreateExportDirectory()}
+    def register_required(self):
+        self.test_container_image_future = self.register_dependency(DockerTestContainerBuild())
+        self.export_directory_future = self.register_dependency(CreateExportDirectory())
 
     def run_task(self):
-        network_info = DockerNetworkInfo.from_dict(self.network_info_dict)
-        subnet = netaddr.IPNetwork(network_info.subnet)
+        subnet = netaddr.IPNetwork(self.network_info.subnet)
         ip_address = str(subnet[2 + self.ip_address_index_in_subnet])
         container_info = None
-        if network_info.reused and self.reuse_test_container:
-            container_info = self.try_to_reuse_test_container(ip_address, network_info)
+        if self.network_info.reused and self.reuse_test_container:
+            container_info = self._try_to_reuse_test_container(ip_address, self.network_info)
         if container_info is None:
-            container_info = self.create_test_container(ip_address, network_info)
-        self.copy_tests()
-        with self.output()[CONTAINER_INFO].open("w") as file:
-            file.write(container_info.to_json())
+            container_info = self._create_test_container(ip_address, self.network_info)
+        self._copy_tests()
+        self.return_object(container_info)
 
-    def copy_tests(self):
-        self.logger.warning("Task %s: Copy tests in test container %s.", self.__repr__(), self.test_container_name)
+    def _copy_tests(self):
+        self.logger.warning("Copy tests in test container %s.", self.test_container_name)
         test_container = \
             self._client.containers.get(self.test_container_name)
         try:
@@ -77,25 +62,29 @@ class SpawnTestContainer(StoppableTask):
             pass
         test_container.exec_run(cmd="cp -r /tests_src /tests")
 
-    def try_to_reuse_test_container(self, ip_address: str, network_info: DockerNetworkInfo) -> ContainerInfo:
-        self.logger.info("Task %s: Try to reuse test container %s",
-                         self.__repr__(), self.test_container_name)
+    def _try_to_reuse_test_container(self, ip_address: str,
+                                     network_info: DockerNetworkInfo) -> ContainerInfo:
+        self.logger.info("Try to reuse test container %s",
+                         self.test_container_name)
         container_info = None
         try:
-            network_aliases = self.get_network_aliases()
+            network_aliases = self._get_network_aliases()
             container_info = self.create_container_info(ip_address, network_aliases, network_info)
         except Exception as e:
-            self.logger.warning("Task %s: Tried to reuse test container %s, but got Exeception %s. "
-                                "Fallback to create new database.", self.__repr__(), self.test_container_name, e)
+            self.logger.warning("Tried to reuse test container %s, but got Exeception %s. "
+                                "Fallback to create new database.", self.test_container_name, e)
         return container_info
 
-    def create_test_container(self, ip_address, network_info) -> ContainerInfo:
-        self.remove_container(self.test_container_name)
-        test_container_image_info = self.get_test_container_image_info(self.input())
+    def _create_test_container(self, ip_address,
+                               network_info: DockerNetworkInfo) -> ContainerInfo:
+        self._remove_container(self.test_container_name)
+        test_container_image_info = \
+            self.get_values_from_futures(self.test_container_image_future)["test-container"]
+
         # A later task which uses the test_container needs the exported container,
         # but to access exported container from inside the test_container,
         # we need to mount the release directory into the test_container.
-        exports_host_path = pathlib.Path(self.get_release_directory()).absolute()
+        exports_host_path = pathlib.Path(self._get_export_directory()).absolute()
         tests_host_path = pathlib.Path("./tests").absolute()
         test_container = \
             self._client.containers.create(
@@ -115,13 +104,13 @@ class SpawnTestContainer(StoppableTask):
                     }
                 })
         docker_network = self._client.networks.get(network_info.network_name)
-        network_aliases = self.get_network_aliases()
+        network_aliases = self._get_network_aliases()
         docker_network.connect(test_container, ipv4_address=ip_address, aliases=network_aliases)
         test_container.start()
         container_info = self.create_container_info(ip_address, network_aliases, network_info)
         return container_info
 
-    def get_network_aliases(self):
+    def _get_network_aliases(self):
         network_aliases = ["test_container", self.test_container_name]
         return network_aliases
 
@@ -136,20 +125,13 @@ class SpawnTestContainer(StoppableTask):
                                        network_info=network_info)
         return container_info
 
-    def get_release_directory(self):
-        return pathlib.Path(self.input()["export_directory"].path).absolute().parent
+    def _get_export_directory(self):
+        return self.get_values_from_future(self.export_directory_future)
 
-    def get_test_container_image_info(self, input: Dict[str, LocalTarget]) -> ImageInfo:
-        with input["test_container_image"].open("r") as f:
-            jsonpickle.set_preferred_backend('simplejson')
-            jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
-            object = jsonpickle.decode(f.read())
-        return object["test-container"]["test-container"]
-
-    def remove_container(self, container_name: str):
+    def _remove_container(self, container_name: str):
         try:
             container = self._client.containers.get(container_name)
             container.remove(force=True)
-            self.logger.info("Task %s: Removed container %s", self.__repr__(), container_name)
+            self.logger.info("Removed container %s", container_name)
         except Exception as e:
             pass

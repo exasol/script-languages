@@ -2,6 +2,7 @@ import importlib
 
 import luigi
 
+from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.required_task_info import RequiredTaskInfo
 from exaslct_src.lib.docker.docker_create_image_task import DockerCreateImageTask
 from exaslct_src.lib.export_container_base_task import ExportContainerBaseTask
@@ -13,22 +14,15 @@ class ExportContainerTask(ExportContainerBaseTask):
     # don't want to wait for the push finishing before starting the build of depended images,
     # but we also need to create a ExportContainerTask for each DockerCreateImageTask of a goal
 
-    required_task_info_json = luigi.Parameter(visibility=luigi.parameter.ParameterVisibility.HIDDEN,
-                                              significant=True)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    required_task_info = JsonPickleParameter(RequiredTaskInfo,
+                                             visibility=luigi.parameter.ParameterVisibility.HIDDEN,
+                                             significant=True) # type: RequiredTaskInfo
 
     def get_release_task(self):
-        instance = self.create_required_task(self.required_task_info_json)
+        module = importlib.import_module(self.required_task_info.module_name)
+        class_ = getattr(module, self.required_task_info.class_name)
+        instance = class_(**self.required_task_info.params)
         return instance
 
-    def create_required_task(self, required_task_info_json: str) -> DockerCreateImageTask:
-        required_task_info = RequiredTaskInfo.from_json(required_task_info_json)
-        module = importlib.import_module(required_task_info.module_name)
-        class_ = getattr(module, required_task_info.class_name)
-        instance = class_(**required_task_info.params)
-        return instance
-
-    def get_release_type(self):
-        return self.release_type
+    def get_release_goal(self):
+        return self.release_goal

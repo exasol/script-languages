@@ -24,7 +24,7 @@ class AnalyzeLanguageDeps(DockerFlavorAnalyzeImageTask):
         return {"scripts": "ext/scripts"}
 
     def requires_tasks(self):
-        return {"udfclient_deps": AnalyzeUDFClientDeps(flavor_path=self.flavor_path)}
+        return {"udfclient_deps": AnalyzeUDFClientDeps}
 
     def get_path_in_flavor(self):
         return "flavor_base"
@@ -48,8 +48,8 @@ class AnalyzeBuildRun(DockerFlavorAnalyzeImageTask):
         return "build_run"
 
     def requires_tasks(self):
-        return {"build_deps": AnalyzeBuildDeps(flavor_path=self.flavor_path),
-                "language_deps": AnalyzeLanguageDeps(flavor_path=self.flavor_path)}
+        return {"build_deps": AnalyzeBuildDeps,
+                "language_deps": AnalyzeLanguageDeps}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"src": "exaudfclient/base"}
@@ -64,7 +64,7 @@ class AnalyzeBaseTestDeps(DockerFlavorAnalyzeImageTask):
         return "base_test_deps"
 
     def requires_tasks(self):
-        return {"build_deps": AnalyzeBuildDeps(flavor_path=self.flavor_path)}
+        return {"build_deps": AnalyzeBuildDeps}
 
     def get_path_in_flavor(self):
         return "flavor_base"
@@ -76,8 +76,8 @@ class AnalyzeBaseTestBuildRun(DockerFlavorAnalyzeImageTask):
         return "base_test_build_run"
 
     def requires_tasks(self):
-        return {"base_test_deps": AnalyzeBaseTestDeps(flavor_path=self.flavor_path),
-                "language_deps": AnalyzeLanguageDeps(flavor_path=self.flavor_path)}
+        return {"base_test_deps": AnalyzeBaseTestDeps,
+                "language_deps": AnalyzeLanguageDeps}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"src": "exaudfclient/base", "emulator": "emulator"}
@@ -92,7 +92,7 @@ class AnalyzeFlavorBaseDeps(DockerFlavorAnalyzeImageTask):
         return "flavor_base_deps"
 
     def requires_tasks(self):
-        return {"language_deps": AnalyzeLanguageDeps(flavor_path=self.flavor_path)}
+        return {"language_deps": AnalyzeLanguageDeps}
 
     def get_additional_build_directories_mapping(self):
         return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
@@ -107,7 +107,7 @@ class AnalyzeFlavorCustomization(DockerFlavorAnalyzeImageTask):
         return "flavor_customization"
 
     def requires_tasks(self):
-        return {"flavor_base_deps": AnalyzeFlavorBaseDeps(flavor_path=self.flavor_path)}
+        return {"flavor_base_deps": AnalyzeFlavorBaseDeps}
 
 
 class AnalyzeFlavorTestBuildRun(DockerFlavorAnalyzeImageTask):
@@ -116,8 +116,8 @@ class AnalyzeFlavorTestBuildRun(DockerFlavorAnalyzeImageTask):
         return "flavor_test_build_run"
 
     def requires_tasks(self):
-        return {"flavor_customization": AnalyzeFlavorCustomization(flavor_path=self.flavor_path),
-                "base_test_build_run": AnalyzeBaseTestBuildRun(flavor_path=self.flavor_path)}
+        return {"flavor_customization": AnalyzeFlavorCustomization,
+                "base_test_build_run": AnalyzeBaseTestBuildRun}
 
     def get_path_in_flavor(self):
         return "flavor_base"
@@ -128,9 +128,9 @@ class AnalyzeRelease(DockerFlavorAnalyzeImageTask):
         return "release"
 
     def requires_tasks(self):
-        return {"flavor_customization": AnalyzeFlavorCustomization(flavor_path=self.flavor_path),
-                "build_run": AnalyzeBuildRun(flavor_path=self.flavor_path),
-                "language_deps": AnalyzeLanguageDeps(flavor_path=self.flavor_path)}
+        return {"flavor_customization": AnalyzeFlavorCustomization,
+                "build_run": AnalyzeBuildRun,
+                "language_deps": AnalyzeLanguageDeps}
 
     def get_path_in_flavor(self):
         return "flavor_base"

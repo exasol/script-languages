@@ -12,9 +12,6 @@ from exaslct_src.lib.docker_config import source_docker_repository_config, targe
 
 class AnalyzeTestContainer(DockerAnalyzeImageTask):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def get_target_repository_name(self) -> str:
         return f"""{target_docker_repository_config().repository_name}"""
 
@@ -39,15 +36,13 @@ class AnalyzeTestContainer(DockerAnalyzeImageTask):
     def get_dockerfile(self):
         return "tests/Dockerfile"
 
+    def is_rebuild_requested(self) -> bool:
+        return False
+
 
 class DockerTestContainerBuild(DockerBuildBase):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.actual_flavor_paths = ["test-container"]  # TODO abtract flavor away
-        self._prepare_outputs()
-
-    def get_goal_class_map(self, params) -> Dict[str, DockerAnalyzeImageTask]:
+    def get_goal_class_map(self) -> Dict[str, DockerAnalyzeImageTask]:
         goal_class_map = {"test-container": AnalyzeTestContainer()}
         return goal_class_map
 
@@ -59,31 +54,8 @@ class DockerTestContainerBuild(DockerBuildBase):
         goals = {"test-container"}
         return goals
 
-    def _prepare_outputs(self):
-        self._image_info_target = luigi.LocalTarget(
-            "%s/info/image/test-container"
-            % (build_config().output_directory))
-        if self._image_info_target.exists():
-            self._image_info_target.remove()
-
-    def output(self):
-        return self._image_info_target
-
     def run_task(self):
-        tasks_for_all_flavors = self.create_build_tasks_for_all_flavors()
-        targets = yield tasks_for_all_flavors
-        collector = DependencyImageInfoCollector()
-        result = {flavor_path: collector.get_from_dict_of_inputs(image_info_targets)
-                  for flavor_path, image_info_targets in targets.items()}
-        self.write_output(result)
-
-    def write_output(self, result):
-        with self.output().open("w") as f:
-            json = self.json_pickle_result(result)
-            f.write(json)
-
-    def json_pickle_result(self, result):
-        jsonpickle.set_preferred_backend('simplejson')
-        jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4)
-        json = jsonpickle.encode(result)
-        return json
+        build_tasks = self.create_build_tasks(False)
+        image_infos_futures = yield from self.run_dependencies(build_tasks)
+        image_infos = self.get_values_from_futures(image_infos_futures)
+        self.return_object(image_infos)

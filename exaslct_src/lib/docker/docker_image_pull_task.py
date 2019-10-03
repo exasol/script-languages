@@ -8,7 +8,7 @@ class DockerPullImageTask(DockerImageCreatorBaseTask):
     def run_task(self):
         image_target = DockerImageTarget(image_name=self.image_info.source_repository_name,
                                          image_tag=self.image_info.get_source_complete_tag())
-        self.logger.info("Task %s: Try to pull docker image %s", self.__repr__(), image_target.get_complete_name())
+        self.logger.info("Try to pull docker image %s", image_target.get_complete_name())
         if source_docker_repository_config().username is not None and \
                 source_docker_repository_config().password is not None:
             auth_config = {

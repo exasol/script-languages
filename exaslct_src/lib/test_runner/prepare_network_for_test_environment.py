@@ -1,22 +1,16 @@
-import logging
-
 import docker
 import luigi
 
-from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.data.dependency_collector.dependency_docker_network_info_collector import DOCKER_NETWORK_INFO
+from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.docker_config import docker_client_config
-from exaslct_src.lib.stoppable_task import StoppableTask
 
 
-class PrepareDockerNetworkForTestEnvironment(StoppableTask):
-    logger = logging.getLogger('luigi-interface')
-
+class PrepareDockerNetworkForTestEnvironment(DependencyLoggerBaseTask):
     environment_name = luigi.Parameter()
     network_name = luigi.Parameter()
     test_container_name = luigi.Parameter(significant=False)
-    db_container_name = luigi.OptionalParameter(None,significant=False)
+    db_container_name = luigi.OptionalParameter(None, significant=False)
     reuse = luigi.BoolParameter(False, significant=False)
     attempt = luigi.IntParameter(-1)
 
@@ -24,37 +18,23 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         super().__init__(*args, **kwargs)
         self._client = docker_client_config().get_client()
         self._low_level_client = docker_client_config().get_low_level_client()
-        self._prepare_outputs()
 
-    def _prepare_outputs(self):
-        self._network_info_target = luigi.LocalTarget(
-            "%s/info/environment/%s/network/%s/%s/network_info"
-            % (build_config().output_directory,
-               self.environment_name,
-               self.network_name,
-               self.attempt))
-        if self._network_info_target.exists():
-            self._network_info_target.remove()
-
-    def output(self):
-        return {DOCKER_NETWORK_INFO: self._network_info_target}
+    def __del__(self):
+        self._client.close()
+        self._low_level_client.close()
 
     def run_task(self):
         self.network_info = None
         if self.reuse:
-            self.logger.info("Task %s: Try to reuse network %s", self.__repr__(), self.network_name)
+            self.logger.info("Try to reuse network %s", self.network_name)
             try:
                 self.network_info = self.get_network_info(reused=True)
             except Exception as e:
-                self.logger.warning("Task %s: Tried to reuse network %s, but got Exeception %s. "
-                                    "Fallback to create new network.", self.__repr__(), self.network_name, e)
+                self.logger.warning("Tried to reuse network %s, but got Exeception %s. "
+                                    "Fallback to create new network.", self.network_name, e)
         if self.network_info is None:
             self.network_info = self.create_docker_network()
-        self.write_output(self.network_info)
-
-    def write_output(self, network_info: DockerNetworkInfo):
-        with self.output()[DOCKER_NETWORK_INFO].open("w") as file:
-            file.write(network_info.to_json())
+        self.return_object(self.network_info)
 
     def get_network_info(self, reused: bool):
         network_properties = self._low_level_client.inspect_network(self.network_name)
@@ -92,7 +72,7 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
     def remove_network(self, network_name):
         try:
             self._client.networks.get(network_name).remove()
-            self.logger.info("Task %s: Removed network %s", self.__repr__(), network_name)
+            self.logger.info("Removed network %s", network_name)
         except docker.errors.NotFound:
             pass
 
@@ -100,6 +80,6 @@ class PrepareDockerNetworkForTestEnvironment(StoppableTask):
         try:
             container = self._client.containers.get(container_name)
             container.remove(force=True)
-            self.logger.info("Task %s: Removed container %s", self.__repr__(), container_name)
+            self.logger.info("Removed container %s", container_name)
         except docker.errors.NotFound:
             pass

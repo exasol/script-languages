@@ -1,3 +1,4 @@
+import json
 import os
 import shlex
 import shutil
@@ -8,6 +9,7 @@ from contextlib import closing
 from pathlib import Path
 
 import docker
+import requests
 
 
 class ExaslctDockerTestEnvironment():
@@ -87,9 +89,9 @@ class ExaslctTestEnvironment():
         except Exception as e:
             print(e)
 
-    def spawn_docker_test_environment(self,name) -> ExaslctDockerTestEnvironment:
+    def spawn_docker_test_environment(self, name) -> ExaslctDockerTestEnvironment:
         parameter = ExaslctDockerTestEnvironment(
-            name=self.name+"_"+name,
+            name=self.name + "_" + name,
             database_host="localhost",
             db_username="sys",
             db_password="exasol",
@@ -131,3 +133,16 @@ def remove_docker_container(containers):
 def get_test_flavor():
     flavor_path = Path(os.path.realpath(__file__)).parent.joinpath("resources/test-flavor")
     return flavor_path
+
+
+def request_registry_images(registry_port, repo_name):
+    url = f"http://localhost:{registry_port}/v2/{repo_name}/tags/list"
+    result = requests.request("GET", url)
+    images = json.loads(result.content.decode("UTF-8"))
+    return images
+
+
+def request_registry_repositories(registry_port):
+    result = requests.request("GET", f"http://localhost:{registry_port}/v2/_catalog/")
+    repositories_ = json.loads(result.content.decode("UTF-8"))["repositories"]
+    return repositories_

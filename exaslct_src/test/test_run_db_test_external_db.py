@@ -1,4 +1,5 @@
 import unittest
+from subprocess import CalledProcessError
 
 from exaslct_src.test import utils
 
@@ -32,7 +33,9 @@ class DockerRunDBTestExternalDBTest(unittest.TestCase):
             f"--external-exasol-bucketfs-write-password {self.docker_environment.bucketfs_password}",
         ])
         command = f"./exaslct run-db-test {arguments}"
-        self.test_environment.run_command(command, track_task_dependencies=True)
+        self.assertRaises(CalledProcessError,
+                          lambda: self.test_environment.run_command(
+                              command, track_task_dependencies=True))
 
 
 if __name__ == '__main__':

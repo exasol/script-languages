@@ -1,4 +1,5 @@
 import unittest
+from subprocess import CalledProcessError
 
 from exaslct_src.test import utils
 
@@ -18,10 +19,11 @@ class DockerRunDBTestDockerDBTest(unittest.TestCase):
         utils.remove_docker_container([f"test_container_{self.test_environment.name}",
                                        f"db_container_{self.test_environment.name}"])
 
-
     def test_run_db_tests_docker_db(self):
         command = f"./exaslct run-db-test "
-        self.test_environment.run_command(command,track_task_dependencies=True)
+        self.assertRaises(CalledProcessError,
+                          lambda: self.test_environment.run_command(
+                              command, track_task_dependencies=True))
 
 
 if __name__ == '__main__':

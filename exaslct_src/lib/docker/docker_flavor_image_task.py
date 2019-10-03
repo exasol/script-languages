@@ -8,12 +8,13 @@ from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
 from exaslct_src.lib.docker_config import source_docker_repository_config, target_docker_repository_config
 from exaslct_src.lib.flavor import flavor
 
-
 # TODO change task inheritance with composition.
 #  In this case DockerPullOrBuildFlavorImageTask could create a DockerPullOrBuildImageTask
 #  if this would have parameters instead of abstract methods
-class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask):
-    flavor_path = luigi.Parameter()
+from exaslct_src.lib.flavor_task import FlavorBaseTask
+
+
+class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask, FlavorBaseTask):
 
     def __init__(self, *args, **kwargs):
         self.build_step = self.get_build_step()
@@ -75,7 +76,7 @@ class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask):
             return f"{self.get_image_tag()}"
 
     def get_image_tag(self) -> str:
-        flavor_name = flavor.get_name_from_path(self.flavor_path)
+        flavor_name = self.get_flavor_name()
         return "%s-%s" % (flavor_name, self.build_step)
 
     def get_mapping_of_build_files_and_directories(self) -> Dict[str, str]:

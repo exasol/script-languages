@@ -1,4 +1,5 @@
 import luigi
+from luigi import Config
 from luigi.parameter import ParameterVisibility
 
 
@@ -9,7 +10,7 @@ class DatabaseCredentials:
         self.db_user = db_user
 
 
-class DatabaseCredentialsParameter:
+class DatabaseCredentialsParameter(Config):
     db_user = luigi.Parameter()
     db_password = luigi.Parameter(significant=False, visibility=luigi.parameter.ParameterVisibility.HIDDEN)
 
