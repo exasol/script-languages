@@ -84,6 +84,11 @@ def run_db_test(flavor_path: Tuple[str, ...],
                 external_exasol_db_user: str,
                 external_exasol_db_password: str,
                 external_exasol_bucketfs_write_password: str,
+                external_exasol_xmlrpc_host: str,
+                external_exasol_xmlrpc_port: int,
+                external_exasol_xmlrpc_user: str,
+                external_exasol_xmlrpc_password: str,
+                external_exasol_xmlrpc_cluster_name: str,
                 test_environment_vars: str,
                 test_log_level: str,
                 reuse_database: bool,
@@ -165,7 +170,13 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                          external_exasol_bucketfs_port=external_exasol_bucketfs_port,
                                          external_exasol_db_user=external_exasol_db_user,
                                          external_exasol_db_password=external_exasol_db_password,
-                                         external_exasol_bucketfs_write_password=external_exasol_bucketfs_write_password)
+                                         external_exasol_bucketfs_write_password=external_exasol_bucketfs_write_password,
+                                         external_exasol_xmlrpc_host=external_exasol_xmlrpc_host,
+                                         external_exasol_xmlrpc_port=external_exasol_xmlrpc_port,
+                                         external_exasol_xmlrpc_user=external_exasol_xmlrpc_user,
+                                         external_exasol_xmlrpc_password=external_exasol_xmlrpc_password,
+                                         external_exasol_xmlrpc_cluster_name=external_exasol_xmlrpc_cluster_name
+                                         )
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
     if success:
         print("Test Results:")

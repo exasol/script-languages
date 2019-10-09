@@ -1,5 +1,3 @@
-import logging
-
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
@@ -13,8 +11,6 @@ class SpawnTestEnvironment(DependencyLoggerBaseTask, SpawnTestEnvironmentParamet
     DEFAULT_DB_USER = "sys"
     DEFAULT_DATABASE_PASSWORD = "exasol"
     DEFAULT_BUCKETFS_WRITE_PASSWORD = "write"
-
-    logger = logging.getLogger('luigi-interface')
     environment_name = luigi.Parameter()
 
     def register_required(self):

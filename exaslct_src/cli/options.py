@@ -93,7 +93,21 @@ external_db_options = [
     click.option('--external-exasol-db-password', type=str,
                  help="""Database Password for external Exasol DB"""),
     click.option('--external-exasol-bucketfs-write-password', type=str,
-                 help="""BucketFS write Password for external Exasol DB""")
+                 help="""BucketFS write Password for external Exasol DB"""),
+    click.option('--external-exasol-xmlrpc-host', type=str,
+                 help="""Hostname for the xmlrpc server"""),
+    click.option('--external-exasol-xmlrpc-port', type=int,
+                 default="""443""", show_default=True,
+                 help="""Port for the xmlrpc server"""),
+    click.option('--external-exasol-xmlrpc-user', type=str,
+                 default="""admin""", show_default=True,
+                 help="""User for the xmlrpc server"""),
+    click.option('--external-exasol-xmlrpc-password', type=str,
+                 help="""Password for the xmlrpc server"""),
+    click.option('--external-exasol-xmlrpc-cluster-name', type=str,
+                 default="""cluster1""", show_default=True,
+                 help="""Password for the xmlrpc server""")
+
 ]
 
 output_directory = click.option('--output-directory', type=click.Path(file_okay=False, dir_okay=True),
