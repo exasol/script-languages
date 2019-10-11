@@ -1,17 +1,16 @@
-import luigi
-
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.database_info import DatabaseInfo
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
-from exaslct_src.lib.test_runner.determine_external_database_host import DetermineExternalDatabaseHost
-from exaslct_src.lib.test_runner.external_test_environment_parameter import ExternalTestEnvironmentParameter, \
+from exaslct_src.lib.test_runner.abstract_spawn_test_environment import AbstractSpawnTestEnvironment
+from exaslct_src.lib.test_runner.external_test_environment_parameter import ExternalDatabaseXMLRPCParameter, \
     ExternalDatabaseHostParameter
 from exaslct_src.lib.test_runner.prepare_network_for_test_environment import PrepareDockerNetworkForTestEnvironment
-from exaslct_src.lib.test_runner.abstract_spawn_test_environment import AbstractSpawnTestEnvironment
+from exaslct_src.lib.test_runner.setup_external_database_host import SetupExternalDatabaseHost
 from exaslct_src.lib.test_runner.wait_for_external_database import WaitForTestExternalDatabase
 
 
 class SpawnTestEnvironmentWithExternalDB(AbstractSpawnTestEnvironment,
+                                         ExternalDatabaseXMLRPCParameter,
                                          ExternalDatabaseHostParameter):
 
     def create_network_task(self, attempt: int):
@@ -27,7 +26,7 @@ class SpawnTestEnvironmentWithExternalDB(AbstractSpawnTestEnvironment,
     def create_spawn_database_task(self, network_info: DockerNetworkInfo, attempt: int):
         return \
             self.create_child_task_with_common_params(
-                DetermineExternalDatabaseHost,
+                SetupExternalDatabaseHost,
                 network_info=network_info,
                 attempt=attempt
             )

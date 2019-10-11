@@ -36,6 +36,8 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
     def _attempt_database_start(self):
         is_database_ready = False
         attempt = 0
+        database_info = None
+        test_container_info = None
         while not is_database_ready and attempt < self.max_start_attempts:
             database_info, is_database_ready, test_container_info = \
                 yield from self._start_database(attempt)

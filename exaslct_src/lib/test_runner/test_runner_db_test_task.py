@@ -3,9 +3,7 @@ import pathlib
 from typing import Generator, Any, Dict
 
 import luigi
-from luigi import LocalTarget
 
-from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.docker_config import docker_client_config
