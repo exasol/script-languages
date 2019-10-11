@@ -2,6 +2,7 @@ import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.docker_config import docker_client_config, target_docker_repository_config
+from exaslct_src.lib.flavor_task import FlavorBaseTask, FlavorsBaseTask
 from exaslct_src.lib.utils.docker_utils import find_images_by_tag
 
 
@@ -73,7 +74,7 @@ class CleanImagesStartingWith(DependencyLoggerBaseTask):
 
 # TODO remove only images that are not represented by current flavor directories
 # TODO requires that docker build only returns the image_info without actually building or pulling
-class CleanExaslcFlavorImages(DependencyLoggerBaseTask):
+class CleanExaslcFlavorImages(FlavorBaseTask):
 
     def register_required(self):
         flavor_name = self.get_flavor_name()
@@ -90,6 +91,15 @@ class CleanExaslcFlavorImages(DependencyLoggerBaseTask):
     def run_task(self):
         pass
 
+class CleanExaslcFlavorsImages(FlavorsBaseTask):
+
+    def register_required(self):
+        for flavor_path in self.flavor_paths:
+            task = self.create_child_task(CleanExaslcFlavorImages, flavor_path=flavor_path)
+            self.register_dependency(task)
+
+    def run_task(self):
+        pass
 
 class CleanExaslcAllImages(DependencyLoggerBaseTask):
 
