@@ -101,10 +101,16 @@ genrule(
     srcs = [":pyextdataframe.so"],
 )
 
-cc_binary(
-    name = "pyextdataframe.so",
-    linkshared = 1,
+cc_library(
+    name = "pyextdataframe",
+    alwayslink=True,
     srcs = [":python_ext_dataframe.cc"],
     deps = ["@python3//:python3","@numpy//:numpy","//exaudflib:exaudflib-deps",
             "//exaudflib:header", "//:debug_message_h"]
+)
+
+cc_binary(
+    name = "pyextdataframe.so",
+    linkshared = 1,
+    deps = [":pyextdataframe"]
 )
