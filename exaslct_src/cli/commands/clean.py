@@ -5,7 +5,7 @@ from exaslct_src.cli.common import set_docker_repository_config, run_task, set_o
     import_build_steps, set_job_id
 from exaslct_src.cli.options \
     import flavor_options, system_options, output_directory, simple_docker_repository_options
-from exaslct_src.lib.clean_images import CleanExaslcAllImages, CleanExaslcFlavorImages
+from exaslct_src.lib.clean_images import CleanExaslcAllImages, CleanExaslcFlavorImages, CleanExaslcFlavorsImages
 
 
 @cli.command()
@@ -28,8 +28,8 @@ def clean_flavor_images(flavor_path: Tuple[str, ...],
     set_output_directory(output_directory)
     set_docker_repository_config(None, docker_repository_name, None, docker_tag_prefix, "source")
     set_docker_repository_config(None, docker_repository_name, None, docker_tag_prefix, "target")
-    set_job_id(CleanExaslcFlavorImages.__name__)
-    task_creator = lambda: CleanExaslcFlavorImages(flavor_path=flavor_path[0])
+    set_job_id(CleanExaslcFlavorsImages.__name__)
+    task_creator = lambda: CleanExaslcFlavorsImages(flavor_paths=list(flavor_path))
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
     if not success:
         exit(1)
