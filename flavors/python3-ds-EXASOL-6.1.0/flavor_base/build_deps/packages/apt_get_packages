@@ -3,9 +3,10 @@ coreutils
 locales
 tar
 curl
-openjdk-8-jdk
+openjdk-11-jdk
 build-essential
 locales
 libpcre3-dev
 protobuf-compiler
 chrpath
+bazel=1.0.0

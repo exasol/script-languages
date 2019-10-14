@@ -81,7 +81,8 @@ cc_library(
     name = "exascript_python",
     srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
     hdrs = [":filter_swig_code_exascript_python_h"],
-    deps = ["@python2//:python2","//exaudflib:exaudflib-deps","//exaudflib:header"]
+    deps = ["@python2//:python2","//exaudflib:exaudflib-deps","//exaudflib:header"],
+    alwayslink=True,
 )
 
 cc_library(
@@ -90,5 +91,6 @@ cc_library(
     data = [":extend_exascript_python_preset_py"], 
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
-    deps = ["@python2//:python2",":exascript_python","//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"]
+    deps = ["@python2//:python2",":exascript_python","//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"],
+    alwayslink=True,
 )

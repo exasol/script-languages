@@ -10,6 +10,7 @@ cc_library(
     copts= ["-fno-lto"],
     # We deactivate link time optimization, because otherwise we get the following linker/compiler error while linking/compiling exaudfclient
     # function ExecutionGraph::extractOptionLine(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long&, std::function<void (char const*)>): error: undefined reference to 'std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)'
+    alwayslink=True,
 )
 
 cc_library(
@@ -19,11 +20,11 @@ cc_library(
     copts= select({
         "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
-    })
+    }),
     # We deactivate link time optimization for benchmark, 
     # because otherwise we get linker/compiler error while linking/compiling exaudfclient
     # Benchmark causes this, because it doesn't refer it its implementation.
-
+    alwayslink=True,
 )
 
 cc_library(
@@ -34,10 +35,11 @@ cc_library(
     copts= select({
         "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
-    })
+    }),
     # We deactivate link time optimization for benchmark,
     # because otherwise we get linker/compiler error while linking/compiling exaudfclient
     # Benchmark causes this, because it doesn't refer it its implementation.
+    alwayslink=True,
 )
 
 # A collection target for the case that language container want to include all public headers of exaudflib
@@ -46,6 +48,7 @@ cc_library(
     hdrs = [
         "exaudflib.h",
     ],
+    alwayslink=True,
 )
 
 # A collection target for the case that language container want to depent on all public libraries of exaudflib
@@ -54,6 +57,7 @@ cc_library(
 cc_library( #TODO might be not working as expected
     name = "exaudflib-deps",
     deps = [":script_data_transfer_objects",":script_data_transfer_objects_wrapper"],
+    alwayslink=True,
 )
 
 genrule(
@@ -73,7 +77,8 @@ cc_library(
     name = "zmqcontainer",
     hdrs = [":zmqcontainer_proto"],
     srcs = [":zmqcontainer_proto"],
-    deps = ["@protobuf//:protobuf"]
+    deps = ["@protobuf//:protobuf"],
+    alwayslink=True,
 )
 
 # Do not depend on this library in the langauge container or exaudfclient. 
@@ -87,6 +92,7 @@ cc_library(
     name = "exaudflib",
     srcs = ["exaudflib.cc"],
     linkstatic = 1,
+    alwayslink = True,
     defines = VM_ENABLED_DEFINES,
     deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmqlib", ":header", "//:debug_message_h"],
 )
