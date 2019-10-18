@@ -3,11 +3,11 @@ build --copt='-std=c++14' --force_pic --action_env=PROTOBUF_BIN --action_env=PRO
 build:benchmark --define benchmark=true
 build:java  --define java=true --action_env=JAVA_PREFIX
 build:python --define python=true  --action_env=PYTHON2_SYSPATH --action_env=PYTHON2_PREFIX --action_env=PYTHON2_VERSION --action_env=NUMPY_PREFIX --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION
-build:fast-binary-py2 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' //:exaudfclient
-build:fast-binary-py3 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' //:exaudfclient_py3
+build:fast-binary-py2 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' --define binary_type=fast_binary //:exaudfclient
+build:fast-binary-py3 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' --define binary_type=fast_binary //:exaudfclient_py3
 build:fast-binary-both --config=fast-binary-py2 --config=fast-binary-py3
-build:slow-wrapper-py2 //:exaudfclient_py2_bash_wrapper
-build:slow-wrapper-py3 //:exaudfclient_py3_bash_wrapper
+build:slow-wrapper-py2 --define binary_type=slow_wrapper //:exaudfclient
+build:slow-wrapper-py3 --define binary_type=slow_wrapper //:exaudfclient_py3
 build:slow-wrapper-both --config=slow-wrapper-py2 --config=slow-wrapper-py3 
 build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
 #TODO test linkopts="-flto"
