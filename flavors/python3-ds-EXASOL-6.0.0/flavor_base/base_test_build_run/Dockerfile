@@ -1,5 +1,7 @@
 FROM {{language_deps}}
 
+RUN mkdir /conf /buckets
+
 COPY --from={{base_test_deps}} /usr /usr
 COPY --from={{base_test_deps}} /lib /lib
 COPY --from={{base_test_deps}} /bin /bin
