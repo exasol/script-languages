@@ -1,6 +1,6 @@
 FROM {{base_test_build_run}}
 
-RUN mkdir /conf /buckets
+RUN mkdir -p /conf /buckets
 
 COPY --from={{flavor_customization}} /usr /usr
 COPY --from={{flavor_customization}} /opt /opt
