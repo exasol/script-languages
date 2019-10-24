@@ -8,22 +8,27 @@ COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 RUN mkdir -p /build_info/packages
 COPY build_deps/packages /build_info/packages/build_deps
 
+ENV BAZEL_PACKAGE_VERSION="1.1.0"
+ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
+ENV BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
+
 RUN apt-get -y update && \
-    apt-get -y install software-properties-common curl && \
-	  echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
-	  curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
-	  apt-get update && \
     apt-get install -y $(cat /build_info/packages/build_deps/apt_get_packages) && \
-	  curl -L -o swig-2.0.4.tar.gz prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
+    curl -L --output "$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL" && \
+    apt-get install -y "./$BAZEL_PACKAGE_FILE" && \
+    rm "$BAZEL_PACKAGE_FILE" && \
+    apt-get -y clean && \
+    apt-get -y autoremove
+	  
+RUN curl -L -o swig-2.0.4.tar.gz prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
     (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
-    rm -rf swig-2.0.4 swig-2.0.4.tar.gz && \
-	  locale-gen en_US.UTF-8 && \
+    rm -rf swig-2.0.4 swig-2.0.4.tar.gz
+
+RUN locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
-    apt-get -y clean && \
-    apt-get -y autoremove && \
     ldconfig
 
 RUN touch /env && \
     echo "export PROTOBUF_BIN=/usr/bin/protoc" >> /env && \
-    echo "export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64" >> /env
+    echo "export JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64" >> /env
