@@ -9,4 +9,3 @@ locales
 libpcre3-dev
 protobuf-compiler
 chrpath
-bazel=1.0.0
