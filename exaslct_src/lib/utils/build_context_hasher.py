@@ -20,7 +20,8 @@ class BuildContextHasher:
 
     def _generate_build_context_hash(self):
         files_directories_list_hasher = \
-            FileDirectoryListHasher(hashfunc="sha256",
+            FileDirectoryListHasher(followlinks=True,
+                                    hashfunc="sha256",
                                     hash_file_names=True,
                                     hash_directory_names=True,
                                     hash_permissions=True,

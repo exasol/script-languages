@@ -34,11 +34,11 @@ def _java_local_repository_impl(repository_ctx):
     build_file_content = """
 cc_library(
     name = "{name}",
-    srcs = glob(["{prefix}/lib/**/libjvm.so"], allow_empty=False),
+    srcs = glob(["{prefix}/include/*.h"], allow_empty=False),
     hdrs = glob(["{prefix}/include/*.h","{prefix}/include/linux/*.h"], allow_empty=False),
     includes = ["{prefix}/include","{prefix}/include/linux"],
     defines = [{defines}],
-    linkopts = ["-ljvm",'-Wl,-rpath','{rpath_libjvm}'],
+    linkopts = ["-ljvm","-L{rpath_libjvm}",'-Wl,-rpath','{rpath_libjvm}'],
     visibility = ["//visibility:public"]
 )""".format( name=repository_ctx.name, defines=defines, prefix="java", rpath_libjvm=path_to_libjvm)
     print(build_file_content)
