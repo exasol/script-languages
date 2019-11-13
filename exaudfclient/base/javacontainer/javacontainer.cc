@@ -103,7 +103,7 @@ const char* JavaVMach::singleCall(single_call_function_id_e fn, const ExecutionG
     return strdup("<this is an error>");
 }
 
-JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"),
+JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"), // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
                                         m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL) {
 
     stringstream ss;

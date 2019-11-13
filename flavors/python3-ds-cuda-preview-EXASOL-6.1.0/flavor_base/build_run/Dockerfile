@@ -23,3 +23,5 @@ WORKDIR /exaudf
 RUN rm -r /exaudfclient
 
 COPY --from={{build_deps}} /build_info /build_info
+
+RUN mkdir /conf /buckets
