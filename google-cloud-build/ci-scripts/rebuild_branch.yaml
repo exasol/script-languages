@@ -72,7 +72,7 @@ steps:
           '${_FLAVOR}', 
           '$BUILD_ID'
           ]
-timeout: "7200s"
+timeout: "9000s"
 options:
   machineType: 'N1_HIGHCPU_8'
   diskSizeGb: "50"
