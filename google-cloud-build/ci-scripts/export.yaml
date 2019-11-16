@@ -43,9 +43,9 @@ steps:
   name: 'gcr.io/cloud-builders/gsutil'
   args: [
           'cp',
-          '.build_output/exports/*',
+          '.build_output/cache/exports/*',
           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/$BUILD_ID/'
           ]
-timeout: "7200s"
+timeout: "3600s"
 options:
   diskSizeGb: "50"

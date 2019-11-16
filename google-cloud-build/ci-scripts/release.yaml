@@ -54,7 +54,7 @@ steps:
   name: 'gcr.io/cloud-builders/gsutil'
   args: [
           'cp',
-          '.build_output/exports/*',
+          '.build_output/cache/exports/*',
           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'
           ]
 - id: 'Push images to public build cache'
@@ -88,7 +88,7 @@ steps:
           '${_GITHUB_USER_NAME}',
           '${_GITHUB_REPOSITORY}'
           ]
-timeout: "7200s"
+timeout: "3600s"
 options:
   machineType: 'N1_HIGHCPU_8'
   diskSizeGb: "50"
