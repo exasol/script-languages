@@ -1,89 +1,34 @@
 #!/bin/bash
 
-show_usage()
-{
-  cat <<'EOF'
-Usage:
-
-    ccc make
-    ccc make [TARGET...] [OPTIONS]
-
-Targets:
-
-    make
-    install
-    package
-
-
-Details:
-
-This working copy is a runtime, and it the building process of it
-slightly differs from the building process of exasolution or cos.
-For instance, it has special several stages, and several targets
-
-The runtime building process consists of several steps:
-
-* seed (initial chroot environment)     (building time: 5m)
-* toolchain (glibc + gcc)               (building time: 15m)
-* ports (the rest)                      (building time: 20m)
-
-On each step, the target can be either built, or fetched
-from the special location if it was built and saved before.
-
-To build seed:
-
-    ccc make seed (sudo bash toolchain/builder install)
-
-To build the toolchain:
-
-    ccc make toolchain
-
-And to build the ports:
-
-    ccc make ports [all|continue|PORTS...]
-
-If no argument is specifed, `all` is implied.
-In this case all ports are rebuilt from scratch.
-Special target `continue` means, that the build process should
-continue from the point where it was interrupted.
-
-Please note that for the first two steps you need the root rights,
-and the building script uses `sudo` on that stages.
-EOF
-}
+env | grep BUILDSYSTEM
+exit 0
 
 make_container()
 {
-mkdir -p $HOME/docker-data
-sudo cp config/docker-daemon.json /etc/docker/daemon.json
-mkdir -p $HOME/exaslct-tmp
-sudo systemctl restart docker
+  mkdir -p $HOME/exaslct-tmp
 
-sudo usermod -aG docker $USER
 
-$HOME/ccc/bin/ccc extract -m @EXARuntime-7.0.dev1
+  "$CCC_CCC" extract -m @EXARuntime-7.0.dev1
+  sed -i 's/python_version = "3.6"/python_version = "3.7"/g' Pipfile
+  export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
 
-sed -i 's/python_version = "3.6"/python_version = "3.7"/g' Pipfile
-export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
-./exaslct export --flavor-path=flavors/standard-EXASOL-6.1.0 --export-path output --temporary-base-directory $HOME/exaslct-tmp
-
-exit "$?"
+  mkdir -p "$BUILDSYSTEM_LINKDIR"
+  ./exaslct export --flavor-path=flavors/python3-ds-EXASOL-6.1.0 --export-path "$BUILDSYSTEM_LINKDIR" --temporary-base-directory $HOME/exaslct-tmp
 }
 
 test_container()
 {
   export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
   ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0
-  exit "$?"
 }
 
 case "$1" in
   make)
-		make_container
+    make_container
     exit "$?"
   ;;
   test)
-		test_container
+    test_container
     exit "$?"
   ;;
 #  install)
