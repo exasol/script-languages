@@ -91,4 +91,4 @@ steps:
 timeout: "5400s"
 options:
   machineType: 'N1_HIGHCPU_8'
-  diskSizeGb: "50"
+  diskSizeGb: "100"
