@@ -52,8 +52,12 @@ find_and_run_via_pip () {
 }
 
 request_install_to_virtual_env () {
-    echo "Do you want to install pipenv into the current virtual environment: yes/no"
-    read ANSWER
+    if [ "$PIP_INSTALL" = YES ]; then
+      ANSWER=yes
+    else
+      echo "Do you want to install pipenv into the current virtual environment: yes/no"
+      read ANSWER
+    fi
     if [ "$ANSWER" == "yes" ];
     then
         find_pip_bin
@@ -66,8 +70,12 @@ request_install_to_virtual_env () {
 }
 
 request_install_to_user () {
-    echo "Do you want to install pipenv local to the user: yes/no"
-    read ANSWER
+    if [ "$PIP_INSTALL" = YES ]; then
+      ANSWER=yes
+    else
+      echo "Do you want to install pipenv local to the user: yes/no"
+      read ANSWER
+    fi
     if [ "$ANSWER" == "yes" ];
     then
         find_pip_bin
