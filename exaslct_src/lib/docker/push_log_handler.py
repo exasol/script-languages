@@ -29,7 +29,7 @@ class PushLogHandler(AbstractLogHandler):
             raise Exception(
                 "Error occured during the push of the image %s. Received error \"%s\" ."
                 "The whole log can be found in %s"
-                % (self._image_info.get_target_complete_name(), self._error_message, self._log_file_path.path))
+                % (self._image_info.get_target_complete_name(), self._error_message, self._log_file_path))
 
     def write_error_log_to_console_if_requested(self):
         if self._log_config.write_log_files_to_console == WriteLogFilesToConsole.only_error:
