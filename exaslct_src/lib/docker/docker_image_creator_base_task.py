@@ -16,6 +16,8 @@ class DockerImageCreatorBaseTask(DependencyLoggerBaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.client = docker_client_config().get_client()
+        self.low_level_client = docker_client_config().get_low_level_client()
 
     def __del__(self):
         self.client.close()
+        self.low_level_client.close()
