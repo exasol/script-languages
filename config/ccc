@@ -1,5 +1,13 @@
 #!/bin/bash
 
+FLAVOR=standard-EXASOL-6.1.0
+
+get_image_hash()
+{
+  cat "$BUILDSYSTEM_LINKDIR/install/build_info/image_info/$FLAVOR-release" \
+  | jq -r .hash | cut -c 1-8
+}
+
 make_container()
 {
   mkdir -p $HOME/exaslct-tmp
@@ -10,13 +18,15 @@ make_container()
   export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
 
   mkdir -p "$BUILDSYSTEM_LINKDIR"
-  PIP_INSTALL=YES ./exaslct export --flavor-path=flavors/standard-EXASOL-6.1.0 --export-path "$BUILDSYSTEM_LINKDIR" --temporary-base-directory $HOME/exaslct-tmp
+  PIP_INSTALL=YES ./exaslct export --flavor-path=flavors/"$FLAVOR" --export-path "$BUILDSYSTEM_LINKDIR" --temporary-base-directory $HOME/exaslct-tmp \
+  && mkdir "$BUILDSYSTEM_LINKDIR/install" \
+  && for f in "$BUILDSYSTEM_LINKDIR/"*.gz; do tar xfC "$f" "$BUILDSYSTEM_LINKDIR/install"; done
 }
 
 test_container()
 {
   export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
-  ./exaslct run-db-test --flavor-path flavors/standard-EXASOL-6.1.0
+  ./exaslct run-db-test --flavor-path flavors/"$FLAVOR"
 }
 
 case "$1" in
@@ -26,6 +36,14 @@ case "$1" in
   ;;
   test)
     test_container
+    exit "$?"
+  ;;
+  prefix)
+    HASH=$(get_image_hash)
+    HASH=${HASH:-NOHASH}
+
+    PREFIX=/usr/opt/EXASuite-7/ScriptLanguages-$FLAVOR-${HASH}
+    echo "$PREFIX"
     exit "$?"
   ;;
 #  install)
