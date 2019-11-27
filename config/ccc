@@ -10,7 +10,7 @@ make_container()
   export PATH=/usr/opt/EXASuite-7/EXARuntime-7.0.dev1/bin:$PATH
 
   mkdir -p "$BUILDSYSTEM_LINKDIR"
-  PIP_INSTALL=YES ./exaslct export --flavor-path=flavors/python3-ds-EXASOL-6.1.0 --export-path "$BUILDSYSTEM_LINKDIR" --temporary-base-directory $HOME/exaslct-tmp
+  PIP_INSTALL=YES ./exaslct export --flavor-path=flavors/standard-EXASOL-6.1.0 --export-path "$BUILDSYSTEM_LINKDIR" --temporary-base-directory $HOME/exaslct-tmp
 }
 
 test_container()
