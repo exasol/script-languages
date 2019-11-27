@@ -86,9 +86,24 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
         # we need to mount the release directory into the test_container.
         exports_host_path = pathlib.Path(self._get_export_directory()).absolute()
         tests_host_path = pathlib.Path("./tests").absolute()
+        volumes = {
+                    exports_host_path: {
+                        "bind": "/exports",
+                        "mode": "ro"
+                        },
+                    tests_host_path: {
+                        "bind": "/tests_src",
+                        "mode": "ro"
+                        }
+                    }
         docker_unix_sockets=[i for i in self._client.api.adapters.values() if isinstance(i,unixconn.UnixHTTPAdapter)]
-        print("AAA_TEST_BBB",docker_unix_sockets[0].socket_path)
-        host_docker_socker_path = docker_unix_sockets[0].socket_path
+        if len(docker_unix_sockets)>0:
+            host_docker_socker_path = docker_unix_sockets[0].socket_path
+            volumes[host_docker_socker_path]={
+                        "bind": "/var/run/docker.sock",
+                        "mode": "rw"
+                    }
+        self.logger.info("AAAAAAAAA %s",volumes)
         test_container = \
             self._client.containers.create(
                 image=test_container_image_info.get_target_complete_name(),
@@ -96,22 +111,7 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
                 network_mode=None,
                 command="sleep infinity",
                 detach=True,
-                volumes={
-                    exports_host_path: {
-                        "bind": "/exports",
-                        "mode": "ro"
-                    },
-                    tests_host_path: {
-                        "bind": "/tests_src",
-                        "mode": "ro"
-                    },
-                    #TODO only if unix socket is used for docker and check http://jpetazzo.github.io/2016/04/03/one-container-to-rule-them-all/
-                    host_docker_socker_path: {
-                        "bind": "/var/run/docker.sock",
-                        "mode": "rw"
-                    }
-
-                })
+                volumes=volumes)
         docker_network = self._client.networks.get(network_info.network_name)
         network_aliases = self._get_network_aliases()
         docker_network.connect(test_container, ipv4_address=ip_address, aliases=network_aliases)
