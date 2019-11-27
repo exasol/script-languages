@@ -103,7 +103,6 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
                         "bind": "/var/run/docker.sock",
                         "mode": "rw"
                     }
-        self.logger.info("AAAAAAAAA %s",volumes)
         test_container = \
             self._client.containers.create(
                 image=test_container_image_info.get_target_complete_name(),
