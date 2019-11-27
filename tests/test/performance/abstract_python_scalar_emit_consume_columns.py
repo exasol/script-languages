@@ -12,13 +12,13 @@ import udf
 from abstract_performance_test import AbstractPerformanceTest
 
 
-class ScalarEmitConsumeColumnsPythonPerformanceTest(AbstractPerformanceTest):
+class AbstractScalarEmitConsumeColumnsPythonPerformanceTest(AbstractPerformanceTest):
 
-    def setUp(self):
+    def setup_test(self, python_version="PYTHON"):
         self.create_schema()
         self.generate_data(500)
         self.query(udf.fixindent('''
-                CREATE PYTHON SCALAR SCRIPT CONSUME_COLUMNS(
+                CREATE %s SCALAR SCRIPT CONSUME_COLUMNS(
                     intVal DECIMAL(9,0), 
                     longVal DECIMAL(18,0), 
                     bigdecimalVal DECIMAL(36,0), 
@@ -40,18 +40,11 @@ class ScalarEmitConsumeColumnsPythonPerformanceTest(AbstractPerformanceTest):
                     booleanVal = ctx.booleanVal
                     dateVal = ctx.dateVal
                     timestampVal = ctx.timestampVal
-
-                '''))
+                '''%(python_version)))
         self.query("commit")
     
-    def tearDown(self):
-        self.cleanup(self.schema)
-
-    def test_consume_next(self):
+    def execute_consume_next(self):
         self.run_test(15, 2.0, "SELECT CONSUME_COLUMNS(intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T")
-
-if __name__ == '__main__':
-    udf.main()
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
 

@@ -14,24 +14,18 @@ from abstract_performance_test import AbstractPerformanceTest
 
 class SetEmitStartOnlyPythonPerformanceTest(AbstractPerformanceTest):
 
-    def setUp(self):
+    def setup_test(self, python_version="PYTHON"):
         self.create_schema()
         self.query(udf.fixindent('''
-                CREATE PYTHON SET SCRIPT START_ONLY(
+                CREATE %s SET SCRIPT START_ONLY(
                     intVal INT) EMITS (count_value INT) AS
                 def run(ctx):
                     pass
-                '''))
+                '''%(python_version)))
         self.query("commit")
     
-    def tearDown(self):
-        self.cleanup(self.schema)
-
-    def test_consume_next(self):
+    def execute_start_only(self):
         self.run_test(1000, 2.0, "SELECT START_ONLY(1)")
-
-if __name__ == '__main__':
-    udf.main()
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
 
