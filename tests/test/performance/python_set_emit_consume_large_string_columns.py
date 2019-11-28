@@ -16,7 +16,7 @@ from abstract_performance_test import AbstractPerformanceTest
 
 class SetEmitConsumeLargeStringColumnPythonPeformanceTest(AbstractPerformanceTest):
 
-    def generate_data(self, multiplier, base=10):
+    def generate_data_linear(self, multiplier, base=10):
 #        self.number_of_characters = 2000000
         self.number_of_characters = 1864129
         columns_definition = ",".join(["column%s VARCHAR(%s)"%(i,self.number_of_characters) for i in range(self.number_of_columns)])
@@ -84,13 +84,13 @@ class SetEmitConsumeLargeStringColumnPythonPeformanceTest(AbstractPerformanceTes
                     return count
                 '''% self.number_of_columns))
         self.query("commit")
-        self.generate_data(10)
+        self.generate_data_linear(10)
         
     def tearDown(self):
         self.cleanup(self.schema)
     
     def test_consume_next_columns(self):
-        self.run_test(15, 2.0, "SELECT CONSUME_NEXT_COLUMNS(%s) FROM T"%self.column_names)
+        self.run_test(15, 3, 2.0, "SELECT CONSUME_NEXT_COLUMNS(%s) FROM T"%self.column_names)
         #self.run_test(2, 2.0, "SELECT %s FROM T"%self.column_names)
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ class SetEmitConsumeNextColumnsPythonPeformanceTest(AbstractPerformanceTest):
     
     def setUp(self):
         self.create_schema();
-        self.generate_data(50)
+        self.generate_data_linear(50)
         self.query(udf.fixindent('''
                 CREATE PYTHON SET SCRIPT CONSUME_NEXT_COLUMNS(
                     intVal DECIMAL(9,0), 
@@ -50,7 +50,7 @@ class SetEmitConsumeNextColumnsPythonPeformanceTest(AbstractPerformanceTest):
         self.cleanup(self.schema)
     
     def test_consume_next_columns(self):
-        self.run_test(15, 2.0, "SELECT CONSUME_NEXT_COLUMNS(intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T")
+        self.run_test(15, 3, 2.0, "SELECT CONSUME_NEXT_COLUMNS(intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T")
 
 if __name__ == '__main__':
     udf.main()

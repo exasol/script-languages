@@ -16,7 +16,7 @@ class AbstractScalarEmitConsumeColumnsPythonPerformanceTest(AbstractPerformanceT
 
     def setup_test(self, python_version="PYTHON"):
         self.create_schema()
-        self.generate_data(500)
+        self.generate_data_linear(500)
         self.query(udf.fixindent('''
                 CREATE %s SCALAR SCRIPT CONSUME_COLUMNS(
                     intVal DECIMAL(9,0), 
@@ -44,7 +44,7 @@ class AbstractScalarEmitConsumeColumnsPythonPerformanceTest(AbstractPerformanceT
         self.query("commit")
     
     def execute_consume_next(self):
-        self.run_test(15, 2.0, "SELECT CONSUME_COLUMNS(intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T")
+        self.run_test(15, 3, 2.0, "SELECT CONSUME_COLUMNS(intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T")
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
 

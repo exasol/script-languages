@@ -16,7 +16,7 @@ class SetEmitStartOnlyRPeformanceTest(AbstractPerformanceTest):
 
     def setUp(self):
         self.create_schema()
-        self.generate_data(500)
+        self.generate_data_linear(500)
         self.query(udf.fixindent('''
                 CREATE R SET SCRIPT START_ONLY(
                     intVal INT) EMITS (count_value INT) AS
@@ -29,7 +29,7 @@ class SetEmitStartOnlyRPeformanceTest(AbstractPerformanceTest):
         self.cleanup(self.schema)
 
     def test_consume_next(self):
-        self.run_test(1000, 2.0, "SELECT START_ONLY(1)")
+        self.run_test(1000, 3, 2.0, "SELECT START_ONLY(1)")
 
 if __name__ == '__main__':
     udf.main()

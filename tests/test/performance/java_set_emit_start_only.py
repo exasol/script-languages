@@ -30,7 +30,7 @@ class SetEmitStartOnlyJavaPerformanceTest(AbstractPerformanceTest):
         self.cleanup(self.schema)
 
     def test_consume_next(self):
-        self.run_test(1000, 2.0, "SELECT START_ONLY(1) FROM DUAL;")
+        self.run_test(1000, 3, 2.0, "SELECT START_ONLY(1) FROM DUAL;")
 
 if __name__ == '__main__':
     udf.main()

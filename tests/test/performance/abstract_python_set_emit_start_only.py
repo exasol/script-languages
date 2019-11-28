@@ -25,7 +25,7 @@ class SetEmitStartOnlyPythonPerformanceTest(AbstractPerformanceTest):
         self.query("commit")
     
     def execute_start_only(self):
-        self.run_test(1000, 2.0, "SELECT START_ONLY(1)")
+        self.run_test(1000, 3, 2.0, "SELECT START_ONLY(1)")
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
 

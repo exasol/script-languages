@@ -37,7 +37,7 @@ class SetEmitOutputOnlyPythonPerformanceTest(AbstractPerformanceTest):
         self.cleanup(self.schema)
 
     def test_consume_next(self):
-        self.run_test(15, 2.0, "SELECT count(*) FROM (SELECT OUTPUT_ONLY(300000)) as q")
+        self.run_test(15, 3, 2.0, "SELECT count(*) FROM (SELECT OUTPUT_ONLY(300000)) as q")
 
 if __name__ == '__main__':
     udf.main()

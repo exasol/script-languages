@@ -9,13 +9,13 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 sys.path.append(os.path.realpath(__file__ + '/..'))
 
 import udf
-from abstract_python_scalar_emit_consume_columns import AbstractScalarEmitConsumeColumnsPythonPerformanceTest
+from abstract_python_scalar_emit_output_only_very_large import AbstractScalarEmitOutputOnlyVeryLargePythonPerformanceTest
 
 
-class ScalarEmitConsumeColumnsPython2PerformanceTest(AbstractScalarEmitConsumeColumnsPythonPerformanceTest):
+class ScalarEmitOutputOnlyVeryLargePython3PerformanceTest(AbstractScalarEmitOutputOnlyVeryLargePythonPerformanceTest):
 
     def setUp(self):
-        self.setup_test("PYTHON")
+        self.setup_test("PYTHON3")
 
     def tearDown(self):
         self.cleanup(self.schema)
