@@ -5,8 +5,9 @@ import os
 import sys
 import time
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
 sys.path.append(os.path.realpath(__file__ + '/..'))
+sys.path.append(os.path.realpath(__file__ + '/../..'))
 
 import udf
 from abstract_performance_test import AbstractPerformanceTest
@@ -73,7 +74,8 @@ class AbstractScalarEmitOutputOnlyVeryLargePythonPerformanceTest(AbstractPerform
         self.query("commit")
     
     def execute_consume_next(self):
-        self.run_test(1, 0, 2.0, "SELECT count(*) from (SELECT OUTPUT_ONLY(100000000, intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T) as q")
+        emit_size=1000*10**4
+        self.run_test(1, 0, 2.0, "SELECT count(*) from (SELECT OUTPUT_ONLY(%s, intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T) as q" % emit_size)
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
 

@@ -35,16 +35,16 @@ class AbstractPerformanceTest(udf.TestCase):
             union_query_for_multiplier = " union all ".join(selects_for_multiplier)
             self.query('''INSERT INTO T %s;'''%union_query_for_multiplier)
 
-    def generate_data_exponential(self,rounds,exponent=10,base=1000):
+    def generate_data_exponential(self,exponent,base=10,multiplicator=1000):
         self.query('CREATE TABLE T (intVal DECIMAL(9,0), longVal DECIMAL(18,0), bigdecimalVal DECIMAL(36,0), decimalVal DECIMAL(9,2), \
                     doubleVal DOUBLE, doubleIntVal DOUBLE, stringVal VARCHAR(100), booleanVal BOOLEAN, dateVal DATE, timestampVal TIMESTAMP)')
-        for i in range(base):
+        for i in range(multiplicator):
             self.query('''INSERT INTO T values (123456789, 123456789123456789, 123456789123456789123456789123456789, 1234567.12, \
                         123456789.123, 15.0, 'string#String!12345', true, '2014-05-21', '2014-05-21 15:13:30.123')''')
-        selects_for_exponent = ['''select * from T''' for i in range(exponent)]
-        union_query_for_exponent = " union all ".join(selects_for_exponent)
-        for i in range(rounds):
-            self.query('''INSERT INTO T %s;'''%union_query_for_exponent)
+        selects_for_base = ['''select * from T''' for i in range(base)]
+        union_query_for_base = " union all ".join(selects_for_base)
+        for i in range(exponent):
+            self.query('''INSERT INTO T %s;'''%union_query_for_base)
 
     def cleanup(self,schema):
         self.query('DROP SCHEMA %s CASCADE'%schema, ignore_errors=True)

@@ -5,8 +5,9 @@ import os
 import sys
 import time
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
 sys.path.append(os.path.realpath(__file__ + '/..'))
+sys.path.append(os.path.realpath(__file__ + '/../..'))
 
 import udf
 from abstract_performance_test import AbstractPerformanceTest

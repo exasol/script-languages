@@ -5,8 +5,9 @@ import os
 import sys
 import time
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
 sys.path.append(os.path.realpath(__file__ + '/..'))
+sys.path.append(os.path.realpath(__file__ + '/../..'))
 
 import udf
 from abstract_performance_test import AbstractPerformanceTest
@@ -16,7 +17,7 @@ class ScalarEmitConsumeNextOnlyJavaPerformanceTest(AbstractPerformanceTest):
 
     def setUp(self):
         self.create_schema()
-        self.generate_data_exponential(5)
+        self.generate_data_exponential(4)
         self.query(udf.fixindent('''
                 CREATE JAVA SCALAR SCRIPT CONSUME_NEXT(
                         intVal DECIMAL(9,0), 
