@@ -230,7 +230,7 @@ extern __thread SWIGVM_params_t *SWIGVM_params;
 
 
 class SWIGMetadata {
-    SWIGMetadata* impl;
+    SWIGMetadata* impl=nullptr;
     typedef SWIGVMContainers::SWIGMetadata* (*CREATE_METADATA_FUN)();
     public:
         SWIGMetadata()
