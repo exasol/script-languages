@@ -89,11 +89,11 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
         volumes = {
                     exports_host_path: {
                         "bind": "/exports",
-                        "mode": "ro"
+                        "mode": "rw"
                         },
                     tests_host_path: {
                         "bind": "/tests_src",
-                        "mode": "ro"
+                        "mode": "rw"
                         }
                     }
         docker_unix_sockets=[i for i in self._client.api.adapters.values() if isinstance(i,unixconn.UnixHTTPAdapter)]

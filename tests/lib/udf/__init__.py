@@ -60,6 +60,15 @@ def expectedFailureIfLang(lang):
         return wrapper
     return dec
 
+def docker_available():
+    path = "/var/run/docker.sock"
+    return os.path.exists(path) and os.access(path, os.W_OK)
+
+def get_docker_client():
+    import docker
+    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+    return client
+
 def fixindent(query):
     '''Remove indent from multi-line query text.
 

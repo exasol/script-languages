@@ -31,6 +31,14 @@ def skipIf(condition, reason):
         return skip(reason)
     return lambda x: x
 
+def skipIfNot(condition, reason):
+    """
+    Skip a test if the condition is true.
+    """
+    if not condition:
+        return skip(reason)
+    return lambda x: x
+
 def skipUnless(condition, reason):
     """
     Skip a test unless the condition is true.
