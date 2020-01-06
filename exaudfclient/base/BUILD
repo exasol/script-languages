@@ -1,5 +1,6 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt"])
+exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt", 
+	       "create_binary_wrapper.sh", "create_binary_wrapper_valgrind.sh", "create_binary_wrapper_valgrind_massif.sh"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
 
@@ -23,7 +24,6 @@ config_setting(
     define_values = {"bash": "true"},
 )
 
-
 config_setting(
     name = "fast_binary",
     define_values = {
@@ -35,6 +35,20 @@ config_setting(
     name = "slow_wrapper",
     define_values = {
         "binary_type": "slow_wrapper",
+        },
+)
+
+config_setting(
+    name = "valgrind_wrapper",
+    define_values = {
+        "wrapper_type": "valgrind_wrapper",
+        },
+)
+
+config_setting(
+    name = "valgrind_massif_wrapper",
+    define_values = {
+        "wrapper_type": "valgrind_massif_wrapper",
         },
 )
 
@@ -112,27 +126,31 @@ cc_binary(
 # - For performance reason, we can not wrap the binary into a shell script, as such this is only for local debugging and testing
 #   and we hardcode the paths for the production container
 
-SLOW_WRAPPER_BINARY_PY2="""
-  $(location create_binary_wrapper.sh) "$(location exaudfclient_bin)" "$(location exaudfclient)" "$(location exaudfclient.template.sh)"
-"""
+sh_library(
+    name = "wrapper_generator_bin",
+    srcs=select({
+        "//:valgrind_wrapper": ["//:create_binary_wrapper_valgrind.sh"],
+        "//:valgrind_massif_wrapper": ["//:create_binary_wrapper_valgrind_massif.sh"],
+        "//conditions:default": ["//:create_binary_wrapper.sh"]
+    })
+) 
+
+SLOW_WRAPPER_BINARY_PY2="""$(location //:wrapper_generator_bin) "$(location exaudfclient_bin)" "$(location exaudfclient)" "$(location exaudfclient.template.sh)" """
 FAST_BINARY_PY2="""cp "$(location exaudfclient_bin)" "$(location exaudfclient)" """
 CREATE_BINARY_PY2_SCRIPT=select({
         "//:fast_binary": FAST_BINARY_PY2,
         "//:slow_wrapper": SLOW_WRAPPER_BINARY_PY2,
         "//conditions:default": FAST_BINARY_PY2
     })
-
 genrule(
     name = "exaudfclient",
-    cmd = CREATE_BINARY_PY2_SCRIPT, 
+    cmd = CREATE_BINARY_PY2_SCRIPT,
     outs = ["exaudfclient"],
-    srcs = [":exaudfclient_bin", ":libexaudflib_complete.so", "exaudfclient.template.sh","create_binary_wrapper.sh"],
+    srcs = [":exaudfclient_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh","//:wrapper_generator_bin"],
     output_to_bindir = True
 )
 
-SLOW_WRAPPER_BINARY_PY3="""
-  $(location create_binary_wrapper.sh) "$(location exaudfclient_py3_bin)" "$(location exaudfclient_py3)" "$(location exaudfclient.template.sh)"
-"""
+SLOW_WRAPPER_BINARY_PY3="""$(location //:wrapper_generator_bin) "$(location exaudfclient_py3_bin)" "$(location exaudfclient_py3)" "$(location exaudfclient.template.sh)" """
 FAST_BINARY_PY3="""cp "$(location exaudfclient_py3_bin)" "$(location exaudfclient_py3)" """
 CREATE_BINARY_PY3_SCRIPT=select({
         "//:fast_binary": FAST_BINARY_PY3,
@@ -143,6 +161,6 @@ genrule(
     name = "exaudfclient_py3",
     cmd = CREATE_BINARY_PY3_SCRIPT,
     outs = ["exaudfclient_py3"],
-    srcs = [":exaudfclient_py3_bin", ":libexaudflib_complete.so", "exaudfclient.template.sh", "create_binary_wrapper.sh"],
+    srcs = [":exaudfclient_py3_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
     output_to_bindir = True
 )

@@ -1,4 +1,3 @@
-
 BENCHMARK_VM_ENABLED_DEFINE=select({
         "//:benchmark": ["ENABLE_BENCHMARK_VM"],
         "//conditions:default": []

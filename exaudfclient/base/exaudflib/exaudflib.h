@@ -230,7 +230,7 @@ extern __thread SWIGVM_params_t *SWIGVM_params;
 
 
 class SWIGMetadata {
-    SWIGMetadata* impl;
+    SWIGMetadata* impl=nullptr;
     typedef SWIGVMContainers::SWIGMetadata* (*CREATE_METADATA_FUN)();
     public:
         SWIGMetadata()
@@ -245,7 +245,11 @@ class SWIGMetadata {
         /* hack: use this constructor to avoid cycling loading of this class */
         SWIGMetadata(bool) {}
 
-        virtual ~SWIGMetadata() { }
+        virtual ~SWIGMetadata() { 
+		if (impl!=nullptr) {
+        	    delete impl;
+	        }
+	}
         virtual const char* databaseName() { return impl->databaseName(); }
         virtual const char* databaseVersion() { return impl->databaseVersion(); }
         virtual const char* scriptName() { return impl->scriptName(); }
