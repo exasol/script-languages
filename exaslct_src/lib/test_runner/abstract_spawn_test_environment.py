@@ -12,6 +12,8 @@ from exaslct_src.lib.test_runner.populate_data import PopulateEngineSmallTestDat
 from exaslct_src.lib.test_runner.spawn_test_container import SpawnTestContainer
 from exaslct_src.lib.test_runner.upload_exa_jdbc import UploadExaJDBC
 from exaslct_src.lib.test_runner.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
+from exaslct_src.lib.test_runner.environment_type import EnvironmentType
+
 
 DATABASE = "database"
 
@@ -22,6 +24,7 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
                                    GeneralSpawnTestEnvironmentParameter,
                                    DatabaseCredentialsParameter):
     environment_name = luigi.Parameter()
+    environment_type = luigi.EnumParameter(enum=EnvironmentType)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,15 +42,17 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
         database_info = None
         test_container_info = None
         while not is_database_ready and attempt < self.max_start_attempts:
-            database_info, is_database_ready, test_container_info = \
+            network_info, database_info, is_database_ready, test_container_info = \
                 yield from self._start_database(attempt)
             attempt += 1
         if not is_database_ready and not attempt < self.max_start_attempts:
             raise Exception(f"Maximum attempts {attempt} to start the database reached.")
         test_environment_info = \
             EnvironmentInfo(name=self.environment_name,
+                            env_type=self.environment_type,
                             database_info=database_info,
-                            test_container_info=test_container_info)
+                            test_container_info=test_container_info,
+                            network_info=network_info)
         return test_environment_info
 
     def _start_database(self, attempt):
@@ -56,7 +61,7 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
             yield from self._spawn_database_and_test_container(network_info, attempt)
         is_database_ready = yield from self._wait_for_database(
             database_info, test_container_info, attempt)
-        return database_info, is_database_ready, test_container_info
+        return network_info, database_info, is_database_ready, test_container_info
 
     def _create_network(self, attempt):
         network_info_future = yield from self.run_dependencies(self.create_network_task(attempt))
