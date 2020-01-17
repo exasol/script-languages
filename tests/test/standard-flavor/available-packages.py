@@ -132,6 +132,7 @@ class AvailablePython3Packages(udf.TestCase):
     def test_33(self): self.import_test('pycurl')
     def test_34(self): self.import_test('requests')
     def test_35(self): self.import_test('pyexasol')
+    def test_36(self): self.import_test('EXASOL')
 
 
 class AvailableRPackages(udf.TestCase):

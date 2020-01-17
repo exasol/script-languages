@@ -9,16 +9,17 @@ import udf
 
 
 class WebsocketAPIConnectionTest(udf.TestCase):
+    # TODO use dsn and credentials injected into the testcase
     connection = "localhost:8888"
     user = "sys"
     pwd = "exasol"
 
     def setUp(self):
         self.query('create schema websocket_api', ignore_errors=True)
-
-    def test_unsecure_websocket_api_connection(self):
+    
+    def run_unsecure_websocket_api_connection(self, python_version):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT websocket_api.connect_unsecure() returns int AS
+            CREATE OR REPLACE %s SCALAR SCRIPT websocket_api.connect_unsecure() returns int AS
             import EXASOL
             import os
             def run(ctx):
@@ -29,12 +30,12 @@ class WebsocketAPIConnectionTest(udf.TestCase):
                         for row in cursor:
                             pass
             /
-            ''' % (self.connection, self.user, self.pwd)))
+            ''' % (python_version, self.connection, self.user, self.pwd)))
         self.query('''SELECT websocket_api.connect_unsecure() FROM dual''')
 
-    def test_secure_websocket_api_connection(self):
+    def run_secure_websocket_api_connection(self, python_version):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT websocket_api.connect_secure() returns int AS
+            CREATE OR REPLACE %s SCALAR SCRIPT websocket_api.connect_secure() returns int AS
             import EXASOL
             import ssl
             import os
@@ -46,8 +47,20 @@ class WebsocketAPIConnectionTest(udf.TestCase):
                         for row in cursor:
                             pass
             /
-            ''' % (self.connection, self.user, self.pwd)))
+            ''' % (python_version, self.connection, self.user, self.pwd)))
         self.query('''SELECT websocket_api.connect_secure() FROM dual''')
+
+    def test_unsecure_websocket_api_connection_python2(self):
+        self.run_unsecure_websocket_api_connection("PYTHON")
+
+    def test_unsecure_websocket_api_connection_python3(self):
+        self.run_unsecure_websocket_api_connection("PYTHON3")
+    
+    def test_secure_websocket_api_connection_python2(self):
+        self.run_secure_websocket_api_connection("PYTHON")
+
+    def test_secure_websocket_api_connection_python3(self):
+        self.run_secure_websocket_api_connection("PYTHON3")
 
     def tearDown(self):
         self.query("drop schema websocket_api cascade")
