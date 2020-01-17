@@ -4,7 +4,6 @@ import jsonpickle
 import luigi
 
 from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
 from exaslct_src.lib.docker_build_base import DockerBuildBase
 from exaslct_src.lib.docker_config import source_docker_repository_config, target_docker_repository_config

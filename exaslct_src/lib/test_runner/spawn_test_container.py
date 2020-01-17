@@ -11,8 +11,6 @@ from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBas
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
-from exaslct_src.lib.data.dependency_collector.dependency_container_info_collector import CONTAINER_INFO
-from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker_config import docker_client_config
