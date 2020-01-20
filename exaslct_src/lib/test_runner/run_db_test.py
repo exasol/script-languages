@@ -69,6 +69,12 @@ class RunDBTest(FlavorBaseTask,
         thread = StillRunningLoggerThread(still_running_logger)
         thread.start()
         environment = FrozenDictToDict().convert(self.test_environment_vars)
+        environment["TEST_ENVIRONMENT_TYPE"]=self.test_environment_info.type.name
+        environment["TEST_NETWORK_NAME"]=self.test_environment_info.network_info.network_name
+        environment["TEST_ENVIRONMENT_NAME"]=self.test_environment_info.name
+        if self.test_environment_info.database_info.container_info is not None:
+            environment["TEST_DB_CONTAINER_NAME"]=self.test_environment_info.database_info.container_info.container_name
+
         exit_code, output = test_container.exec_run(cmd=bash_cmd,
                                                     environment=environment)
         thread.stop()
