@@ -5,23 +5,17 @@ import luigi
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState
 from exaslct_src.lib.docker.push_log_handler import PushLogHandler
-from exaslct_src.lib.docker_config import docker_client_config, target_docker_repository_config
+from exaslct_src.lib.docker_config import target_docker_repository_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 
 
-class DockerPushImageBaseTask(DependencyLoggerBaseTask):
+class DockerPushImageBaseTask(DockerBaseTask):
     image_name = luigi.Parameter()
     force_push = luigi.BoolParameter(False, visibility=luigi.parameter.ParameterVisibility.HIDDEN)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
-
-    def __del__(self):
-        self._client.close()
 
     def register_required(self):
         task = self.get_docker_image_task()

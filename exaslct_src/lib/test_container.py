@@ -132,7 +132,7 @@ class TestContainer(FlavorsBaseTask,
 
         if not test_result.tests_are_ok:
             raise Exception("Some tests failed")
-
+            
 
 class TestFlavorContainer(FlavorBaseTask,
                           TestContainerParameter,

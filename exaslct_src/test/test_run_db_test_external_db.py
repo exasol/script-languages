@@ -33,8 +33,7 @@ class DockerRunDBTestExternalDBTest(unittest.TestCase):
             f"--external-exasol-bucketfs-write-password {self.docker_environment.bucketfs_password}",
         ])
         command = f"./exaslct run-db-test {arguments}"
-        self.assertRaises(CalledProcessError,
-                          lambda: self.test_environment.run_command(
+        self.test_environment.run_command(
                               command, track_task_dependencies=True))
 
 

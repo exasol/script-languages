@@ -2,6 +2,7 @@ import getpass
 import json
 import os
 import shutil
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, List, Tuple, Set
@@ -92,14 +93,21 @@ def run_task(task_creator: Callable[[], DependencyLoggerBaseTask],
     setup_worker()
     start_time = datetime.now()
     task = task_creator()
-    no_scheduling_errors = luigi.build([task], workers=workers, local_scheduler=True, log_level="INFO")
-    success = not task.failed_target.exists() and no_scheduling_errors
-    if success:
-        handle_success(task, task_dependencies_dot_file, start_time)
-        return True, task
-    else:
-        handle_failure(task, task_dependencies_dot_file, start_time)
-        return False, task
+    try:
+        no_scheduling_errors = luigi.build([task], workers=workers, local_scheduler=True, log_level="INFO")
+        success = not task.failed_target.exists() and no_scheduling_errors
+        if success:
+            handle_success(task, task_dependencies_dot_file, start_time)
+            return True, task
+        else:
+            handle_failure(task, task_dependencies_dot_file, start_time)
+            return False, task
+    except BaseException as e:
+        traceback.print_exc()
+        print("Going to abort the task %s"%task)
+        return False, task # TODO return exception
+    finally:
+        task.cleanup()
 
 
 def handle_failure(task: DependencyLoggerBaseTask, task_dependencies_dot_file: str, start_time: datetime):

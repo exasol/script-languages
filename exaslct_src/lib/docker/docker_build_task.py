@@ -13,13 +13,6 @@ from exaslct_src.lib.still_running_logger import StillRunningLogger
 
 class DockerBuildImageTask(DockerImageCreatorBaseTask):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._low_level_client = docker_client_config().get_low_level_client()
-
-    def __del__(self):
-        self._low_level_client.close()
-
     def run_task(self):
         self.logger.info("Build docker image %s, log file can be found here %s",
                           self.image_info.get_target_complete_name(), self.get_log_path())

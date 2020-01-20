@@ -4,6 +4,7 @@ from typing import Dict, Any
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 
 
 class FlavorsBaseTask(DependencyLoggerBaseTask):
@@ -25,7 +26,7 @@ class FlavorsBaseTask(DependencyLoggerBaseTask):
         return task
 
 
-class FlavorBaseTask(DependencyLoggerBaseTask):
+class FlavorBaseTask(DockerBaseTask):
     flavor_path = luigi.Parameter()
 
     def __init__(self, *args, **kwargs):

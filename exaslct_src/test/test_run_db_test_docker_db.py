@@ -21,9 +21,8 @@ class DockerRunDBTestDockerDBTest(unittest.TestCase):
 
     def test_run_db_tests_docker_db(self):
         command = f"./exaslct run-db-test "
-        self.assertRaises(CalledProcessError,
-                          lambda: self.test_environment.run_command(
-                              command, track_task_dependencies=True))
+        self.test_environment.run_command(
+                              command, track_task_dependencies=True)
 
 
 if __name__ == '__main__':

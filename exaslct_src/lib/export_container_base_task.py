@@ -15,7 +15,6 @@ from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.command_log_handler import CommandLogHandler
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.data.release_info import ExportInfo
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.still_running_logger import StillRunningLogger
@@ -110,15 +109,11 @@ class ExportContainerBaseTask(FlavorBaseTask):
 
     def _create_and_export_container(self, release_image_name: str, temp_directory: str):
         self.logger.info("Export container %s", release_image_name)
-        client = docker_client_config().get_client()
+        container = self._client.containers.create(image=release_image_name)
         try:
-            container = client.containers.create(image=release_image_name)
-            try:
-                return self._export_container(container, release_image_name, temp_directory)
-            finally:
-                container.remove(force=True)
+            return self._export_container(container, release_image_name, temp_directory)
         finally:
-            client.close()
+            container.remove(force=True)
 
     def _export_container(self, container, release_image_name: str, temp_directory: str):
         generator = container.export(chunk_size=humanfriendly.parse_size("10mb"))

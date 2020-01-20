@@ -13,6 +13,7 @@ from docker.models.volumes import Volume
 from jinja2 import Template
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
@@ -20,7 +21,6 @@ from exaslct_src.lib.data.database_info import DatabaseInfo
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker.pull_log_handler import PullLogHandler
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 from exaslct_src.lib.test_runner.docker_db_test_environment_parameter import DockerDBTestEnvironmentParameter
 
@@ -28,7 +28,8 @@ BUCKETFS_PORT = "6583"
 DB_PORT = "8888"
 
 
-class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentParameter):
+class SpawnTestDockerDatabase(DockerBaseTask, DockerDBTestEnvironmentParameter):
+
     environment_name = luigi.Parameter()
     db_container_name = luigi.Parameter()
     network_info = JsonPickleParameter(DockerNetworkInfo, significant=False)  # type: DockerNetworkInfo
@@ -37,18 +38,12 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
-        self._low_level_client = docker_client_config().get_low_level_client()
         if self.ip_address_index_in_subnet < 0:
             raise Exception(
                 "ip_address_index_in_subnet needs to be greater than 0 got %s"
                 % self.ip_address_index_in_subnet)
         self.db_version = "-".join(self.docker_db_image_version.split("-")[0:-1])
         self.docker_db_config_path = f"docker_db_config/{self.db_version}"
-
-    def __del__(self):
-        self._client.close()
-        self._low_level_client.close()
 
     def run_task(self):
         subnet = netaddr.IPNetwork(self.network_info.subnet)
@@ -154,8 +149,8 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
 
     def _prepare_db_volume(self, db_private_network: str,
                            docker_db_image_info: ImageInfo) -> Volume:
-        db_volume_preperation_container_name = f"""{self.db_container_name}_preparation"""
         db_volume_name = self._get_db_volume_name()
+        db_volume_preperation_container_name = self._get_db_volume_preperation_container_name()
         self._remove_container(db_volume_preperation_container_name)
         self._remove_volume(db_volume_name)
         db_volume, volume_preparation_container = \
@@ -170,6 +165,11 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
             return db_volume
         finally:
             volume_preparation_container.remove(force=True)
+
+    def _get_db_volume_preperation_container_name(self):
+        db_volume_preperation_container_name = f"""{self.db_container_name}_preparation"""
+        return db_volume_preperation_container_name
+       
 
     def _get_db_volume_name(self):
         db_volume_name = f"""{self.db_container_name}_volume"""
@@ -238,3 +238,10 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
         if exit_code != 0:
             raise Exception(
                 "Error during preperation of docker-db volume %s got following output %s" % (db_volume.name, output))
+
+    def cleanup_task(self):
+        db_volume_preperation_container_name = self._get_db_volume_preperation_container_name()
+        self._remove_container(db_volume_preperation_container_name)
+        self._remove_container(self.db_container_name)
+        db_volume_name = self._get_db_volume_name()
+        self._remove_volume(db_volume_name)

@@ -6,7 +6,6 @@ import luigi
 
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.data.release_info import ExportInfo
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.export_containers import ExportFlavorContainer
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentials
@@ -17,23 +16,6 @@ from exaslct_src.lib.test_runner.run_db_tests_parameter import RunDBTestsInTestC
 from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironment
 from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
-
-
-class StopTestEnvironment():
-    logger = logging.getLogger('luigi-interface')
-
-    @classmethod
-    def stop(cls, test_environment_info: EnvironmentInfo):
-        cls.logger.info("Stopping environment %s", test_environment_info.name)
-        _docker_config = docker_client_config()
-        _client = docker_client_config().get_client()
-        if test_environment_info.database_info.container_info is not None:
-            db_container = _client.containers.get(test_environment_info.database_info.container_info.container_name)
-            db_container.remove(force=True, v=True)
-        test_container = _client.containers.get(test_environment_info.test_container_info.container_name)
-        test_container.remove(force=True, v=True)
-        network = _client.networks.get(test_environment_info.test_container_info.network_info.network_name)
-        network.remove()
 
 
 # TODO execute tests only if the exported container is new build
@@ -169,16 +151,3 @@ class TestRunnerDBTestTask(FlavorBaseTask,
                     value = "=".join(split[1:])
                     test_config[key] = value
         return test_config
-
-    def on_failure(self, exception):
-        if not self.reuse_database and \
-                self.test_environment_info is not None \
-                and isinstance(exception, Exception) \
-                and "Some test failed." in str(exception):
-            StopTestEnvironment.stop(self.test_environment_info)
-        super().on_failure(exception)
-
-    def on_success(self):
-        if not self.reuse_database and self.test_environment_info is not None:
-            StopTestEnvironment.stop(self.test_environment_info)
-        super().on_success()

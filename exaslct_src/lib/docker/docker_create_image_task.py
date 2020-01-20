@@ -10,10 +10,10 @@ from exaslct_src.lib.data.required_task_info import RequiredTaskInfo, RequiredTa
 from exaslct_src.lib.docker.docker_build_task import DockerBuildImageTask
 from exaslct_src.lib.docker.docker_image_pull_task import DockerPullImageTask
 from exaslct_src.lib.docker.docker_load_task import DockerLoadImageTask
-from exaslct_src.lib.docker_config import docker_client_config
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 
 
-class DockerCreateImageTask(DependencyLoggerBaseTask):
+class DockerCreateImageTask(DockerBaseTask):
     image_name = luigi.Parameter()
     # ParameterVisibility needs to be hidden instead of private, because otherwise a MissingParameter gets thrown
     image_info = JsonPickleParameter(ImageInfo,
@@ -58,7 +58,7 @@ class DockerCreateImageTask(DependencyLoggerBaseTask):
                             self.task_id, image_info.image_state, image_info.get_target_complete_name())
 
     def rename_source_image_to_target_image(self, image_info):
-        docker_client_config().get_client().images.get(image_info.get_source_complete_name()).tag(
+        self._client.images.get(image_info.get_source_complete_name()).tag(
             repository=image_info.target_repository_name,
             tag=image_info.get_target_complete_tag()
         )
