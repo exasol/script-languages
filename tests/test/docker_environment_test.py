@@ -49,22 +49,24 @@ class DockerInTestEnvironment(udf.TestCase):
         import docker
         client=udf.get_docker_client()
         container=client.containers.run(image="busybox:1",command="nc -v -l -s 0.0.0.0 -p 7777",detach=True,network=os.environ["TEST_NETWORK_NAME"])
+        container.reload()
         try:
             schema="docker_envrionment_test"
             self.query(udf.fixindent("DROP SCHEMA %s CASCADE"%schema),ignore_errors=True)
             self.query(udf.fixindent("CREATE SCHEMA %s"%schema))
             self.query(udf.fixindent("OPEN SCHEMA %s"%schema))
             self.query(udf.fixindent('''
-                CREATE OR REPLACE PYTHON SCALAR SCRIPT connect_container(a int)  returns int AS
+                CREATE OR REPLACE PYTHON SCALAR SCRIPT connect_container(host varchar(1000), port int)  returns int AS
                 import socket
                 def run(ctx):
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect(("%s", 7777))
+                    s.connect((ctx.host, ctx.port))
                     return 0
                 /
-                ''' % (container.attrs['NetworkSettings']['IPAddress'])))
-            print(container.attrs['NetworkSettings']['IPAddress'])
-            self.query("select connect_container(1)")
+                '''))
+            host=container.attrs['NetworkSettings']['Networks'][os.environ["TEST_NETWORK_NAME"]]['IPAddress']
+            print("host",host)
+            self.query("select connect_container('%s',%s)"%(host,7777))
             print(container.logs())
         finally:
             try:
