@@ -108,7 +108,8 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
                 network_mode=None,
                 command="sleep infinity",
                 detach=True,
-                volumes=volumes)
+                volumes=volumes,
+                labels={"test_environment_name":self.environment_name,"container_type":"test_container"})
         docker_network = self._client.networks.get(network_info.network_name)
         network_aliases = self._get_network_aliases()
         docker_network.connect(test_container, ipv4_address=ip_address, aliases=network_aliases)

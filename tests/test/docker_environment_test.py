@@ -6,52 +6,16 @@ import sys
 sys.path.append(os.path.realpath(__file__ + '/../../lib'))
 
 import udf
+import docker_db_environment
 
-def is_docker_environment():
-    return os.environ["TEST_ENVIRONMENT_TYPE"]=="docker_db"
 
-def db_container_name_is_set():
-    return os.environ["TEST_DB_CONTAINER_NAME"] is not None
+class DockerDBEnvironmentTest(udf.TestCase):
 
-def test_network_name_is_set():
-    return os.environ["TEST_NETWORK_NAME"] is not None
-
-class DockerInTestEnvironment(udf.TestCase):
-
-    @udf.skipIfNot(udf.docker_available, reason="This test requires a docker daemon to start 3rd party software in docker container")
-    def test_docker(self):
-        import docker
-        client=udf.get_docker_client()
-        print(client.containers.list())
-
-    @udf.skipIf(is_docker_environment, reason="This test requires a environment with a docker-db")
-    def test_docker_environment(self):
-        self.fail()
-
-    @udf.skipIfNot(udf.docker_available, reason="This test requires a docker daemon to start 3rd party software in docker container")
-    @udf.skipIfNot(test_network_name_is_set, reason="This test requires a test network to be set")
-    def test_network_name_is_set(self):
-        import docker
-        client=udf.get_docker_client()
-        print(client.networks.get(os.environ["TEST_NETWORK_NAME"]))
-
-    @udf.skipIfNot(udf.docker_available, reason="This test requires a docker daemon to start 3rd party software in docker container")
-    @udf.skipIfNot(db_container_name_is_set, reason="This test requires the db container name to be set")
-    def test_db_container_name_is_set(self):
-        import docker
-        client=udf.get_docker_client()
-        print(client.containers.get(os.environ["TEST_DB_CONTAINER_NAME"]))
-
-    @udf.skipIfNot(udf.docker_available, reason="This test requires a docker daemon to start 3rd party software in docker container")
-    @udf.skipIfNot(test_network_name_is_set, reason="This test requires a test network to be set")
-    @udf.skipIfNot(is_docker_environment, reason="This test requires a environment with a docker-db")
+    @udf.skipIfNot(docker_db_environment.is_available, reason="This test requires a docker-db environment")
     def test_connect_from_udf_to_other_container(self):
-        import docker
-        client=udf.get_docker_client()
-        container=client.containers.run(image="busybox:1",command="nc -v -l -s 0.0.0.0 -p 7777",detach=True,network=os.environ["TEST_NETWORK_NAME"])
-        container.reload()
+        schema="test_connect_from_udf_to_other_container"
+        env=docker_db_environment.DockerDBEnvironment(schema)
         try:
-            schema="docker_envrionment_test"
             self.query(udf.fixindent("DROP SCHEMA %s CASCADE"%schema),ignore_errors=True)
             self.query(udf.fixindent("CREATE SCHEMA %s"%schema))
             self.query(udf.fixindent("OPEN SCHEMA %s"%schema))
@@ -64,19 +28,20 @@ class DockerInTestEnvironment(udf.TestCase):
                     return 0
                 /
                 '''))
-            host=container.attrs['NetworkSettings']['Networks'][os.environ["TEST_NETWORK_NAME"]]['IPAddress']
-            print("host",host)
+            container=env.run(name="netcat",image="busybox:1",command="nc -v -l -s 0.0.0.0 -p 7777",)
+            host=env.get_ip_address_of_container(container)
             self.query("select connect_container('%s',%s)"%(host,7777))
-            print(container.logs())
+            self.assertTrue("connect" in container.logs())
         finally:
             try:
                 self.query(udf.fixindent("DROP SCHEMA %s CASCADE"%schema))
             except:
                 pass
             try:
-                container.kill()
+                env.close()
             except:
                 pass
+
 if __name__ == '__main__':
     udf.main()
 
