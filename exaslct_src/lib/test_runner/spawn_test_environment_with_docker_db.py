@@ -8,6 +8,7 @@ from exaslct_src.lib.test_runner.prepare_network_for_test_environment import Pre
 from exaslct_src.lib.test_runner.spawn_test_database import SpawnTestDockerDatabase
 from exaslct_src.lib.test_runner.abstract_spawn_test_environment import AbstractSpawnTestEnvironment
 from exaslct_src.lib.test_runner.wait_for_test_docker_database import WaitForTestDockerDatabase
+from exaslct_src.lib.test_runner.environment_type import EnvironmentType
 
 
 class SpawnTestEnvironmentWithDockerDB(
@@ -17,6 +18,9 @@ class SpawnTestEnvironmentWithDockerDB(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.db_container_name = f"""db_container_{self.environment_name}"""
+
+    def get_environment_type(self):
+        return EnvironmentType.docker_db
 
     def create_network_task(self, attempt: int):
         return \

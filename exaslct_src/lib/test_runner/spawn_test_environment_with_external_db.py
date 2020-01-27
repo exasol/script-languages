@@ -7,11 +7,16 @@ from exaslct_src.lib.test_runner.external_test_environment_parameter import Exte
 from exaslct_src.lib.test_runner.prepare_network_for_test_environment import PrepareDockerNetworkForTestEnvironment
 from exaslct_src.lib.test_runner.setup_external_database_host import SetupExternalDatabaseHost
 from exaslct_src.lib.test_runner.wait_for_external_database import WaitForTestExternalDatabase
+from exaslct_src.lib.test_runner.environment_type import EnvironmentType
+
 
 
 class SpawnTestEnvironmentWithExternalDB(AbstractSpawnTestEnvironment,
                                          ExternalDatabaseXMLRPCParameter,
                                          ExternalDatabaseHostParameter):
+
+    def get_environment_type(self):
+        return EnvironmentType.external_db
 
     def create_network_task(self, attempt: int):
         return \

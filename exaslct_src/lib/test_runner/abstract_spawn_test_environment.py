@@ -24,12 +24,14 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
                                    GeneralSpawnTestEnvironmentParameter,
                                    DatabaseCredentialsParameter):
     environment_name = luigi.Parameter()
-    environment_type = luigi.EnumParameter(enum=EnvironmentType)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.test_container_name = f"""test_container_{self.environment_name}"""
         self.network_name = f"""db_network_{self.environment_name}"""
+
+    def get_environment_type(self):
+        raise AbstractMethodException() 
 
     def run_task(self):
         test_environment_info = yield from self._attempt_database_start()
@@ -49,7 +51,7 @@ class AbstractSpawnTestEnvironment(DependencyLoggerBaseTask,
             raise Exception(f"Maximum attempts {attempt} to start the database reached.")
         test_environment_info = \
             EnvironmentInfo(name=self.environment_name,
-                            env_type=self.environment_type,
+                            env_type=self.get_environment_type(),
                             database_info=database_info,
                             test_container_info=test_container_info,
                             network_info=network_info)
