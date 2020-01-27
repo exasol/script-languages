@@ -200,7 +200,8 @@ class SpawnTestDockerDatabase(DependencyLoggerBaseTask, DockerDBTestEnvironmentP
                 command="sleep infinity",
                 detach=True,
                 volumes={
-                    db_volume.name: {"bind": "/exa", "mode": "rw"}})
+                    db_volume.name: {"bind": "/exa", "mode": "rw"}},
+                labels={"test_environment_name":self.environment_name,"container_type":"db_container"})
         return db_volume, volume_preparation_container
 
     def _upload_init_db_files(self,

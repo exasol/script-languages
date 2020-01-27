@@ -5,14 +5,12 @@ import jsonpickle
 import luigi
 import netaddr
 from luigi import LocalTarget
-
+from docker.transport import unixconn
 from exaslct_src.lib.analyze_test_container import AnalyzeTestContainer, DockerTestContainerBuild
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
-from exaslct_src.lib.data.dependency_collector.dependency_container_info_collector import CONTAINER_INFO
-from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.docker_config import docker_client_config
@@ -86,6 +84,23 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
         # we need to mount the release directory into the test_container.
         exports_host_path = pathlib.Path(self._get_export_directory()).absolute()
         tests_host_path = pathlib.Path("./tests").absolute()
+        volumes = {
+                    exports_host_path: {
+                        "bind": "/exports",
+                        "mode": "rw"
+                        },
+                    tests_host_path: {
+                        "bind": "/tests_src",
+                        "mode": "rw"
+                        }
+                    }
+        docker_unix_sockets=[i for i in self._client.api.adapters.values() if isinstance(i,unixconn.UnixHTTPAdapter)]
+        if len(docker_unix_sockets)>0:
+            host_docker_socker_path = docker_unix_sockets[0].socket_path
+            volumes[host_docker_socker_path]={
+                        "bind": "/var/run/docker.sock",
+                        "mode": "rw"
+                    }
         test_container = \
             self._client.containers.create(
                 image=test_container_image_info.get_target_complete_name(),
@@ -93,16 +108,8 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
                 network_mode=None,
                 command="sleep infinity",
                 detach=True,
-                volumes={
-                    exports_host_path: {
-                        "bind": "/exports",
-                        "mode": "ro"
-                    },
-                    tests_host_path: {
-                        "bind": "/tests_src",
-                        "mode": "ro"
-                    }
-                })
+                volumes=volumes,
+                labels={"test_environment_name":self.environment_name,"container_type":"test_container"})
         docker_network = self._client.networks.get(network_info.network_name)
         network_aliases = self._get_network_aliases()
         docker_network.connect(test_container, ipv4_address=ip_address, aliases=network_aliases)

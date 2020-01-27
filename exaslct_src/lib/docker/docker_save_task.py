@@ -9,7 +9,6 @@ import luigi
 from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.build_config import build_config
-from exaslct_src.lib.data.dependency_collector.dependency_image_info_collector import DependencyImageInfoCollector
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState
 from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.log_config import log_config

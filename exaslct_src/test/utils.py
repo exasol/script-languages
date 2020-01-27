@@ -29,7 +29,7 @@ class ExaslctDockerTestEnvironment():
     def close(self):
         remove_docker_container([f"test_container_{self.name}",
                                  f"db_container_{self.name}"])
-
+        remove_docker_volumes([f"db_container_{self.name}_volume"])
 
 class ExaslctTestEnvironment():
 
@@ -99,7 +99,7 @@ class ExaslctTestEnvironment():
             bucketfs_password="write",
             database_port=find_free_port(),
             bucketfs_port=find_free_port())
-        arguments = " ".join([f"--environment-name {self.name}",
+        arguments = " ".join([f"--environment-name {parameter.name}",
                               f"--database-port-forward {parameter.database_port}",
                               f"--bucketfs-port-forward {parameter.bucketfs_port}"])
         command = f"./exaslct spawn-test-environment {arguments}"
@@ -124,6 +124,17 @@ def remove_docker_container(containers):
         for container in containers:
             try:
                 docker_client.containers.get(container).remove(force=True)
+            except Exception as e:
+                print(e)
+    finally:
+        docker_client.close()
+
+def remove_docker_volumes(volumes):
+    docker_client = docker.from_env()
+    try:
+        for volume in volumes:
+            try:
+                docker_client.volumes.get(volume).remove(force=True)
             except Exception as e:
                 print(e)
     finally:
