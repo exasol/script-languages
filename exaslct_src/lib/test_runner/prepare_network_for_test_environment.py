@@ -1,27 +1,17 @@
 import docker
 import luigi
 
-from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
-from exaslct_src.lib.docker_config import docker_client_config
 
 
-class PrepareDockerNetworkForTestEnvironment(DependencyLoggerBaseTask):
+class PrepareDockerNetworkForTestEnvironment(DockerBaseTask):
     environment_name = luigi.Parameter()
     network_name = luigi.Parameter()
     test_container_name = luigi.Parameter(significant=False)
     db_container_name = luigi.OptionalParameter(None, significant=False)
     reuse = luigi.BoolParameter(False, significant=False)
     attempt = luigi.IntParameter(-1)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
-        self._low_level_client = docker_client_config().get_low_level_client()
-
-    def __del__(self):
-        self._client.close()
-        self._low_level_client.close()
 
     def run_task(self):
         self.network_info = None
@@ -83,3 +73,9 @@ class PrepareDockerNetworkForTestEnvironment(DependencyLoggerBaseTask):
             self.logger.info("Removed container %s", container_name)
         except docker.errors.NotFound:
             pass
+
+    def cleanup_task(self):
+        self.remove_container(self.test_container_name)
+        if self.db_container_name is not None:
+            self.remove_container(self.db_container_name)
+        self.remove_network(self.network_name)

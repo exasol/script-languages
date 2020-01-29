@@ -4,13 +4,13 @@ from pathlib import Path
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 
 
-class PopulateEngineSmallTestDataToDatabase(DependencyLoggerBaseTask, DatabaseCredentialsParameter):
+class PopulateEngineSmallTestDataToDatabase(DockerBaseTask, DatabaseCredentialsParameter):
     logger = logging.getLogger('luigi-interface')
 
     environment_name = luigi.Parameter()
@@ -20,7 +20,6 @@ class PopulateEngineSmallTestDataToDatabase(DependencyLoggerBaseTask, DatabaseCr
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
         self._test_container_info = self.test_environment_info.test_container_info
         self._database_info = self.test_environment_info.database_info
 

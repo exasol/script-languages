@@ -6,9 +6,11 @@ from typing import Dict, List, Generator, Any, Union
 
 import luigi
 import six
+import shutil
 from luigi import Task, util
 from luigi.parameter import ParameterVisibility
 from luigi.task import TASK_ID_TRUNCATE_HASH
+
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.base.abstract_task_future import AbstractTaskFuture, DEFAULT_RETURN_OBJECT_NAME
@@ -23,6 +25,7 @@ RETURN_TARGETS = "return_targets"
 
 COMPLETION_TARGET = "completion_target"
 
+RUN_DEPENDENCIES = "run_dependencies"
 
 class RequiresTaskFuture(AbstractTaskFuture):
 
@@ -70,17 +73,33 @@ class BaseTask(Task):
 
     def __init__(self, *args, **kwargs):
         self._registered_tasks = []
+        self._run_dependencies_tasks = []
         self._registered_return_targets = {}
         self._task_state = TaskState.INIT
         super().__init__(*args, **kwargs)
         self.task_id = self.task_id_str(self.get_task_family(),
                                         self.get_parameter_as_string_dict())
         self.__hash = hash(self.task_id)
+        self._init_non_pickle_attributes()
+        self.register_required()
+        self._task_state = TaskState.NONE
+    
+    def _init_non_pickle_attributes(self):
         logger = logging.getLogger(f'luigi-interface.{self.__class__.__name__}')
         self.logger = TaskLoggerWrapper(logger, self.__repr__())
         self._complete_target = PickleTarget(path=self._get_tmp_path_for_completion_target())
-        self.register_required()
-        self._task_state = TaskState.NONE
+        self._run_dependencies_target = PickleTarget(path=self._get_tmp_path_for_run_dependencies())
+
+    def __getstate__(self):
+        new_dict=dict(self.__dict__)
+        del new_dict["logger"]
+        del new_dict["_complete_target"]
+        del new_dict["_run_dependencies_target"]
+        return new_dict
+
+    def __setstate__(self, new_dict):
+        self.__dict__ = new_dict
+        self._init_non_pickle_attributes()
 
     def task_id_str(self, task_family, params):
         """
@@ -113,6 +132,9 @@ class BaseTask(Task):
 
     def _get_tmp_path_for_completion_target(self) -> Path:
         return Path(self._get_tmp_path_for_task(), COMPLETION_TARGET)
+
+    def _get_tmp_path_for_run_dependencies(self) -> Path:
+        return Path(self._get_tmp_path_for_task(), RUN_DEPENDENCIES)
 
     def _get_tmp_path_for_task(self) -> Path:
         return Path(self._get_tmp_path_for_job(),
@@ -215,17 +237,29 @@ class BaseTask(Task):
 
     def run_dependencies(self, tasks) -> Generator["BaseTask", PickleTarget, Any]:
         if self._task_state == TaskState.RUN:
+            self._register_run_dependencies(tasks)
+            self._run_dependencies_target.write(self._run_dependencies_tasks)
             completion_targets = yield tasks
-            task_futures = self.generate_run_task_furtures(completion_targets)
+            task_futures = self._generate_run_task_furtures(completion_targets)
             return task_futures
         else:
             raise WrongTaskStateException(self._task_state, "run_dependency")
 
-    def generate_run_task_furtures(self, completion_targets):
+    def _register_run_dependencies(self, tasks):
+        if isinstance(tasks, dict):
+            for key, task in tasks.items():
+                self._register_run_dependencies(task)
+        elif isinstance(tasks, list):
+            for task in tasks:
+                self._register_run_dependencies(task)
+        elif isinstance(tasks, BaseTask):
+            self._run_dependencies_tasks.append(tasks)
+
+    def _generate_run_task_furtures(self, completion_targets):
         if isinstance(completion_targets, dict):
-            return {key: self.generate_run_task_furtures(task) for key, task in completion_targets.items()}
+            return {key: self._generate_run_task_furtures(task) for key, task in completion_targets.items()}
         elif isinstance(completion_targets, list):
-            return [self.generate_run_task_furtures(task) for task in completion_targets]
+            return [self._generate_run_task_furtures(task) for task in completion_targets]
         elif isinstance(completion_targets, PickleTarget):
             return RunTaskFuture(completion_targets)
         else:
@@ -273,3 +307,33 @@ class BaseTask(Task):
         params["caller_output_path"] = self._extend_output_path()
         params.update(kwargs)
         return task_class(**params)
+
+    def cleanup_child_task(self):
+        if self._run_dependencies_target.exists():
+            _run_dependencies_tasks_from_target=self._run_dependencies_target.read()
+        else:
+            _run_dependencies_tasks_from_target=[]
+        _run_dependencies_tasks=self._run_dependencies_tasks+_run_dependencies_tasks_from_target
+        reversed_run_dependencies_task_list=list(_run_dependencies_tasks)
+        reversed_run_dependencies_task_list.reverse()
+        for task in reversed_run_dependencies_task_list:
+            task.cleanup()
+        
+        reversed_registered_task_list=list(self._registered_tasks)
+        reversed_registered_task_list.reverse()
+        for task in reversed_registered_task_list:
+            task.cleanup()
+
+    def cleanup_task(self):
+        pass
+
+    def cleanup(self):
+        self.logger.info("Cleaning up")
+        if self._task_state != TaskState.CLEANUP and self._task_state != TaskState.CLEANED:
+            self._task_state = TaskState.CLEANUP
+            self.cleanup_child_task()
+            self.cleanup_task()
+            if self._get_tmp_path_for_task().exists():
+                shutil.rmtree(self._get_tmp_path_for_task())
+            self._task_state = TaskState.CLEANED
+        self.logger.info("Cleanup finished")

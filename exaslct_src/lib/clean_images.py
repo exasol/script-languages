@@ -1,22 +1,17 @@
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.docker_config import docker_client_config, target_docker_repository_config
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
+from exaslct_src.lib.docker_config import  target_docker_repository_config
 from exaslct_src.lib.flavor_task import FlavorBaseTask, FlavorsBaseTask
 from exaslct_src.lib.utils.docker_utils import find_images_by_tag
 
 
-class CleanImageTask(DependencyLoggerBaseTask):
+class CleanImageTask(DockerBaseTask):
     image_id = luigi.Parameter()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
-        self._low_level_client = docker_client_config().get_low_level_client()
-
-    def __del__(self):
-        self._client.close()
-        self._low_level_client.close()
 
     def run_task(self):
         self.logger.info("Try to remove dependent images of %s" % self.image_id)
@@ -45,15 +40,8 @@ class CleanImageTask(DependencyLoggerBaseTask):
             return False
 
 
-class CleanImagesStartingWith(DependencyLoggerBaseTask):
+class CleanImagesStartingWith(DockerBaseTask):
     starts_with_pattern = luigi.Parameter()
-
-    def __init__(self, *args, **kwargs):
-        self._client = docker_client_config().get_client()
-        super().__init__(*args, **kwargs)
-
-    def __del__(self):
-        self._client.close()
 
     def register_required(self):
         image_ids = [str(image.id).replace("sha256:", "")
@@ -101,7 +89,7 @@ class CleanExaslcFlavorsImages(FlavorsBaseTask):
     def run_task(self):
         pass
 
-class CleanExaslcAllImages(DependencyLoggerBaseTask):
+class CleanExaslcAllImages(DockerBaseTask):
 
     def register_required(self):
         self.starts_with_pattern = target_docker_repository_config().repository_name

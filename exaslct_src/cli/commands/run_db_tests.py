@@ -1,4 +1,5 @@
 import json
+import pathlib
 from typing import Tuple
 
 import luigi
@@ -178,11 +179,12 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                          external_exasol_xmlrpc_cluster_name=external_exasol_xmlrpc_cluster_name
                                          )
     success, task = run_task(task_creator, workers, task_dependencies_dot_file)
-    if success:
-        print("Test Results:")
+
+    print("Test Results:")
+    if task.command_line_output_target.exists():
         with task.command_line_output_target.open("r") as f:
             print(f.read())
-    else:
+    if not success:
         exit(1)
 
 

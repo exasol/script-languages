@@ -8,9 +8,9 @@ import luigi
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.log_config import log_config
 from exaslct_src.lib.still_running_logger import StillRunningLogger
 
@@ -19,17 +19,10 @@ DOCKER_HUB_REGISTRY_URL_REGEX = r"^.*docker.io/"
 
 
 # TODO align and extract save_path of DockerSaveImageTask and load_path of DockerLoadImageTask
-class DockerSaveImageBaseTask(DependencyLoggerBaseTask):
+class DockerSaveImageBaseTask(DockerBaseTask):
     image_name = luigi.Parameter()
     force_save = luigi.BoolParameter(False, visibility=luigi.parameter.ParameterVisibility.HIDDEN)
     save_path = luigi.Parameter(visibility=luigi.parameter.ParameterVisibility.HIDDEN)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
-
-    def __del__(self):
-        self._client.close()
 
     def register_required(self):
         task = self.get_docker_image_task()

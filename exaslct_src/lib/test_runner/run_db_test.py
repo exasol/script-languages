@@ -4,7 +4,6 @@ import luigi
 
 from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.data.info import FrozenDictToDict
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.lib.still_running_logger import StillRunningLogger, StillRunningLoggerThread
@@ -30,10 +29,6 @@ class RunDBTest(FlavorBaseTask,
         super().__init__(*args, **kwargs)
         self._test_container_info = self.test_environment_info.test_container_info
         self._database_info = self.test_environment_info.database_info
-        self._client = docker_client_config().get_client()
-
-    def __del__(self):
-        self._client.close()
 
     def run_task(self):
         self.logger.info("Running db tests")

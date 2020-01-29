@@ -7,30 +7,21 @@ import luigi
 from docker.models.containers import Container
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.test_runner.container_log_thread import ContainerLogThread
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.is_database_ready_thread import IsDatabaseReadyThread
 
 
-class WaitForTestDockerDatabase(DependencyLoggerBaseTask, DatabaseCredentialsParameter):
+class WaitForTestDockerDatabase(DockerBaseTask, DatabaseCredentialsParameter):
     environment_name = luigi.Parameter()
     test_container_info = JsonPickleParameter(ContainerInfo, significant=False)  # type: ContainerInfo
     database_info = JsonPickleParameter(DatabaseInfo, significant=False)  # type: DatabaseInfo
     db_startup_timeout_in_seconds = luigi.IntParameter(10 * 60, significant=False)
     attempt = luigi.IntParameter(1)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
-        self._low_level_client = docker_client_config().get_low_level_client()
-
-    def __del__(self):
-        self._client.close()
-        self._low_level_client.close()
 
     def run_task(self):
         test_container = self._client.containers.get(self.test_container_info.container_name)

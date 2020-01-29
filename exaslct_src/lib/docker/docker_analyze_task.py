@@ -5,20 +5,19 @@ import docker
 import git
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
-from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.image_info import ImageInfo, ImageState, ImageDescription
 from exaslct_src.lib.docker.docker_image_target import DockerImageTarget
 from exaslct_src.lib.docker.docker_registry_image_checker import DockerRegistryImageChecker
-from exaslct_src.lib.docker_config import docker_client_config, docker_build_arguments
+from exaslct_src.lib.docker_config import docker_build_arguments
 from exaslct_src.lib.utils.build_context_hasher import BuildContextHasher
 
 
-class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
+class DockerAnalyzeImageTask(DockerBaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
         self._source_repository_name = self.get_source_repository_name()
         self._target_repository_name = self.get_target_repository_name()
         self._source_image_tag = self.get_source_image_tag()
@@ -34,12 +33,6 @@ class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
             transparent_build_arguments=merged_transparent_build_arguments
         )
         self._dockerfile = self.get_dockerfile()
-        self._build_context_hasher = \
-            BuildContextHasher(self.logger,
-                               self.image_description)
-
-    def __del__(self):
-        self._client.close()
 
     def get_source_repository_name(self) -> str:
         """
@@ -143,7 +136,10 @@ class DockerAnalyzeImageTask(DependencyLoggerBaseTask):
         image_info_of_dependencies = self.get_values_from_futures(self.dependencies_futures)
         if image_info_of_dependencies is None:
             image_info_of_dependencies = dict()
-        image_hash = self._build_context_hasher.generate_image_hash(image_info_of_dependencies)
+        _build_context_hasher = BuildContextHasher(self.logger,
+                                                   self.image_description)
+        image_hash = _build_context_hasher \
+            .generate_image_hash(image_info_of_dependencies)
         image_info = ImageInfo(
             source_repository_name=self._source_repository_name,
             target_repository_name=self._target_repository_name,

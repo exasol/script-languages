@@ -8,17 +8,17 @@ from luigi import LocalTarget
 from docker.transport import unixconn
 from exaslct_src.lib.analyze_test_container import AnalyzeTestContainer, DockerTestContainerBuild
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.image_info import ImageInfo
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
 
 
 
-class SpawnTestContainer(DependencyLoggerBaseTask):
+class SpawnTestContainer(DockerBaseTask):
     environment_name = luigi.Parameter()
     test_container_name = luigi.Parameter()
     network_info = JsonPickleParameter(
@@ -29,7 +29,6 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._client = docker_client_config().get_client()
         if self.ip_address_index_in_subnet < 0:
             raise Exception(
                 "ip_address_index_in_subnet needs to be greater than 0 got %s"
@@ -142,3 +141,6 @@ class SpawnTestContainer(DependencyLoggerBaseTask):
             self.logger.info("Removed container %s", container_name)
         except Exception as e:
             pass
+
+    def cleanup_task(self):
+        self._remove_container(self.test_container_name)

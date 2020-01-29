@@ -4,7 +4,6 @@ import luigi
 from docker.models.containers import Container
 
 from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
-from exaslct_src.lib.docker_config import docker_client_config
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test import RunDBTest
@@ -23,12 +22,7 @@ class RunDBTestsInDirectory(FlavorBaseTask,
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._test_container_info = self.test_environment_info.test_container_info
-        self._client = docker_client_config().get_client()
-        self.test_container = self._client.containers.get(self._test_container_info.container_name)
-        self.tasks = self.create_test_tasks_from_directory(self.test_container, self.directory)
-
-    def __del__(self):
-        self._client.close()
+        self.tasks = self.create_test_tasks_from_directory(self.directory)
 
     def run_task(self):
         test_results = yield from self.run_tests()
@@ -47,7 +41,8 @@ class RunDBTestsInDirectory(FlavorBaseTask,
         return test_results
 
     def create_test_tasks_from_directory(
-            self, test_container: Container, directory: str):
+            self, directory: str):
+        test_container = self._client.containers.get(self._test_container_info.container_name)
         exit_code, ls_output = test_container.exec_run(cmd="ls /tests/test/%s/" % directory)
         test_files = ls_output.decode("utf-8").split("\n")
         tasks = [self.create_test_task(directory, test_file)
