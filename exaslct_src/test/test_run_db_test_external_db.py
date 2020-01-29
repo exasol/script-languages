@@ -34,7 +34,7 @@ class DockerRunDBTestExternalDBTest(unittest.TestCase):
         ])
         command = f"./exaslct run-db-test {arguments}"
         self.test_environment.run_command(
-                              command, track_task_dependencies=True))
+                              command, track_task_dependencies=True)
 
 
 if __name__ == '__main__':
