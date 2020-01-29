@@ -18,7 +18,6 @@ docker build -t exaslct_test_container .
 
 start_container exaslct_test_container
 docker exec -it --workdir /test  $CONTAINER_NAME virtualenv venv
-docker exec -it --workdir /test  $CONTAINER_NAME bash -c "ls -la"
 docker exec -it --workdir /test  $CONTAINER_NAME bash -c "source /venv/bin/activate && export LC_ALL=C.UTF-8 && export LANG=C.UTF-8 && echo yes | ./exaslct"
 
 docker rm -f $CONTAINER_NAME

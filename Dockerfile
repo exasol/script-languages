@@ -19,4 +19,4 @@ RUN pip3 install virtualenv
 RUN python3 -m virtualenv --python=python3 venv
 
 COPY . /test
-RUN rm /test/Pipfile.lock
+RUN rm /test/Pipfile.lock || true
