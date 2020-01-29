@@ -1,11 +1,12 @@
 CONTAINER_NAME=test_exaslct_init_script
+IMAGE_NAME=exaslct_test_container_image
 
 start_container (){
   docker rm -f $CONTAINER_NAME
-  docker run -d --name $CONTAINER_NAME $1 sleep infinity
+  docker run -d --name $CONTAINER_NAME $IMAGE_NAME sleep infinity
 }
 
-docker build -t exaslct_test_container .
+docker build -t exaslct_test_container_image .
 
 start_container
 docker exec -it --workdir /test  $CONTAINER_NAME ./exaslct

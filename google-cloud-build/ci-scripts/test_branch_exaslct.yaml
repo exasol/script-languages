@@ -19,7 +19,7 @@ steps:
           'bash', 
           'run_all_exaslct_tests.sh' 
         ]
-timeout: "2400s"
+timeout: "4800s"
 options:
   diskSizeGb: "50"
   machineType: 'N1_HIGHCPU_8'
