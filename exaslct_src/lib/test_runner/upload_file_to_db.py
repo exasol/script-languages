@@ -107,7 +107,7 @@ class UploadFileToBucketFS(DockerBaseTask):
         url = "http://w:{password}@{host}:{port}/{bucket}".format(
             host=self._database_info.host, port=self._database_info.bucketfs_port,
             bucket=bucket, password=self.bucketfs_write_password)
-        cmd = f"curl --fail '{url}'"
+        cmd = f"curl --silent --show-error --fail '{url}'"
         return cmd
 
     def upload_file(self, file_to_upload: str, upload_target: str):
@@ -125,7 +125,7 @@ class UploadFileToBucketFS(DockerBaseTask):
         url = "http://w:{password}@{host}:{port}/{target}".format(
             host=self._database_info.host, port=self._database_info.bucketfs_port,
             target=upload_target, password=self.bucketfs_write_password)
-        cmd = f"curl --fail -X PUT -T '{file_to_upload}' '{url}'"
+        cmd = f"curl --silent --show-error --fail -X PUT -T '{file_to_upload}' '{url}'"
         return cmd
 
     def run_command(self, command_type, cmd):

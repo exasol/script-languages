@@ -14,6 +14,8 @@ class CommandLogHandler(AbstractLogHandler):
         log_line = log_line.decode("utf-8")
         self._log_file.write(log_line)
         self._complete_log.append(log_line)
+        if error:
+            self._error_message=log_line
 
     def finish(self):
         if self._log_config.write_log_files_to_console==WriteLogFilesToConsole.all:
