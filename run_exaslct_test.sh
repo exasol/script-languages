@@ -8,4 +8,11 @@ source pipenv_utils.sh
 discover_pipenv
 init_pipenv "$PIPENV_BIN"
 
-PYTHONPATH=. $PIPENV_BIN run python3 $1
+if [ -n "$PIPENV_BIN" ]
+then
+  PYTHONPATH=. $PIPENV_BIN run python3 $1
+else
+  echo "Could not find pipenv!"
+  exit 1
+fi
+

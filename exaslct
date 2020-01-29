@@ -17,4 +17,10 @@ run () {
 
 discover_pipenv
 init_pipenv "$PIPENV_BIN"
-run "$PIPENV_BIN"
+if [ -n "$PIPENV_BIN" ]
+then
+  run
+else
+  echo "Could not find pipenv!"
+  exit 1
+fi
