@@ -240,8 +240,9 @@ class SpawnTestDockerDatabase(DockerBaseTask, DockerDBTestEnvironmentParameter):
                 "Error during preperation of docker-db volume %s got following output %s" % (db_volume.name, output))
 
     def cleanup_task(self):
-        db_volume_preperation_container_name = self._get_db_volume_preperation_container_name()
-        self._remove_container(db_volume_preperation_container_name)
-        self._remove_container(self.db_container_name)
-        db_volume_name = self._get_db_volume_name()
-        self._remove_volume(db_volume_name)
+        if not self.no_database_cleanup_after_end:
+            db_volume_preperation_container_name = self._get_db_volume_preperation_container_name()
+            self._remove_container(db_volume_preperation_container_name)
+            self._remove_container(self.db_container_name)
+            db_volume_name = self._get_db_volume_name()
+            self._remove_volume(db_volume_name)
