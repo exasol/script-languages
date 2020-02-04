@@ -81,7 +81,7 @@ def upload(flavor_path: Tuple[str, ...],
 
     set_job_id(UploadContainers.__name__)
     task_creator = lambda: UploadContainers(flavor_paths=list(flavor_path),
-                                            release_goals=list([release_goal]),
+                                            release_goals=list(release_goal),
                                             database_host=database_host,
                                             bucketfs_port=bucketfs_port,
                                             bucketfs_username=bucketfs_username,
