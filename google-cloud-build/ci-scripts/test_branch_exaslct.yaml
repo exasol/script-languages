@@ -115,3 +115,5 @@ timeout: "4800s"
 options:
   diskSizeGb: "300"
   machineType: 'N1_HIGHCPU_32'
+  env:
+    - "GOOGLE_CLOUD_BUILD=TRUE"

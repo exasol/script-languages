@@ -37,7 +37,16 @@ class ExaslctTestEnvironment():
         self.flavor_path = get_test_flavor()
         self.name = test_object.__class__.__name__
         self._repository_prefix = "exaslct_test"
-        self.temp_dir = tempfile.mkdtemp()
+        if "GOOGLE_CLOUD_BUILD" in os.environ:
+            # We need to put the output directories into the workdir, 
+            # because only this is shared between the current container and
+            # host. Only path within this shared directory can be mounted 
+            # to docker container started by exaslct
+            temp_dir_prefix_path=Path("./temp_outputs")
+            temp_dir_prefix_path.mkdir(exist_ok=True)
+            self.temp_dir = tempfile.mkdtemp(dir=temp_dir_prefix_path)
+        else:
+            self.temp_dir = tempfile.mkdtemp()
         self._update_attributes()
 
     @property
