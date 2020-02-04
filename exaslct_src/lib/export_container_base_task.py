@@ -71,6 +71,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
         export_path = Path(self._export_directory_future.get_output()).absolute()
         release_complete_name = f"""{image_info_of_release_image.target_tag}-{image_info_of_release_image.hash}"""
         cache_file = Path(export_path, release_complete_name + ".tar.gz").absolute()
+        print("AAAAAAAAAA",cache_file, cache_file.exists())
         return cache_file, release_complete_name, release_image_name
 
     def _copy_cache_file_to_output_path(self, cache_file, is_new):

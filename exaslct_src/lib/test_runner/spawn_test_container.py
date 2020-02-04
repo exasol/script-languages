@@ -48,6 +48,9 @@ class SpawnTestContainer(DockerBaseTask):
             container_info = self._try_to_reuse_test_container(ip_address, self.network_info)
         if container_info is None:
             container_info = self._create_test_container(ip_address, self.network_info)
+        test_container = \
+            self._client.containers.get(self.test_container_name)
+        print("EEEEEEEE",test_container.exec_run(cmd="ls -l /exports"))
         self._copy_tests()
         self.return_object(container_info)
 
@@ -84,6 +87,7 @@ class SpawnTestContainer(DockerBaseTask):
         # but to access exported container from inside the test_container,
         # we need to mount the release directory into the test_container.
         exports_host_path = pathlib.Path(self._get_export_directory()).absolute()
+        print("BBBBBBBBB",exports_host_path,exports_host_path.exists(),list(exports_host_path.glob("*")),"/exports")
         tests_host_path = pathlib.Path("./tests").absolute()
         volumes = {
                     exports_host_path: {
