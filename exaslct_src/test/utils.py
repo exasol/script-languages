@@ -113,7 +113,49 @@ class ExaslctTestEnvironment():
                               f"--bucketfs-port-forward {parameter.bucketfs_port}"])
         command = f"./exaslct spawn-test-environment {arguments}"
         self.run_command(command, use_flavor_path=False, use_docker_repository=False)
+        if "GOOGLE_CLOUD_BUILD" in os.environ:
+            parameter.database_host="178.178.178.178"
+            parameter.database_port=8888
+            parameter.bucketfs_port=6583
+            docker_client = docker.from_env()
+            try:
+                db_container=docker_client.containers.get("db_container_{parameter.name}")
+                cloudbuild_network=docker_client.networks.get("cloudbuild")
+                cloudbuild_network.connect(db_container,ipv4_address=parameter.database_hos)
+            finally:
+                docker_client.close()
         return parameter
+    
+    def create_registry(self):
+        registry_port = utils.find_free_port()
+        registry_container_name = self.name.replace("/", "_") + "_registry"
+        docker_client = docker.from_env()
+        try:
+            print("Start pull of registry:2")
+            docker_client.images.pull(repository="registry", tag="2")
+            print(f"Start container of {registry_container_name}")
+            try:
+                docker_client.containers.get(registry_container_name).remove(force=True)
+            except:
+                pass
+            registry_container = docker_client.containers.run(
+                image="registry:2", name=registry_container_name,
+                ports={5000: self.registry_port},
+                detach=True
+            )
+            time.sleep(10)
+            print(f"Finished start container of {registry_container_name}")
+            if "GOOGLE_CLOUD_BUILD" in os.environ:
+                registry_host="178.178.178.179"
+                cloudbuild_network=docker_client.networks.get("cloudbuild")
+                cloudbuild_network.connect(registry_container,ipv4_address=registry_host)
+                self.repository_prefix = f"{registry_host}:5000"
+                return registry_container,registry_host,"5000"
+            else:
+                self.repository_prefix = f"localhost:{registry_port}"
+                return registry_container,"localhost",registry_port
+        finally:
+            docker_client.close()
 
 
 def find_free_port():
@@ -155,14 +197,15 @@ def get_test_flavor():
     return flavor_path
 
 
-def request_registry_images(registry_port, repo_name):
-    url = f"http://localhost:{registry_port}/v2/{repo_name}/tags/list"
+
+def request_registry_images(registry_host,registry_port, repo_name):
+    url = f"http://{registry_host}:{registry_port}/v2/{repo_name}/tags/list"
     result = requests.request("GET", url)
     images = json.loads(result.content.decode("UTF-8"))
     return images
 
 
-def request_registry_repositories(registry_port):
-    result = requests.request("GET", f"http://localhost:{registry_port}/v2/_catalog/")
+def request_registry_repositories(registry_host,registry_port):
+    result = requests.request("GET", f"http://{registry_host}:{registry_port}/v2/_catalog/")
     repositories_ = json.loads(result.content.decode("UTF-8"))["repositories"]
     return repositories_
