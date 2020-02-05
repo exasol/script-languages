@@ -49,21 +49,21 @@ class UploadContainerBaseTask(FlavorBaseTask, UploadContainerParameter):
         except ValueError as e:
             release_path = Path(export_info.cache_file)
         command_line_output_str = textwrap.dedent(f"""
-            Uploaded {release_path} to 
+            Uploaded {release_path} to
             {self._get_upload_url(export_info, without_login=True)}
-            
-            
-            In SQL, you can activate the languages supported by the {flavor_name} 
+
+
+            In SQL, you can activate the languages supported by the {flavor_name}
             flavor by using the following statements:
-            
-            
-            To active the flavor only for the current session:
-            
+
+
+            To activate the flavor only for the current session:
+
             {language_definition.generate_alter_session()}
-            
-            
-            To active the flavor only for the current session:
-            
+
+
+            To activate the flavor on the system:
+
             {language_definition.generate_alter_system()}
             """)
         return command_line_output_str
