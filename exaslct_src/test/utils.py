@@ -1,4 +1,5 @@
 import json
+import time
 import os
 import shlex
 import shutil
@@ -114,20 +115,21 @@ class ExaslctTestEnvironment():
         command = f"./exaslct spawn-test-environment {arguments}"
         self.run_command(command, use_flavor_path=False, use_docker_repository=False)
         if "GOOGLE_CLOUD_BUILD" in os.environ:
-            parameter.database_host="178.178.178.178"
             parameter.database_port=8888
             parameter.bucketfs_port=6583
             docker_client = docker.from_env()
             try:
-                db_container=docker_client.containers.get("db_container_{parameter.name}")
+                db_container=docker_client.containers.get(f"db_container_{parameter.name}")
                 cloudbuild_network=docker_client.networks.get("cloudbuild")
-                cloudbuild_network.connect(db_container,ipv4_address=parameter.database_hos)
+                cloudbuild_network.connect(db_container)
+                db_container.reload()
+                parameter.database_host=db_container.attrs["NetworkSettings"]["Networks"][cloudbuild_network.name]["IPAddress"]
             finally:
                 docker_client.close()
         return parameter
     
     def create_registry(self):
-        registry_port = utils.find_free_port()
+        registry_port = find_free_port()
         registry_container_name = self.name.replace("/", "_") + "_registry"
         docker_client = docker.from_env()
         try:
@@ -140,16 +142,18 @@ class ExaslctTestEnvironment():
                 pass
             registry_container = docker_client.containers.run(
                 image="registry:2", name=registry_container_name,
-                ports={5000: self.registry_port},
+                ports={5000: registry_port},
                 detach=True
             )
             time.sleep(10)
             print(f"Finished start container of {registry_container_name}")
             if "GOOGLE_CLOUD_BUILD" in os.environ:
-                registry_host="178.178.178.179"
                 cloudbuild_network=docker_client.networks.get("cloudbuild")
-                cloudbuild_network.connect(registry_container,ipv4_address=registry_host)
-                self.repository_prefix = f"{registry_host}:5000"
+                cloudbuild_network.connect(registry_container)
+                registry_container.reload()
+                registry_host=registry_container.attrs["NetworkSettings"]["Networks"][cloudbuild_network.name]["IPAddress"]
+                #self.repository_prefix = f"{registry_host}:5000"
+                self.repository_prefix = f"localhost:{registry_port}"
                 return registry_container,registry_host,"5000"
             else:
                 self.repository_prefix = f"localhost:{registry_port}"

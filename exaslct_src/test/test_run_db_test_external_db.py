@@ -25,9 +25,9 @@ class DockerRunDBTestExternalDBTest(unittest.TestCase):
     def test_run_db_tests_external_db(self):
         arguments = " ".join([
             f"--environment-type external_db",
-            f"--external-exasol-db-host {self.docker_environment.database_host}",
-            f"--external-exasol-db-port {self.docker_environment.database_port}",
-            f"--external-exasol-bucketfs-port {self.docker_environment.bucketfs_port}",
+            f"--external-exasol-db-host localhost", # localhost gets translated in exaslct to the Gateway adress of the docker environment network, because thats typically the IP Adress of the bridge to the host, for google cloud this means it should be able to connect to the db via the port forwards from the test container 
+            f"--external-exasol-db-port 8888",
+            f"--external-exasol-bucketfs-port 6666",
             f"--external-exasol-db-user {self.docker_environment.db_username}",
             f"--external-exasol-db-password {self.docker_environment.db_password}",
             f"--external-exasol-bucketfs-write-password {self.docker_environment.bucketfs_password}",

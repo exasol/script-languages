@@ -4,22 +4,14 @@ from subprocess import CalledProcessError
 from exaslct_src.test import utils
 import docker
 
-class DockerTestEnvironmentTest(unittest.TestCase):
+class RunDBTestDockerPassThroughTest(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
+    def setUp(self):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment=utils.ExaslctTestEnvironment(self)
         self.test_environment.clean_images()
-        self.docker__environment_name = self.__class__.__name__
-        self.docker_environment = self.test_environment.spawn_docker_test_environment(self.docker__environment_name)
 
-    @classmethod
-    def tearDownClass(self):
-        try:
-            self.docker_environment.close()
-        except Exception as e:
-            print(e)
+    def tearDown(self):
         try:
             self.test_environment.close()
         except Exception as e:

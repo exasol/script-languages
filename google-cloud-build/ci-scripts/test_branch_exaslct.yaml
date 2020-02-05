@@ -7,88 +7,88 @@ steps:
           'gcr.io/script-languages/build-container', 
           'google-cloud-build/ci-scripts/scripts/'
           ]
-- id: 'Test init script'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'test_exaslct_init_script.sh' 
-          ]
-- id: 'Test exaslct test_base_task.py'
+# - id: 'Test init script'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'test_exaslct_init_script.sh' 
+#           ]
+# - id: 'Test exaslct test_base_task.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_base_task.py'
+#         ]
+# - id: 'Test exaslct test_docker_build.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_build.py'
+#         ]
+# - id: 'Test exaslct test_docker_export.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_export.py'
+#         ]
+# - id: 'Test exaslct test_docker_load.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_load.py'
+#         ]
+# - id: 'Test exaslct test_docker_registry_image_checker.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_registry_image_checker.py'
+#         ]
+# - id: 'Test exaslct test_docker_save.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_save.py'
+#         ]
+# - id: 'Test exaslct test_hash_temp_dir.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_hash_temp_dir.py'
+#         ]
+# - id: 'Test exaslct test_run_db_test_docker_db.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_run_db_test_docker_db.py'
+#         ]
+# - id: 'Test exaslct test_run_db_test_docker_pass_through.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_run_db_test_docker_pass_through.py'
+#         ]
+# - id: 'Test exaslct test_test_environment.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_test_environment.py'
+#         ]
+- id: 'Test exaslct test_docker_upload.py'
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash', 
           'run_exaslct_test.sh',
-          'exaslct_src/test/test_base_task.py'
-        ]
-- id: 'Test exaslct test_docker_build.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_build.py'
-        ]
-- id: 'Test exaslct test_docker_export.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_export.py'
-        ]
-- id: 'Test exaslct test_docker_load.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_load.py'
-        ]
-- id: 'Test exaslct test_docker_registry_image_checker.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_registry_image_checker.py'
-        ]
-- id: 'Test exaslct test_docker_save.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_save.py'
-        ]
-- id: 'Test exaslct test_hash_temp_dir.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_hash_temp_dir.py'
-        ]
-- id: 'Test exaslct test_run_db_test_docker_db.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_run_db_test_docker_db.py'
-        ]
-- id: 'Test exaslct test_run_db_test_docker_pass_through.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_run_db_test_docker_pass_through.py'
-        ]
-- id: 'Test exaslct test_run_db_test_external_db.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_run_db_test_external_db.py'
-        ]
-- id: 'Test exaslct test_test_environment.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_test_environment.py'
+          'exaslct_src/test/test_docker_upload.py'
         ]
 - id: 'Test exaslct test_docker_push.py'
   name: 'gcr.io/script-languages/build-container'
@@ -104,16 +104,16 @@ steps:
           'run_exaslct_test.sh',
           'exaslct_src/test/test_docker_pull.py'
         ]
-- id: 'Test exaslct test_docker_upload.py'
+- id: 'Test exaslct test_run_db_test_external_db.py'
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash', 
           'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_upload.py'
+          'exaslct_src/test/test_run_db_test_external_db.py'
         ]
 timeout: "4800s"
 options:
   diskSizeGb: "300"
-  machineType: 'N1_HIGHCPU_32'
+  machineType: 'N1_HIGHCPU_8'
   env:
     - "GOOGLE_CLOUD_BUILD=TRUE"
