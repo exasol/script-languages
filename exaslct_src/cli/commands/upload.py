@@ -29,7 +29,7 @@ from exaslct_src.lib.upload_containers import UploadContainers
 @add_options(docker_repository_options)
 @add_options(system_options)
 def upload(flavor_path: Tuple[str, ...],
-           release_goal: str,
+           release_goal: Tuple[str,...],
            database_host: str,
            bucketfs_port: int,
            bucketfs_username: str,
