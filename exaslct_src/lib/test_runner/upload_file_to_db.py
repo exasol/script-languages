@@ -113,9 +113,7 @@ class UploadFileToBucketFS(DockerBaseTask):
     def upload_file(self, file_to_upload: str, upload_target: str):
         self.logger.info("upload file %s to %s",
                          file_to_upload, upload_target)
-        print("DDDDDDDDDDD",file_to_upload)
         exit_code, log_output=self.run_command("upload", "ls "+str(Path(file_to_upload).parent))
-        print("DDDDDDDDDDDDD",log_output)
         command = self.generate_upload_command(file_to_upload, upload_target)
         exit_code, log_output = self.run_command("upload", command)
         if exit_code != 0:

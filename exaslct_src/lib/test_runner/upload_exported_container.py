@@ -20,8 +20,7 @@ class UploadExportedContainer(UploadFileToBucketFS):
 
     def get_file_to_upload(self):
         file="/exports/" + pathlib.Path(self.export_info.cache_file).name
-        print("CCCCCCCC",file)
-        return file # TODO directory /exports is as data dependency to SpawnTestContainer
+        return file
 
     def get_upload_target(self):
         return "myudfs/" + self.export_info.name + ".tar.gz"

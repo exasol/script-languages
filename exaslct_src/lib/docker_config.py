@@ -4,7 +4,7 @@ from luigi.parameter import ParameterVisibility
 
 
 class docker_client_config(luigi.Config):
-    timeout = luigi.IntParameter(1000, significant=False, visibility=ParameterVisibility.PRIVATE)
+    timeout = luigi.IntParameter(100000, significant=False, visibility=ParameterVisibility.PRIVATE)
     no_cache = luigi.BoolParameter(False)
 
     def get_client(self):
