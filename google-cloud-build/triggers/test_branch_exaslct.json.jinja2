@@ -1,0 +1,34 @@
+{
+  {% if trigger_id is defined %}
+  "id": "{{ trigger_id }}",
+  {% endif %}
+  "triggerTemplate": {
+    "projectId": "{{ gcloud_project_name }}",
+    "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
+    "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
+  },
+  "description": "Exaslct Test branch",
+  "substitutions": {
+    "_JOB_ID": "{{ job_id }}", 
+    "_JOB_TYPE": "Test exaslct",
+    "_GITHUB_USER_NAME": "{{ github_user_name }}",
+    "_GITHUB_REPOSITORY": "{{ github_repository }}"
+  },
+  "includedFiles": [
+    "docker_db_config/**",
+    "exaslct_src/**",
+    "ext/**",
+    "tests/test/selftest/**",
+    "tests/lib/**",
+    "google-cloud-build/**",
+    "Dockerfile",
+    "test_exaslct_init_script.sh",
+    "run_all_exaslct_tests.sh",
+    "run_exaslct_test.sh",
+    "exaslsct",
+    "pipenv_utils.sh",
+    ".current_gitmodules",
+    "Pipfile"
+  ],
+  "filename": "google-cloud-build/ci-scripts/test_branch_exaslct.yaml"
+}

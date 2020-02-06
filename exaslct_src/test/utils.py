@@ -1,4 +1,5 @@
 import json
+import time
 import os
 import shlex
 import shutil
@@ -37,7 +38,16 @@ class ExaslctTestEnvironment():
         self.flavor_path = get_test_flavor()
         self.name = test_object.__class__.__name__
         self._repository_prefix = "exaslct_test"
-        self.temp_dir = tempfile.mkdtemp()
+        if "GOOGLE_CLOUD_BUILD" in os.environ:
+            # We need to put the output directories into the workdir, 
+            # because only this is shared between the current container and
+            # host. Only path within this shared directory can be mounted 
+            # to docker container started by exaslct
+            temp_dir_prefix_path=Path("./temp_outputs")
+            temp_dir_prefix_path.mkdir(exist_ok=True)
+            self.temp_dir = tempfile.mkdtemp(dir=temp_dir_prefix_path)
+        else:
+            self.temp_dir = tempfile.mkdtemp()
         self._update_attributes()
 
     @property
@@ -90,7 +100,7 @@ class ExaslctTestEnvironment():
             print(e)
 
     def spawn_docker_test_environment(self, name) -> ExaslctDockerTestEnvironment:
-        parameter = ExaslctDockerTestEnvironment(
+        on_host_parameter = ExaslctDockerTestEnvironment(
             name=self.name + "_" + name,
             database_host="localhost",
             db_username="sys",
@@ -99,12 +109,66 @@ class ExaslctTestEnvironment():
             bucketfs_password="write",
             database_port=find_free_port(),
             bucketfs_port=find_free_port())
-        arguments = " ".join([f"--environment-name {parameter.name}",
-                              f"--database-port-forward {parameter.database_port}",
-                              f"--bucketfs-port-forward {parameter.bucketfs_port}"])
+        arguments = " ".join([f"--environment-name {on_host_parameter.name}",
+                              f"--database-port-forward {on_host_parameter.database_port}",
+                              f"--bucketfs-port-forward {on_host_parameter.bucketfs_port}"])
         command = f"./exaslct spawn-test-environment {arguments}"
         self.run_command(command, use_flavor_path=False, use_docker_repository=False)
-        return parameter
+        if "GOOGLE_CLOUD_BUILD" in os.environ:
+            google_cloud_parameter = ExaslctDockerTestEnvironment(
+                name=on_host_parameter.name,
+                database_host="localhost",
+                db_username=on_host_parameter.db_username,
+                db_password=on_host_parameter.db_password,
+                bucketfs_username=on_host_parameter.bucketfs_username,
+                bucketfs_password=on_host_parameter.bucketfs_password,
+                database_port=8888,
+                bucketfs_port=6583)
+            docker_client = docker.from_env()
+            try:
+                db_container=docker_client.containers.get(f"db_container_{google_cloud_parameter.name}")
+                cloudbuild_network=docker_client.networks.get("cloudbuild")
+                cloudbuild_network.connect(db_container)
+                db_container.reload()
+                google_cloud_parameter.database_host=db_container.attrs["NetworkSettings"]["Networks"][cloudbuild_network.name]["IPAddress"]
+                return on_host_parameter,google_cloud_parameter
+            finally:
+                docker_client.close()
+        else:
+            return on_host_parameter,None
+    
+    def create_registry(self):
+        registry_port = find_free_port()
+        registry_container_name = self.name.replace("/", "_") + "_registry"
+        docker_client = docker.from_env()
+        try:
+            print("Start pull of registry:2")
+            docker_client.images.pull(repository="registry", tag="2")
+            print(f"Start container of {registry_container_name}")
+            try:
+                docker_client.containers.get(registry_container_name).remove(force=True)
+            except:
+                pass
+            registry_container = docker_client.containers.run(
+                image="registry:2", name=registry_container_name,
+                ports={5000: registry_port},
+                detach=True
+            )
+            time.sleep(10)
+            print(f"Finished start container of {registry_container_name}")
+            if "GOOGLE_CLOUD_BUILD" in os.environ:
+                cloudbuild_network=docker_client.networks.get("cloudbuild")
+                cloudbuild_network.connect(registry_container)
+                registry_container.reload()
+                registry_host=registry_container.attrs["NetworkSettings"]["Networks"][cloudbuild_network.name]["IPAddress"]
+                #self.repository_prefix = f"{registry_host}:5000"
+                self.repository_prefix = f"localhost:{registry_port}"
+                return registry_container,registry_host,"5000"
+            else:
+                self.repository_prefix = f"localhost:{registry_port}"
+                return registry_container,"localhost",registry_port
+        finally:
+            docker_client.close()
 
 
 def find_free_port():
@@ -146,14 +210,15 @@ def get_test_flavor():
     return flavor_path
 
 
-def request_registry_images(registry_port, repo_name):
-    url = f"http://localhost:{registry_port}/v2/{repo_name}/tags/list"
+
+def request_registry_images(registry_host,registry_port, repo_name):
+    url = f"http://{registry_host}:{registry_port}/v2/{repo_name}/tags/list"
     result = requests.request("GET", url)
     images = json.loads(result.content.decode("UTF-8"))
     return images
 
 
-def request_registry_repositories(registry_port):
-    result = requests.request("GET", f"http://localhost:{registry_port}/v2/_catalog/")
+def request_registry_repositories(registry_host,registry_port):
+    result = requests.request("GET", f"http://{registry_host}:{registry_port}/v2/_catalog/")
     repositories_ = json.loads(result.content.decode("UTF-8"))["repositories"]
     return repositories_

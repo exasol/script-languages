@@ -11,6 +11,7 @@ class PrepareDockerNetworkForTestEnvironment(DockerBaseTask):
     test_container_name = luigi.Parameter(significant=False)
     db_container_name = luigi.OptionalParameter(None, significant=False)
     reuse = luigi.BoolParameter(False, significant=False)
+    no_cleanup_after_end = luigi.BoolParameter(False, significant=False)
     attempt = luigi.IntParameter(-1)
 
     def run_task(self):
@@ -75,7 +76,8 @@ class PrepareDockerNetworkForTestEnvironment(DockerBaseTask):
             pass
 
     def cleanup_task(self):
-        self.remove_container(self.test_container_name)
-        if self.db_container_name is not None:
-            self.remove_container(self.db_container_name)
-        self.remove_network(self.network_name)
+        if not self.no_cleanup_after_end:   
+            self.remove_container(self.test_container_name)
+            if self.db_container_name is not None:
+                self.remove_container(self.db_container_name)
+            self.remove_network(self.network_name)

@@ -15,3 +15,6 @@ RUN curl -L -o github-commit-status-1.0.0-linux-amd64.tar.gz  https://github.com
     tar -xvf github-commit-status-1.0.0-linux-amd64.tar.gz && \
     rm github-commit-status-1.0.0-linux-amd64.tar.gz && \
     mv github-commit-status /bin 
+
+RUN curl -L -o get_docker.sh https://get.docker.com/ && \
+    bash get_docker.sh
