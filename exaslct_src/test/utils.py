@@ -100,7 +100,7 @@ class ExaslctTestEnvironment():
             print(e)
 
     def spawn_docker_test_environment(self, name) -> ExaslctDockerTestEnvironment:
-        parameter = ExaslctDockerTestEnvironment(
+        on_host_parameter = ExaslctDockerTestEnvironment(
             name=self.name + "_" + name,
             database_host="localhost",
             db_username="sys",
@@ -109,24 +109,33 @@ class ExaslctTestEnvironment():
             bucketfs_password="write",
             database_port=find_free_port(),
             bucketfs_port=find_free_port())
-        arguments = " ".join([f"--environment-name {parameter.name}",
-                              f"--database-port-forward {parameter.database_port}",
-                              f"--bucketfs-port-forward {parameter.bucketfs_port}"])
+        arguments = " ".join([f"--environment-name {on_host_parameter.name}",
+                              f"--database-port-forward {on_host_parameter.database_port}",
+                              f"--bucketfs-port-forward {on_host_parameter.bucketfs_port}"])
         command = f"./exaslct spawn-test-environment {arguments}"
         self.run_command(command, use_flavor_path=False, use_docker_repository=False)
         if "GOOGLE_CLOUD_BUILD" in os.environ:
-            parameter.database_port=8888
-            parameter.bucketfs_port=6583
+            google_cloud_parameter = ExaslctDockerTestEnvironment(
+                name=on_host_parameter.name,
+                database_host="localhost",
+                db_username=on_host_parameter.db_username,
+                db_password=on_host_parameter.db_password,
+                bucketfs_username=on_host_parameter.bucketfs_username,
+                bucketfs_password=on_host_parameter.bucketfs_password,
+                database_port=8888,
+                bucketfs_port=6583)
             docker_client = docker.from_env()
             try:
-                db_container=docker_client.containers.get(f"db_container_{parameter.name}")
+                db_container=docker_client.containers.get(f"db_container_{google_cloud_parameter.name}")
                 cloudbuild_network=docker_client.networks.get("cloudbuild")
                 cloudbuild_network.connect(db_container)
                 db_container.reload()
-                parameter.database_host=db_container.attrs["NetworkSettings"]["Networks"][cloudbuild_network.name]["IPAddress"]
+                google_cloud_parameter.database_host=db_container.attrs["NetworkSettings"]["Networks"][cloudbuild_network.name]["IPAddress"]
+                return on_host_parameter,google_cloud_parameter
             finally:
                 docker_client.close()
-        return parameter
+        else:
+            return on_host_parameter,None
     
     def create_registry(self):
         registry_port = find_free_port()

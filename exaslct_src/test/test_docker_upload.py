@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from exaslct_src.test import utils
@@ -8,7 +9,13 @@ class DockerUploadTest(unittest.TestCase):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment=utils.ExaslctTestEnvironment(self)
         self.test_environment.clean_images()
-        self.docker_environment = self.test_environment.spawn_docker_test_environment("DockerUploadTest")
+        self.docker_environment_name=self.__class__.__name__
+        self.on_host_docker_environment, self.google_cloud_docker_environment = \
+                self.test_environment.spawn_docker_test_environment(self.docker_environment_name)
+        if "GOOGLE_CLOUD_BUILD" in os.environ:
+            self.docker_environment=self.google_cloud_docker_environment
+        else:
+            self.docker_environment=self.on_host_docker_environment
 
     def tearDown(self):
         try:

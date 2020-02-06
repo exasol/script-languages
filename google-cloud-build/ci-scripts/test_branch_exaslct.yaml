@@ -83,27 +83,27 @@ steps:
 #           'run_exaslct_test.sh',
 #           'exaslct_src/test/test_test_environment.py'
 #         ]
-- id: 'Test exaslct test_docker_upload.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_upload.py'
-        ]
-- id: 'Test exaslct test_docker_push.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_push.py'
-        ]
-- id: 'Test exaslct test_docker_pull.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_pull.py'
-        ]
+# - id: 'Test exaslct test_docker_upload.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_upload.py'
+#         ]
+# - id: 'Test exaslct test_docker_push.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_push.py'
+#         ]
+# - id: 'Test exaslct test_docker_pull.py'
+#   name: 'gcr.io/script-languages/build-container'
+#   args: [
+#           'bash', 
+#           'run_exaslct_test.sh',
+#           'exaslct_src/test/test_docker_pull.py'
+#         ]
 - id: 'Test exaslct test_run_db_test_external_db.py'
   name: 'gcr.io/script-languages/build-container'
   args: [
