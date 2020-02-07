@@ -1565,6 +1565,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
     }
 
 reinit:
+
     DBGMSG(cerr,"Reinit");
     zmq::socket_t socket(context, ZMQ_REQ);
 
@@ -1584,8 +1585,9 @@ reinit:
         if (!get_remote_client() && exchandler.exthrowed) {
             send_close(socket, exchandler.exmsg);
             goto error;
+        }else{
+            goto reinit;
         }
-        goto reinit;
     }
 
     SWIGVM_params_ref->dbname = (char*) g_database_name.c_str();
@@ -1622,32 +1624,33 @@ reinit:
                 // EXASolution responds with a CALL message that specifies
                 // the single call function to be made
                 if (!send_run(socket)) {
-		  break;
-		}
+                    break;
+                }
+
                 assert(g_singleCallFunction != single_call_function_id_e::SC_FN_NIL);
-		try {
-		    const char* result = nullptr;
+                try {
+                    const char* result = nullptr;
                     switch (g_singleCallFunction)
                     {
-                    case single_call_function_id_e::SC_FN_NIL:
-                        break;
-                    case single_call_function_id_e::SC_FN_DEFAULT_OUTPUT_COLUMNS:
-		        result = vm->singleCall(g_singleCallFunction,noArg);
-                        break;
-                    case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
-                        assert(!g_singleCall_ImportSpecificationArg.isEmpty());
-                        result = vm->singleCall(g_singleCallFunction,g_singleCall_ImportSpecificationArg);
-                        g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification();  // delete the last argument
-                        break;
-                    case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC:
-                        assert(!g_singleCall_ExportSpecificationArg.isEmpty());
-                        result = vm->singleCall(g_singleCallFunction,g_singleCall_ExportSpecificationArg);
-                        g_singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();  // delete the last argument
-                        break;
-                    case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
-                        assert(!g_singleCall_StringArg.isEmpty());
-                        result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
-                        break;
+                        case single_call_function_id_e::SC_FN_NIL:
+                            break;
+                        case single_call_function_id_e::SC_FN_DEFAULT_OUTPUT_COLUMNS:
+                            result = vm->singleCall(g_singleCallFunction,noArg);
+                            break;
+                        case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
+                            assert(!g_singleCall_ImportSpecificationArg.isEmpty());
+                            result = vm->singleCall(g_singleCallFunction,g_singleCall_ImportSpecificationArg);
+                            g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification();  // delete the last argument
+                            break;
+                        case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC:
+                            assert(!g_singleCall_ExportSpecificationArg.isEmpty());
+                            result = vm->singleCall(g_singleCallFunction,g_singleCall_ExportSpecificationArg);
+                            g_singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();  // delete the last argument
+                            break;
+                        case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
+                            assert(!g_singleCall_StringArg.isEmpty());
+                            result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
+                            break;
                     }
                     if (vm->exception_msg.size()>0) {
                         send_close(socket, vm->exception_msg);
@@ -1657,14 +1660,13 @@ reinit:
                     if (vm->calledUndefinedSingleCall.size()>0) {
                         send_undefined_call(socket, vm->calledUndefinedSingleCall);
                     } else {
-		                send_return(socket,result);
+                        send_return(socket,result);
                     }
 
                     if (!send_done(socket)) {
                         break;
                     }
-		} catch(...) {
-		}
+                } catch(...) {}
             }
         } else {
             for(;;) {
