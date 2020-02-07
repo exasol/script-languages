@@ -149,10 +149,9 @@ void print_args(int argc,char**argv){
 }
 
 
-void shutdown_vm(SWIGVM*& vm){
+void delete_vm(SWIGVM*& vm){
     if (vm != nullptr)
     {
-        vm->shutdown();
         delete vm;
         vm = nullptr;
     }
@@ -1647,8 +1646,8 @@ reinit:
                         break;
                     case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
                         assert(!g_singleCall_StringArg.isEmpty());
-			result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
-			break;
+                        result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
+                        break;
                     }
                     if (vm->exception_msg.size()>0) {
                         send_close(socket, vm->exception_msg);
@@ -1656,10 +1655,10 @@ reinit:
                     }
 
                     if (vm->calledUndefinedSingleCall.size()>0) {
-                         send_undefined_call(socket, vm->calledUndefinedSingleCall);
-                     } else {
-		       send_return(socket,result);
-                     }
+                        send_undefined_call(socket, vm->calledUndefinedSingleCall);
+                    } else {
+		                send_return(socket,result);
+                    }
 
                     if (!send_done(socket)) {
                         break;
@@ -1686,12 +1685,10 @@ reinit:
 
         if (vm != nullptr)
         {
-            
+            vm->shutdown();
             if (vm->exception_msg.size()>0) {
                 send_close(socket, vm->exception_msg);
                 goto error;
-            }else{
-                shutdown_vm(vm);
             }
         }
         send_finished(socket);
@@ -1712,11 +1709,12 @@ reinit:
 
     DBG_STREAM_MSG(cerr,"### SWIGVM finishing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
 
+    delete_vm(vm);
     stop_all(socket);
     return 0;
 
 error:
-    shutdown_vm(vm);
+    delete_vm(vm);
     stop_all(socket);
     return 1;
 }
