@@ -93,7 +93,6 @@ void init_socket_name(const char* the_socket_name) {
 
 static void external_process_check()
 {
-    DBGVAR(cerr,&(socket_name_file));
     if (remote_client) return;
     if (::access(socket_name_file, F_OK) != 0) {
         ::sleep(1); // give me a chance to die with my parent process
@@ -142,9 +141,36 @@ void cancel_check_thread() {
     ::pthread_cancel(check_thread);
 }
 
+void print_args(int argc,char**argv){
+    for (int i = 0; i<argc; i++)
+    {
+        cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << endl;
+    }
+}
+
+
+void shutdown_vm(SWIGVM*& vm){
+    if (vm != nullptr)
+    {
+        vm->shutdown();
+        delete vm;
+        vm = nullptr;
+    }
+}
+
+void stop_all(zmq::socket_t& socket){
+    socket.close();
+    stop_check_thread();
+    if (!get_remote_client()) {
+        cancel_check_thread();
+        ::unlink(socket_name_file);
+    } else {
+        ::sleep(3); // give other components time to shutdown
+    }
+}
+
 mutex zmq_socket_mutex;
 static bool use_zmq_socket_locks = false;
-
 
 void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 {
@@ -1451,6 +1477,7 @@ public:
 
 } // namespace SWIGVMContainers
 
+
 extern "C" {
 
 SWIGVMContainers::SWIGMetadata* create_SWIGMetaData() {
@@ -1464,8 +1491,6 @@ SWIGVMContainers::AbstractSWIGTableIterator* create_SWIGTableIterator() {
 SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator) {
     return new SWIGVMContainers::SWIGResultHandler_Impl(table_iterator);
 }
-
-
 
 int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
 {
@@ -1485,12 +1510,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
 
     zmq::context_t context(1);
 
-#ifdef SWIGVM_LOG_CLIENT
-    for (int i = 0; i<argc; i++)
-    {
-        cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << endl;
-    }
-#endif
+    DBG_COND_FUNC_CALL(cerr, print_args(argc,argv));
 
     if (socket_name.length() > 4 ) {
 #ifdef PROTEGRITY_PLUGIN_CLIENT
@@ -1531,12 +1551,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
         socket_name_file = &(socket_name_file[6]);
     }
 
-#ifdef SWIGVM_LOG_CLIENT
-    cerr << "### SWIGVM starting " << argv[0] << " with name '" << socket_name
-         << " (" << ::getppid() << ',' << ::getpid() << "): '"
-         << argv[1]
-         << '\'' << endl;
-#endif
+    DBG_STREAM_MSG(cerr,"### SWIGVM starting " << argv[0] << " with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): '" << argv[1] << '\'');
 
     start_check_thread();
 
@@ -1564,10 +1579,12 @@ reinit:
     SWIGVM_params_ref->sock = &socket;
     SWIGVM_params_ref->exch = &exchandler;
 
+    SWIGVM*vm=nullptr;
+
     if (!send_init(socket, socket_name)) {
         if (!get_remote_client() && exchandler.exthrowed) {
             send_close(socket, exchandler.exmsg);
-            return 1;
+            goto error;
         }
         goto reinit;
     }
@@ -1587,13 +1604,11 @@ reinit:
     SWIGVM_params_ref->vm_id = g_vm_id;
     SWIGVM_params_ref->singleCallMode = g_singleCallMode;
 
-    SWIGVM*vm=nullptr;
-
     try {
         vm = vmMaker();
         if (vm == nullptr) {
             send_close(socket, "Unknown or unsupported VM type");
-            return 1;
+            goto error;
         }
         if (vm->exception_msg.size()>0) {
             throw SWIGVM::exception(vm->exception_msg.c_str());
@@ -1636,7 +1651,7 @@ reinit:
 			break;
                     }
                     if (vm->exception_msg.size()>0) {
-                        send_close(socket, vm->exception_msg); socket.close();
+                        send_close(socket, vm->exception_msg);
                         goto error;
                     }
 
@@ -1660,7 +1675,7 @@ reinit:
                 while(!vm->run_())
                 {
                     if (vm->exception_msg.size()>0) {
-                        send_close(socket, vm->exception_msg); socket.close();
+                        send_close(socket, vm->exception_msg);
                         goto error;
                     }
                 }
@@ -1671,68 +1686,38 @@ reinit:
 
         if (vm != nullptr)
         {
-            vm->shutdown();
+            
             if (vm->exception_msg.size()>0) {
-                send_close(socket, vm->exception_msg); socket.close();
+                send_close(socket, vm->exception_msg);
                 goto error;
+            }else{
+                shutdown_vm(vm);
             }
-            delete vm;
-            vm = NULL;
         }
         send_finished(socket);
     }  catch (SWIGVM::exception &err) {
-        keep_checking = false;
-        send_close(socket, err.what()); socket.close();
-
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM crashing with name '" << socket_name
-             << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what() << endl;
-#endif
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        send_close(socket, err.what());
         goto error;
     } catch (std::exception &err) {
-        send_close(socket, err.what()); socket.close();
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM crashing with name '" << socket_name
-             << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what() << endl;
-#endif
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        send_close(socket, err.what());
         goto error;
     } catch (...) {
-        send_close(socket, "Internal/Unknown error"); socket.close();
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM crashing with name '" << socket_name
-             << " (" << ::getppid() << ',' << ::getpid() << ')' << endl;
-#endif
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
+        send_close(socket, "Internal/Unknown error");
         goto error;
     }
 
-#ifdef SWIGVM_LOG_CLIENT
-    cerr << "### SWIGVM finishing with name '" << socket_name
-         << " (" << ::getppid() << ',' << ::getpid() << ')' << endl;
-#endif
-    stop_check_thread();
-    socket.close();
-    if (!get_remote_client()) {
-        cancel_check_thread();
-        ::unlink(socket_name_file);
-    }
+
+    DBG_STREAM_MSG(cerr,"### SWIGVM finishing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
+
+    stop_all(socket);
     return 0;
 
 error:
-    keep_checking = false;
-    if (vm != NULL)
-    {
-        vm->shutdown();
-        delete vm;
-        vm = NULL;
-    }
-
-    socket.close();
-    if (!get_remote_client()) {
-        cancel_check_thread();
-        ::unlink(socket_name_file);
-    } else {
-        ::sleep(3); // give other components time to shutdown
-    }
+    shutdown_vm(vm);
+    stop_all(socket);
     return 1;
 }
 
