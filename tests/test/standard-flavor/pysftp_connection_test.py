@@ -53,8 +53,8 @@ class PysftpConnectionTest(udf.TestCase):
                         
                 /
                 '''.format(python_version=python_version)))
-            env.get_client().images.pull("panubo/sshd")
-            container=env.run(name="sshd_sftp",image="panubo/sshd",environment=["SSH_USERS=test_user:1000:1000","SSH_ENABLE_PASSWORD_AUTH=true","SFTP_MODE=true"],
+            env.get_client().images.pull("panubo/sshd",tag="1.1.0")
+            container=env.run(name="sshd_sftp",image="panubo/sshd:1.1.0",environment=["SSH_USERS=test_user:1000:1000","SSH_ENABLE_PASSWORD_AUTH=true","SFTP_MODE=true"],
                                 tmpfs={'/data': 'size=1M,uid=0'})
             print(container.logs())
             time.sleep(10)
