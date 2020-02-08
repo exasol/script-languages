@@ -44,6 +44,9 @@ class DockerDBEnvironment:
         self._client.close()
         self.remove_all_started_containers()
 
+    def get_client(self):
+        return self._client
+
     def remove_all_started_containers(self):
         for container in self._started_containers:
             try:

@@ -44,6 +44,7 @@ class ParamikoConnectionTest(udf.TestCase):
                         return "%s,%s,%s,%s,%s"%(str(e.errors),ctx.host,ctx.port,ctx.username,ctx.password)
                 /
                 '''.format(python_version=python_version)))
+            env.get_client().images.pull("panubo/sshd")
             container=env.run(name="ssshd",image="panubo/sshd",environment=["SSH_USERS=test_user:1000:1000","SSH_ENABLE_PASSWORD_AUTH=true"])
             time.sleep(10)
             result=container.exec_run(cmd=''' sh -c "echo 'test_user:test_user' | chpasswd" ''')
