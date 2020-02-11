@@ -105,7 +105,29 @@ static void external_process_check()
     }
 }
 
+static int first_ppid=-1;
 
+void check_parent_pid(){
+    int new_ppid=::getppid();
+    if(first_ppid==-1){ // Initialize first_ppid
+        first_ppid=new_ppid;
+    }
+    // Check if ppid has changed, if client is in own namespace, 
+    // the ppid will be forever 0 and never change. 
+    // If the client runs as udfplugin the ppid will point to the exasql process 
+    // and will change if it gets killed. Then client gets an orphaned process and 
+    // will be adopted by another process
+    if(first_ppid!=new_ppid){ 
+        ::sleep(1); // give me a chance to die with my parent process
+        cerr << "exaudfclient aborting " << socket_name_str << " ... current pid_sum " << new_ppid << " different to first_pid_sum " << first_ppid << "." << endl;
+#ifdef SWIGVM_LOG_CLIENT
+        cerr << "### SWIGVM aborting with name '" << socket_name_str
+            << "' (" << ::getppid() << ',' << ::getpid() << ')' << endl;
+#endif
+        ::abort();
+    }
+
+}
 
 void set_remote_client(bool value) {
     remote_client = value;
@@ -122,6 +144,7 @@ void *check_thread_routine(void* data)
 {
     while(keep_checking) {
         external_process_check();
+        check_parent_pid();
         ::usleep(100000);
     }
     return NULL;
