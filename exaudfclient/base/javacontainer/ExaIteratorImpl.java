@@ -70,126 +70,137 @@ class ExaIteratorImpl implements ExaIterator {
         if (insideRun && singleOutput)
             throw new ExaIterationException("emit() function is not allowed in scalar context");
 
-        if (values.length != exaMetadata.getOutputColumnCount()) {
+        if(values == null){
+          if(exaMetadata.getOutputColumnCount()==1){
+            resultHandler.setNull(0);
+          }else{
             String errorText = "emit() takes exactly " + exaMetadata.getOutputColumnCount();
             errorText += (exaMetadata.getOutputColumnCount() > 1) ? " arguments" : " argument";
-            errorText += " (" + values.length + " given)";
+            errorText += " (" + 1 + " given)";
             throw new ExaIterationException(errorText);
-        }
+          }
+        }else{
+            if (values.length != exaMetadata.getOutputColumnCount()) {
+                String errorText = "emit() takes exactly " + exaMetadata.getOutputColumnCount();
+                errorText += (exaMetadata.getOutputColumnCount() > 1) ? " arguments" : " argument";
+                errorText += " (" + values.length + " given)";
+                throw new ExaIterationException(errorText);
+            }
 
-        for (int i = 0; i < values.length; i++) {
-            if (values[i] == null) {
-                resultHandler.setNull(i);
-            }
-            else if (values[i] instanceof Byte || values[i] instanceof Short || values[i] instanceof Integer) {
-                Number val = (Number) values[i];
-                if (outputColumnTypes[i].equals("INT32"))
-                    resultHandler.setInt32(i, val.intValue());
-                else if (outputColumnTypes[i].equals("INT64"))
-                    resultHandler.setInt64(i, val.longValue());
-                else if (outputColumnTypes[i].equals("NUMERIC"))
-                    resultHandler.setNumeric(i, val.toString());
-                else if (outputColumnTypes[i].equals("DOUBLE"))
-                    resultHandler.setDouble(i, val.doubleValue());
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else if (values[i] instanceof Long) {
-                Long val = (Long) values[i];
-                if (outputColumnTypes[i].equals("INT32")) {
-                    if (isConversionToIntegerSafe(val, exaMetadata.getOutputColumnName(i)))
-                        resultHandler.setInt32(i, val.intValue());
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] == null) {
+                    resultHandler.setNull(i);
                 }
-                else if (outputColumnTypes[i].equals("INT64"))
-                    resultHandler.setInt64(i, val.longValue());
-                else if (outputColumnTypes[i].equals("NUMERIC"))
-                    resultHandler.setNumeric(i, val.toString());
-                else if (outputColumnTypes[i].equals("DOUBLE"))
-                    resultHandler.setDouble(i, val.doubleValue());
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else if (values[i] instanceof Float || values[i] instanceof Double) {
-                Number val = (Number) values[i];
-                if (outputColumnTypes[i].equals("INT32")) {
-                    if (isConversionToIntegerSafe(val, exaMetadata.getOutputColumnName(i)))
+                else if (values[i] instanceof Byte || values[i] instanceof Short || values[i] instanceof Integer) {
+                    Number val = (Number) values[i];
+                    if (outputColumnTypes[i].equals("INT32"))
                         resultHandler.setInt32(i, val.intValue());
-                }
-                else if (outputColumnTypes[i].equals("INT64")) {
-                    if (isConversionToLongSafe(val, exaMetadata.getOutputColumnName(i)))
+                    else if (outputColumnTypes[i].equals("INT64"))
                         resultHandler.setInt64(i, val.longValue());
+                    else if (outputColumnTypes[i].equals("NUMERIC"))
+                        resultHandler.setNumeric(i, val.toString());
+                    else if (outputColumnTypes[i].equals("DOUBLE"))
+                        resultHandler.setDouble(i, val.doubleValue());
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
                 }
-                else if (outputColumnTypes[i].equals("NUMERIC"))
-                    resultHandler.setNumeric(i, val.toString());
-                else if (outputColumnTypes[i].equals("DOUBLE"))
-                    resultHandler.setDouble(i, val.doubleValue());
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else if (values[i] instanceof BigDecimal) {
-                BigDecimal val = (BigDecimal) values[i];
-                if (outputColumnTypes[i].equals("INT32"))
-                    resultHandler.setInt32(i, val.intValueExact());
-                else if (outputColumnTypes[i].equals("INT64"))
-                    resultHandler.setInt64(i, val.longValueExact());
-                else if (outputColumnTypes[i].equals("NUMERIC"))
-                    resultHandler.setNumeric(i, val.toString());
-                else if (outputColumnTypes[i].equals("DOUBLE"))
-                    resultHandler.setDouble(i, val.doubleValue());
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else if (values[i] instanceof Boolean) {
-                Boolean val = (Boolean) values[i];
-                if (outputColumnTypes[i].equals("BOOLEAN"))
-                    resultHandler.setBoolean(i, val.booleanValue());
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else if (values[i] instanceof String) {
-                String val = (String) values[i];
-                if (outputColumnTypes[i].equals("STRING")) {
-                    byte[] utf8Bytes = null;
-                    try {
-                        utf8Bytes = val.getBytes("UTF-8");
-                    } catch (java.io.UnsupportedEncodingException ex) {
-                        throw new ExaDataTypeException("Column with name '" + exaMetadata.getOutputColumnName(i) + "' contains invalid UTF-8 data");
+                else if (values[i] instanceof Long) {
+                    Long val = (Long) values[i];
+                    if (outputColumnTypes[i].equals("INT32")) {
+                        if (isConversionToIntegerSafe(val, exaMetadata.getOutputColumnName(i)))
+                            resultHandler.setInt32(i, val.intValue());
                     }
-                    resultHandler.setString(i, utf8Bytes);
+                    else if (outputColumnTypes[i].equals("INT64"))
+                        resultHandler.setInt64(i, val.longValue());
+                    else if (outputColumnTypes[i].equals("NUMERIC"))
+                        resultHandler.setNumeric(i, val.toString());
+                    else if (outputColumnTypes[i].equals("DOUBLE"))
+                        resultHandler.setDouble(i, val.doubleValue());
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
                 }
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else if (values[i] instanceof Date) {
-                Date val = (Date) values[i];
-                if (outputColumnTypes[i].equals("DATE"))
-                    resultHandler.setDate(i, val.toString());
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else if (values[i] instanceof Timestamp) {
-                Timestamp val = (Timestamp) values[i];
-                if (outputColumnTypes[i].equals("TIMESTAMP"))
-                    resultHandler.setTimestamp(i, val.toString());
-                else
-                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
-                                + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
-            }
-            else {
-                throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i)
-                                + "' is of unsupported type " + values[i].getClass().getCanonicalName());
-            }
+                else if (values[i] instanceof Float || values[i] instanceof Double) {
+                    Number val = (Number) values[i];
+                    if (outputColumnTypes[i].equals("INT32")) {
+                        if (isConversionToIntegerSafe(val, exaMetadata.getOutputColumnName(i)))
+                            resultHandler.setInt32(i, val.intValue());
+                    }
+                    else if (outputColumnTypes[i].equals("INT64")) {
+                        if (isConversionToLongSafe(val, exaMetadata.getOutputColumnName(i)))
+                            resultHandler.setInt64(i, val.longValue());
+                    }
+                    else if (outputColumnTypes[i].equals("NUMERIC"))
+                        resultHandler.setNumeric(i, val.toString());
+                    else if (outputColumnTypes[i].equals("DOUBLE"))
+                        resultHandler.setDouble(i, val.doubleValue());
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
+                }
+                else if (values[i] instanceof BigDecimal) {
+                    BigDecimal val = (BigDecimal) values[i];
+                    if (outputColumnTypes[i].equals("INT32"))
+                        resultHandler.setInt32(i, val.intValueExact());
+                    else if (outputColumnTypes[i].equals("INT64"))
+                        resultHandler.setInt64(i, val.longValueExact());
+                    else if (outputColumnTypes[i].equals("NUMERIC"))
+                        resultHandler.setNumeric(i, val.toString());
+                    else if (outputColumnTypes[i].equals("DOUBLE"))
+                        resultHandler.setDouble(i, val.doubleValue());
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
+                }
+                else if (values[i] instanceof Boolean) {
+                    Boolean val = (Boolean) values[i];
+                    if (outputColumnTypes[i].equals("BOOLEAN"))
+                        resultHandler.setBoolean(i, val.booleanValue());
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
+                }
+                else if (values[i] instanceof String) {
+                    String val = (String) values[i];
+                    if (outputColumnTypes[i].equals("STRING")) {
+                        byte[] utf8Bytes = null;
+                        try {
+                            utf8Bytes = val.getBytes("UTF-8");
+                        } catch (java.io.UnsupportedEncodingException ex) {
+                            throw new ExaDataTypeException("Column with name '" + exaMetadata.getOutputColumnName(i) + "' contains invalid UTF-8 data");
+                        }
+                        resultHandler.setString(i, utf8Bytes);
+                    }
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
+                }
+                else if (values[i] instanceof Date) {
+                    Date val = (Date) values[i];
+                    if (outputColumnTypes[i].equals("DATE"))
+                        resultHandler.setDate(i, val.toString());
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
+                }
+                else if (values[i] instanceof Timestamp) {
+                    Timestamp val = (Timestamp) values[i];
+                    if (outputColumnTypes[i].equals("TIMESTAMP"))
+                        resultHandler.setTimestamp(i, val.toString());
+                    else
+                        throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i) + "' is of type "
+                                    + outputColumnTypes[i] + " but data given have type " + values[i].getClass().getCanonicalName());
+                }
+                else {
+                    throw new ExaDataTypeException("emit column '" + exaMetadata.getOutputColumnName(i)
+                                    + "' is of unsupported type " + values[i].getClass().getCanonicalName());
+                }
 
-            String exMsg = resultHandler.checkException();
-            if (exMsg != null && exMsg.length() > 0) {
-                throw new ExaIterationException(exMsg);
+                String exMsg = resultHandler.checkException();
+                if (exMsg != null && exMsg.length() > 0) {
+                    throw new ExaIterationException(exMsg);
+                }
             }
         }
 
