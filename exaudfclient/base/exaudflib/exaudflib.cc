@@ -124,6 +124,7 @@ void check_parent_pid(){
         cerr << "### SWIGVM aborting with name '" << socket_name_str
             << "' (" << ::getppid() << ',' << ::getpid() << ')' << endl;
 #endif
+        ::unlink(socket_name_file);
         ::abort();
     }
 
