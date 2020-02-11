@@ -70,6 +70,7 @@ class AvailablePythonPackages(udf.TestCase):
     def test_35(self): self.import_test('EXASOL')
     def test_36(self): self.import_test('paramiko')
     def test_37(self): self.import_test('pysftp')
+    def test_38(self): self.import_test('boto3')
 
 class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
@@ -137,6 +138,7 @@ class AvailablePython3Packages(udf.TestCase):
     def test_36(self): self.import_test('EXASOL')
     def test_36(self): self.import_test('paramiko')
     def test_37(self): self.import_test('pysftp')
+    def test_38(self): self.import_test('boto3')
 
 
 class AvailableRPackages(udf.TestCase):
