@@ -70,16 +70,7 @@ class ExaIteratorImpl implements ExaIterator {
         if (insideRun && singleOutput)
             throw new ExaIterationException("emit() function is not allowed in scalar context");
 
-        if(values == null){
-          if(exaMetadata.getOutputColumnCount()==1){
-            resultHandler.setNull(0);
-          }else{
-            String errorText = "emit() takes exactly " + exaMetadata.getOutputColumnCount();
-            errorText += (exaMetadata.getOutputColumnCount() > 1) ? " arguments" : " argument";
-            errorText += " (" + 1 + " given)";
-            throw new ExaIterationException(errorText);
-          }
-        }else{
+        if(values != null){
             if (values.length != exaMetadata.getOutputColumnCount()) {
                 String errorText = "emit() takes exactly " + exaMetadata.getOutputColumnCount();
                 errorText += (exaMetadata.getOutputColumnCount() > 1) ? " arguments" : " argument";
@@ -201,6 +192,15 @@ class ExaIteratorImpl implements ExaIterator {
                 if (exMsg != null && exMsg.length() > 0) {
                     throw new ExaIterationException(exMsg);
                 }
+            }
+        }else{
+            if(exaMetadata.getOutputColumnCount()==1){
+              resultHandler.setNull(0);
+            }else{
+              String errorText = "emit() takes exactly " + exaMetadata.getOutputColumnCount();
+              errorText += (exaMetadata.getOutputColumnCount() > 1) ? " arguments" : " argument";
+              errorText += " (" + 1 + " given)";
+              throw new ExaIterationException(errorText);
             }
         }
 
