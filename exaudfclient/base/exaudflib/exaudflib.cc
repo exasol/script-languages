@@ -93,7 +93,6 @@ void init_socket_name(const char* the_socket_name) {
 
 static void external_process_check()
 {
-    DBGVAR(cerr,&(socket_name_file));
     if (remote_client) return;
     if (::access(socket_name_file, F_OK) != 0) {
         ::sleep(1); // give me a chance to die with my parent process
@@ -106,7 +105,30 @@ static void external_process_check()
     }
 }
 
+static int first_ppid=-1;
 
+void check_parent_pid(){
+    int new_ppid=::getppid();
+    if(first_ppid==-1){ // Initialize first_ppid
+        first_ppid=new_ppid;
+    }
+    // Check if ppid has changed, if client is in own namespace, 
+    // the ppid will be forever 0 and never change. 
+    // If the client runs as udfplugin the ppid will point to the exasql process 
+    // and will change if it gets killed. Then client gets an orphaned process and 
+    // will be adopted by another process
+    if(first_ppid!=new_ppid){ 
+        ::sleep(1); // give me a chance to die with my parent process
+        cerr << "exaudfclient aborting " << socket_name_str << " ... current pid_sum " << new_ppid << " different to first_pid_sum " << first_ppid << "." << endl;
+#ifdef SWIGVM_LOG_CLIENT
+        cerr << "### SWIGVM aborting with name '" << socket_name_str
+            << "' (" << ::getppid() << ',' << ::getpid() << ')' << endl;
+#endif
+        ::unlink(socket_name_file);
+        ::abort();
+    }
+
+}
 
 void set_remote_client(bool value) {
     remote_client = value;
@@ -123,6 +145,7 @@ void *check_thread_routine(void* data)
 {
     while(keep_checking) {
         external_process_check();
+        check_parent_pid();
         ::usleep(100000);
     }
     return NULL;
@@ -142,9 +165,35 @@ void cancel_check_thread() {
     ::pthread_cancel(check_thread);
 }
 
+void print_args(int argc,char**argv){
+    for (int i = 0; i<argc; i++)
+    {
+        cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << endl;
+    }
+}
+
+
+void delete_vm(SWIGVM*& vm){
+    if (vm != nullptr)
+    {
+        delete vm;
+        vm = nullptr;
+    }
+}
+
+void stop_all(zmq::socket_t& socket){
+    socket.close();
+    stop_check_thread();
+    if (!get_remote_client()) {
+        cancel_check_thread();
+        ::unlink(socket_name_file);
+    } else {
+        ::sleep(3); // give other components time to shutdown
+    }
+}
+
 mutex zmq_socket_mutex;
 static bool use_zmq_socket_locks = false;
-
 
 void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 {
@@ -1451,6 +1500,7 @@ public:
 
 } // namespace SWIGVMContainers
 
+
 extern "C" {
 
 SWIGVMContainers::SWIGMetadata* create_SWIGMetaData() {
@@ -1464,8 +1514,6 @@ SWIGVMContainers::AbstractSWIGTableIterator* create_SWIGTableIterator() {
 SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator) {
     return new SWIGVMContainers::SWIGResultHandler_Impl(table_iterator);
 }
-
-
 
 int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
 {
@@ -1485,12 +1533,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
 
     zmq::context_t context(1);
 
-#ifdef SWIGVM_LOG_CLIENT
-    for (int i = 0; i<argc; i++)
-    {
-        cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << endl;
-    }
-#endif
+    DBG_COND_FUNC_CALL(cerr, print_args(argc,argv));
 
     if (socket_name.length() > 4 ) {
 #ifdef PROTEGRITY_PLUGIN_CLIENT
@@ -1531,12 +1574,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
         socket_name_file = &(socket_name_file[6]);
     }
 
-#ifdef SWIGVM_LOG_CLIENT
-    cerr << "### SWIGVM starting " << argv[0] << " with name '" << socket_name
-         << " (" << ::getppid() << ',' << ::getpid() << "): '"
-         << argv[1]
-         << '\'' << endl;
-#endif
+    DBG_STREAM_MSG(cerr,"### SWIGVM starting " << argv[0] << " with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): '" << argv[1] << '\'');
 
     start_check_thread();
 
@@ -1551,6 +1589,7 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
     }
 
 reinit:
+
     DBGMSG(cerr,"Reinit");
     zmq::socket_t socket(context, ZMQ_REQ);
 
@@ -1564,12 +1603,15 @@ reinit:
     SWIGVM_params_ref->sock = &socket;
     SWIGVM_params_ref->exch = &exchandler;
 
+    SWIGVM*vm=nullptr;
+
     if (!send_init(socket, socket_name)) {
         if (!get_remote_client() && exchandler.exthrowed) {
             send_close(socket, exchandler.exmsg);
-            return 1;
+            goto error;
+        }else{
+            goto reinit;
         }
-        goto reinit;
     }
 
     SWIGVM_params_ref->dbname = (char*) g_database_name.c_str();
@@ -1587,13 +1629,11 @@ reinit:
     SWIGVM_params_ref->vm_id = g_vm_id;
     SWIGVM_params_ref->singleCallMode = g_singleCallMode;
 
-    SWIGVM*vm=nullptr;
-
     try {
         vm = vmMaker();
         if (vm == nullptr) {
             send_close(socket, "Unknown or unsupported VM type");
-            return 1;
+            goto error;
         }
         if (vm->exception_msg.size()>0) {
             throw SWIGVM::exception(vm->exception_msg.c_str());
@@ -1608,49 +1648,49 @@ reinit:
                 // EXASolution responds with a CALL message that specifies
                 // the single call function to be made
                 if (!send_run(socket)) {
-		  break;
-		}
+                    break;
+                }
+
                 assert(g_singleCallFunction != single_call_function_id_e::SC_FN_NIL);
-		try {
-		    const char* result = nullptr;
+                try {
+                    const char* result = nullptr;
                     switch (g_singleCallFunction)
                     {
-                    case single_call_function_id_e::SC_FN_NIL:
-                        break;
-                    case single_call_function_id_e::SC_FN_DEFAULT_OUTPUT_COLUMNS:
-		        result = vm->singleCall(g_singleCallFunction,noArg);
-                        break;
-                    case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
-                        assert(!g_singleCall_ImportSpecificationArg.isEmpty());
-                        result = vm->singleCall(g_singleCallFunction,g_singleCall_ImportSpecificationArg);
-                        g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification();  // delete the last argument
-                        break;
-                    case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC:
-                        assert(!g_singleCall_ExportSpecificationArg.isEmpty());
-                        result = vm->singleCall(g_singleCallFunction,g_singleCall_ExportSpecificationArg);
-                        g_singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();  // delete the last argument
-                        break;
-                    case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
-                        assert(!g_singleCall_StringArg.isEmpty());
-			result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
-			break;
+                        case single_call_function_id_e::SC_FN_NIL:
+                            break;
+                        case single_call_function_id_e::SC_FN_DEFAULT_OUTPUT_COLUMNS:
+                            result = vm->singleCall(g_singleCallFunction,noArg);
+                            break;
+                        case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
+                            assert(!g_singleCall_ImportSpecificationArg.isEmpty());
+                            result = vm->singleCall(g_singleCallFunction,g_singleCall_ImportSpecificationArg);
+                            g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification();  // delete the last argument
+                            break;
+                        case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC:
+                            assert(!g_singleCall_ExportSpecificationArg.isEmpty());
+                            result = vm->singleCall(g_singleCallFunction,g_singleCall_ExportSpecificationArg);
+                            g_singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();  // delete the last argument
+                            break;
+                        case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
+                            assert(!g_singleCall_StringArg.isEmpty());
+                            result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
+                            break;
                     }
                     if (vm->exception_msg.size()>0) {
-                        send_close(socket, vm->exception_msg); socket.close();
+                        send_close(socket, vm->exception_msg);
                         goto error;
                     }
 
                     if (vm->calledUndefinedSingleCall.size()>0) {
-                         send_undefined_call(socket, vm->calledUndefinedSingleCall);
-                     } else {
-		       send_return(socket,result);
-                     }
+                        send_undefined_call(socket, vm->calledUndefinedSingleCall);
+                    } else {
+                        send_return(socket,result);
+                    }
 
                     if (!send_done(socket)) {
                         break;
                     }
-		} catch(...) {
-		}
+                } catch(...) {}
             }
         } else {
             for(;;) {
@@ -1660,7 +1700,7 @@ reinit:
                 while(!vm->run_())
                 {
                     if (vm->exception_msg.size()>0) {
-                        send_close(socket, vm->exception_msg); socket.close();
+                        send_close(socket, vm->exception_msg);
                         goto error;
                     }
                 }
@@ -1673,66 +1713,35 @@ reinit:
         {
             vm->shutdown();
             if (vm->exception_msg.size()>0) {
-                send_close(socket, vm->exception_msg); socket.close();
+                send_close(socket, vm->exception_msg);
                 goto error;
             }
-            delete vm;
-            vm = NULL;
         }
         send_finished(socket);
     }  catch (SWIGVM::exception &err) {
-        keep_checking = false;
-        send_close(socket, err.what()); socket.close();
-
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM crashing with name '" << socket_name
-             << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what() << endl;
-#endif
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        send_close(socket, err.what());
         goto error;
     } catch (std::exception &err) {
-        send_close(socket, err.what()); socket.close();
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM crashing with name '" << socket_name
-             << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what() << endl;
-#endif
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        send_close(socket, err.what());
         goto error;
     } catch (...) {
-        send_close(socket, "Internal/Unknown error"); socket.close();
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM crashing with name '" << socket_name
-             << " (" << ::getppid() << ',' << ::getpid() << ')' << endl;
-#endif
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
+        send_close(socket, "Internal/Unknown error");
         goto error;
     }
 
-#ifdef SWIGVM_LOG_CLIENT
-    cerr << "### SWIGVM finishing with name '" << socket_name
-         << " (" << ::getppid() << ',' << ::getpid() << ')' << endl;
-#endif
-    stop_check_thread();
-    socket.close();
-    if (!get_remote_client()) {
-        cancel_check_thread();
-        ::unlink(socket_name_file);
-    }
+
+    DBG_STREAM_MSG(cerr,"### SWIGVM finishing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
+
+    delete_vm(vm);
+    stop_all(socket);
     return 0;
 
 error:
-    keep_checking = false;
-    if (vm != NULL)
-    {
-        vm->shutdown();
-        delete vm;
-        vm = NULL;
-    }
-
-    socket.close();
-    if (!get_remote_client()) {
-        cancel_check_thread();
-        ::unlink(socket_name_file);
-    } else {
-        ::sleep(3); // give other components time to shutdown
-    }
+    delete_vm(vm);
+    stop_all(socket);
     return 1;
 }
 
