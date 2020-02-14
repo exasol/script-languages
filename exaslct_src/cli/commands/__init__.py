@@ -6,3 +6,4 @@ from .run_db_tests import run_db_test
 from .export import export
 from .save import save
 from .spawn_test_environment import spawn_test_environment
+from .generate_alter_session import generate_alter_session

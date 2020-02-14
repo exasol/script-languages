@@ -17,13 +17,16 @@ class LanguageDefinition():
         self.release_name = release_name
 
     def generate_definition(self):
+        path_in_bucket=self.path_in_bucket
+        if path_in_bucket != "" and  not path_in_bucket.endswith("/"):
+            path_in_bucket=path_in_bucket+"/"
         language_definition_path = Path(self.flavor_path, "flavor_base", "language_definition")
         with language_definition_path.open("r") as f:
             language_definition_template = f.read()
         template = Template(language_definition_template)
         language_definition = template.render(bucketfs_name=self.bucketfs_name,
                                               bucket_name=self.bucket_name,
-                                              path_in_bucket=self.path_in_bucket,
+                                              path_in_bucket=path_in_bucket,
                                               release_name=self.release_name)
         return language_definition
 
