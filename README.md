@@ -26,7 +26,7 @@ If you are interested in the script client you find more details [here](src/READ
 
 ## Prerequisites
 In order to build this project, you need:
-* Linux or Mac OS X (experimental)
+* Linux or Mac OS X (experimental) with bash and tar
 * Docker >= 17.05 [multi-stage builds required](https://docs.docker.com/develop/develop-images/multistage-build/)
 * Python >=3.6 with pip
 * We recommend at least 50 GB free disk space on the partition 
@@ -60,6 +60,17 @@ $ ./exaslct upload --flavor-path=flavors/<flavor-name> --database-host <hostname
 
 Once it is successfully uploaded, it will print the ALTER SESSION statement
 that can be used to activate the script language container in the database.
+
+## How to activate the script language container in the database
+
+If you upload the container manually you can generate the ALTER SESSION statement with
+
+```bash
+$ ./exaslct generate-alter-session --flavor-path=flavors/<flavor-name> --bucketfs-name <bucketfs-name> \
+                                   --bucket-name <bucket-name> --path-in-bucket <path/in/bucket> --container-name <container-name>
+```
+
+where \<container-name> is the name of the uploaded archive without its file extension. Execute the generated statement in your database session to activate the container for the current session.
 
 ## How to customize an existing flavor?
 
@@ -122,6 +133,8 @@ $ ./exaslct upload --flavor-path=flavors/<flavor-name> --database-host <hostname
 ```
 
 Note: The tool `exaslct` tries to reuse as much as possible of the previous build or tries to pull already exising images from Docker Hub.
+
+
 
 ## Force a rebuild
 
