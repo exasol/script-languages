@@ -6,12 +6,14 @@
 ## Table of Contents
 1. [About](#about)
 2. [Prerequisites](#prerequisites)
-3. [How to build an existing flavor?](#how-to-build-an-existing-flavor)
-4. [How to customize an existing flavor?](#how-to-customize-an-existing-flavor)
-5. [Partial builds or rebuilds](#partial-builds-and-rebuilds)
-6. [Using your own remote cache](#using-your-own-remote-cache)
-7. [Testing an existing flavor](#testing-an-existing-flavor)
-8. [Cleaning up after your are finished](#cleaning-up-after-your-are-finished)
+3. [Getting Started](#getting-started)
+4. [How to build an existing flavor?](#how-to-build-an-existing-flavor)
+5. [How to activate a script language container in the database](#how-to-activate-the-script-language-container-in-the-database)
+6. [How to customize an existing flavor?](#how-to-customize-an-existing-flavor)
+7. [Partial builds or rebuilds](#partial-builds-and-rebuilds)
+8. [Using your own remote cache](#using-your-own-remote-cache)
+9. [Testing an existing flavor](#testing-an-existing-flavor)
+10. [Cleaning up after your are finished](#cleaning-up-after-your-are-finished)
 
 ## About
 This project contains script language containers for user defined functions (UDF's) 
@@ -61,9 +63,9 @@ $ ./exaslct upload --flavor-path=flavors/<flavor-name> --database-host <hostname
 Once it is successfully uploaded, it will print the ALTER SESSION statement
 that can be used to activate the script language container in the database.
 
-## How to activate the script language container in the database
+## How to activate a script language container in the database
 
-If you upload the container manually you can generate the ALTER SESSION statement with
+If you uploaded a container manually you can generate the ALTER SESSION statement with
 
 ```bash
 $ ./exaslct generate-alter-session --flavor-path=flavors/<flavor-name> --bucketfs-name <bucketfs-name> \
