@@ -71,11 +71,14 @@ class ExaslctTestEnvironment():
         self.run_command(f"./exaslct clean-flavor-images", clean=True)
 
     def run_command(self, command: str,
+                    use_output_directory: bool = True,
                     use_flavor_path: bool = True,
                     use_docker_repository: bool = True,
                     track_task_dependencies: bool = False,
-                    clean: bool = False):
-        command = f"{command} {self.output_directory_arguments}"
+                    clean: bool = False,
+                    capture_output: bool = False):
+        if use_output_directory:
+            command = f"{command} {self.output_directory_arguments}"
         if track_task_dependencies:
             command = f"{command} {self.task_dependencies_argument}"
         if use_flavor_path:
@@ -86,8 +89,16 @@ class ExaslctTestEnvironment():
             command = f"{command} {self.clean_docker_repository_arguments}"
         print()
         print(f"command: {command}")
-        completed_process = subprocess.run(shlex.split(command))
-        completed_process.check_returncode()
+        if capture_output:
+            completed_process = subprocess.run(shlex.split(command),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        else:
+            completed_process = subprocess.run(shlex.split(command))
+        try:
+            completed_process.check_returncode()
+        except subprocess.CalledProcessError as e:
+            print(e.stdout.decode("UTF-8"))
+            raise e
+        return completed_process
 
     def close(self):
         try:

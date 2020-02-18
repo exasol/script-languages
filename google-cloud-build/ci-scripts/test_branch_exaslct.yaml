@@ -20,6 +20,20 @@ steps:
           'run_exaslct_test.sh',
           'exaslct_src/test/test_base_task.py'
         ]
+- id: 'Test exaslct test_hash_temp_dir.py'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash', 
+          'run_exaslct_test.sh',
+          'exaslct_src/test/test_hash_temp_dir.py'
+        ]
+- id: 'Test exaslct test_generate_alter_session.py'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash', 
+          'run_exaslct_test.sh',
+          'exaslct_src/test/test_generate_alter_session.py'
+        ]
 - id: 'Test exaslct test_docker_build.py'
   name: 'gcr.io/script-languages/build-container'
   args: [
@@ -54,13 +68,6 @@ steps:
           'bash', 
           'run_exaslct_test.sh',
           'exaslct_src/test/test_docker_save.py'
-        ]
-- id: 'Test exaslct test_hash_temp_dir.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_hash_temp_dir.py'
         ]
 - id: 'Test exaslct test_run_db_test_docker_db.py'
   name: 'gcr.io/script-languages/build-container'
