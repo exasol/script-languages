@@ -65,14 +65,20 @@ that can be used to activate the script language container in the database.
 
 ## How to activate a script language container in the database
 
-If you uploaded a container manually you can generate the ALTER SESSION statement with
+If you uploaded a container manually you can generate the language activation statement with
 
 ```bash
 $ ./exaslct generate-language-activation --flavor-path=flavors/<flavor-name> --bucketfs-name <bucketfs-name> \
                                          --bucket-name <bucket-name> --path-in-bucket <path/in/bucket> --container-name <container-name>
 ```
 
-where \<container-name> is the name of the uploaded archive without its file extension. Execute the generated statement in your database session to activate the container for the current session.
+where \<container-name> is the name of the uploaded archive without its file extension. To activate the language, execute the generated statement in your database session to activate the container for the current session or system wide.
+
+This command will print a SQL statement to activate the language similiar to the following one:
+
+```
+ALTER SESSION SET SCRIPT_LANGUAGES='<LANGUAGE_ALIAS>=localzmq+protobuf:///<bucketfs-name>/<bucket-name>/<path-in-bucket>/<container-name>?lang=<language>#buckets/<bucketfs-name>/<bucket-name>/<path-in-bucket>/<container-name>/exaudf/exaudfclienti[_py3]';
+```
 
 ## How to customize an existing flavor?
 

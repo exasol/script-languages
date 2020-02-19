@@ -22,7 +22,7 @@ def generate_language_activation(
            path_in_bucket: str,
            container_name: str):
     """
-    This command generates a alter session command with given information
+    Generate the language activation statement
     """
     
     language_definition = \
