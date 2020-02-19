@@ -6,12 +6,14 @@
 ## Table of Contents
 1. [About](#about)
 2. [Prerequisites](#prerequisites)
-3. [How to build an existing flavor?](#how-to-build-an-existing-flavor)
-4. [How to customize an existing flavor?](#how-to-customize-an-existing-flavor)
-5. [Partial builds or rebuilds](#partial-builds-and-rebuilds)
-6. [Using your own remote cache](#using-your-own-remote-cache)
-7. [Testing an existing flavor](#testing-an-existing-flavor)
-8. [Cleaning up after your are finished](#cleaning-up-after-your-are-finished)
+3. [Getting Started](#getting-started)
+4. [How to build an existing flavor?](#how-to-build-an-existing-flavor)
+5. [How to activate a script language container in the database](#how-to-activate-the-script-language-container-in-the-database)
+6. [How to customize an existing flavor?](#how-to-customize-an-existing-flavor)
+7. [Partial builds or rebuilds](#partial-builds-and-rebuilds)
+8. [Using your own remote cache](#using-your-own-remote-cache)
+9. [Testing an existing flavor](#testing-an-existing-flavor)
+10. [Cleaning up after your are finished](#cleaning-up-after-your-are-finished)
 
 ## About
 This project contains script language containers for user defined functions (UDF's) 
@@ -26,7 +28,7 @@ If you are interested in the script client you find more details [here](src/READ
 
 ## Prerequisites
 In order to build this project, you need:
-* Linux or Mac OS X (experimental)
+* Linux or Mac OS X (experimental) with bash and tar
 * Docker >= 17.05 [multi-stage builds required](https://docs.docker.com/develop/develop-images/multistage-build/)
 * Python >=3.6 with pip
 * We recommend at least 50 GB free disk space on the partition 
@@ -60,6 +62,23 @@ $ ./exaslct upload --flavor-path=flavors/<flavor-name> --database-host <hostname
 
 Once it is successfully uploaded, it will print the ALTER SESSION statement
 that can be used to activate the script language container in the database.
+
+## How to activate a script language container in the database
+
+If you uploaded a container manually you can generate the language activation statement with
+
+```bash
+$ ./exaslct generate-language-activation --flavor-path=flavors/<flavor-name> --bucketfs-name <bucketfs-name> \
+                                         --bucket-name <bucket-name> --path-in-bucket <path/in/bucket> --container-name <container-name>
+```
+
+where \<container-name> is the name of the uploaded archive without its file extension. To activate the language, execute the generated statement in your database session to activate the container for the current session or system wide.
+
+This command will print a SQL statement to activate the language similiar to the following one:
+
+```
+ALTER SESSION SET SCRIPT_LANGUAGES='<LANGUAGE_ALIAS>=localzmq+protobuf:///<bucketfs-name>/<bucket-name>/<path-in-bucket>/<container-name>?lang=<language>#buckets/<bucketfs-name>/<bucket-name>/<path-in-bucket>/<container-name>/exaudf/exaudfclienti[_py3]';
+```
 
 ## How to customize an existing flavor?
 
@@ -122,6 +141,8 @@ $ ./exaslct upload --flavor-path=flavors/<flavor-name> --database-host <hostname
 ```
 
 Note: The tool `exaslct` tries to reuse as much as possible of the previous build or tries to pull already exising images from Docker Hub.
+
+
 
 ## Force a rebuild
 
