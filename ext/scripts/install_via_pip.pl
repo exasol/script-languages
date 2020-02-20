@@ -3,15 +3,16 @@
 =pod
  
 =head1 SYNOPSIS
+  Installs python package via pip to the corresponding package site of the python binary
 
-  install_via_apt.pl [OPTIONS]
+  install_via_pip.pl [OPTIONS]
   Options:
-    --help Brief help message
-    --dry-run Doesn't execute the command, only prints it to STDOUT
-    --file Input file with each line represents a input. 
-           A line can have multiple elements separated by --element-separator. 
-           Lines everything after a # is interpreted as comment
-    --python-binary Python-binary to use for the installation
+    --help            Brief help message
+    --dry-run         Doesn't execute the command, only prints it to STDOUT
+    --file            Input file with each line represents a input. 
+                      A line can have multiple elements separated by --element-separator. 
+                      Lines everything after a # is interpreted as comment
+    --python-binary   Python-binary to use for the installation
                                      
 =cut
 
@@ -44,7 +45,7 @@ if($python_binary eq ''){
 }
 
 my $element_separator = '\\|\\|\\|\\|\\|\\|\\|\\|';
-my $combining_template = "$python_binary -m pip install --force-reinstall --progress-bar ascii --no-cache-dir <<<<0>>>>";
+my $combining_template = "$python_binary -m pip install --ignore-installed --progress-bar ascii --no-cache-dir <<<<0>>>>";
 my @templates = ("'<<<<0>>>>'");
 my @separators = (" ");
 

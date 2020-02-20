@@ -3,15 +3,17 @@
 =pod
  
 =head1 SYNOPSIS
+  Installs R packages with the versions package https://www.rdocumentation.org/packages/versions/versions/0.3
 
-  install_via_apt.pl [OPTIONS]
+  install_via_r_versions.pl [OPTIONS]
   Options:
-    --help Brief help message
-    --dry-run Doesn't execute the command, only prints it to STDOUT
-    --file Input file with each line represents a input. 
-           A line can have multiple elements separated by --element-separator. 
-           Lines everything after a # is interpreted as comment
-    --rscript-binary Rscript binary to use for installation
+    --help                Brief help message
+    --dry-run             Doesn't execute the command, only prints it to STDOUT
+    --element-separator   Element separator regex in a line in the input file, defaults to "|"
+    --file                Input file with each line represents a input. 
+                          A line can have multiple elements separated by --element-separator. 
+                          Lines everything after a # is interpreted as comment
+    --rscript-binary      Rscript binary to use for installation
                                      
 =cut
 
@@ -26,6 +28,7 @@ use Pod::Usage;
 my $help = 0;
 my $dry_run = 0;
 my $file = '';
+my $element_separator = "\\|";
 my $rscript_binary = '';
 
 GetOptions (
@@ -33,16 +36,17 @@ GetOptions (
             "dry-run" => \$dry_run,
             "file=s" => \$file,
             "rscript-binary=s" => \$rscript_binary
-          ) or pod2usage(2);
-pod2usage(1) if $help;
+            "element-separator=s" => \$element_separator,
+          ) or utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
+utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
 
 if($file eq ''){
-    pod2usage("Error in command line arguments: --file was not specified");
+    utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --file was not specified",1);
 }
 
 if($rscript_binary eq ''){
-    pod2usage("Error in command line arguments: --rscript-binary was not specified");
+    utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --rscript-binary was not specified",1);
 }
 
 my $element_separator = '\\|';
