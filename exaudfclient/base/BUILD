@@ -52,6 +52,13 @@ config_setting(
         },
 )
 
+config_setting(
+    name = "stdout_to_bucketfs",
+    define_values = {
+        "wrapper_type": "stdout_to_bucketfs",
+        },
+)
+
 cc_library(
     name = "debug_message_h",
     hdrs = [
@@ -131,6 +138,7 @@ sh_library(
     srcs=select({
         "//:valgrind_wrapper": ["//:create_binary_wrapper_valgrind.sh"],
         "//:valgrind_massif_wrapper": ["//:create_binary_wrapper_valgrind_massif.sh"],
+        "//:stdout_to_bucketfs": ["//:create_binary_wrapper_stdout_to_bucketfs.sh"],
         "//conditions:default": ["//:create_binary_wrapper.sh"]
     })
 ) 
