@@ -1501,8 +1501,8 @@ unsigned int handle_error(zmq::socket_t& socket, std::string socket_name, SWIGVM
         if(vm!=nullptr && shutdown_vm){
             vm->shutdown();
             if (vm->exception_msg.size()>0) {
+                DBG_STREAM_MSG(cerr,"### Caught error in vm->shutdown '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << vm->exception_msg);
                 msg ="Caught exception\n\n"+msg+"\n\n and caught another exception during cleanup\n\n"+vm->exception_msg;
-                msg=vm->exception_msg;
             }
         } 
         delete_vm(vm);
