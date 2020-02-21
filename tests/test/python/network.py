@@ -154,7 +154,6 @@ class CleanupTest(udf.TestCase):
         self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA t1')
 
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")    
     def test_cleanup_is_called_at_least_once(self):
         with MessageBox() as mb:
             host, port = mb.address
@@ -188,7 +187,6 @@ class CleanupTest(udf.TestCase):
 
         self.assertIn('foobar', mb.data)
 
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_cleanup_is_called_exactly_once_for_each_vm(self):
         with MessageBox() as mb:
             host, port = mb.address
@@ -232,7 +230,6 @@ class CleanupTest(udf.TestCase):
         self.assertEquals(init, cleanup)
         self.assertEquals(sorted(set(init)), init)
 
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_cleanup_is_called_exactly_once_for_each_vm_with_crash_in_run(self):
         with MessageBox() as mb:
             host, port = mb.address

@@ -72,6 +72,21 @@ class PythonInterpreter(udf.TestCase):
         with self.assertRaisesRegexp(Exception, '4711'):
             self.query('SELECT foo() FROM dual')
 
+    def test_exception_in_run_and_cleanup_is_propagated(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE python SCALAR SCRIPT
+            foo()
+            RETURNS INT AS
+
+            def run(ctx):
+                raise ValueError('42')
+
+            def cleanup():
+                raise ValueError('4711')
+            '''))
+        with self.assertRaisesRegexp(Exception, '42.*4711'):
+            self.query('SELECT foo() FROM dual')
+
     def test_cleanup_has_global_context(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE python SCALAR SCRIPT

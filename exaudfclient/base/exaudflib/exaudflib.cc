@@ -1495,7 +1495,46 @@ public:
     }
 };
 
+unsigned int handle_error(zmq::socket_t& socket, std::string socket_name, SWIGVM* vm, std::string msg, bool shutdown_vm=false){
+    DBG_STREAM_MSG(cerr,"### handle error in '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << msg);
+    try{
+        if(vm!=nullptr && shutdown_vm){
+            vm->shutdown();
+            if (vm->exception_msg.size()>0) {
+                DBG_STREAM_MSG(cerr,"### Caught error in vm->shutdown '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << vm->exception_msg);
+                msg ="Caught exception\n\n"+msg+"\n\n and caught another exception during cleanup\n\n"+vm->exception_msg;
+            }
+        } 
+        delete_vm(vm);
+    }  catch (SWIGVM::exception &err) {
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+    }catch(std::exception& err){
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+    }catch(...){
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
+    }
+    try{
+        send_close(socket, msg);
+        ::sleep(1); // give me a chance to die with my parent process
+    }  catch (SWIGVM::exception &err) {
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+    }catch(std::exception& err){
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+    }catch(...){
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
+    }
 
+    try{
+        stop_all(socket);
+    }  catch (SWIGVM::exception &err) {
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+    }catch(std::exception& err){
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+    }catch(...){
+        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
+    }
+    return 1;
+}
 
 
 } // namespace SWIGVMContainers
@@ -1603,12 +1642,11 @@ reinit:
     SWIGVM_params_ref->sock = &socket;
     SWIGVM_params_ref->exch = &exchandler;
 
-    SWIGVM*vm=nullptr;
+    SWIGVM* vm=nullptr;
 
     if (!send_init(socket, socket_name)) {
         if (!get_remote_client() && exchandler.exthrowed) {
-            send_close(socket, exchandler.exmsg);
-            goto error;
+            return handle_error(socket, socket_name, vm, exchandler.exmsg, false);
         }else{
             goto reinit;
         }
@@ -1628,19 +1666,17 @@ reinit:
     SWIGVM_params_ref->node_id = g_node_id;
     SWIGVM_params_ref->vm_id = g_vm_id;
     SWIGVM_params_ref->singleCallMode = g_singleCallMode;
-
+    bool shutdown_vm_in_case_of_error = false;
     try {
         vm = vmMaker();
         if (vm == nullptr) {
-            send_close(socket, "Unknown or unsupported VM type");
-            goto error;
+            return handle_error(socket, socket_name, vm, "Unknown or unsupported VM type", false);
         }
         if (vm->exception_msg.size()>0) {
-            throw SWIGVM::exception(vm->exception_msg.c_str());
+            return handle_error(socket, socket_name, vm, vm->exception_msg.c_str(), false);
         }
-
+        shutdown_vm_in_case_of_error = true;
         use_zmq_socket_locks = vm->useZmqSocketLocks();
-
         if (g_singleCallMode) {
             ExecutionGraph::EmptyDTO noArg; // used as dummy arg
             for (;;) {
@@ -1677,8 +1713,7 @@ reinit:
                             break;
                     }
                     if (vm->exception_msg.size()>0) {
-                        send_close(socket, vm->exception_msg);
-                        goto error;
+                        return handle_error(socket, socket_name, vm, vm->exception_msg,true);
                     }
 
                     if (vm->calledUndefinedSingleCall.size()>0) {
@@ -1700,8 +1735,7 @@ reinit:
                 while(!vm->run_())
                 {
                     if (vm->exception_msg.size()>0) {
-                        send_close(socket, vm->exception_msg);
-                        goto error;
+                        return handle_error(socket, socket_name, vm, vm->exception_msg,true);
                     }
                 }
                 if (!send_done(socket))
@@ -1713,36 +1747,26 @@ reinit:
         {
             vm->shutdown();
             if (vm->exception_msg.size()>0) {
-                send_close(socket, vm->exception_msg);
-                goto error;
+                return handle_error(socket, socket_name, vm, vm->exception_msg,false);
             }
         }
         send_finished(socket);
     }  catch (SWIGVM::exception &err) {
         DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
-        send_close(socket, err.what());
-        goto error;
+        return handle_error(socket, socket_name, vm, err.what(),shutdown_vm_in_case_of_error);
     } catch (std::exception &err) {
         DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
-        send_close(socket, err.what());
-        goto error;
+        return handle_error(socket, socket_name, vm, err.what(),shutdown_vm_in_case_of_error);
     } catch (...) {
         DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
-        send_close(socket, "Internal/Unknown error");
-        goto error;
+        return handle_error(socket, socket_name, vm, "Internal/Unknown error",shutdown_vm_in_case_of_error);
     }
-
 
     DBG_STREAM_MSG(cerr,"### SWIGVM finishing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
 
     delete_vm(vm);
     stop_all(socket);
     return 0;
-
-error:
-    delete_vm(vm);
-    stop_all(socket);
-    return 1;
 }
 
 
