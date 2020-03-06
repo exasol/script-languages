@@ -1,18 +1,19 @@
 from click._unicodefun import click
 
+
 def create_flavor_option(multiple):
-    help_message="Path to the directory with the flavor definition.\n" + \
-                 "The last segment of the path is used as the name of the flavor."
+    help_message = "Path to the directory with the flavor definition.\n" + \
+                   "The last segment of the path is used as the name of the flavor."
     if multiple:
-        help_addition = "The option can be repeated with different flavors.\n"+ \
+        help_addition = "The option can be repeated with different flavors.\n" + \
                         "The system will run the command for each flavor."
         help_message = help_message + "\n" + help_addition
 
     return click.option('--flavor-path',
-                         required=True,
-                         multiple=multiple,
-                         type=click.Path(exists=True, file_okay=False, dir_okay=True),
-                         help=help_message)
+                        required=True,
+                        multiple=multiple,
+                        type=click.Path(exists=True, file_okay=False, dir_okay=True),
+                        help=help_message)
 
 
 flavor_options = [create_flavor_option(multiple=True)]
@@ -158,6 +159,14 @@ build_options = [
                  help="Directory from where saved docker images can be loaded"),
     click.option('--build-name', default=None, type=str,
                  help="Name of the build. For example: Repository + CI Build Number"),
+]
+
+push_options = [
+    click.option('--force-push/--no-force-push', default=False,
+                 help="Forces the system to overwrite existing images in registry for build steps that run"),
+    click.option('--push-all/--no-push-all', default=False,
+                 help="Forces the system to push all images of build-steps that are specified by the goals")
+
 ]
 
 system_options = [

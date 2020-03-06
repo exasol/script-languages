@@ -25,6 +25,6 @@ echo "Copy rsync.log to $BUCKET/rsync.log"
 echo "=========================================================="
 echo
 gsutil cp rync.log "$BUCKET"
-if [[ $(< /workspace/build-status.txt) == "fail" ]]; then
+if [[ grep fail /workspace/build-status.txt ]]; then
 	exit 1
 fi

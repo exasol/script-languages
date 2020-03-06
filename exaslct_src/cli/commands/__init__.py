@@ -7,3 +7,5 @@ from .export import export
 from .save import save
 from .spawn_test_environment import spawn_test_environment
 from .generate_language_activation import generate_language_activation
+from .build_test_container import build_test_container
+from .push_test_container import push_test_container

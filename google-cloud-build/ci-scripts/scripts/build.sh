@@ -9,10 +9,20 @@ if [ "$REBUILD" == "True" ]
 then
   ADDITIONAL_ARGUMENTS="--force-rebuild"
 fi
+BUILD_PARAMETER="--no-shortcut-build"
+SYSTEM_PARAMETER="--workers 7"
+if [ -f /workspace/build-status.txt ]
+then
+  rm /workspace/build-status.txt
+fi
 touch /workspace/build-status.txt
-COMMAND="./exaslct build --flavor-path "flavors/$FLAVOR" --workers 7 $ADDITIONAL_ARGUMENTS"
+COMMAND="./exaslct build --flavor-path "flavors/$FLAVOR" $BUILD_PARAMETER $ADDITIONAL_ARGUMENTS $SYSTEM_PARAMETER"
 echo "Executing Command: $COMMAND"
-$COMMAND || echo "fail" > /workspace/build-status.txt
+$COMMAND || echo "fail" >> /workspace/build-status.txt
+echo
+COMMAND="./exaslct build-test-container $BUILD_PARAMETER $ADDITIONAL_ARGUMENTS $SYSTEM_PARAMETER"
+echo "Executing Command: $COMMAND"
+$COMMAND || echo "fail" >> /workspace/build-status.txt
 echo
 echo "=========================================================="
 echo "Printing docker images"
