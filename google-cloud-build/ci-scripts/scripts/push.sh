@@ -16,3 +16,9 @@ touch /workspace/build-status.txt
 COMMAND="./exaslct push $SOURCE_OPTIONS $TARGET_OPTIONS --push-all --force-push $FLAVOR_OPTIONS --workers 7"
 echo "Executing Command: $COMMAND"
 bash -c "$COMMAND" || echo "fail" > /workspace/build-status.txt
+echo
+echo "=========================================================="
+echo "Printing docker images"
+echo "=========================================================="
+echo
+docker images

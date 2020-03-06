@@ -13,5 +13,11 @@ touch /workspace/build-status.txt
 COMMAND="./exaslct build --flavor-path "flavors/$FLAVOR" --workers 7 $ADDITIONAL_ARGUMENTS"
 echo "Executing Command: $COMMAND"
 $COMMAND || echo "fail" > /workspace/build-status.txt
+echo
+echo "=========================================================="
+echo "Printing docker images"
+echo "=========================================================="
+echo
+docker images
 
 # TODO use internal cache without commit hash as source and produce release target except for master branch builds
