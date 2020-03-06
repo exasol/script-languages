@@ -31,4 +31,4 @@ echo "=========================================================="
 echo "Printing docker images"
 echo "=========================================================="
 echo
-docker images
+docker images | grep exa

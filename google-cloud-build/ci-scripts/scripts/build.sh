@@ -28,6 +28,6 @@ echo "=========================================================="
 echo "Printing docker images"
 echo "=========================================================="
 echo
-docker images
+docker images | grep exa
 
 # TODO use internal cache without commit hash as source and produce release target except for master branch builds
