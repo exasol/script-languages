@@ -17,7 +17,7 @@ echo "=========================================================="
 echo "Copy $BUILD_OUTPUT_PATH to $BUCKET"
 echo "=========================================================="
 echo
-gsutil rsync -C -x exports -r "$BUILD_OUTPUT_PATH" "$BUCKET" 2>&1 | tee rync.log || echo "fail" > /workspace/build-status.txt 
+gsutil -m rsync -C -x exports -r "$BUILD_OUTPUT_PATH" "$BUCKET" 2>&1 | tee rync.log || echo "fail" > /workspace/build-status.txt 
 echo
 echo "=========================================================="
 echo "Copy rsync.log to $BUCKET/rsync.log"

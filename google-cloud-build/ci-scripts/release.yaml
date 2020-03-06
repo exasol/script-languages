@@ -53,6 +53,7 @@ steps:
 - id: 'Upload exported container'
   name: 'gcr.io/cloud-builders/gsutil'
   args: [
+          '-m',
           'cp',
           '.build_output/cache/exports/*',
           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'

@@ -9,4 +9,4 @@ PROJECT=$1
 CONFIG_BUCKET_NAME=$2
 CONFIG_BUCKET="gs://$CONFIG_BUCKET_NAME/.env"
 gcloud config set project "$PROJECT"
-gsutil cp -r "$CONFIG_BUCKET" "file://." 
+gsutil -m cp -r "$CONFIG_BUCKET" "file://." 
