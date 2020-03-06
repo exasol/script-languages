@@ -20,7 +20,7 @@ COMMAND="./exaslct build --flavor-path "flavors/$FLAVOR" $BUILD_PARAMETER $ADDIT
 echo "Executing Command: $COMMAND"
 $COMMAND || echo "fail" >> /workspace/build-status.txt
 echo
-COMMAND="./exaslct build-test-container $BUILD_PARAMETER $ADDITIONAL_ARGUMENTS $SYSTEM_PARAMETER"
+COMMAND="./exaslct build-test-container $ADDITIONAL_ARGUMENTS $SYSTEM_PARAMETER"
 echo "Executing Command: $COMMAND"
 $COMMAND || echo "fail" >> /workspace/build-status.txt
 echo
