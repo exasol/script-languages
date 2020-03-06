@@ -11,7 +11,6 @@ steps:
   name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
   args: [
-          '-x',
           'google-cloud-build/ci-scripts/scripts/decrypt.sh',
           '${_DOCKER_PASSWORD}',
           'DOCKER_PASSWORD',

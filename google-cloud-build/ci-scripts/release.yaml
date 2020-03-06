@@ -7,22 +7,10 @@ steps:
           'gcr.io/script-languages/build-container', 
           'google-cloud-build/ci-scripts/scripts/'
           ]
-- id: 'Decrypt Docker password'
-  name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: bash
-  args: [
-          '-x',
-          'google-cloud-build/ci-scripts/scripts/decrypt.sh',
-          '${_DOCKER_PASSWORD}',
-          'DOCKER_PASSWORD',
-          '${_KEY_RING_NAME}',
-          '${_KEY_NAME}'
-          ]
 - id: 'Decrypt Github Token'
   name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
   args: [
-          '-x',
           'google-cloud-build/ci-scripts/scripts/decrypt.sh',
           '${_GITHUB_TOKEN}',
           'GITHUB_TOKEN',
