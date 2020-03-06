@@ -58,15 +58,6 @@ steps:
           '.build_output/cache/exports/*',
           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'
           ]
-- id: 'Check push'
-  name: 'gcr.io/cloud-builders/gsutil'
-  entrypoint: "bash"
-  args: [
-          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
-          '${_LOG_BUCKET}', 
-          '${_FLAVOR}', 
-          '$BUILD_ID'
-          ]
 - id: 'Create Github Release'
   name: 'gcr.io/script-languages/build-container'
   args: [

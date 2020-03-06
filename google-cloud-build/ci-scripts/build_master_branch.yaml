@@ -51,19 +51,40 @@ steps:
           '${_KEY_RING_NAME}',
           '${_KEY_NAME}'
           ]
-- id: 'Push images to internal build cache'
+- id: 'Push images to internal build cache with commit hash'
   name: 'gcr.io/script-languages/build-container'
   args: [
           'bash',
           'google-cloud-build/ci-scripts/scripts/push.sh',
           '${_FLAVOR}',
-          '""',
+          '${_RELEASE_DOCKER_REPOSITORY}',
           '""',
           '${_BUILD_DOCKER_REPOSITORY}',
           '$COMMIT_SHA',
           '${_DOCKER_USER}',
           ]
-- id: 'Check push to internal build cache'
+- id: 'Check push to internal build cache with commit hash'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
+          '${_LOG_BUCKET}', 
+          '${_FLAVOR}', 
+          '$BUILD_ID'
+          ]
+- id: 'Push images to internal build cache without commit hash'
+  name: 'gcr.io/script-languages/build-container'
+  args: [
+          'bash',
+          'google-cloud-build/ci-scripts/scripts/push.sh',
+          '${_FLAVOR}',
+          '${_RELEASE_DOCKER_REPOSITORY}',
+          '""',
+          '${_BUILD_DOCKER_REPOSITORY}',
+          '""',
+          '${_DOCKER_USER}',
+          ]
+- id: 'Check  to internal build cache without commit hash'
   name: 'gcr.io/cloud-builders/gsutil'
   entrypoint: "bash"
   args: [
@@ -79,8 +100,8 @@ steps:
           'google-cloud-build/ci-scripts/scripts/push.sh',
           '${_FLAVORS}',
           '${_RELEASE_DOCKER_REPOSITORY}',
-          '$COMMIT_SHA',
           '""',
+          '${_RELEASE_DOCKER_REPOSITORY}',
           '""',
           '${_DOCKER_USER}',
           ]
