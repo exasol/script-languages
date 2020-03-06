@@ -57,18 +57,6 @@ steps:
           '.build_output/cache/exports/*',
           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'
           ]
-- id: 'Push images to public build cache'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash',
-          'google-cloud-build/ci-scripts/scripts/push.sh',
-          '${_FLAVORS}',
-          '${_BUILD_DOCKER_REPOSITORY}',
-          '$COMMIT_SHA',
-          '""',
-          '""',
-          '${_DOCKER_USER}',
-          ]
 - id: 'Check push'
   name: 'gcr.io/cloud-builders/gsutil'
   entrypoint: "bash"

@@ -12,7 +12,7 @@ then
 fi
 DATETIME=$(cat $DATETIME_FILE)
 BUCKET="$LOG_BUCKET/build_output/$FLAVOR/${DATETIME}_${BUILD_ID}/"
-gsutil rsync -C -x exports -r .build_output "$BUCKET" &> rync.log || echo "fail" > /workspace/build-status.txt 
+gsutil rsync -C -x exports -r .build_output/jobs "$BUCKET" &> rync.log || echo "fail" > /workspace/build-status.txt 
 gsutil cp rync.log "$BUCKET"
 if [[ $(< /workspace/build-status.txt) == "fail" ]]; then
 	exit 1
