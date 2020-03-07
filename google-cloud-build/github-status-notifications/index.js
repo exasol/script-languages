@@ -44,8 +44,10 @@ exports.githubBuildStatusNotification = (event, context) => {
     context+='performance-test/'+flavor;
   }else if(jobType=='release'){
     context+='release';
+  }else if(jobType=='exaslct-tests'){
+    context+='exaslct-tests';
   }else{
-    console.error("Flavor not defined")
+    console.error("Job type not defined")
   }
 
   url='https://console.cloud.google.com/cloud-build/builds/'+buildId+'?project='+gcloudProject
