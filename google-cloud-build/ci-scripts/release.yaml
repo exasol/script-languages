@@ -1,11 +1,21 @@
 steps:
+- id: 'Decrypt Docker password'
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: bash
+  args: [
+          'google-cloud-build/ci-scripts/scripts/decrypt.sh',
+          '${_DOCKER_PASSWORD}',
+          'DOCKER_PASSWORD',
+          '${_KEY_RING_NAME}',
+          '${_KEY_NAME}'
+          ]
 - id: 'Build build-container'
   name: 'gcr.io/cloud-builders/docker'
+  entrypoint: "bash"
   args: [
-          'build', 
-          '-t', 
-          'gcr.io/script-languages/build-container', 
-          'google-cloud-build/ci-scripts/scripts/'
+          'google-cloud-build/ci-scripts/scripts/build_or_pull_build_container.sh',
+          '${_BUILD_DOCKER_REPOSITORY}',
+          '${_DOCKER_USER}'
           ]
 - id: 'Decrypt Github Token'
   name: 'gcr.io/cloud-builders/gcloud'
@@ -18,7 +28,7 @@ steps:
           '${_KEY_NAME}'
           ]
 - id: 'Export container'
-  name: 'gcr.io/script-languages/build-container'
+  name: 'exasol/script-languages:build-container'
   args: [
           'bash',
           'google-cloud-build/ci-scripts/scripts/export.sh',
@@ -47,7 +57,7 @@ steps:
           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/'
           ]
 - id: 'Create Github Release'
-  name: 'gcr.io/script-languages/build-container'
+  name: 'exasol/script-languages:build-container'
   args: [
           'bash',
           'google-cloud-build/ci-scripts/scripts/create_github_release.sh', 
