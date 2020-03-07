@@ -23,11 +23,11 @@
     {% endif %}
   },
   {% if build_mode == "rebuild"  %}
-  "description": "Rebuild branch {{ flavor }}",
+  "description": "Rebuild branch {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
   {% elif build_mode == "build" %}
-  "description": "Build branch {{ flavor }}",
+  "description": "Build branch {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
   {% elif build_mode == "release" %} 
-  "description": "Build release {{ flavor }}",
+  "description": "Build release {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
   {% endif %}
   "substitutions": {
     "_JOB_ID": "{{ job_id }}", 
