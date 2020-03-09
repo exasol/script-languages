@@ -37,7 +37,7 @@ class ContainerLogThread(Thread):
                     still_running_logger.log()
                     log_handler.handle_log_line(log)
                 log_line = log.decode("utf-8").lower()
-                if "error" in log_line \
+                if ("error" in log_line and not "sshd was not started") \
                         or "exception" in log_line \
                         or "returned with state 1" in log_line:
                     self.logger.info("ContainerLogHandler error message, %s", log_line)

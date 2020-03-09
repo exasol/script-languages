@@ -1,0 +1,182 @@
+[Global]
+    Revision = 14
+    Checksum = COMMIT
+    ClusterName = cl4
+    Platform = Docker
+    LicenseFile = /exa/etc/license.xml
+    CoredPort = 10001
+    SSHPort = 22
+    XMLRPCPort = 443
+    AuthenticationToken = WG9JQkZYb0R5T1pIcWZPWTpyUHFsR3V6QUFkV1FQbHZmdm91cXJDYmNQTFl4eE1vRlZ6VnhxamdxYnpxUGRkZEhtR2NJaVVGbEpsb2NnbnRZ
+    # List of networks for this cluster: 'private' is mandatory, 'public' is optional.
+    Networks = private
+    # Comma-separated list of nameservers for this cluster.
+    NameServers = 
+    Timezone = Europe/Berlin
+    # Nr. of hugepages ('0' = disabled, 'host' = manually configured on the host, 'auto' = set automatically based on DB config)
+    Hugepages = 0
+    ConfVersion = {{ db_version }}
+    OSVersion = {{ db_version }}
+    REVersion = {{ db_version }}
+    DBVersion = {{ db_version }}
+    ImageVersion = {{ image_version }}
+
+# SSL options
+[SSL]
+    # The SSL certificate, private key and CA for all EXASOL services
+    Cert = /exa/etc/ssl/ssl.crt
+    CertKey = /exa/etc/ssl/ssl.key
+    CertAuth = /exa/etc/ssl/ssl.ca
+
+# Docker related options
+[Docker]
+    # The directory that contains all data related to this docker cluster
+    # (except for mapped devices)
+    RootDir = /exa/etc
+    # The EXASOL docker image used for all containers of this cluster
+    Image = exasol/docker-db:latest
+    # The type of storage devices for this cluster: 'block' or 'file'
+    DeviceType = file
+    # Comma-separated list of volumes to be mounted in all containers (e. g. '/mnt/my_data:/exa/my_data:rw' )
+    # These user-defined volumes are mounted additionally to the internal ones (like the node root volume)
+    AdditionalVolumes = 
+
+[Groups]
+    [[root]]
+        ID = 0
+    [[exausers]]
+        ID = 500
+    [[exadbadm]]
+        ID = 1001
+    [[exastoradm]]
+        ID = 1002
+    [[exabfsadm]]
+        ID = 1003
+    [[exaadm]]
+        ID = 1004
+
+[Users]
+    [[root]]
+        ID = 0
+        Group = root
+        LoginEnabled = True
+        AdditionalGroups = exausers, exadbadm, exastoradm, exabfsadm, exaadm
+    [[exadefusr]]
+        ID = 500
+        Group = exausers
+        LoginEnabled = False
+        AdditionalGroups = exadbadm, exastoradm, exabfsadm, exaadm
+
+[Node : 11]
+    PrivateNet = {{private_network}}
+    PublicNet = 
+    Name = n11
+    UUID = A5F8F92113A34BA4B0A48D5397423BBA5CF95161
+    DockerVolume = n11
+    # Ports to be exposed (container : host)
+    ExposedPorts = 8888:8899, 6583:6594
+    [[Disk : disk1]]
+        Component = exastorage
+        Devices = dev.1
+        Mapping = dev.1:/exa/data/storage
+
+# Global EXAStorage options
+[EXAStorage]
+    # Enable or disable background recovery / data restoration (does not affect on-demand recovery)
+    BgRecEnabled = True
+    # Max. throughput for background recovery / data restoration (in MiB/s)
+    BgRecLimit = 
+    # Space usage threshold (in percent, per node) for sending a warning
+    SpaceWarnThreshold = 90
+
+# An EXAStorage volume
+[EXAVolume : DataVolume1]
+    # Type of volume: 'data' | 'archive'
+    Type = data
+    # Volume size (e. g. '1 TiB')
+    Size = 2.0 GiB
+    # Name of the disk to be used for this volume.
+    # This disk must exist on all volume nodes.
+    Disk = disk1
+    # Comma-separated list of node IDs for this volume (put dedicated redundancy nodes at the end, if any)
+    Nodes = 11
+    # OPTIONAL: Nr. of master nodes for this volume. Remaining nodes will be used for redundancy only.
+    NumMasterNodes = 1
+    # Desired redundancy for this volume
+    Redundancy = 1
+    # User and group IDs that own this volume (e. g. '1000:1005')
+    Owner = 500 : 500
+    Permissions = rwx
+    BlockSize = 4 KiB
+    StripeSize = 256 KiB
+    # OPTIONAL: shared volumes can be opened (for writing) by multiple clients simultaneously
+    Shared = True
+    # OPTIONAL: I/O priority (0 = highest, 20 = lowest)
+    Priority = 10
+
+# An EXASOL database
+[DB : DB1]
+    # Version nr. of this database.
+    Version = {{db_version}}
+    # Memory size over all nodes (e. g. '1 TiB').
+    MemSize = 4 GiB
+    Port = 8888
+    # User and group IDs that own this database (e. g. '1000:1005').
+    Owner = 500 : 500
+    # Comma-separated list of node IDs for this DB (put reserve nodes at the end, if any).
+    Nodes = 11
+    # Nr. of initially active nodes for this DB. The remaining nodes will be reserve nodes.
+    NumActiveNodes = 1
+    # Name of the data volume to be used by this database.
+    DataVolume = DataVolume1
+    # JDBC driver configuration
+    [[JDBC]]
+        # BucketFS that contains the JDBC driver
+        BucketFS = bfsdefault
+        # Bucket that contains the JDBC driver
+        Bucket = default
+        # Directory within the bucket that contains the drivers
+        Dir = drivers/jdbc
+    # Oracle driver configuration
+    [[Oracle]]
+        # BucketFS that contains the JDBC drivers
+        BucketFS = bfsdefault
+        # Bucket that contains the JDBC drivers
+        Bucket = default
+        # Directory within the bucket that contains the drivers
+        Dir = drivers/oracle
+
+# The default BucketFS (auto-generated)
+[BucketFS : bfsdefault]
+    Owner = 500:500
+    # HTTP port number (0 = disabled)
+    HttpPort = 6583
+    # HTTPS port number (0 = disabled)
+    HttpsPort = 0
+    SyncKey = OGhvcmxrTnluTlFrZTV3RVBTWG5Idlc4bkVMQUNxcWs=
+    SyncPeriod = 30000
+    # The default bucket (auto-generated)
+    [[Bucket : default]]
+        # ReadPasswd is "read" (without quotes)
+        ReadPasswd = cmVhZAo=
+        # WritePasswd is "write" (without quotes)
+        WritePasswd = d3JpdGU=
+        Public = True
+        Name = default
+        AdditionalFiles = EXAClusterOS:/usr/opt/EXASuite-6/EXAClusterOS-{{db_version}}/var/clients/packages/ScriptLanguages-*, EXASolution-{{db_version}}:/usr/opt/EXASuite-6/EXASolution-{{db_version}}/bin/udf/*
+
+    [[Bucket : myudfs]]
+        # ReadPasswd is "read" (without quotes)
+        ReadPasswd = cmVhZAo=
+        # WritePasswd is "write" (without quotes)
+        WritePasswd = d3JpdGU=
+        Public = True
+        Name = myudfs
+
+    [[Bucket : jdbc_adapter]]
+        # ReadPasswd is "read" (without quotes)
+        ReadPasswd = cmVhZAo=
+        # WritePasswd is "write" (without quotes)
+        WritePasswd = d3JpdGU=
+        Public = True
+        Name = jdbc-adapter
