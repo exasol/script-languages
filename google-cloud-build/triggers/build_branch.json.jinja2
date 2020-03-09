@@ -19,15 +19,15 @@
     {% elif build_mode == "build" %}
     "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
     {% elif build_mode == "release" %} 
-    "branchName": "^(develop|master)$"
+    "branchName": "^(develop|master|ci-release-test/.*)$"
     {% endif %}
   },
   {% if build_mode == "rebuild"  %}
-  "description": "Rebuild branch {{ flavor }}",
+  "description": "Rebuild branch {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
   {% elif build_mode == "build" %}
-  "description": "Build branch {{ flavor }}",
+  "description": "Build branch {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
   {% elif build_mode == "release" %} 
-  "description": "Build release {{ flavor }}",
+  "description": "Build release {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
   {% endif %}
   "substitutions": {
     "_JOB_ID": "{{ job_id }}", 
@@ -44,8 +44,9 @@
     "_KEY_RING_NAME": "{{ key_ring_name }}",
     "_KEY_NAME": "{{ key_name }}",
     "_BUILD_DOCKER_REPOSITORY": "{{ build_docker_repository }}",
-    "_BUILD_DOCKER_USER": "{{ docker_user }}",
-    "_BUILD_DOCKER_PASSWORD": "{{ docker_password }}",
+    "_RELEASE_DOCKER_REPOSITORY": "{{ release_docker_repository }}",
+    "_DOCKER_USER": "{{ docker_user }}",
+    "_DOCKER_PASSWORD": "{{ docker_password }}",
     "_GITHUB_TOKEN": "{{ github_token }}",
     "_GITHUB_USER_NAME": "{{ github_user_name }}",
     "_GITHUB_REPOSITORY": "{{ github_repository }}",
@@ -54,7 +55,7 @@
   {% if build_mode == "build" %}
   "includedFiles": [
     "docker_db_config/**",
-    "src/**",
+    "exaudfclient/**",
     "exaslct_src/**",
     "flavors/{{ flavor }}/**",
     "ext/**",
@@ -64,5 +65,9 @@
     "Pipfile"
   ],
   {% endif %}
-  "filename": "google-cloud-build/ci-scripts/build_branch.yaml"
+  {% if build_mode == "release" %}
+  "filename": "google-cloud-build/ci-scripts/build_master_branch.yaml" 
+  {% else %}
+  "filename": "google-cloud-build/ci-scripts/build_branch.yaml" 
+  {% endif %}
 }

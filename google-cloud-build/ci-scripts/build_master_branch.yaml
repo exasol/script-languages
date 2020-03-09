@@ -92,6 +92,27 @@ steps:
           '${_FLAVOR}', 
           '$BUILD_ID'
           ]
+- id: 'Push images to public build cache'
+  name: 'exasol/script-languages:build-container'
+  args: [
+          'bash',
+          'google-cloud-build/ci-scripts/scripts/push.sh',
+          '${_FLAVOR}',
+          '${_RELEASE_DOCKER_REPOSITORY}',
+          '""',
+          '${_RELEASE_DOCKER_REPOSITORY}',
+          '""',
+          '${_DOCKER_USER}',
+          ]
+- id: 'Check push to public build cache'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/scripts/check_build.sh', 
+          '${_LOG_BUCKET}', 
+          '${_FLAVOR}', 
+          '$BUILD_ID'
+          ]
 timeout: "9000s"
 options:
   machineType: 'N1_HIGHCPU_8'

@@ -2,16 +2,13 @@ from typing import Dict
 
 from exaslct_src.lib.docker_build import *
 from exaslct_src.lib.docker_flavor_build_base import DockerFlavorBuildBase
+from exaslct_src.lib.docker_push_parameter import DockerPushParameter
 from exaslct_src.lib.push_task_create_from_build_tasks import PushTaskCreatorFromBuildTasks
 
 
-class DockerPushParameter(Config):
+class DockerFlavorsPush(FlavorsBaseTask, DockerPushParameter):
     goals = luigi.ListParameter()
-    force_push = luigi.BoolParameter(False)
-    push_all = luigi.BoolParameter(False)
 
-
-class DockerPush(FlavorsBaseTask, DockerPushParameter):
     def register_required(self):
         tasks = self.create_tasks_for_flavors_with_common_params(
             DockerFlavorPush)  # type: Dict[str,DockerFlavorPush]
@@ -24,8 +21,6 @@ class DockerPush(FlavorsBaseTask, DockerPushParameter):
 
 class DockerFlavorPush(DockerFlavorBuildBase, DockerPushParameter):
     goals = luigi.ListParameter()
-    force_push = luigi.BoolParameter(False)
-    push_all = luigi.BoolParameter(False)
 
     def get_goals(self):
         return self.goals

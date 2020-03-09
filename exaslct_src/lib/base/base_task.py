@@ -127,34 +127,16 @@ class BaseTask(Task):
                 params_str[param_name] = params[param_name].serialize(param_value)
         return params_str
 
-    def _get_tmp_path_for_returns(self, name: str) -> Path:
-        return Path(self._get_tmp_path_for_task(), RETURN_TARGETS, name)
-
-    def _get_tmp_path_for_completion_target(self) -> Path:
-        return Path(self._get_tmp_path_for_task(), COMPLETION_TARGET)
-
-    def _get_tmp_path_for_run_dependencies(self) -> Path:
-        return Path(self._get_tmp_path_for_task(), RUN_DEPENDENCIES)
-
-    def _get_tmp_path_for_task(self) -> Path:
-        return Path(self._get_tmp_path_for_job(),
-                    self.task_id)
-
-    def _get_tmp_path_for_job(self) -> Path:
-        return Path(build_config().output_directory,
-                    job_config().job_id,
-                    "temp")
-
-    def _get_output_path_for_job(self) -> Path:
-        return Path(build_config().output_directory,
-                    job_config().job_id)
-
     def get_output_path(self) -> Path:
         path = Path(self._get_output_path_for_job(),
                     "outputs",
                     Path(*self._extend_output_path()))
         path.mkdir(parents=True, exist_ok=True)
         return path
+
+    def _get_output_path_for_job(self) -> Path:
+        return Path(build_config().output_directory,
+                    "jobs", job_config().job_id)
 
     def _extend_output_path(self):
         extension = self.extend_output_path()
@@ -165,6 +147,22 @@ class BaseTask(Task):
 
     def extend_output_path(self):
         return list(self.caller_output_path) + [self.task_id]
+    
+    def _get_tmp_path_for_job(self) -> Path:
+        return Path(self._get_output_path_for_job(), "temp")
+    
+    def _get_tmp_path_for_task(self) -> Path:
+        return Path(self._get_tmp_path_for_job(),
+                    self.task_id)
+
+    def _get_tmp_path_for_returns(self, name: str) -> Path:
+        return Path(self._get_tmp_path_for_task(), RETURN_TARGETS, name)
+
+    def _get_tmp_path_for_completion_target(self) -> Path:
+        return Path(self._get_tmp_path_for_task(), COMPLETION_TARGET)
+
+    def _get_tmp_path_for_run_dependencies(self) -> Path:
+        return Path(self._get_tmp_path_for_task(), RUN_DEPENDENCIES)
 
     def get_log_path(self) -> Path:
         path = Path(self.get_output_path(), "logs")

@@ -1,12 +1,10 @@
 from typing import Set, Dict
 
-import jsonpickle
-import luigi
-
-from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.docker.docker_analyze_task import DockerAnalyzeImageTask
 from exaslct_src.lib.docker_build_base import DockerBuildBase
 from exaslct_src.lib.docker_config import source_docker_repository_config, target_docker_repository_config
+from exaslct_src.lib.docker_push_parameter import DockerPushParameter
+from exaslct_src.lib.push_task_create_from_build_tasks import PushTaskCreatorFromBuildTasks
 
 
 class AnalyzeTestContainer(DockerAnalyzeImageTask):
@@ -38,8 +36,7 @@ class AnalyzeTestContainer(DockerAnalyzeImageTask):
     def is_rebuild_requested(self) -> bool:
         return False
 
-
-class DockerTestContainerBuild(DockerBuildBase):
+class DockerTestContainerBuildBase(DockerBuildBase):
 
     def get_goal_class_map(self) -> Dict[str, DockerAnalyzeImageTask]:
         goal_class_map = {"test-container": AnalyzeTestContainer()}
@@ -53,8 +50,19 @@ class DockerTestContainerBuild(DockerBuildBase):
         goals = {"test-container"}
         return goals
 
+class DockerTestContainerBuild(DockerTestContainerBuildBase):
+
     def run_task(self):
         build_tasks = self.create_build_tasks(False)
         image_infos_futures = yield from self.run_dependencies(build_tasks)
         image_infos = self.get_values_from_futures(image_infos_futures)
+        self.return_object(image_infos)
+
+class DockerTestContainerPush(DockerTestContainerBuildBase, DockerPushParameter):
+
+    def run_task(self):
+        build_tasks = self.create_build_tasks(shortcut_build=not self.push_all)
+        push_task_creator = PushTaskCreatorFromBuildTasks(self)
+        push_tasks = push_task_creator.create_tasks_for_build_tasks(build_tasks)
+        image_infos = yield from self.run_dependencies(push_tasks)
         self.return_object(image_infos)

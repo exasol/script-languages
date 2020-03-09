@@ -13,13 +13,13 @@
     {% if debug == false  %}
     "tagName": "^(([^c][^i][^/]|[^c]i.|c[^i].|ci[^/]).*|..$)"
     {% else  %}
-    "branchName": "^ci/.*"
+    "branchName": "^ci-release-test/.*"
     {% endif %}
   }, 
   {% if debug == false  %}
-  "description": "Release",
+  "description": "Release {{ github_user_name }}-{{ github_repository }}",
   {% else %}
-  "description": "Release (Debug)",
+  "description": "Release (Debug) {{ github_user_name }}-{{ github_repository }}",
   {% endif %}
   "substitutions": {
     "_JOB_ID": "{{ job_id }}",

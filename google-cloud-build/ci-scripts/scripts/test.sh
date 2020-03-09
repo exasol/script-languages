@@ -9,4 +9,10 @@ then
 else
   touch /workspace/build-status.txt
   ./exaslct run-db-test --flavor-path "flavors/$FLAVOR"  --workers 7 || echo "fail" > /workspace/build-status.txt
+echo
+echo "=========================================================="
+echo "Printing docker images"
+echo "=========================================================="
+echo
+docker images | grep exa
 fi

@@ -11,9 +11,21 @@ then
 	date --utc +%Y%m%d_%H%M%S > "$DATETIME_FILE"
 fi
 DATETIME=$(cat $DATETIME_FILE)
-BUCKET="$LOG_BUCKET/build_output/$FLAVOR/${DATETIME}_${BUILD_ID}/"
-gsutil rsync -C -x exports -r .build_output "$BUCKET" &> rync.log || echo "fail" > /workspace/build-status.txt 
+BUCKET="$LOG_BUCKET/$FLAVOR/${DATETIME}_${BUILD_ID}/"
+BUILD_OUTPUT_PATH=".build_output/jobs"
+echo
+echo "=========================================================="
+echo "Copy $BUILD_OUTPUT_PATH to $BUCKET"
+echo "=========================================================="
+echo
+gsutil -m rsync -C -x exports -r "$BUILD_OUTPUT_PATH" "$BUCKET" 2>&1 | tee rync.log || echo "fail" > /workspace/build-status.txt 
+echo
+echo "=========================================================="
+echo "Copy rsync.log to $BUCKET/rsync.log"
+echo "=========================================================="
+echo
 gsutil cp rync.log "$BUCKET"
-if [[ $(< /workspace/build-status.txt) == "fail" ]]; then
+if grep fail /workspace/build-status.txt
+then
 	exit 1
 fi
