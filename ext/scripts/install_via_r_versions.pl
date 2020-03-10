@@ -35,7 +35,7 @@ GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
             "file=s" => \$file,
-            "rscript-binary=s" => \$rscript_binary
+            "rscript-binary=s" => \$rscript_binary,
             "element-separator=s" => \$element_separator,
           ) or utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 utils::print_usage_and_abort(__FILE__,"",0) if $help;
@@ -49,8 +49,7 @@ if($rscript_binary eq ''){
     utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --rscript-binary was not specified",1);
 }
 
-my $element_separator = '\\|';
-my $combining_template = "$rscript_binary --default-packages 'versions' -e 'install.versions(c(<<<<0>>>>),c(<<<<1>>>>))'";
+my $combining_template = "$rscript_binary -e 'library(versions);install.versions(c(<<<<0>>>>),c(<<<<1>>>>))'";
 my @templates = ('"<<<<0>>>>"','"<<<<1>>>>"');
 my @separators = (",",",");
 
@@ -58,5 +57,5 @@ my $cmd =
     utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators);
 
-utils::execute("$rscript_binary -e 'install.packages(\"install.packages('versions')\")'",$dry_run);
+utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);
 utils::execute($cmd,$dry_run);
