@@ -52,6 +52,13 @@ class PrepareDockerNetworkForTestEnvironment(DockerBaseTask):
         ipam_config = docker.types.IPAMConfig(
             pool_configs=[ipam_pool]
         )
+        # We need to remove and create the nework again, 
+        # because docker throw the following Exception
+        # if we used the first created network with a docker chosen subnet 
+        # to create later containers with specific IPs.
+        # Here we first create network and let docker choose a valid subnet.
+        # Than we remove it and create a new one with the valid subnet 
+        # as a user configured subnet.
         self.remove_network(self.network_name)  # TODO race condition possible, add retry
         network = self._client.networks.create(
             name=self.network_name,
