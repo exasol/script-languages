@@ -92,15 +92,6 @@ sub get_lines_from_commented_file{
     return @lines;
 }
 
-sub transform_lines{
-    my ($element_separator,$templates_ref, $lines_ref) = @_;
-    my @templates = @$templates_ref;
-    my @lines = @$lines_ref;
-    my @elements_of_lines = map(parse_lines_to_elements($element_separator,$_),@lines);
-    my @transformed_lines = map(fill_template_for_lines($_,\@elements_of_lines),@templates);
-    return @transformed_lines;
-}
-
 sub fill_template_with_joined_lines_of_elements{
     my ($combining_template, $separators_ref, $elements_of_lines_ref) = @_;
     my @separators = @$separators_ref;
@@ -111,12 +102,19 @@ sub fill_template_with_joined_lines_of_elements{
     return $final_string;
 }
 
+sub get_lines_with_elements_from_file{
+    my ($file, $element_separator) = @_;
+    my @lines = get_lines_from_commented_file($file);
+    my @elements_of_lines = map(parse_lines_to_elements($element_separator,$_),@lines);
+    return @elements_of_lines;
+}
+
 sub generate_joined_and_transformed_string_from_file{
     my ($file, $element_separator, $combining_template, $templates_ref, $separators_ref) = @_;
     my @templates = @$templates_ref;
     my @separators = @$separators_ref;
-    my @lines = get_lines_from_commented_file($file);
-    my @transformed_lines = transform_lines($element_separator,\@templates,\@lines);
+    my @elements_of_lines = get_lines_with_elements_from_file($file, $element_separator);
+    my @transformed_lines = map(fill_template_for_lines($_,\@elements_of_lines),@templates);
     my $final_string = fill_template_with_joined_lines_of_elements($combining_template, \@separators, \@transformed_lines);
     return $final_string;
 }

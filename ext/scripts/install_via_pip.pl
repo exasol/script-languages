@@ -44,13 +44,15 @@ if($python_binary eq ''){
     utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --python-binary was not specified",1);
 }
 
-my $element_separator = '\\|\\|\\|\\|\\|\\|\\|\\|';
+my $element_separator = '\\|';
 my $combining_template = "$python_binary -m pip install --ignore-installed --progress-bar ascii --no-cache-dir <<<<0>>>>";
-my @templates = ("'<<<<0>>>>'");
+my @templates = ("'<<<<0>>>>==<<<<1>>>>'");
 my @separators = (" ");
 
 my $cmd = 
     utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators);
+$cmd =~ s/==<<<<1>>>>//ig;
+
 
 utils::execute($cmd,$dry_run);
