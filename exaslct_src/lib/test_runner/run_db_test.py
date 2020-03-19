@@ -7,7 +7,7 @@ from exaslct_src.lib.data.info import FrozenDictToDict
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.lib.still_running_logger import StillRunningLogger, StillRunningLoggerThread
-from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test_result import RunDBTestResult
 from exaslct_src.lib.test_runner.run_db_tests_parameter import RunDBTestParameter
 

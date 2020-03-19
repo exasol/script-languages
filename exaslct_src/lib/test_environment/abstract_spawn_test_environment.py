@@ -6,14 +6,12 @@ from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.database_info import DatabaseInfo
 from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
-from exaslct_src.lib.test_runner.general_spawn_test_environment_parameter import GeneralSpawnTestEnvironmentParameter
+from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.general_spawn_test_environment_parameter import GeneralSpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.populate_data import PopulateEngineSmallTestDataToDatabase
-from exaslct_src.lib.test_runner.spawn_test_container import SpawnTestContainer
+from exaslct_src.lib.test_environment.spawn_test_container import SpawnTestContainer
 from exaslct_src.lib.test_runner.upload_exa_jdbc import UploadExaJDBC
 from exaslct_src.lib.test_runner.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
-from exaslct_src.lib.test_runner.environment_type import EnvironmentType
-
 
 DATABASE = "database"
 

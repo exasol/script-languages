@@ -4,7 +4,7 @@ from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, run_task, add_options, set_job_id
 from exaslct_src.cli.options \
     import system_options, output_directory, tempory_base_directory, docker_db_options
-from exaslct_src.lib.test_runner.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
+from exaslct_src.lib.test_environment.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
 
 
 @cli.command()

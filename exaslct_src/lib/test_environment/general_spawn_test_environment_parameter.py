@@ -1,8 +1,5 @@
 import luigi
 from luigi import Config
-from luigi.parameter import ParameterVisibility
-
-from exaslct_src.lib.test_runner.environment_type import EnvironmentType
 
 
 class GeneralSpawnTestEnvironmentParameter(Config):

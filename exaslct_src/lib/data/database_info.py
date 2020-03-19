@@ -1,6 +1,5 @@
 from exaslct_src.lib.data.container_info import ContainerInfo
 from exaslct_src.lib.data.info import Info
-from exaslct_src.lib.test_runner.environment_type import EnvironmentType
 
 
 class DatabaseInfo(Info):

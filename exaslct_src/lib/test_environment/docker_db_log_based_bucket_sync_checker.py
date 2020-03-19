@@ -1,10 +1,9 @@
-import logging
 import time
 from datetime import datetime
 
 from docker.models.containers import Container
 
-from exaslct_src.lib.test_runner.bucketfs_sync_checker import BucketFSSyncChecker
+from exaslct_src.lib.test_environment.bucketfs_sync_checker import BucketFSSyncChecker
 
 
 class DockerDBLogBasedBucketFSSyncChecker(BucketFSSyncChecker):

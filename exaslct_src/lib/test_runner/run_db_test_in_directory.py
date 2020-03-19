@@ -1,11 +1,10 @@
 from typing import List, Generator, Any
 
 import luigi
-from docker.models.containers import Container
 
 from exaslct_src.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.lib.flavor_task import FlavorBaseTask
-from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_runner.run_db_test import RunDBTest
 from exaslct_src.lib.test_runner.run_db_test_result import RunDBTestResult, RunDBTestDirectoryResult
 from exaslct_src.lib.test_runner.run_db_tests_parameter import RunDBTestParameter

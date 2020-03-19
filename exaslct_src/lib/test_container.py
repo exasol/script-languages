@@ -7,7 +7,7 @@ from exaslct_src.lib.flavor_task import FlavorBaseTask, FlavorsBaseTask
 from exaslct_src.lib.test_runner.run_db_test_result import RunDBTestsInTestConfigResult
 from exaslct_src.lib.test_runner.run_db_tests_parameter import GeneralRunDBTestParameter, \
     RunDBTestsInTestConfigParameter
-from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
+from exaslct_src.lib.test_environment.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.test_runner_db_test_task import TestRunnerDBTestTask
 
 STATUS_INDENT = 2

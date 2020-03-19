@@ -1,4 +1,3 @@
-import logging
 import pathlib
 from typing import Generator, Any, Dict
 
@@ -8,13 +7,13 @@ from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.data.release_info import ExportInfo
 from exaslct_src.lib.export_containers import ExportFlavorContainer
 from exaslct_src.lib.flavor_task import FlavorBaseTask
-from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentials
-from exaslct_src.lib.test_runner.environment_type import EnvironmentType
+from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentials
+from exaslct_src.lib.test_environment.environment_type import EnvironmentType
 from exaslct_src.lib.test_runner.run_db_test_result import RunDBTestsInTestConfigResult
 from exaslct_src.lib.test_runner.run_db_tests_in_test_config import RunDBTestsInTestConfig
 from exaslct_src.lib.test_runner.run_db_tests_parameter import RunDBTestsInTestConfigParameter
-from exaslct_src.lib.test_runner.spawn_test_environment import SpawnTestEnvironment
-from exaslct_src.lib.test_runner.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
+from exaslct_src.lib.test_environment.spawn_test_environment import SpawnTestEnvironment
+from exaslct_src.lib.test_environment.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_runner.upload_exported_container import UploadExportedContainer
 
 

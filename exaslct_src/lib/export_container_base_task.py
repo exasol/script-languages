@@ -10,15 +10,13 @@ import humanfriendly
 import luigi
 
 from exaslct_src.lib.base.base_task import BaseTask
-from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.build_config import build_config
 from exaslct_src.lib.command_log_handler import CommandLogHandler
 from exaslct_src.lib.data.image_info import ImageInfo
 from exaslct_src.lib.data.release_info import ExportInfo
-from exaslct_src.lib.flavor import flavor
 from exaslct_src.lib.flavor_task import FlavorBaseTask
 from exaslct_src.lib.still_running_logger import StillRunningLogger
-from exaslct_src.lib.test_runner.create_export_directory import CreateExportDirectory
+from exaslct_src.lib.test_environment.create_export_directory import CreateExportDirectory
 
 
 class ExportContainerBaseTask(FlavorBaseTask):

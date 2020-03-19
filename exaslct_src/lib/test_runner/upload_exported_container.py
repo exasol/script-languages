@@ -4,7 +4,7 @@ import luigi
 
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.release_info import ExportInfo
-from exaslct_src.lib.test_runner.upload_file_to_db import UploadFileToBucketFS
+from exaslct_src.lib.test_environment.upload_file_to_db import UploadFileToBucketFS
 
 
 class UploadExportedContainer(UploadFileToBucketFS):

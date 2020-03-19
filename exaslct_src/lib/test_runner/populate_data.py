@@ -3,11 +3,10 @@ from pathlib import Path
 
 import luigi
 
-from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentialsParameter
 
 
 class PopulateEngineSmallTestDataToDatabase(DockerBaseTask, DatabaseCredentialsParameter):

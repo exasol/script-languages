@@ -1,11 +1,10 @@
-import logging
 import time
 from threading import Thread
 
 from docker.models.containers import Container
 
 from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.test_runner.database_credentials import DatabaseCredentials
+from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentials
 
 
 class IsDatabaseReadyThread(Thread):

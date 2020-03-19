@@ -4,13 +4,12 @@ import luigi
 from docker.models.containers import Container
 
 from exaslct_src.AbstractMethodException import AbstractMethodException
-from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.still_running_logger import StillRunningLoggerThread, StillRunningLogger
-from exaslct_src.lib.test_runner.docker_db_log_based_bucket_sync_checker import DockerDBLogBasedBucketFSSyncChecker
-from exaslct_src.lib.test_runner.time_based_bucketfs_sync_waiter import TimeBasedBucketFSSyncWaiter
+from exaslct_src.lib.test_environment.docker_db_log_based_bucket_sync_checker import DockerDBLogBasedBucketFSSyncChecker
+from exaslct_src.lib.test_environment.time_based_bucketfs_sync_waiter import TimeBasedBucketFSSyncWaiter
 
 
 # TODO add timeout, because sometimes the upload stucks
