@@ -2,7 +2,8 @@ import unittest
 
 from docker.errors import DockerException
 
-from exaslct_src.lib.docker.images.create.utils.docker_registry_image_checker import DockerRegistryImageChecker
+from exaslct_src.test_environment.docker.images.create.utils.docker_registry_image_checker import \
+    DockerRegistryImageChecker
 
 
 class MyTestCase(unittest.TestCase):

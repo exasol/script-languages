@@ -1,6 +1,6 @@
 from typing import Dict
 
-from exaslct_src.lib.tasks.build.docker_flavor_image_task import DockerFlavorAnalyzeImageTask
+from exaslct_src.exaslct.lib.tasks.build.docker_flavor_image_task import DockerFlavorAnalyzeImageTask
 
 
 class AnalyzeUDFClientDeps(DockerFlavorAnalyzeImageTask):
