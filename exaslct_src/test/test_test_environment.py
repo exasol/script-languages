@@ -1,8 +1,9 @@
 import unittest
 
-from exaslct_src.test import utils
 import docker
-import os
+
+from exaslct_src.test import utils
+
 
 class DockerTestEnvironmentTest(unittest.TestCase):
 

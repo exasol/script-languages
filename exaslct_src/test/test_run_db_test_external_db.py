@@ -1,5 +1,4 @@
 import unittest
-from subprocess import CalledProcessError
 
 from exaslct_src.test import utils
 

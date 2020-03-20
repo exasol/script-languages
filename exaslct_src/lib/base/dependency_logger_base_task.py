@@ -6,7 +6,7 @@ from luigi import Task
 
 from exaslct_src.lib.base.base_task import BaseTask
 from exaslct_src.lib.base.stoppable_base_task import StoppableBaseTask
-from exaslct_src.lib.task_dependency import TaskDescription, TaskDependency, DependencyType, DependencyState
+from exaslct_src.lib.base.task_dependency import TaskDescription, TaskDependency, DependencyType, DependencyState
 
 
 class DependencyLoggerBaseTask(StoppableBaseTask):

@@ -1,12 +1,12 @@
 import textwrap
-from typing import Tuple
 from pathlib import Path
+
 from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
-from exaslct_src.cli.options import single_flavor_options
 from exaslct_src.cli.common import add_options
-from exaslct_src.lib.language_definition import LanguageDefinition
+from exaslct_src.cli.options import single_flavor_options
+from exaslct_src.lib.tasks.upload.language_definition import LanguageDefinition
 
 
 @cli.command()

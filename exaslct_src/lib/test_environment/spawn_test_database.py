@@ -12,12 +12,12 @@ from jinja2 import Template
 
 from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.data.container_info import ContainerInfo
-from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
-from exaslct_src.lib.data.image_info import ImageInfo
-from exaslct_src.lib.docker.pull_log_handler import PullLogHandler
-from exaslct_src.lib.still_running_logger import StillRunningLogger
+from exaslct_src.lib.base.still_running_logger import StillRunningLogger
+from exaslct_src.lib.docker.images.create.utils.pull_log_handler import PullLogHandler
+from exaslct_src.lib.docker.images.image_info import ImageInfo
+from exaslct_src.lib.test_environment.data.container_info import ContainerInfo
+from exaslct_src.lib.test_environment.data.database_info import DatabaseInfo
+from exaslct_src.lib.test_environment.data.docker_network_info import DockerNetworkInfo
 from exaslct_src.lib.test_environment.docker_db_test_environment_parameter import DockerDBTestEnvironmentParameter
 
 BUCKETFS_PORT = "6583"

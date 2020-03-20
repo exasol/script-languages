@@ -4,13 +4,13 @@ from typing import List
 import luigi
 import netaddr
 from docker.transport import unixconn
-from exaslct_src.lib.analyze_test_container import DockerTestContainerBuild
+
 from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.data.container_info import ContainerInfo
-from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
+from exaslct_src.lib.test_environment.data.container_info import ContainerInfo
+from exaslct_src.lib.test_environment.data.docker_network_info import DockerNetworkInfo
+from exaslct_src.lib.test_environment.analyze_test_container import DockerTestContainerBuild
 from exaslct_src.lib.test_environment.create_export_directory import CreateExportDirectory
-
 
 
 class SpawnTestContainer(DockerBaseTask):

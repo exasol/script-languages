@@ -8,10 +8,10 @@ from docker.models.containers import Container
 
 from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.data.container_info import ContainerInfo
-from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.test_environment.container_log_thread import ContainerLogThread
-from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.data.container_info import ContainerInfo
+from exaslct_src.lib.test_environment.data.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.data.database_info import DatabaseInfo
+from exaslct_src.lib.test_environment.db_container_log_thread import DBContainerLogThread
 from exaslct_src.lib.test_environment.is_database_ready_thread import IsDatabaseReadyThread
 
 
@@ -44,7 +44,7 @@ class WaitForTestDockerDatabase(DockerBaseTask, DatabaseCredentialsParameter):
 
     def start_wait_threads(self, db_container, test_container):
         startup_log_file = self.get_log_path().joinpath("startup.log")
-        container_log_thread = ContainerLogThread(db_container,
+        container_log_thread = DBContainerLogThread(db_container,
                                                   self.logger,
                                                   startup_log_file,
                                                   "Database Startup %s" % db_container.name)
@@ -56,14 +56,14 @@ class WaitForTestDockerDatabase(DockerBaseTask, DatabaseCredentialsParameter):
         is_database_ready_thread.start()
         return container_log_thread, is_database_ready_thread
 
-    def join_threads(self, container_log_thread: ContainerLogThread,
+    def join_threads(self, container_log_thread: DBContainerLogThread,
                      is_database_ready_thread: IsDatabaseReadyThread):
         container_log_thread.stop()
         is_database_ready_thread.stop()
         container_log_thread.join()
         is_database_ready_thread.join()
 
-    def wait_for_threads(self, container_log_thread: ContainerLogThread,
+    def wait_for_threads(self, container_log_thread: DBContainerLogThread,
                          is_database_ready_thread: IsDatabaseReadyThread):
         is_database_ready = False
         reason = None
@@ -87,7 +87,7 @@ class WaitForTestDockerDatabase(DockerBaseTask, DatabaseCredentialsParameter):
         is_database_ready_thread.stop()
         return is_database_ready
 
-    def log_database_not_ready(self, container_log_thread: ContainerLogThread,
+    def log_database_not_ready(self, container_log_thread: DBContainerLogThread,
                                is_database_ready_thread: IsDatabaseReadyThread, reason):
         container_log = '\n'.join(container_log_thread.complete_log)
         log_information = f"""

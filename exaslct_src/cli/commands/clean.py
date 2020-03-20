@@ -5,7 +5,7 @@ from exaslct_src.cli.common import set_docker_repository_config, run_task, set_o
     import_build_steps, set_job_id
 from exaslct_src.cli.options \
     import flavor_options, system_options, output_directory, simple_docker_repository_options
-from exaslct_src.lib.clean_images import CleanExaslcAllImages, CleanExaslcFlavorImages, CleanExaslcFlavorsImages
+from exaslct_src.lib.tasks.clean.clean_images import CleanExaslcAllImages, CleanExaslcFlavorsImages
 
 
 @cli.command()

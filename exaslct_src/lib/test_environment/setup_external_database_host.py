@@ -7,9 +7,9 @@ import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
-from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.data.database_info import DatabaseInfo
+from exaslct_src.lib.test_environment.data.docker_network_info import DockerNetworkInfo
+from exaslct_src.lib.test_environment.data.database_credentials import DatabaseCredentialsParameter
 from exaslct_src.lib.test_environment.external_test_environment_parameter import ExternalDatabaseXMLRPCParameter, \
     ExternalDatabaseHostParameter
 

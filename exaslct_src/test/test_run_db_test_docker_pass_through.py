@@ -1,8 +1,7 @@
 import unittest
-from subprocess import CalledProcessError
 
 from exaslct_src.test import utils
-import docker
+
 
 class RunDBTestDockerPassThroughTest(unittest.TestCase):
 

@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import unittest
 
-from exaslct_src.lib.utils.file_directory_list_hasher import FileDirectoryListHasher
+from exaslct_src.lib.docker.images.create.utils.file_directory_list_hasher import FileDirectoryListHasher
 
 TEST_FILE = "/tmp/SEFQWEFWQEHDUWEFDGZWGDZWEFDUWESGRFUDWEGFUDWAFGWAZESGFDWZA"
 

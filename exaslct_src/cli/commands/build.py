@@ -7,7 +7,7 @@ from exaslct_src.cli.common import set_build_config, set_docker_repository_confi
     import_build_steps, set_job_id
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, docker_repository_options, goal_options
-from exaslct_src.lib.docker_build import DockerFlavorBuild, DockerBuild
+from exaslct_src.lib.tasks.build.docker_build import DockerBuild
 
 
 @cli.command()

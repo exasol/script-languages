@@ -1,31 +1,31 @@
 import hashlib
 import json
 import logging
+import shutil
 from pathlib import Path
 from typing import Dict, List, Generator, Any, Union
 
 import luigi
 import six
-import shutil
 from luigi import Task, util
 from luigi.parameter import ParameterVisibility
 from luigi.task import TASK_ID_TRUNCATE_HASH
 
-
-from exaslct_src.AbstractMethodException import AbstractMethodException
+from exaslct_src.abstract_method_exception import AbstractMethodException
 from exaslct_src.lib.base.abstract_task_future import AbstractTaskFuture, DEFAULT_RETURN_OBJECT_NAME
 from exaslct_src.lib.base.job_config import job_config
 from exaslct_src.lib.base.pickle_target import PickleTarget
 from exaslct_src.lib.base.task_logger_wrapper import TaskLoggerWrapper
 from exaslct_src.lib.base.task_state import TaskState
 from exaslct_src.lib.base.wrong_task_state_exception import WrongTaskStateException
-from exaslct_src.lib.build_config import build_config
+from exaslct_src.lib.config.build_config import build_config
 
 RETURN_TARGETS = "return_targets"
 
 COMPLETION_TARGET = "completion_target"
 
 RUN_DEPENDENCIES = "run_dependencies"
+
 
 class RequiresTaskFuture(AbstractTaskFuture):
 
@@ -83,7 +83,7 @@ class BaseTask(Task):
         self._init_non_pickle_attributes()
         self.register_required()
         self._task_state = TaskState.NONE
-    
+
     def _init_non_pickle_attributes(self):
         logger = logging.getLogger(f'luigi-interface.{self.__class__.__name__}')
         self.logger = TaskLoggerWrapper(logger, self.__repr__())
@@ -91,7 +91,7 @@ class BaseTask(Task):
         self._run_dependencies_target = PickleTarget(path=self._get_tmp_path_for_run_dependencies())
 
     def __getstate__(self):
-        new_dict=dict(self.__dict__)
+        new_dict = dict(self.__dict__)
         del new_dict["logger"]
         del new_dict["_complete_target"]
         del new_dict["_run_dependencies_target"]
@@ -147,10 +147,10 @@ class BaseTask(Task):
 
     def extend_output_path(self):
         return list(self.caller_output_path) + [self.task_id]
-    
+
     def _get_tmp_path_for_job(self) -> Path:
         return Path(self._get_output_path_for_job(), "temp")
-    
+
     def _get_tmp_path_for_task(self) -> Path:
         return Path(self._get_tmp_path_for_job(),
                     self.task_id)
@@ -308,16 +308,16 @@ class BaseTask(Task):
 
     def cleanup_child_task(self):
         if self._run_dependencies_target.exists():
-            _run_dependencies_tasks_from_target=self._run_dependencies_target.read()
+            _run_dependencies_tasks_from_target = self._run_dependencies_target.read()
         else:
-            _run_dependencies_tasks_from_target=[]
-        _run_dependencies_tasks=self._run_dependencies_tasks+_run_dependencies_tasks_from_target
-        reversed_run_dependencies_task_list=list(_run_dependencies_tasks)
+            _run_dependencies_tasks_from_target = []
+        _run_dependencies_tasks = self._run_dependencies_tasks + _run_dependencies_tasks_from_target
+        reversed_run_dependencies_task_list = list(_run_dependencies_tasks)
         reversed_run_dependencies_task_list.reverse()
         for task in reversed_run_dependencies_task_list:
             task.cleanup()
-        
-        reversed_registered_task_list=list(self._registered_tasks)
+
+        reversed_registered_task_list = list(self._registered_tasks)
         reversed_registered_task_list.reverse()
         for task in reversed_registered_task_list:
             task.cleanup()

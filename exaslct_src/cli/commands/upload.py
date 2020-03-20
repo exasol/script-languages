@@ -9,7 +9,7 @@ from exaslct_src.cli.common import set_build_config, set_docker_repository_confi
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
     docker_repository_options
-from exaslct_src.lib.upload_containers import UploadContainers
+from exaslct_src.lib.tasks.upload.upload_containers import UploadContainers
 
 
 @cli.command()

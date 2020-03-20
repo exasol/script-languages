@@ -10,7 +10,7 @@ from exaslct_src.cli.common import set_build_config, set_docker_repository_confi
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, release_options, \
     docker_repository_options, docker_db_options, test_environment_options, external_db_options
-from exaslct_src.lib.test_environment.environment_type import EnvironmentType
+from exaslct_src.lib.test_environment.data.environment_type import EnvironmentType
 
 
 @cli.command()

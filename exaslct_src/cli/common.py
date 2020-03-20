@@ -1,19 +1,17 @@
 import getpass
 import json
 import os
-import shutil
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Tuple, Set
+from typing import Callable, Tuple, Set
 
 import luigi
 import networkx
 from networkx import DiGraph
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-
-from exaslct_src.lib.task_dependency import TaskDependency, DependencyState
+from exaslct_src.lib.base.task_dependency import TaskDependency, DependencyState
 
 
 def set_build_config(force_rebuild: bool,

@@ -3,11 +3,11 @@ from pathlib import Path
 import luigi
 from docker.models.containers import Container
 
-from exaslct_src.AbstractMethodException import AbstractMethodException
+from exaslct_src.abstract_method_exception import AbstractMethodException
 from exaslct_src.lib.base.docker_base_task import DockerBaseTask
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.still_running_logger import StillRunningLoggerThread, StillRunningLogger
+from exaslct_src.lib.base.still_running_logger import StillRunningLoggerThread, StillRunningLogger
+from exaslct_src.lib.test_environment.data.environment_info import EnvironmentInfo
 from exaslct_src.lib.test_environment.docker_db_log_based_bucket_sync_checker import DockerDBLogBasedBucketFSSyncChecker
 from exaslct_src.lib.test_environment.time_based_bucketfs_sync_waiter import TimeBasedBucketFSSyncWaiter
 

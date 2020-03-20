@@ -8,7 +8,7 @@ from exaslct_src.cli.common import set_build_config, set_docker_repository_confi
 from exaslct_src.cli.options \
     import build_options, flavor_options, system_options, goal_options, \
     docker_repository_options
-from exaslct_src.lib.docker_save import DockerSave
+from exaslct_src.lib.tasks.save.docker_save import DockerSave
 
 
 @cli.command()

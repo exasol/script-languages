@@ -1,4 +1,4 @@
-from exaslct_src.AbstractMethodException import AbstractMethodException
+from exaslct_src.abstract_method_exception import AbstractMethodException
 
 
 class BucketFSSyncChecker:

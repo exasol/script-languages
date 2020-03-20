@@ -5,9 +5,8 @@ from exaslct_src.cli.common import set_build_config, set_docker_repository_confi
     set_job_id
 from exaslct_src.cli.options \
     import build_options, system_options, docker_repository_options, push_options
-from exaslct_src.lib.analyze_test_container import DockerTestContainerBuild, AnalyzeTestContainer, \
+from exaslct_src.lib.test_environment.analyze_test_container import AnalyzeTestContainer, \
     DockerTestContainerPush
-from exaslct_src.lib.docker_build import DockerBuild
 
 
 @cli.command()

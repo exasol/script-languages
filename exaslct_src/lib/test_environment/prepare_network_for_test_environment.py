@@ -2,7 +2,7 @@ import docker
 import luigi
 
 from exaslct_src.lib.base.docker_base_task import DockerBaseTask
-from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
+from exaslct_src.lib.test_environment.data.docker_network_info import DockerNetworkInfo
 
 
 class PrepareDockerNetworkForTestEnvironment(DockerBaseTask):

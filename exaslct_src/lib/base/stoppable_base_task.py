@@ -1,14 +1,17 @@
 from pathlib import Path
 
 from exaslct_src.lib.base.timeable_base_task import TimeableBaseTask
-from exaslct_src.lib.stoppable_task import StoppingFurtherExecution
+
+
+class StoppingFurtherExecution(Exception):
+    pass
 
 
 class StoppableBaseTask(TimeableBaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.failed_target = Path(super()._get_output_path_for_job(),"TASKED_FAILED")
+        self.failed_target = Path(super()._get_output_path_for_job(), "TASKED_FAILED")
 
     def run(self):
         self.fail_if_any_task_failed()

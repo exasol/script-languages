@@ -1,8 +1,6 @@
 import os
 import unittest
 
-import docker
-
 from exaslct_src.test import utils
 
 

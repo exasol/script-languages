@@ -1,13 +1,5 @@
-from pathlib import Path
-from typing import List, Generator
-
-import luigi
-from luigi import Task
-
-from exaslct_src.lib.base.base_task import BaseTask
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.docker_config import docker_client_config
-from exaslct_src.lib.task_dependency import TaskDescription, TaskDependency, DependencyType, DependencyState
+from exaslct_src.lib.config.docker_config import docker_client_config
 
 
 class DockerBaseTask(DependencyLoggerBaseTask):

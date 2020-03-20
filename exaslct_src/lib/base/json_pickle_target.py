@@ -1,10 +1,9 @@
-import pickle
 from pathlib import Path
 from typing import Any
 
 import jsonpickle
 from luigi import LocalTarget
-from luigi.format import NopFormat
+
 
 class JsonPickleTarget(LocalTarget):
 

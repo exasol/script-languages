@@ -1,7 +1,7 @@
 import luigi
 
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.test_environment.environment_type import EnvironmentType
+from exaslct_src.lib.test_environment.data.environment_type import EnvironmentType
 from exaslct_src.lib.test_environment.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
 from exaslct_src.lib.test_environment.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
 from exaslct_src.lib.test_environment.spawn_test_environment_with_external_db import SpawnTestEnvironmentWithExternalDB

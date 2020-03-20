@@ -1,17 +1,18 @@
 import luigi
 
-from exaslct_src.AbstractMethodException import AbstractMethodException
+from exaslct_src.abstract_method_exception import AbstractMethodException
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.data.container_info import ContainerInfo
-from exaslct_src.lib.data.database_info import DatabaseInfo
-from exaslct_src.lib.data.docker_network_info import DockerNetworkInfo
-from exaslct_src.lib.data.environment_info import EnvironmentInfo
-from exaslct_src.lib.test_environment.database_credentials import DatabaseCredentialsParameter
-from exaslct_src.lib.test_environment.general_spawn_test_environment_parameter import GeneralSpawnTestEnvironmentParameter
-from exaslct_src.lib.test_runner.populate_data import PopulateEngineSmallTestDataToDatabase
+from exaslct_src.lib.tasks.test.populate_data import PopulateEngineSmallTestDataToDatabase
+from exaslct_src.lib.tasks.test.upload_exa_jdbc import UploadExaJDBC
+from exaslct_src.lib.tasks.test.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
+from exaslct_src.lib.test_environment.data.container_info import ContainerInfo
+from exaslct_src.lib.test_environment.data.database_credentials import DatabaseCredentialsParameter
+from exaslct_src.lib.test_environment.data.database_info import DatabaseInfo
+from exaslct_src.lib.test_environment.data.docker_network_info import DockerNetworkInfo
+from exaslct_src.lib.test_environment.data.environment_info import EnvironmentInfo
+from exaslct_src.lib.test_environment.general_spawn_test_environment_parameter import \
+    GeneralSpawnTestEnvironmentParameter
 from exaslct_src.lib.test_environment.spawn_test_container import SpawnTestContainer
-from exaslct_src.lib.test_runner.upload_exa_jdbc import UploadExaJDBC
-from exaslct_src.lib.test_runner.upload_virtual_schema_jdbc_adapter import UploadVirtualSchemaJDBCAdapter
 
 DATABASE = "database"
 

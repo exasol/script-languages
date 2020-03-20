@@ -6,11 +6,8 @@ from datetime import datetime
 import luigi
 from luigi import Parameter, Config
 
-from exaslct_src.lib.base.base_task import BaseTask
 from exaslct_src.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
-from exaslct_src.lib.base.job_config import job_config
 from exaslct_src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.lib.data.container_info import ContainerInfo
 
 TestBaseTask = DependencyLoggerBaseTask
 
