@@ -5,7 +5,7 @@ from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import add_options
-from exaslct_src.cli.options import single_flavor_options
+from exaslct_src.cli.options.flavor_options import single_flavor_options
 from exaslct_src.lib.tasks.upload.language_definition import LanguageDefinition
 
 

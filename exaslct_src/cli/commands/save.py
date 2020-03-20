@@ -5,9 +5,11 @@ from click._unicodefun import click
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
     import_build_steps, set_job_id
-from exaslct_src.cli.options \
-    import build_options, flavor_options, system_options, goal_options, \
-    docker_repository_options
+from exaslct_src.cli.options.build_options import build_options
+from exaslct_src.cli.options.docker_repository_options import docker_repository_options
+from exaslct_src.cli.options.flavor_options import flavor_options
+from exaslct_src.cli.options.goal_options import goal_options
+from exaslct_src.cli.options.system_options import system_options
 from exaslct_src.lib.tasks.save.docker_save import DockerSave
 
 

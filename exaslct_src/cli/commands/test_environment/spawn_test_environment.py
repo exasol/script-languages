@@ -2,8 +2,9 @@ from click._unicodefun import click
 
 from exaslct_src.cli.cli import cli
 from exaslct_src.cli.common import set_build_config, run_task, add_options, set_job_id
-from exaslct_src.cli.options \
-    import system_options, output_directory, tempory_base_directory, docker_db_options
+from exaslct_src.cli.options.system_options import tempory_base_directory_option, system_options, \
+    output_directory_option
+from exaslct_src.cli.options.test_environment_options import docker_db_options
 from exaslct_src.lib.test_environment.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
 
 
@@ -12,8 +13,8 @@ from exaslct_src.lib.test_environment.spawn_test_environment_with_docker_db impo
 @click.option('--database-port-forward', type=int, required=True)
 @click.option('--bucketfs-port-forward', type=int, required=True)
 @add_options(docker_db_options)
-@add_options([output_directory])
-@add_options([tempory_base_directory])
+@add_options([output_directory_option])
+@add_options([tempory_base_directory_option])
 @add_options(system_options)
 def spawn_test_environment(
         environment_name: str,
