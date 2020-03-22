@@ -1,7 +1,7 @@
 from typing import Tuple
 
-from exaslct_src.exaslct.cli.cli import cli
-from exaslct_src.exaslct.cli.common import set_docker_repository_config, run_task, set_output_directory, add_options, \
+from exaslct_src.test_environment.cli.cli import cli
+from exaslct_src.test_environment.cli.common import set_docker_repository_config, run_task, set_output_directory, add_options, \
     import_build_steps, set_job_id
 from exaslct_src.exaslct.cli.options.flavor_options import flavor_options
 from exaslct_src.test_environment.cli.options.docker_repository_options import simple_docker_repository_options

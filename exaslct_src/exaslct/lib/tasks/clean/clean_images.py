@@ -1,9 +1,9 @@
 import luigi
 
-from exaslct_src.exaslct.lib.config.docker_config import target_docker_repository_config
 from exaslct_src.exaslct.lib.utils.docker_utils import find_images_by_tag
-from exaslct_src.test_environment.base.docker_base_task import DockerBaseTask
-from exaslct_src.test_environment.base.flavor_task import FlavorBaseTask, FlavorsBaseTask
+from exaslct_src.test_environment.lib.base.docker_base_task import DockerBaseTask
+from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask, FlavorsBaseTask
+from exaslct_src.test_environment.lib.config.docker_config import target_docker_repository_config
 
 
 class CleanImageTask(DockerBaseTask):
@@ -46,7 +46,7 @@ class CleanImagesStartingWith(DockerBaseTask):
         image_ids = [str(image.id).replace("sha256:", "")
                      for image in self.find_images_to_clean()]
         self.register_dependencies([self.create_child_task(CleanImageTask, image_id=image_id)
-                                  for image_id in image_ids])
+                                    for image_id in image_ids])
 
     def find_images_to_clean(self):
         self.logger.info("Going to remove all images starting with %s" % self.starts_with_pattern)
@@ -78,6 +78,7 @@ class CleanExaslcFlavorImages(FlavorBaseTask):
     def run_task(self):
         pass
 
+
 class CleanExaslcFlavorsImages(FlavorsBaseTask):
 
     def register_required(self):
@@ -87,6 +88,7 @@ class CleanExaslcFlavorsImages(FlavorsBaseTask):
 
     def run_task(self):
         pass
+
 
 class CleanExaslcAllImages(DockerBaseTask):
 

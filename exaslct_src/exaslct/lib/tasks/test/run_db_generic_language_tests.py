@@ -4,8 +4,8 @@ from exaslct_src.exaslct.lib.tasks.test.run_db_test_in_directory import RunDBTes
 from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestFoldersResult, RunDBTestDirectoryResult
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_parameter import RunDBGenericLanguageTestParameter, \
     ActualRunDBTestParameter
-from exaslct_src.test_environment.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.base.json_pickle_target import JsonPickleTarget
+from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask
+from exaslct_src.test_environment.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.test_environment.lib.data.database_credentials import DatabaseCredentialsParameter
 
 

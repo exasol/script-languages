@@ -3,8 +3,8 @@ import pathlib
 import luigi
 
 from exaslct_src.exaslct.lib.tasks.export.export_info import ExportInfo
-from exaslct_src.test_environment.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.test_environment.lib.upload_file_to_db import UploadFileToBucketFS
+from exaslct_src.test_environment.lib.base.json_pickle_parameter import JsonPickleParameter
+from exaslct_src.test_environment.lib.test_environment.upload_file_to_db import UploadFileToBucketFS
 
 
 class UploadExportedContainer(UploadFileToBucketFS):

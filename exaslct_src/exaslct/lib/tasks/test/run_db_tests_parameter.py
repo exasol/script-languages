@@ -1,6 +1,6 @@
 import luigi
 
-from exaslct_src.test_environment.base.json_pickle_parameter import JsonPickleParameter
+from exaslct_src.test_environment.lib.base.json_pickle_parameter import JsonPickleParameter
 from exaslct_src.test_environment.lib.data.environment_info import EnvironmentInfo
 
 

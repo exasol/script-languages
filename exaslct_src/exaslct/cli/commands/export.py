@@ -2,8 +2,8 @@ from typing import Tuple
 
 import click
 
-from exaslct_src.exaslct.cli.cli import cli
-from exaslct_src.exaslct.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
+from exaslct_src.test_environment.cli.cli import cli
+from exaslct_src.test_environment.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
     import_build_steps, set_job_id
 from exaslct_src.exaslct.cli.options.flavor_options import flavor_options
 from exaslct_src.exaslct.cli.options.goal_options import release_options

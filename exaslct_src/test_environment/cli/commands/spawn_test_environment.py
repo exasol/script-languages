@@ -1,11 +1,11 @@
 from click._unicodefun import click
 
-from exaslct_src.exaslct.cli.cli import cli
-from exaslct_src.exaslct.cli.common import set_build_config, run_task, add_options, set_job_id
+from exaslct_src.test_environment.cli.cli import cli
+from exaslct_src.test_environment.cli.common import set_build_config, run_task, add_options, set_job_id
 from exaslct_src.test_environment.cli.options.system_options import tempory_base_directory_option, system_options, \
     output_directory_option
 from exaslct_src.test_environment.cli.options.test_environment_options import docker_db_options
-from exaslct_src.test_environment.lib.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
+from exaslct_src.test_environment.lib.test_environment.spawn_test_environment_with_docker_db import SpawnTestEnvironmentWithDockerDB
 
 
 @cli.command()

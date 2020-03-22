@@ -1,4 +1,4 @@
-from exaslct_src.test_environment.base.info import Info
+from exaslct_src.test_environment.lib.base.info import Info
 
 
 class DockerNetworkInfo(Info):

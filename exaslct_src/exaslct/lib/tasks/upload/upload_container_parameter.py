@@ -1,6 +1,6 @@
 import luigi
 
-from exaslct_src.test_environment.base.dependency_logger_base_task import DependencyLoggerBaseTask
+from exaslct_src.test_environment.lib.base.dependency_logger_base_task import DependencyLoggerBaseTask
 
 
 class UploadContainerParameter(DependencyLoggerBaseTask):

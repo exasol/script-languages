@@ -2,13 +2,13 @@ from pathlib import Path
 
 import luigi
 
-from exaslct_src.exaslct.lib.config.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestResult
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_parameter import RunDBTestParameter
-from exaslct_src.test_environment.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.base.frozendict_to_dict import FrozenDictToDict
-from exaslct_src.test_environment.base.json_pickle_target import JsonPickleTarget
-from exaslct_src.test_environment.base.still_running_logger import StillRunningLogger, StillRunningLoggerThread
+from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask
+from exaslct_src.test_environment.lib.base.frozendict_to_dict import FrozenDictToDict
+from exaslct_src.test_environment.lib.base.json_pickle_target import JsonPickleTarget
+from exaslct_src.test_environment.lib.base.still_running_logger import StillRunningLogger, StillRunningLoggerThread
+from exaslct_src.test_environment.lib.config.log_config import log_config, WriteLogFilesToConsole
 from exaslct_src.test_environment.lib.data.database_credentials import DatabaseCredentialsParameter
 
 

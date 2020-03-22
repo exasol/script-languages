@@ -3,9 +3,9 @@ from typing import Dict
 import luigi
 
 from exaslct_src.exaslct.lib.tasks.build.docker_flavor_build_base import DockerFlavorBuildBase
-from exaslct_src.exaslct.lib.tasks.push.docker_push_parameter import DockerPushParameter
-from exaslct_src.test_environment.base.flavor_task import FlavorsBaseTask
-from exaslct_src.test_environment.docker.images.push.push_task_creator_for_build_tasks import \
+from exaslct_src.test_environment.lib.base.flavor_task import FlavorsBaseTask
+from exaslct_src.test_environment.lib.docker.images.push.docker_push_parameter import DockerPushParameter
+from exaslct_src.test_environment.lib.docker.images.push.push_task_creator_for_build_tasks import \
     PushTaskCreatorFromBuildTasks
 
 

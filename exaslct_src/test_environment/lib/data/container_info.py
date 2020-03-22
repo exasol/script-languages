@@ -1,6 +1,6 @@
 from typing import List
 
-from exaslct_src.test_environment.base.info import Info
+from exaslct_src.test_environment.lib.base.info import Info
 from exaslct_src.test_environment.lib.data.docker_network_info import DockerNetworkInfo
 
 

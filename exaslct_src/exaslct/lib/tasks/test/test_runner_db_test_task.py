@@ -9,12 +9,13 @@ from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestsInTe
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_in_test_config import RunDBTestsInTestConfig
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_parameter import RunDBTestsInTestConfigParameter
 from exaslct_src.exaslct.lib.tasks.test.upload_exported_container import UploadExportedContainer
-from exaslct_src.test_environment.base.flavor_task import FlavorBaseTask
+from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask
 from exaslct_src.test_environment.lib.data.database_credentials import DatabaseCredentials
 from exaslct_src.test_environment.lib.data.environment_info import EnvironmentInfo
 from exaslct_src.test_environment.lib.data.environment_type import EnvironmentType
-from exaslct_src.test_environment.lib.spawn_test_environment import SpawnTestEnvironment
-from exaslct_src.test_environment.lib.spawn_test_environment_parameter import SpawnTestEnvironmentParameter
+from exaslct_src.test_environment.lib.test_environment.spawn_test_environment import SpawnTestEnvironment
+from exaslct_src.test_environment.lib.test_environment.spawn_test_environment_parameter import \
+    SpawnTestEnvironmentParameter
 
 
 class TestRunnerDBTestTask(FlavorBaseTask,

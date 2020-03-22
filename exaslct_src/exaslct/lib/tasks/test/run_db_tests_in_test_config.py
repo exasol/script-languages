@@ -3,12 +3,12 @@ from typing import Any, Generator
 from exaslct_src.exaslct.lib.tasks.test.run_db_generic_language_tests import RunDBGenericLanguageTest
 from exaslct_src.exaslct.lib.tasks.test.run_db_test_files import RunDBTestFiles
 from exaslct_src.exaslct.lib.tasks.test.run_db_test_folder import RunDBTestFolder
-from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestsInTestConfigResult, RunDBTestFoldersResult, \
-    RunDBTestFilesResult
+from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestsInTestConfigResult, \
+    RunDBTestFoldersResult, RunDBTestFilesResult
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_parameter import RunDBTestsInTestConfigParameter, \
     ActualRunDBTestParameter
-from exaslct_src.test_environment.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.base.json_pickle_target import JsonPickleTarget
+from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask
+from exaslct_src.test_environment.lib.base.json_pickle_target import JsonPickleTarget
 from exaslct_src.test_environment.lib.data.database_credentials import DatabaseCredentialsParameter
 
 
