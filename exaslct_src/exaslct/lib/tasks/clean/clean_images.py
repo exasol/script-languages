@@ -1,9 +1,9 @@
 import luigi
 
 from exaslct_src.exaslct.lib.utils.docker_utils import find_images_by_tag
-from exaslct_src.test_environment.lib.base.docker_base_task import DockerBaseTask
-from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask, FlavorsBaseTask
-from exaslct_src.test_environment.lib.config.docker_config import target_docker_repository_config
+from exaslct_src.test_environment.src.lib.base.docker_base_task import DockerBaseTask
+from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask, FlavorsBaseTask
+from exaslct_src.test_environment.src.lib.config.docker_config import target_docker_repository_config
 
 
 class CleanImageTask(DockerBaseTask):

@@ -4,11 +4,11 @@ from pathlib import Path
 import luigi
 import requests
 
-from exaslct_src.abstract_method_exception import AbstractMethodException
+from exaslct_src.test_environment.src.abstract_method_exception import AbstractMethodException
 from exaslct_src.exaslct.lib.tasks.export.export_info import ExportInfo
 from exaslct_src.exaslct.lib.tasks.upload.language_definition import LanguageDefinition
 from exaslct_src.exaslct.lib.tasks.upload.upload_container_parameter import UploadContainerParameter
-from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask
+from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask
 
 
 class UploadContainerBaseTask(FlavorBaseTask, UploadContainerParameter):

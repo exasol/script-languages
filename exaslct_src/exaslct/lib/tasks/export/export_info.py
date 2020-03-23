@@ -1,5 +1,5 @@
-from exaslct_src.test_environment.lib.base.info import Info
-from exaslct_src.test_environment.lib.docker.images.image_info import ImageInfo
+from exaslct_src.test_environment.src.lib.base.info import Info
+from exaslct_src.test_environment.src.lib.docker.images.image_info import ImageInfo
 
 
 class ExportInfo(Info):

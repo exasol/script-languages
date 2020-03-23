@@ -6,9 +6,9 @@ from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestsInTe
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_parameter import RunDBTestsInTestConfigParameter, \
     GeneralRunDBTestParameter
 from exaslct_src.exaslct.lib.tasks.test.test_runner_db_test_task import TestRunnerDBTestTask
-from exaslct_src.test_environment.lib.base.flavor_task import FlavorsBaseTask, FlavorBaseTask
-from exaslct_src.test_environment.lib.base.json_pickle_target import JsonPickleTarget
-from exaslct_src.test_environment.lib.test_environment.spawn_test_environment_parameter import \
+from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorsBaseTask, FlavorBaseTask
+from exaslct_src.test_environment.src.lib.base.json_pickle_target import JsonPickleTarget
+from exaslct_src.test_environment.src.lib.test_environment.spawn_test_environment_parameter import \
     SpawnTestEnvironmentParameter
 
 STATUS_INDENT = 2

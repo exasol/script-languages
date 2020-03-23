@@ -1,9 +1,9 @@
 from typing import Dict, Set
 
 from exaslct_src.exaslct.lib.tasks.build.docker_flavor_image_task import DockerFlavorAnalyzeImageTask
-from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.lib.docker.images.create.docker_build_base import DockerBuildBase
-from exaslct_src.test_environment.lib.docker.images.create.docker_image_analyze_task import DockerAnalyzeImageTask
+from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask
+from exaslct_src.test_environment.src.lib.docker.images.create.docker_build_base import DockerBuildBase
+from exaslct_src.test_environment.src.lib.docker.images.create.docker_image_analyze_task import DockerAnalyzeImageTask
 
 
 class DockerFlavorBuildBase(FlavorBaseTask, DockerBuildBase):

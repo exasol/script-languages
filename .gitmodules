@@ -1,0 +1,3 @@
+[submodule "exaslct_src/test_environment"]
+	path = exaslct_src/test_environment
+	url = https://github.com/exasol/integration-test-docker-environment

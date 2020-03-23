@@ -9,15 +9,15 @@ from pathlib import Path
 import humanfriendly
 import luigi
 
-from exaslct_src.test_environment.lib.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.lib.base.still_running_logger import StillRunningLogger
+from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask
+from exaslct_src.test_environment.src.lib.base.still_running_logger import StillRunningLogger
 
 from exaslct_src.exaslct.lib.tasks.export.export_info import ExportInfo
-from exaslct_src.test_environment.lib.base.base_task import BaseTask
-from exaslct_src.test_environment.lib.config.build_config import build_config
-from exaslct_src.test_environment.lib.docker.images.image_info import ImageInfo
-from exaslct_src.test_environment.lib.logging.command_log_handler import CommandLogHandler
-from exaslct_src.test_environment.lib.test_environment.create_export_directory import CreateExportDirectory
+from exaslct_src.test_environment.src.lib.base.base_task import BaseTask
+from exaslct_src.test_environment.src.lib.config.build_config import build_config
+from exaslct_src.test_environment.src.lib.docker.images.image_info import ImageInfo
+from exaslct_src.test_environment.src.lib.logging.command_log_handler import CommandLogHandler
+from exaslct_src.test_environment.src.lib.test_environment.create_export_directory import CreateExportDirectory
 
 
 class ExportContainerBaseTask(FlavorBaseTask):

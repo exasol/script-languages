@@ -1,7 +1,7 @@
 import luigi
 
-from exaslct_src.test_environment.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.test_environment.lib.data.environment_info import EnvironmentInfo
+from exaslct_src.test_environment.src.lib.base.json_pickle_parameter import JsonPickleParameter
+from exaslct_src.test_environment.src.lib.data.environment_info import EnvironmentInfo
 
 
 class GeneralRunDBTestParameter():

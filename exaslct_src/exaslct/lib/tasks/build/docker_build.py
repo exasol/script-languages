@@ -2,7 +2,7 @@ import luigi
 from luigi import Config
 
 from exaslct_src.exaslct.lib.tasks.build.docker_flavor_build_base import DockerFlavorBuildBase
-from exaslct_src.test_environment.lib.base.flavor_task import FlavorsBaseTask
+from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorsBaseTask
 
 
 class DockerBuildParameter(Config):

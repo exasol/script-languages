@@ -1,2 +1,0 @@
-class AbstractMethodException(Exception):
-    pass

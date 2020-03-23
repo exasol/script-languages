@@ -3,8 +3,8 @@ from pathlib import Path
 
 import click
 
-from exaslct_src.test_environment.cli.cli import cli
-from exaslct_src.test_environment.cli.common import add_options
+from exaslct_src.test_environment.src.cli.cli import cli
+from exaslct_src.test_environment.src.cli.common import add_options
 from exaslct_src.exaslct.cli.options.flavor_options import single_flavor_options
 from exaslct_src.exaslct.lib.tasks.upload.language_definition import LanguageDefinition
 

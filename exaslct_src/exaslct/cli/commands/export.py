@@ -2,15 +2,15 @@ from typing import Tuple
 
 import click
 
-from exaslct_src.test_environment.cli.cli import cli
-from exaslct_src.test_environment.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
+from exaslct_src.test_environment.src.cli.cli import cli
+from exaslct_src.test_environment.src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
     import_build_steps, set_job_id
 from exaslct_src.exaslct.cli.options.flavor_options import flavor_options
 from exaslct_src.exaslct.cli.options.goal_options import release_options
 from exaslct_src.exaslct.lib.tasks.export.export_containers import ExportContainers
-from exaslct_src.test_environment.cli.options.build_options import build_options
-from exaslct_src.test_environment.cli.options.docker_repository_options import docker_repository_options
-from exaslct_src.test_environment.cli.options.system_options import system_options
+from exaslct_src.test_environment.src.cli.options.build_options import build_options
+from exaslct_src.test_environment.src.cli.options.docker_repository_options import docker_repository_options
+from exaslct_src.test_environment.src.cli.options.system_options import system_options
 
 
 @cli.command()

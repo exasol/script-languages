@@ -3,8 +3,8 @@ import importlib
 import luigi
 
 from exaslct_src.exaslct.lib.tasks.export.export_container_base_task import ExportContainerBaseTask
-from exaslct_src.test_environment.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.test_environment.lib.docker.images.required_task_info import RequiredTaskInfo
+from exaslct_src.test_environment.src.lib.base.json_pickle_parameter import JsonPickleParameter
+from exaslct_src.test_environment.src.lib.docker.images.required_task_info import RequiredTaskInfo
 
 
 class ExportContainerTask(ExportContainerBaseTask):
