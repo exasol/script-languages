@@ -1,4 +1,7 @@
 steps:
+- id: "Fetch submodule"
+  name: gcr.io/cloud-builders/git
+  args: ['submodule', 'update', '--init', '--recursive']
 - id: 'Decrypt Docker password'
   name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
