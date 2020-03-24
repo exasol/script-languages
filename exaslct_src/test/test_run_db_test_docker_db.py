@@ -1,7 +1,6 @@
 import unittest
-from subprocess import CalledProcessError
 
-from exaslct_src.test import utils
+from exaslct_src.test_environment.src.test import utils
 
 
 class DockerRunDBTestDockerDBTest(unittest.TestCase):

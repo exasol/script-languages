@@ -1,4 +1,7 @@
 steps:
+- id: "Fetch submodule"
+  name: gcr.io/cloud-builders/git
+  args: ['submodule', 'update', '--init', '--recursive']
 - id: 'Build build-container'
   name: 'gcr.io/cloud-builders/docker'
   args: [
@@ -13,20 +16,6 @@ steps:
           'bash', 
           'test_exaslct_init_script.sh' 
           ]
-- id: 'Test exaslct test_base_task.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_base_task.py'
-        ]
-- id: 'Test exaslct test_hash_temp_dir.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_hash_temp_dir.py'
-        ]
 - id: 'Test exaslct test_generate_language_activation.py'
   name: 'gcr.io/script-languages/build-container'
   args: [
@@ -55,13 +44,6 @@ steps:
           'run_exaslct_test.sh',
           'exaslct_src/test/test_docker_load.py'
         ]
-- id: 'Test exaslct test_docker_registry_image_checker.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_docker_registry_image_checker.py'
-        ]
 - id: 'Test exaslct test_docker_save.py'
   name: 'gcr.io/script-languages/build-container'
   args: [
@@ -82,13 +64,6 @@ steps:
           'bash', 
           'run_exaslct_test.sh',
           'exaslct_src/test/test_run_db_test_docker_pass_through.py'
-        ]
-- id: 'Test exaslct test_test_environment.py'
-  name: 'gcr.io/script-languages/build-container'
-  args: [
-          'bash', 
-          'run_exaslct_test.sh',
-          'exaslct_src/test/test_test_environment.py'
         ]
 - id: 'Test exaslct test_docker_upload.py'
   name: 'gcr.io/script-languages/build-container'

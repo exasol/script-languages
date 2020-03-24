@@ -1,9 +1,6 @@
-import time
 import unittest
 
-import docker
-
-from exaslct_src.test import utils
+from exaslct_src.test_environment.src.test import utils
 
 
 class DockerPushTest(unittest.TestCase):

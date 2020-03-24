@@ -2,8 +2,8 @@ import unittest
 
 import docker
 
-from exaslct_src.lib.utils.docker_utils import find_images_by_tag
-from exaslct_src.test import utils
+from exaslct_src.exaslct.lib.utils.docker_utils import find_images_by_tag
+from exaslct_src.test_environment.src.test import utils
 
 
 class DockerBuildTest(unittest.TestCase):
