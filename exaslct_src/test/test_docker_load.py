@@ -4,8 +4,7 @@ import subprocess
 import unittest
 from pathlib import Path
 
-from exaslct_src.test import utils
-
+from exaslct_src.test_environment.src.test import utils
 
 class DockerLoadTest(unittest.TestCase):
 

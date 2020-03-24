@@ -1,8 +1,7 @@
 import os
 import unittest
 
-from exaslct_src.test import utils
-
+from exaslct_src.test_environment.src.test import utils
 
 class DockerExportTest(unittest.TestCase):
     def setUp(self):
