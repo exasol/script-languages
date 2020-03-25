@@ -8,7 +8,7 @@
     "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
     "branchName": "^pull_request/.*"
   },
-  "description": "Build pull request {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
+  "description": "Build pull request {{ flavor }} {{ repo_short_name }}",
   "substitutions": {
     "_JOB_ID": "{{ job_id }}",
     "_FLAVOR": "{{ flavor }}",
@@ -18,15 +18,19 @@
     "_JOB_TYPE": "build+test"
   },
   "includedFiles": [
-    "docker_db_config/**",
-    "exaudfclient/**",
-    "exaslct_src/**",
-    "flavors/{{ flavor }}/**",
-    "ext/**",
-    "tests/**",
-    "google-cloud-build/**",
     ".current_gitmodules",
-    "Pipfile"
+    "Dockerfile",
+    "exaslct",
+    "exaslct_src/**", 
+    "exaudfclient/**",
+    "ext/**",
+    "flavors/{{ flavor }}/**",
+    "google-cloud-build/**",
+    "pipenv_utils.sh",
+    "Pipfile",
+    "run_exaslct_test.sh",
+    "test_exaslct_init_script.sh",
+    "tests/**"
   ],
   "filename": "google-cloud-build/ci-scripts/build_pull_request.yaml"
 }

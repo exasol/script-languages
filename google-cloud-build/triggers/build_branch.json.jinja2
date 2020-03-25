@@ -21,13 +21,13 @@
     {% elif build_mode == "release" %} 
     "branchName": "^(develop|master|ci-release-test/.*)$"
     {% endif %}
-  },
+  },  
   {% if build_mode == "rebuild"  %}
-  "description": "Rebuild branch {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
+  "description": "Rebuild branch {{ flavor }} {{ repo_short_name }}",
   {% elif build_mode == "build" %}
-  "description": "Build branch {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
+  "description": "Build branch {{ flavor }} {{ repo_short_name }}",
   {% elif build_mode == "release" %} 
-  "description": "Build release {{ flavor }} {{ github_user_name }}-{{ github_repository }}",
+  "description": "Build release {{ flavor }} {{ repo_short_name }}", 
   {% endif %}
   "substitutions": {
     "_JOB_ID": "{{ job_id }}", 
@@ -54,15 +54,19 @@
   },
   {% if build_mode == "build" %}
   "includedFiles": [
-    "docker_db_config/**",
-    "exaudfclient/**",
-    "exaslct_src/**",
-    "flavors/{{ flavor }}/**",
-    "ext/**",
-    "tests/**",
-    "google-cloud-build/**",
     ".current_gitmodules",
-    "Pipfile"
+    "Dockerfile",
+    "exaslct",
+    "exaslct_src/**", 
+    "exaudfclient/**",
+    "ext/**",
+    "flavors/{{ flavor }}/**",
+    "google-cloud-build/**",
+    "pipenv_utils.sh",
+    "Pipfile",
+    "run_exaslct_test.sh",
+    "test_exaslct_init_script.sh",
+    "tests/**"
   ],
   {% endif %}
   {% if build_mode == "release" %}
