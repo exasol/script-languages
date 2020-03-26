@@ -228,6 +228,7 @@ class exaiter(object):
         df = pyextdataframe.get_dataframe(self, num_rows, start_col)
         return df 
     def reset(self):
+        self.__dataframe_finished = False
         return self.next(reset = True)
     def size(self):
         return self.__inp.rowsInGroup()

@@ -430,10 +430,11 @@ class PandasDataFrame(udf.TestCase):
                 while True:
                     df = ctx.get_dataframe(num_rows=3)
                     if df is None:
-                        ctx.reset()
-                        if i==5:
-                            return
-                        i =+ 1
+                        if i < 1:
+                            ctx.reset()
+                            i = i + 1
+                        else:
+                            break
                     else:
                         ctx.emit(df)
             /
@@ -442,8 +443,8 @@ class PandasDataFrame(udf.TestCase):
         self.query(udf_sql)
         select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
         print(select_sql)
-#        rows = self.query(select_sql)
-#        self.assertRowsEqual([self.col_tuple]*self.num_rows*5, rows)
+        rows = self.query(select_sql)
+        self.assertRowsEqual([self.col_tuple]*self.num_rows*2, rows)
 
     def test_dataframe_set_emits_col_names(self):
         output_columns = 'X1 VARCHAR(5), X2 VARCHAR(5), X3 VARCHAR(5), X4 VARCHAR(5), X5 VARCHAR(5), X6 VARCHAR(5), X7 VARCHAR(5), X8 VARCHAR(5), X9 VARCHAR(5), X10 VARCHAR(5), X11 VARCHAR(5)'
