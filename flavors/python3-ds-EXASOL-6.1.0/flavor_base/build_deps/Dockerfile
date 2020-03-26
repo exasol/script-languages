@@ -5,6 +5,8 @@ ENV ARCHIVE_UBUNTU_PREFIX=""
 RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNTU_PREFIX\2/" /etc/apt/sources.list
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
+COPY scripts /scripts
+
 RUN mkdir -p /build_info/packages
 COPY build_deps/packages /build_info/packages/build_deps
 
@@ -12,8 +14,9 @@ ENV BAZEL_PACKAGE_VERSION="1.1.0"
 ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
 ENV BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
 
+RUN /scripts/install_via_apt.pl --file /build_info/packages/build_deps/apt_get_packages
+
 RUN apt-get -y update && \
-    apt-get install -y $(cat /build_info/packages/build_deps/apt_get_packages) && \
     curl -L --output "$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL" && \
     apt-get install -y "./$BAZEL_PACKAGE_FILE" && \
     rm "$BAZEL_PACKAGE_FILE" && \
