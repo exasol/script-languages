@@ -7,6 +7,10 @@ import sys
 import unittest
 
 import pyodbc
+from decimal import Decimal
+from datetime import date
+from datetime import datetime
+
 
 import exatest
 from exatest import *
@@ -207,6 +211,91 @@ class TestCase(exatest.TestCase):
         return super(TestCase, self).query(*new_args, **kwargs)
 
     
+    def import_via_exaplus(self, table_name, table_generator):
+        tmpdir = tempfile.mkdtemp()
+        fifo_filename = os.path.join(tmpdir, 'myfifo')
+        import_table_sql = '''IMPORT INTO %s FROM LOCAL CSV FILE '%s';'''%(table_name,fifo_filename)
+        try:
+            os.mkfifo(fifo_filename)
+            cmd = '''%(exaplus)s -c %(conn)s -u %(user)s -P %(password)s -s %(schema)s
+                            -no-config -autocommit ON -L -pipe''' % {
+                                    'exaplus': os.environ.get('EXAPLUS'),
+                                    'conn': udf.opts.server,
+                                    'user': self.user,
+                                    'password': self.password,
+                                    'schema': self.schema
+                                    }
+            print("Running the following exaplus command %s" % cmd)
+            env = os.environ.copy()
+            env['LC_ALL'] = 'en_US.UTF-8'
+            exaplus = subprocess.Popen(
+                        cmd.split(), 
+                        env=env, 
+                        stdin=subprocess.PIPE, 
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+            write_trhead = threading.Thread(target=self._write_into_fifo, args=(fifo_filename, table_generator))
+            write_trhead.start()
+            sql=create_table_sql+"\n"+import_table_sql+"\n"+"commit;"
+            print("Executing SQL in exaplus: %s" % sql)
+            out, _err = exaplus.communicate(sql.encode('utf8'))
+            print(out)
+            print(_err)
+            write_trhead.join()
+        finally:
+            os.remove(fifo_filename)
+            os.rmdir(tmpdir)
+
+
+    def _write_into_fifo(self, fifo_filename, table_generator):
+        with open(fifo_filename,"w") as f:
+            csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            for row in table_generator:
+                csvwriter.writerow(row)
+
+    def import_via_insert(self, table_name, table_generator, column_names=None, tuples_per_insert=1000):
+        if column_names is not None:
+            column_names_str = ','.join(column_names)
+        else:
+            column_names_str = ''
+        rows = []
+        for i, row in enumerate(table_generator):
+            values = ','.join(self._convert_insert_value(value) for value in row)
+            row_str = "(%s)" % (values)
+            rows.append(row_str)
+            if i % tuples_per_insert == 0 and i > 0:
+                self.run_insert(table_name,column_names_str,rows)
+                del rows_str
+                rows = []
+        self.run_insert(table_name,column_names_str,rows)
+
+
+    def run_insert(self, table_name, column_names_str, rows):
+        if len(rows)>0:
+            rows_str = ','.join(rows)
+            if column_names_str != "":
+                sql = "INSERT INTO %s (%s) VALUES %s" % (table_name, column_names_str, rows_str)
+            else:
+                sql = "INSERT INTO %s VALUES %s" % (table_name, rows_str)
+
+            print("Executing insert statement %s"%sql)
+            self.query(sql)
+
+    def _convert_insert_value(self, value):
+        if isinstance(value,str):
+            return "'%s'" % value
+        elif isinstance(value,(int,float)):
+            return str(value)
+        elif isinstance(value,bool):
+            return "TRUE" if value else "FALSE"
+        elif isinstance(value,Decimal):
+            return str(value)
+        elif isinstance(value,(date,datetime)):
+            return "'%s'"%str(value)
+        elif value is None:
+            return "NULL";
+        else:
+            raise TypeError("Type %s of value %s is not supported" % (type(value), value))
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
 
