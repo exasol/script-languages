@@ -804,7 +804,7 @@ bool send_done(zmq::socket_t &socket)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("F-UDF.CL.L-41: Communication error: failed to parse data");
+            throw SWIGVM::exception("F-UDF.CL.L-127: Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
                 throw SWIGVM::exception(response.close().exception_message().c_str());
