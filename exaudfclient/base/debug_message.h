@@ -1,6 +1,11 @@
 #ifndef DEBUG_MESSAGE_H
 #define DEBUG_MESSAGE_H
 
+#define PRINT_EXCEPTION( os, error_code, ex ) \
+  (os) << (error_code) << ":" << " Caught Exception: " << (ex.what()) << std::endl
+
+#define PRINT_ERROR_MESSAGE( os, error_code, error_message ) \
+  (os) << (error_code) << ":" << error_message << std::endl
 
 #ifndef NDEBUG
 
