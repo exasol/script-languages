@@ -37,6 +37,7 @@ using namespace google::protobuf;
 __thread SWIGVM_params_t* SWIGVMContainers::SWIGVM_params; // this is not used in the file, but defined to satisfy the "extern" requirement from exaudflib.h
 #endif
 
+
 static SWIGVM_params_t * SWIGVM_params_ref = nullptr;
 
 
@@ -96,11 +97,8 @@ static void external_process_check()
     if (remote_client) return;
     if (::access(socket_name_file, F_OK) != 0) {
         ::sleep(1); // give me a chance to die with my parent process
-        cerr << "exaudfclient aborting ... cannot access socket file " << socket_name_str+6 << "." << endl;
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM aborting with name '" << socket_name_str
-             << "' (" << ::getppid() << ',' << ::getpid() << ')' << endl;
-#endif
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-1","exaudfclient aborting ... cannot access socket file " << socket_name_str+6 << ".");
+        DBG_STREAM_MSG(cerr,"### SWIGVM aborting with name '" << socket_name_str << "' (" << ::getppid() << ',' << ::getpid() << ')');
         ::abort();
     }
 }
@@ -119,11 +117,8 @@ void check_parent_pid(){
     // will be adopted by another process
     if(first_ppid!=new_ppid){ 
         ::sleep(1); // give me a chance to die with my parent process
-        cerr << "exaudfclient aborting " << socket_name_str << " ... current pid_sum " << new_ppid << " different to first_pid_sum " << first_ppid << "." << endl;
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "### SWIGVM aborting with name '" << socket_name_str
-            << "' (" << ::getppid() << ',' << ::getpid() << ')' << endl;
-#endif
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-2","exaudfclient aborting " << socket_name_str << " ... current parent pid " << new_ppid << " different to first parent pid " << first_ppid << "." );
+        DBG_STREAM_MSG(cerr,"### SWIGVM aborting with name '" << socket_name_str << "' (" << ::getppid() << ',' << ::getpid() << ')');
         ::unlink(socket_name_file);
         ::abort();
     }
@@ -194,6 +189,77 @@ void stop_all(zmq::socket_t& socket){
 
 mutex zmq_socket_mutex;
 static bool use_zmq_socket_locks = false;
+
+string convert_message_type_to_string(int message_type){
+  switch (message_type)
+  {
+      case 0:
+          return "MT_UNKNOWN";
+      case 1:
+          return "MT_CLIENT";
+      case 2:
+          return "MT_INFO";
+      case 3:
+          return "MT_META";
+      case 4:
+          return "MT_CLOSE";
+      case 5:
+          return "MT_IMPORT";
+      case 6:
+          return "MT_NEXT";
+      case 7:
+          return "MT_RESET";
+      case 8:
+          return "MT_EMIT";
+      case 9:
+          return "MT_RUN";
+      case 10:
+          return "MT_DONE";
+      case 11:
+          return "MT_CLEANUP";
+      case 12:
+          return "MT_FINISHED";
+      case 13:
+          return "MT_PING_PONG";
+      case 14:
+          return "MT_TRY_AGAIN";
+      case 15:
+          return "MT_CALL";
+      case 16:
+          return "MT_RETURN";
+      case 17:
+          return "MT_UNDEFINED_CALL";
+      default:
+          return "unknown: " + message_type;
+  }
+}
+
+string convert_type_to_string(int type){
+  switch (type)
+  {
+      case 0:
+          return "PB_UNSUPPORTED";
+      case 1:
+          return "PB_DOUBLE";
+      case 2:
+          return "PB_INT32";
+      case 3:
+          return "PB_INT64";
+      case 4:
+          return "PB_NUMERIC";
+      case 5:
+          return "PB_TIMESTAMP";
+      case 6:
+          return "PB_DATE";
+      case 7:
+          return "PB_STRING";
+      case 8:
+          return "PB_BOOLEAN";
+      default:
+          return "unknown: " + type;
+  }
+
+}
 
 void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
 {
@@ -288,7 +354,7 @@ bool send_init(zmq::socket_t &socket, const string client_name)
     exascript_client *req = request.mutable_client();
     req->set_client_name(client_name);
     if (!request.SerializeToString(&output_buffer)) {
-        exchandler.setException("Communication error: failed to serialize data");
+        exchandler.setException("F-UDF.CL.L-3: Communication error: failed to serialize data");
         return false;
     }
     zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
@@ -299,23 +365,21 @@ bool send_init(zmq::socket_t &socket, const string client_name)
     if (!socket_recv(socket, zmsgrecv, true))
         return false;
     if (!response.ParseFromArray(zmsgrecv.data(), zmsgrecv.size())) {
-        exchandler.setException("Failed to parse data");
+        exchandler.setException("F-UDF.CL.L-4: Failed to parse data");
         return false;
     }
 
     SWIGVM_params_ref->connection_id = response.connection_id();
-#ifdef SWIGVM_LOG_CLIENT
-    stringstream sb; sb << std::hex << SWIGVM_params_ref->connection_id;
-    cerr << "### SWIGVM connected with id " << sb.str() << endl;
-#endif
+    DBG_STREAM_MSG(cerr,"### SWIGVM connected with id " << std::hex << SWIGVM_params_ref->connection_id);
     if (response.type() == MT_CLOSE) {
         if (response.close().has_exception_message())
             exchandler.setException(response.close().exception_message().c_str());
-        else exchandler.setException("Connection closed by server");
+        else exchandler.setException("F-UDF.CL.L-5: Connection closed by server");
         return false;
     }
     if (response.type() != MT_INFO) {
-        exchandler.setException("Wrong message type, should be MT_INFO");
+        exchandler.setException("F-UDF.CL.L-6: Wrong message type, should be MT_INFO got "+
+                                convert_message_type_to_string(response.type()));
         return false;
     }
     const exascript_info &rep = response.info();
@@ -343,42 +407,42 @@ bool send_init(zmq::socket_t &socket, const string client_name)
     d.rlim_cur = d.rlim_max = rep.maximal_memory_limit();
     if (setrlimit(RLIMIT_RSS, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-        cerr << "WARNING: Failed to set memory limit" << endl;
+        cerr << "W-UDF.CL.L-7: Failed to set memory limit" << endl;
 #else
-        throw SWIGVM::exception("Failed to set memory limit");
+        throw SWIGVM::exception("F-UDF.CL.L-8: Failed to set memory limit");
 #endif
     d.rlim_cur = d.rlim_max = 0;    // 0 for no core dumps, RLIM_INFINITY to enable coredumps of any size
     if (setrlimit(RLIMIT_CORE, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-        cerr << "WARNING: Failed to set core limit" << endl;
+        cerr << "W-UDF.CL.L-9: Failed to set core dump size limit" << endl;
 #else
-        throw SWIGVM::exception("Failed to set core limit");
+        throw SWIGVM::exception("F-UDF.CL.L-10: Failed to set core dump size limit");
 #endif
     /* d.rlim_cur = d.rlim_max = 65536; */
     getrlimit(RLIMIT_NOFILE,&d);
     if (d.rlim_max < 32768)
     {
         //#ifdef SWIGVM_LOG_CLIENT
-        cerr << "WARNING: Reducing RLIMIT_NOFILE below 32768" << endl;
+        cerr << "W-UDF.CL.L-11: Reducing RLIMIT_NOFILE below 32768" << endl;
         //#endif
     }
     d.rlim_cur = d.rlim_max = std::min(32768,(int)d.rlim_max);
     if (setrlimit(RLIMIT_NOFILE, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-        cerr << "WARNING: Failed to set nofile limit" << endl;
+        cerr << "W-UDF.CL.L-12: Failed to set nofile limit" << endl;
 #else
-        throw SWIGVM::exception("Failed to set nofile limit");
+        throw SWIGVM::exception("F-UDF.CL.L-13: Failed to set nofile limit");
 #endif
     d.rlim_cur = d.rlim_max = 32768;
     if (setrlimit(RLIMIT_NPROC, &d) != 0)
     {
-        cerr << "WARNING: Failed to set nproc limit to 32k trying 8k ..." << endl;
+        cerr << "W-UDF.CL.L-14: Failed to set nproc limit to 32k trying 8k ..." << endl;
         d.rlim_cur = d.rlim_max = 8192;
         if (setrlimit(RLIMIT_NPROC, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-            cerr << "WARNING: Failed to set nproc limit" << endl;
+            cerr << "W-UDF.CL.L-15: Failed to set nproc limit" << endl;
 #else
-            throw SWIGVM::exception("Failed to set nproc limit");
+            throw SWIGVM::exception("F-UDF.CL.L-16: Failed to set nproc limit");
 #endif
     }
 
@@ -387,7 +451,7 @@ bool send_init(zmq::socket_t &socket, const string client_name)
         request.set_type(MT_META);
         request.set_connection_id(SWIGVM_params_ref->connection_id);
         if (!request.SerializeToString(&output_buffer)) {
-            exchandler.setException("Communication error: failed to serialize data");
+            exchandler.setException("F-UDF.CL.L-17: Communication error: failed to serialize data");
             return false;
         }
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
@@ -397,17 +461,18 @@ bool send_init(zmq::socket_t &socket, const string client_name)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size())) {
-            exchandler.setException("Communication error: failed to parse data");
+            exchandler.setException("F-UDF.CL.L-18: Communication error: failed to parse data");
             return false;
         }
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
                 exchandler.setException(response.close().exception_message().c_str());
-            else exchandler.setException("Connection closed by server");
+            else exchandler.setException("F-UDF.CL.L-19: Connection closed by server");
             return false;
         }
         if (response.type() != MT_META) {
-            exchandler.setException("Wrong message type, should be META");
+            exchandler.setException("F-UDF.CL.L-20: Wrong message type, should be META, got "+
+                                    convert_message_type_to_string(response.type()));
             return false;
         }
         const exascript_metadata &rep = response.meta();
@@ -423,7 +488,7 @@ bool send_init(zmq::socket_t &socket, const string client_name)
             coltype.type_name = coldef.type_name();
             switch (coldef.type()) {
             case PB_UNSUPPORTED:
-                exchandler.setException("Unsupported column type found");
+                exchandler.setException("F-UDF.CL.L-21: Unsupported input column type found");
                 return false;
             case PB_DOUBLE:
                 coltype.type = DOUBLE;
@@ -457,7 +522,7 @@ bool send_init(zmq::socket_t &socket, const string client_name)
                 coltype.type = BOOLEAN;
                 break;
             default:
-                exchandler.setException("Unknown column type found");
+                exchandler.setException("F-UDF.CL.L-22: Unknown input column type found, got "+coldef.type());
                 return false;
             }
         }
@@ -470,7 +535,7 @@ bool send_init(zmq::socket_t &socket, const string client_name)
             coltype.type_name = coldef.type_name();
             switch (coldef.type()) {
             case PB_UNSUPPORTED:
-                exchandler.setException("Unsupported column type found");
+                exchandler.setException("F-UDF.CL.L-23: Unsupported output column type found");
                 return false;
             case PB_DOUBLE:
                 coltype.type = DOUBLE;
@@ -504,7 +569,7 @@ bool send_init(zmq::socket_t &socket, const string client_name)
                 coltype.type = BOOLEAN;
                 break;
             default:
-                exchandler.setException("Unknown column type found");
+                exchandler.setException("F-UDF.CL.L-24: Unknown output column type found, got "+coldef.type());
                 return false;
             }
         }
@@ -528,10 +593,13 @@ void send_close(zmq::socket_t &socket, const string &exmsg)
         zmq::message_t zmsg;
         socket_recv(socket, zmsg);
         response.Clear();
-        if(!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("Communication error: failed to parse data");
-        else if (response.type() != MT_FINISHED)
-            throw SWIGVM::exception("Wrong response type, should be finished");
+        if(!response.ParseFromArray(zmsg.data(), zmsg.size())){
+            throw SWIGVM::exception("F-UDF.CL.L-25: Communication error: failed to parse data");
+        }
+        else if (response.type() != MT_FINISHED){
+            throw SWIGVM::exception("F-UDF.CL.L-26: Wrong response type, should be MT_FINISHED, got "+
+                  convert_message_type_to_string(response.type()));
+        }
     }
 }
 
@@ -544,7 +612,7 @@ bool send_run(zmq::socket_t &socket)
         request.set_connection_id(SWIGVM_params_ref->connection_id);
         if (!request.SerializeToString(&output_buffer))
         {
-            throw SWIGVM::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("F-UDF.CL.L-27: Communication error: failed to serialize data");
         }
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
@@ -553,11 +621,11 @@ bool send_run(zmq::socket_t &socket)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("F-UDF.CL.L-28: Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
                 throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("Wrong response type, got empty close response");
+            throw SWIGVM::exception("F-UDF.CL.L-29: Wrong response type, got empty MT_CLOSE");
         } else if (response.type() == MT_CLEANUP) {
             return false;
         } else if (g_singleCallMode && response.type() == MT_CALL) {
@@ -575,7 +643,7 @@ bool send_run(zmq::socket_t &socket)
 
                 if (!sc.has_import_specification())
                 {
-                    throw SWIGVM::exception("internal error: SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC without import specification");
+                    throw SWIGVM::exception("F-UDF.CL.L-30: internal error SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC without import specification");
                 }
                 const import_specification_rep& is_proto = sc.import_specification();
                 g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification(is_proto.is_subselect());
@@ -608,7 +676,7 @@ bool send_run(zmq::socket_t &socket)
             {
                 if (!sc.has_export_specification())
                 {
-                    throw SWIGVM::exception("internal error: SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC without export specification");
+                    throw SWIGVM::exception("F-UDF.CL.L-31: internal error SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC without export specification");
                 }
                 const export_specification_rep& es_proto = sc.export_specification();
                 g_singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();
@@ -643,7 +711,7 @@ bool send_run(zmq::socket_t &socket)
             case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
                 if (!sc.has_json_arg())
                 {
-                    throw SWIGVM::exception("internal error: SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL without json arg");
+                    throw SWIGVM::exception("F-UDF.CL.L-32: internal error SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL without json arg");
                 }
                 const std::string json = sc.json_arg();
                 g_singleCall_StringArg = ExecutionGraph::StringDTO(json);
@@ -652,7 +720,8 @@ bool send_run(zmq::socket_t &socket)
 
             return true;
         } else if (response.type() != MT_RUN) {
-            throw SWIGVM::exception("Wrong response type, should be MT_RUN");
+            throw SWIGVM::exception("F-UDF.CL.L-33: Wrong response type, should be MT_RUN, got "+
+                                    convert_message_type_to_string(response.type()));
         }
     }
     return true;
@@ -669,7 +738,7 @@ bool send_return(zmq::socket_t &socket, const char* result)
         request.set_allocated_call_result(rr);
         request.set_connection_id(SWIGVM_params_ref->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("F-UDF.CL.L-34: Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } { /* receive return response */
@@ -677,15 +746,16 @@ bool send_return(zmq::socket_t &socket, const char* result)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("F-UDF.CL.L-35: Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
                 throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("Wrong response type, got empty close response");
+            throw SWIGVM::exception("F-UDF.CL.L-36: Wrong response type, got empty close response");
         } else if (response.type() == MT_CLEANUP) {
             return false;
         } else if (response.type() != MT_RETURN) {
-            throw SWIGVM::exception("Wrong response type, should be MT_RETURN");
+            throw SWIGVM::exception("F-UDF.CL.L-37: Wrong response type, should be MT_RETURN, got "+
+                                    convert_message_type_to_string(response.type()));
         }
     }
     return true;
@@ -701,7 +771,7 @@ void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
         request.set_allocated_undefined_call(uc);
         request.set_connection_id(SWIGVM_params_ref->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("F-UDF.CL.L-38: Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } { /* receive return response */
@@ -709,9 +779,10 @@ void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("F-UDF.CL.L-39: Communication error: failed to parse data");
         if (response.type() != MT_UNDEFINED_CALL) {
-            throw SWIGVM::exception("Wrong response type, should be MT_UNDEFINED_CALL");
+            throw SWIGVM::exception("F-UDF.CL.L-40: Wrong response type, should be MT_UNDEFINED_CALL, got "+
+                                    convert_message_type_to_string(response.type()));
         }
     }
 }
@@ -724,7 +795,7 @@ bool send_done(zmq::socket_t &socket)
         request.set_type(MT_DONE);
         request.set_connection_id(SWIGVM_params_ref->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("F-UDF.CL.L-41: Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } 
@@ -733,15 +804,16 @@ bool send_done(zmq::socket_t &socket)
         socket_recv(socket, zmsg);
         response.Clear();
         if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("F-UDF.CL.L-41: Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
                 throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("Wrong response type, got empty close response");
+            throw SWIGVM::exception("F-UDF.CL.L-42: Wrong response type, got empty close response");
         } else if (response.type() == MT_CLEANUP) {
             return false;
         } else if (response.type() != MT_DONE)
-            throw SWIGVM::exception("Wrong response type, should be MT_DONE");
+            throw SWIGVM::exception("F-UDF.CL.L-43: Wrong response type, should be MT_DONE, got "+
+                                    convert_message_type_to_string(response.type()));
     }
     return true;
 }
@@ -753,7 +825,7 @@ void send_finished(zmq::socket_t &socket)
         request.set_type(MT_FINISHED);
         request.set_connection_id(SWIGVM_params_ref->connection_id);
         if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("Communication error: failed to serialize data");
+            throw SWIGVM::exception("F-UDF.CL.L-44: Communication error: failed to serialize data");
         zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
         socket_send(socket, zmsg);
     } { /* receive done response */
@@ -761,13 +833,14 @@ void send_finished(zmq::socket_t &socket)
         socket_recv(socket, zmsg);
         response.Clear();
         if(!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("Communication error: failed to parse data");
+            throw SWIGVM::exception("F-UDF.CL.L-45: Communication error: failed to parse data");
         if (response.type() == MT_CLOSE) {
             if (response.close().has_exception_message())
                 throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("Wrong response type, got empty close response");
+            throw SWIGVM::exception("F-UDF.CL.L-46: Wrong response type, got empty MT_CLOSE");
         } else if (response.type() != MT_FINISHED)
-            throw SWIGVM::exception("Wrong response type, should be finished");
+            throw SWIGVM::exception("F-UDF.CL.L-47: Wrong response type, should be MT_FINISHED, got"+
+                                    convert_message_type_to_string(response.type()));
     }
 }
 
@@ -840,7 +913,7 @@ public:
         req->set_script_name(connection_name);
         req->set_kind(PB_IMPORT_CONNECTION_INFORMATION);
         if (!request.SerializeToString(&m_output_buffer)) {
-            m_exch->setException("Communication error: failed to serialize data");
+            m_exch->setException("F-UDF.CL.L-48: Communication error: failed to serialize data");
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         zmq::message_t zmsg_req((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
@@ -849,11 +922,12 @@ public:
         socket_recv(m_socket, zmsg_rep);
         exascript_response response;
         if (!response.ParseFromArray(zmsg_rep.data(), zmsg_rep.size())) {
-            m_exch->setException("Communication error: failed to parse data");
+            m_exch->setException("F-UDF.CL.L-49: Communication error: failed to parse data");
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         if (response.type() != MT_IMPORT) {
-            m_exch->setException("Internal error: wrong message type");
+            m_exch->setException("F-UDF.CL.L-50: Internal error: wrong message type, got "+
+                                  convert_message_type_to_string(response.type()));
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         const exascript_import_rep &rep = response.import();
@@ -862,7 +936,7 @@ public:
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         if (!rep.has_connection_information()) {
-            m_exch->setException("Internal error: No connection information returned");
+            m_exch->setException("F-UDF.CL.L-51: Internal error: No connection information returned");
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         connection_information_rep ci = rep.connection_information();
@@ -877,7 +951,7 @@ public:
         req->set_script_name(name);
         req->set_kind(PB_IMPORT_SCRIPT_CODE);
         if (!request.SerializeToString(&m_output_buffer)) {
-            m_exch->setException("Communication error: failed to serialize data");
+            m_exch->setException("F-UDF.CL.L-52: Communication error: failed to serialize data");
             return NULL;
         }
         zmq::message_t zmsg_req((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
@@ -886,11 +960,12 @@ public:
         socket_recv(m_socket, zmsg_rep);
         exascript_response response;
         if (!response.ParseFromArray(zmsg_rep.data(), zmsg_rep.size())) {
-            m_exch->setException("Communication error: failed to parse data");
+            m_exch->setException("F-UDF.CL.L-53: Communication error: failed to parse data");
             return NULL;
         }
         if (response.type() != MT_IMPORT) {
-            m_exch->setException("Internal error: wrong message type");
+            m_exch->setException("F-UDF.CL.L-54: Internal error: wrong message type, should MT_IMPORT, got "+
+                                  convert_message_type_to_string(response.type()));
             return NULL;
         }
         const exascript_import_rep &rep = response.import();
@@ -899,7 +974,7 @@ public:
             return NULL;
         }
         if (!rep.has_source_code()) {
-            m_exch->setException("Internal error: No source code returned");
+            m_exch->setException("F-UDF.CL.L-55: Internal error: No source code returned");
             return NULL;
         }
         m_temp_code = rep.source_code();
@@ -1047,7 +1122,7 @@ private:
         null_index = m_rows_completed * m_column_count;
         if (m_next_response.next().table().data_nulls_size() <= (null_index + (ssize_t)m_column_count - 1)) {
             std::stringstream sb;
-            sb << "Internal error: not enough nulls in packet: wanted index " << (null_index + m_column_count - 1)
+            sb << "F-UDF.CL.L-56: Internal error: not enough nulls in packet: wanted index " << (null_index + m_column_count - 1)
                << " but have " << m_next_response.next().table().data_nulls_size()
                << " elements";
             m_exch->setException(sb.str().c_str());
@@ -1059,16 +1134,16 @@ private:
             if (m_next_response.next().table().data_nulls(null_index))
                 continue;
             switch (it->type) {
-            case UNSUPPORTED: m_exch->setException("Unsupported data type found"); return;
-            case DOUBLE: m_col_offsets[current_column] = m_values_per_row.doubles++; break;
-            case INT32: m_col_offsets[current_column] = m_values_per_row.int32s++; break;
-            case INT64: m_col_offsets[current_column] = m_values_per_row.int64s++; break;
-            case NUMERIC:
-            case TIMESTAMP:
-            case DATE:
-            case STRING: m_col_offsets[current_column] = m_values_per_row.strings++; break;
-            case BOOLEAN: m_col_offsets[current_column] = m_values_per_row.bools++; break;
-            default: m_exch->setException("Unknown data type found"); return;
+              case UNSUPPORTED: m_exch->setException("F-UDF.CL.L-57: Unsupported data type found"); return;
+              case DOUBLE: m_col_offsets[current_column] = m_values_per_row.doubles++; break;
+              case INT32: m_col_offsets[current_column] = m_values_per_row.int32s++; break;
+              case INT64: m_col_offsets[current_column] = m_values_per_row.int64s++; break;
+              case NUMERIC:
+              case TIMESTAMP:
+              case DATE:
+              case STRING: m_col_offsets[current_column] = m_values_per_row.strings++; break;
+              case BOOLEAN: m_col_offsets[current_column] = m_values_per_row.bools++; break;
+              default: m_exch->setException("F-UDF.CL.L-58: Unknown data type found, got "+it->type); return;
             }
         }
     }
@@ -1081,7 +1156,7 @@ private:
             if (reset) m_request.set_type(MT_RESET);
             else m_request.set_type(MT_NEXT);
             if(!m_request.SerializeToString(&m_output_buffer)) {
-                m_exch->setException("Communication error: failed to serialize data");
+                m_exch->setException("F-UDF.CL.L-59: Communication error: failed to serialize data");
                 return;
             }
             zmq::message_t zmsg((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
@@ -1091,11 +1166,14 @@ private:
             socket_recv(m_socket, zmsg);
             m_next_response.Clear();
             if (!m_next_response.ParseFromArray(zmsg.data(), zmsg.size())) {
-                m_exch->setException("Communication error: failed to parse data");
+                m_exch->setException("F-UDF.CL.L-60: Communication error: failed to parse data");
                 return;
             }
             if (m_next_response.connection_id() != m_connection_id) {
-                m_exch->setException("Communication error: wrong connection id");
+                std::stringstream sb;
+                sb << "F-UDF.CL.L-61: Communication error: wrong connection id, expected "
+                   << m_connection_id << " got " << m_next_response.connection_id(); 
+                m_exch->setException(sb.str());
                 return;
             }
             if (m_next_response.type() == MT_DONE) {
@@ -1106,7 +1184,7 @@ private:
                 if (!rep.has_exception_message()) {
                     if (m_rows_completed == 0) {
                         return;
-                    } else m_exch->setException("Unknown error occured");
+                    } else m_exch->setException("F-UDF.CL.L-62: Unknown error occured");
                 } else {
                     m_exch->setException(rep.exception_message().c_str());
                 }
@@ -1115,7 +1193,8 @@ private:
             if ((reset && (m_next_response.type() != MT_RESET)) ||
                     (!reset && (m_next_response.type() != MT_NEXT)))
             {
-                m_exch->setException("Communication error: wrong message type");
+                m_exch->setException("F-UDF.CL.L-63: Communication error: wrong message type, got "+
+                                    convert_message_type_to_string(m_next_response.type()));
                 return;
             }
             m_rows_received = m_next_response.next().table().rows();
@@ -1126,7 +1205,7 @@ private:
     inline ssize_t check_index(ssize_t index, ssize_t available, const char *tp, const char *otype, const char *ts) {
         if (available > index) return index;
         std::stringstream sb;
-        sb << "Internal error: not enough " << tp << otype << ts << " in packet: wanted index "
+        sb << "F-UDF.CL.L-64: Internal error: not enough " << tp << otype << ts << " in packet: wanted index "
            << index << " but have " << available << " elements (on "
            << m_rows_received << '/' << m_rows_completed << " of received/completed rows";
         m_exch->setException(sb.str().c_str());
@@ -1174,7 +1253,7 @@ public:
     }
     inline bool next() {
         if (m_rows_received == 0) {
-            m_exch->setException("Iteration finished");
+            m_exch->setException("E-UDF.CL.L-65: Iteration finished");
             return false;
         }
         ++m_rows_completed;
@@ -1210,9 +1289,14 @@ public:
         return m_rows_in_group;
     }
     inline double getDouble(unsigned int col) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return 0.0; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-66: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return 0.0; 
+        }
         if (m_types[col].type != DOUBLE) {
-            m_exch->setException("Wrong column type");
+            m_exch->setException("E-UDF.CL.L-67: Wrong input column type, expected DOUBLE, got "+
+                                convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0.0;
         }
@@ -1223,9 +1307,14 @@ public:
         return m_next_response.next().table().data_double(index);
     }
     inline const char *getString(unsigned int col, size_t *length = NULL) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return ""; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-68: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return ""; 
+        }
         if (m_types[col].type != STRING) {
-            m_exch->setException("Wrong column type");
+            m_exch->setException("E-UDF.CL.L-69: Wrong input column type, expected STRING, got "+
+                                convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return "";
         }
@@ -1236,9 +1325,14 @@ public:
         return s.c_str();
     }
     inline int32_t getInt32(unsigned int col) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return 0; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-70: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return 0; 
+        }
         if (m_types[col].type != INT32) {
-            m_exch->setException("Wrong column type");
+            m_exch->setException("E-UDF.CL.L-71: Wrong input column type, expected INT32, got "+
+                                convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0;
         }
@@ -1247,9 +1341,14 @@ public:
         return m_next_response.next().table().data_int32(index);
     }
     inline int64_t getInt64(unsigned int col) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return 0LL; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-72: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return 0LL; 
+        }
         if (m_types[col].type != INT64) {
-            m_exch->setException("Wrong column type");
+            m_exch->setException("E-UDF.CL.L-73: Wrong input column type, expected INT64, got "+
+                                convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0LL;
         }
@@ -1258,29 +1357,65 @@ public:
         return m_next_response.next().table().data_int64(index);
     }
     inline const char *getNumeric(unsigned int col) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return ""; }
-        if (m_types[col].type != NUMERIC) { m_exch->setException("Wrong column type"); m_was_null = true; return ""; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-74: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return ""; 
+        }
+        if (m_types[col].type != NUMERIC) { 
+          m_exch->setException("E-UDF.CL.L-75: Wrong input column type, expected NUMERIC, got "+
+                              convert_type_to_string(m_types[col].type));
+          m_was_null = true; 
+          return ""; 
+        }
         ssize_t index = check_value(col, m_next_response.next().table().data_string_size(), "string");
         if (m_was_null) return "0";
         return m_next_response.next().table().data_string(index).c_str();
     }
     inline const char *getTimestamp(unsigned int col) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return ""; }
-        if (m_types[col].type != TIMESTAMP) { m_exch->setException("Wrong column type"); m_was_null = true; return ""; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-76: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return ""; 
+        }
+        if (m_types[col].type != TIMESTAMP) { 
+          m_exch->setException("E-UDF.CL.L-77: Wrong input column type, expected TIMESTAMP, got "+
+                              convert_type_to_string(m_types[col].type));
+          m_was_null = true; 
+          return ""; 
+        }
         ssize_t index = check_value(col, m_next_response.next().table().data_string_size(), "string");
         if (m_was_null) return "1970-01-01 00:00:00.00 0000";
         return m_next_response.next().table().data_string(index).c_str();
     }
     inline const char *getDate(unsigned int col) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return ""; }
-        if (m_types[col].type != DATE) { m_exch->setException("Wrong column type"); m_was_null = true; return ""; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-78: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return ""; 
+        }
+        if (m_types[col].type != DATE) { 
+          m_exch->setException("E-UDF.CL.L-79: Wrong input column type, expected DATE, got "+
+                              convert_type_to_string(m_types[col].type));
+          m_was_null = true; 
+          return ""; 
+        }
         ssize_t index = check_value(col, m_next_response.next().table().data_string_size(), "string");
         if (m_was_null) return "1970-01-01";
         return m_next_response.next().table().data_string(index).c_str();
     }
     inline bool getBoolean(unsigned int col) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); m_was_null = true; return ""; }
-        if (m_types[col].type != BOOLEAN) { m_exch->setException("Wrong column type"); m_was_null = true; return ""; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-80: Input column "+std::to_string(col)+" does not exist"); 
+          m_was_null = true; 
+          return ""; 
+        }
+        if (m_types[col].type != BOOLEAN) { 
+          m_exch->setException("E-UDF.CL.L-81: Wrong input column type, expected BOOLEAN, got "+
+                              convert_type_to_string(m_types[col].type));
+          m_was_null = true; 
+          return ""; 
+        }
         ssize_t index = check_value(col, m_next_response.next().table().data_bool_size(), "bool");
         if (m_was_null) return false;
         return m_next_response.next().table().data_bool(index);
@@ -1335,7 +1470,7 @@ public:
             { m_emit_request.set_type(MT_EMIT);
                 m_emit_request.set_connection_id(m_connection_id);
                 if (!m_emit_request.SerializeToString(&m_output_buffer)) {
-                    m_exch->setException("Communication error: failed to serialize data");
+                    m_exch->setException("F-UDF.CL.L-82: Communication error: failed to serialize data");
                     return;
                 }
                 zmq::message_t zmsg((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
@@ -1347,24 +1482,26 @@ public:
                 socket_recv(m_socket, zmsg);
                 exascript_response response;
                 if (!response.ParseFromArray(zmsg.data(), zmsg.size())) {
-                    m_exch->setException("Communication error: failed to parse data");
+                    m_exch->setException("F-UDF.CL.L-83: Communication error: failed to parse data");
                     return;
                 }
                 if (response.connection_id() != m_connection_id) {
                     std::stringstream sb;
-                    sb << "Received wrong connection id " << response.connection_id()
+                    sb << "F-UDF.CL.L-84: Received wrong connection id " << response.connection_id()
                        << ", should be " << m_connection_id;
                     m_exch->setException(sb.str().c_str());
                     return;
                 }
                 if (response.type() == MT_CLOSE) {
                     if (!response.close().has_exception_message())
-                        m_exch->setException("Unknown error occured");
-                    else m_exch->setException(response.close().exception_message().c_str());
+                        m_exch->setException("F-UDF.CL.L-85: Unknown error occured");
+                    else 
+                      m_exch->setException(response.close().exception_message().c_str());
                     return;
                 }
                 if (response.type() != MT_EMIT) {
-                    m_exch->setException("Wrong response type");
+                    m_exch->setException("F-UDF.CL.L-86: Wrong response type, got "+
+                                        convert_message_type_to_string(response.type()));
                     return;
                 }
             }
@@ -1380,11 +1517,11 @@ public:
             if (null_data) continue;
             switch (m_types[col].type) {
             case UNSUPPORTED:
-                m_exch->setException("Unsupported data type found");
+                m_exch->setException("F-UDF.CL.L-87: Unsupported data type found");
                 return false;
             case DOUBLE:
                 if (m_rowdata.double_data.find(col) == m_rowdata.double_data.end()) {
-                    m_exch->setException("Not enough double columns emited");
+                    m_exch->setException("F-UDF.CL.L-88: Not enough double columns emited");
                     return false;
                 }
                 m_message_size += sizeof(double);
@@ -1392,7 +1529,7 @@ public:
                 break;
             case INT32:
                 if (m_rowdata.int32_data.find(col) == m_rowdata.int32_data.end()) {
-                    m_exch->setException("Not enough int32 columns emited");
+                    m_exch->setException("F-UDF.CL.L-89: Not enough int32 columns emited");
                     return false;
                 }
                 m_message_size += sizeof(int32_t);
@@ -1400,7 +1537,7 @@ public:
                 break;
             case INT64:
                 if (m_rowdata.int64_data.find(col) == m_rowdata.int64_data.end()) {
-                    m_exch->setException("Not enough int64 columns emited");
+                    m_exch->setException("F-UDF.CL.L-90: Not enough int64 columns emited");
                     return false;
                 }
                 m_message_size += sizeof(int64_t);
@@ -1411,7 +1548,7 @@ public:
             case DATE:
             case STRING:
                 if (m_rowdata.string_data.find(col) == m_rowdata.string_data.end()) {
-                    m_exch->setException("Not enough string columns emited");
+                    m_exch->setException("F-UDF.CL.L-91: Not enough string columns emited");
                     return false;
                 }
                 m_message_size += sizeof(int32_t) + m_rowdata.string_data[col].length();
@@ -1419,14 +1556,14 @@ public:
                 break;
             case BOOLEAN:
                 if (m_rowdata.bool_data.find(col) == m_rowdata.bool_data.end()) {
-                    m_exch->setException("Not enough boolean columns emited");
+                    m_exch->setException("F-UDF.CL.L-92: Not enough boolean columns emited");
                     return false;
                 }
                 m_message_size += 1;
                 table->add_data_bool(m_rowdata.bool_data[col]);
                 break;
             default:
-                m_exch->setException("Unknown data type found");
+                m_exch->setException("F-UDF.CL.L-93: Unknown data type found, got "+convert_type_to_string(m_types[col].type));
                 return false;
             }
         }
@@ -1443,50 +1580,106 @@ public:
         return true;
     }
     inline void setDouble(unsigned int col, const double v) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != DOUBLE) { m_exch->setException("Wrong column type (not a double)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-94: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != DOUBLE) { 
+          m_exch->setException("E-UDF.CL.L-95: Wrong output column type, expected DOUBLE, got "+
+                              convert_type_to_string(m_types[col].type));
+          return;
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.double_data[col] = v;
     }
     inline void setString(unsigned int col, const char *v, size_t l) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != STRING) { m_exch->setException("Wrong column type (not a string)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-96: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != STRING) { 
+          m_exch->setException("E-UDF.CL.L-97: Wrong output column type, expected STRING, got "+
+                              convert_type_to_string(m_types[col].type));
+          return; 
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.string_data[col] = v;
     }
     inline void setInt32(unsigned int col, const int32_t v) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != INT32) { m_exch->setException("Wrong column type (not Int32)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-98: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != INT32) { 
+          m_exch->setException("E-UDF.CL.L-99: Wrong output column type, expected INT32, got "+
+                              convert_type_to_string(m_types[col].type));
+          return; 
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.int32_data[col] = v;
     }
     inline void setInt64(unsigned int col, const int64_t v) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != INT64) { m_exch->setException("Wrong column type (not Int64)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-100: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != INT64) { 
+          m_exch->setException("E-UDF.CL.L-101: Wrong output column type, expected INT64, got "+
+                              convert_type_to_string(m_types[col].type));
+          return; 
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.int64_data[col] = v;
     }
     inline void setNumeric(unsigned int col, const char *v) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != NUMERIC) { m_exch->setException("Wrong column type (not Numeric)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-102: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != NUMERIC) { 
+          m_exch->setException("E-UDF.CL.L-103: Wrong output column type, expected NUMERIC, got "+
+                              convert_type_to_string(m_types[col].type));
+          return; 
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.string_data[col] = v;
     }
     inline void setTimestamp(unsigned int col, const char *v) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != TIMESTAMP) { m_exch->setException("Wrong column type (not Timestamp)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-104: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != TIMESTAMP) { 
+          m_exch->setException("E-UDF.CL.L-105: Wrong output column type, expected TIMESTAMP, got "+
+                              convert_type_to_string(m_types[col].type));
+          return; 
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.string_data[col] = v;
     }
     inline void setDate(unsigned int col, const char *v) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != DATE) { m_exch->setException("Wrong column type (not Date)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-106: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != DATE) { 
+          m_exch->setException("E-UDF.CL.L-107: Wrong output column type, expected DATE, got "+
+                              convert_type_to_string(m_types[col].type));
+          return; 
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.string_data[col] = v;
     }
     inline void setBoolean(unsigned int col, const bool v) {
-        if (col >= m_types.size()) { m_exch->setException("Column does not exist"); return; }
-        if (m_types[col].type != BOOLEAN) { m_exch->setException("Wrong column type (not Boolean)"); return; }
+        if (col >= m_types.size()) { 
+          m_exch->setException("E-UDF.CL.L-108: Output column does "+std::to_string(col)+" not exist"); 
+          return; 
+        }
+        if (m_types[col].type != BOOLEAN) { 
+          m_exch->setException("E-UDF.CL.L-109: Wrong output column type, expected BOOLEAN, got "+
+                              convert_type_to_string(m_types[col].type));
+          return; 
+        }
         m_rowdata.null_data[col] = false;
         m_rowdata.bool_data[col] = v;
     }
@@ -1501,37 +1694,37 @@ unsigned int handle_error(zmq::socket_t& socket, std::string socket_name, SWIGVM
         if(vm!=nullptr && shutdown_vm){
             vm->shutdown();
             if (vm->exception_msg.size()>0) {
-                DBG_STREAM_MSG(cerr,"### Caught error in vm->shutdown '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << vm->exception_msg);
-                msg ="Caught exception\n\n"+msg+"\n\n and caught another exception during cleanup\n\n"+vm->exception_msg;
+                PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-110","### Caught error in vm->shutdown '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << vm->exception_msg);
+                msg ="F-UDF.CL.L-111: Caught exception\n\n"+msg+"\n\n and caught another exception during cleanup\n\n"+vm->exception_msg;
             }
         } 
         delete_vm(vm);
     }  catch (SWIGVM::exception &err) {
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-112","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(std::exception& err){
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-113","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(...){
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-114","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
     }
     try{
         send_close(socket, msg);
         ::sleep(1); // give me a chance to die with my parent process
     }  catch (SWIGVM::exception &err) {
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-115","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(std::exception& err){
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-116","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(...){
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-117","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ")");
     }
 
     try{
         stop_all(socket);
     }  catch (SWIGVM::exception &err) {
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-118","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(std::exception& err){
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-119","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(...){
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-120","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "):");
     }
     return 1;
 }
@@ -1584,12 +1777,12 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
                || (strcmp(argv[2], "lang=streaming") == 0)
                || (strcmp(argv[2], "lang=benchmark") == 0)) )
         {
-            cerr << "Remote VM type '" << argv[2] << "' not supported." << endl;
+            PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-121","Remote VM type '" << argv[2] << "' not supported.");
             return 2;
         }
 #endif
     } else {
-        cerr << "socket name '" << socket_name << "' is invalid." << endl;
+        PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-122", "socket name '" << socket_name << "' is invalid." );
         abort();
     }
 
@@ -1670,7 +1863,7 @@ reinit:
     try {
         vm = vmMaker();
         if (vm == nullptr) {
-            return handle_error(socket, socket_name, vm, "Unknown or unsupported VM type", false);
+            return handle_error(socket, socket_name, vm, "F-UDF.CL.L-123: Unknown or unsupported VM type", false);
         }
         if (vm->exception_msg.size()>0) {
             return handle_error(socket, socket_name, vm, vm->exception_msg.c_str(), false);
@@ -1753,13 +1946,13 @@ reinit:
         send_finished(socket);
     }  catch (SWIGVM::exception &err) {
         DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
-        return handle_error(socket, socket_name, vm, err.what(),shutdown_vm_in_case_of_error);
+        return handle_error(socket, socket_name, vm, "F-UDF.CL.L-124: "+std::string(err.what()),shutdown_vm_in_case_of_error);
     } catch (std::exception &err) {
         DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
-        return handle_error(socket, socket_name, vm, err.what(),shutdown_vm_in_case_of_error);
+        return handle_error(socket, socket_name, vm, "F-UDF.CL.L-125: "+std::string(err.what()),shutdown_vm_in_case_of_error);
     } catch (...) {
         DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
-        return handle_error(socket, socket_name, vm, "Internal/Unknown error",shutdown_vm_in_case_of_error);
+        return handle_error(socket, socket_name, vm, "F-UDF.CL.L-126: Internal/Unknown error",shutdown_vm_in_case_of_error);
     }
 
     DBG_STREAM_MSG(cerr,"### SWIGVM finishing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');

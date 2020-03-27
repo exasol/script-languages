@@ -73,6 +73,9 @@ struct SWIGVMExceptionHandler
     void setException(const char* msg) {
         exmsg = msg; exthrowed = true;
     }
+    void setException(const string& msg) {
+        exmsg = msg; exthrowed = true;
+    }
     std::string exmsg;
     bool exthrowed;
 };
@@ -424,6 +427,7 @@ class SWIGVM {
     public:
         struct exception : public std::exception {
             exception(const char *reason): m_reason(reason) { }
+            exception(const std::string& reason): m_reason(reason) { }
             virtual ~exception() throw() { }
             const char* what() const throw() { return m_reason.c_str(); }
             private:
