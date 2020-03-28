@@ -461,7 +461,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
 
 //        Py_XINCREF(argObject);
 
-        PyObject* funcToCall = PyDict_GetItemString(globals, func); check("F-UDF.CL.PY-62");
+        PyObject* funcToCall = PyDict_GetItemString(globals, func); check("F-UDF.CL.PY-120");
         if (funcToCall == NULL) {
             calledUndefinedSingleCall = func;
             return strdup("<error>");

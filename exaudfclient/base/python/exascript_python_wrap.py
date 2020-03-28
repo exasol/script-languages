@@ -337,8 +337,8 @@ def __pythonvm_wrapped_singleCall(fn,arg=None):
             except BaseException as err:
                 import traceback
                 backtrace = traceback.format_exc()
-                print("F-UDF.CL.PY-31: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
-                err.args = ("F-UDF.CL.PY-32: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
+                print("F-UDF.CL.PY-121: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
+                err.args = ("F-UDF.CL.PY-115: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
                 raise err
         elif "generate_sql_for_export_spec" in globals() and fn == generate_sql_for_export_spec:
             exp_spec = __ExportSpecification(arg)
@@ -349,8 +349,8 @@ def __pythonvm_wrapped_singleCall(fn,arg=None):
             except BaseException as err:
                 import traceback
                 backtrace = traceback.format_exc()
-                print("F-UDF.CL.PY-31: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
-                err.args = ("F-UDF.CL.PY-32: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
+                print("F-UDF.CL.PY-124: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
+                err.args = ("F-UDF.CL.PY-125: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
                 raise err
         else:
             raise RuntimeError("F-UDF.CL.PY-33: Unknown single call function: "+str(fn))
@@ -360,6 +360,6 @@ def __pythonvm_wrapped_singleCall(fn,arg=None):
         except BaseException as err:
             import traceback
             backtrace = traceback.format_exc()
-            print("F-UDF.CL.PY-31: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
-            err.args = ("F-UDF.CL.PY-32: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
+            print("F-UDF.CL.PY-126: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
+            err.args = ("F-UDF.CL.PY-127: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
             raise err
