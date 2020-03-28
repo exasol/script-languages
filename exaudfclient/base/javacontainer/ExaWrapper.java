@@ -1,6 +1,8 @@
 package com.exasol;
 
 import java.io.IOError;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.MalformedParameterizedTypeException;
 import java.lang.reflect.Method;
@@ -228,6 +230,9 @@ class ExaWrapper {
             else
                 exc = cause;
         }
-        return exc;
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        exc.printStackTrace(pw);
+        return new Exception(sw.toString());
     }
 }

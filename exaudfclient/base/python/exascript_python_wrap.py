@@ -88,26 +88,26 @@ class exaiter(object):
         self.__data = data
     def __getitem__(self, key):
         if self.__finished:
-            raise RuntimeError("Iteration finished")
+            raise RuntimeError("E-UDF.CL.PY-1: Iteration finished")
         if key not in self.__data:
             key = unicode(key)
             if key not in self.__data:
-                raise RuntimeError(u"Column with name '%s' does not exist" % key)
+                raise RuntimeError(u"E-UDF.CL.PY-2: Column with name '%s' does not exist" % key)
         ret, null = self.__data[key]()
         msg = self.__inp.checkException()
-        if msg: raise RuntimeError(msg)
+        if msg: raise RuntimeError("F-UDF.CL.PY-5: "+msg)
         if null: return None
         return ret
     def __getattr__(self, key):
         if self.__finished:
-            raise RuntimeError("Iteration finished")
+            raise RuntimeError("E-UDF.CL.PY-3: Iteration finished")
         if key not in self.__data:
             key = unicode(key)
             if key not in self.__data:
-                raise RuntimeError(u"Iterator has no object with name '%s'" % key)
+                raise RuntimeError(u"E-UDF.CL.PY-4: Iterator has no object with name '%s'" % key)
         ret, null = self.__data[key]()
         msg = self.__inp.checkException()
-        if msg: raise RuntimeError(msg)
+        if msg: raise RuntimeError("F-UDF.CL.PY-6: "+msg)
         if null: return None
         return ret
     def emit(self, *output):
@@ -125,16 +125,16 @@ class exaiter(object):
             import pandas as pd
             v = output[0]
             if v.shape[0] == 0:
-                raise RuntimeError("emit DataFrame is empty")
+                raise RuntimeError("E-UDF.CL.PY-7: emit DataFrame is empty")
             if v.shape[1] != len(self.__outcoltypes):
                 exp_num_out = len(self.__outcoltypes)
-                raise TypeError("emit() takes exactly %d argument%s (%d given)" % (exp_num_out, 's' if exp_num_out > 1 else '', v.shape[1]))
+                raise TypeError("E-UDF.CL.PY-8: emit() takes exactly %d argument%s (%d given)" % (exp_num_out, 's' if exp_num_out > 1 else '', v.shape[1]))
             pyextdataframe.emit_dataframe(self, v)
             return
         if len(output) != len(self.__outcoltypes):
             if len(self.__outcoltypes) > 1:
-                raise TypeError("emit() takes exactly %d arguments (%d given)" % (len(self.__outcoltypes), len(output)))
-            else: raise TypeError("emit() takes exactly %d argument (%d given)" % (len(self.__outcoltypes), len(output)))
+                raise TypeError("E-UDF.CL.PY-9: emit() takes exactly %d arguments (%d given)" % (len(self.__outcoltypes), len(output)))
+            else: raise TypeError("E-UDF.CL.PY-10: emit() takes exactly %d argument (%d given)" % (len(self.__outcoltypes), len(output)))
         for v in output:
             if v == None: self.__out.setNull(k)
             elif type(v) in (int, long):
@@ -143,7 +143,7 @@ class exaiter(object):
                 elif self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, str(int(v)))
                 elif self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 else:
-                    raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
+                    raise RuntimeError(u"E-UDF.CL.PY-11: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
             elif type(v) == float:
                 if self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
@@ -151,11 +151,11 @@ class exaiter(object):
                 elif self.__outcoltypes[k] == INT64: self.__out.setInt64(k, int(v))
                 elif self.__outcoltypes[k] == NUMERIC: self.__out.setInt64(k, str(v))
                 else:
-                    raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
+                    raise RuntimeError(u"E-UDF.CL.PY-12: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
             elif type(v) == bool:
                 if self.__outcoltypes[k] != BOOLEAN:
-                    raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
+                    raise RuntimeError(u"E-UDF.CL.PY-13: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setBoolean(k, bool(v))
             elif type(v) in (str, unicode):
@@ -165,7 +165,7 @@ class exaiter(object):
                 v = encodeUTF8(v)
                 vl = len(v)
                 if self.__outcoltypes[k] != STRING:
-                    raise RuntimeError(u"emit column '%s' is of type %s but data given have type %s" \
+                    raise RuntimeError(u"E-UDF.CL.PY-14: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setString(k, v, vl)
             elif type(v) == decimal.Decimal:
@@ -174,26 +174,26 @@ class exaiter(object):
                 elif self.__outcoltypes[k] == INT64: self.__out.setInt64(k, int(v))
                 elif self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 else:
-                    raise RuntimeError("emit column '%s' is of type %s but data given have type %s" \
+                    raise RuntimeError("E-UDF.CL.PY-15: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
             elif type(v) == datetime.date:
                 if self.__outcoltypes[k] != DATE:
-                    raise RuntimeError("emit column '%s' is of type %s but data given have type %s" \
+                    raise RuntimeError("E-UDF.CL.PY-16: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setDate(k, v.isoformat())
             elif type(v) == datetime.datetime:
                 if self.__outcoltypes[k] != TIMESTAMP:
-                    raise RuntimeError("emit column '%s' is of type %s but data given have type %s" \
+                    raise RuntimeError("E-UDF.CL.PY-17: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setTimestamp(k, v.isoformat(' '))
-            else: raise RuntimeError("data type %s is not supported" % str(type(v)))
+            else: raise RuntimeError("E-UDF.CL.PY-18: data type %s is not supported" % str(type(v)))
             msg = self.__out.checkException()
-            if msg: raise RuntimeError(msg)
+            if msg: raise RuntimeError("F-UDF.CL.PY-19: "+msg)
             k += 1
         ret = self.__out.next()
         msg = self.__out.checkException()
-        if msg: raise RuntimeError(msg)
-        if ret != True: raise RuntimeError("Internal error on emiting row")
+        if msg: raise RuntimeError("F-UDF.CL.PY-20: "+msg)
+        if ret != True: raise RuntimeError("F-UDF.CL.PY-21: Internal error on emiting row")
     def next(self, reset = False):
         self.__cache = [None] * len(self.__cache)
         if reset:
@@ -203,23 +203,23 @@ class exaiter(object):
         elif self.__finished: return False
         else: val = self.__inp.next()
         msg = self.__inp.checkException()
-        if msg: raise RuntimeError(msg)
+        if msg: raise RuntimeError("F-UDF.CL.PY-22: "+msg)
         if not val:
             self.__finished = True
         return val
     def get_dataframe(self, num_rows=1, start_col=0):
         import pandas
         if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
-            raise RuntimeError("get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
+            raise RuntimeError("E-UDF.CL.PY-23: get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
         if (type(start_col) not in (int, long) or start_col < 0):
-            raise RuntimeError("get_dataframe() parameter 'start_col' must be an integer >= 0")
+            raise RuntimeError("E-UDF.CL.PY-24: get_dataframe() parameter 'start_col' must be an integer >= 0")
         if (start_col > len(self.__incolnames)):
-            raise RuntimeError("get_dataframe() parameter 'start_col' is %d, but there are only %d input columns" % (start_col, len(self.__incolnames)))
+            raise RuntimeError("E-UDF.CL.PY-25: get_dataframe() parameter 'start_col' is %d, but there are only %d input columns" % (start_col, len(self.__incolnames)))
         if num_rows == "all":
             num_rows = sys.maxsize
         if self.__dataframe_finished:
             # Exception after None already returned
-            raise RuntimeError("Iteration finished")
+            raise RuntimeError("E-UDF.CL.PY-26: Iteration finished")
         elif self.__finished:
             # Return None the first time there is no data
             self.__dataframe_finished = True
@@ -234,18 +234,31 @@ class exaiter(object):
         return self.__inp.rowsInGroup()
 
 def __disallowed_function(*args, **kw):
-    raise RuntimeError("next(), reset() and emit() functions are not allowed in scalar context")
+    raise RuntimeError("F-UDF.CL.PY-116: next(), reset() and emit() functions are not allowed in scalar context")
+
+def __pythonvm_wrapped_cleanup():
+    cleanupfunc = None
+    try: cleanupfunc = globals()['cleanup']
+    except: raise RuntimeError("F-UDF.CL.PY-117: function 'cleanup' is not defined")
+    try:
+        cleanupfunc()
+    except Exception as err:
+        import traceback
+        backtrace = traceback.format_exc()
+        print("F-UDF.CL.PY-118: Caught exception:\n"+backtrace)
+        err.args = ("F-UDF.CL.PY-119: Caught exception:\n"+backtrace,)
+        raise err
 
 def __pythonvm_wrapped_run():
     runfunc = None
     try: runfunc = globals()['run']
-    except: raise RuntimeError("function 'run' is not defined")
+    except: raise RuntimeError("F-UDF.CL.PY-27: function 'run' is not defined")
     inp = TableIterator(); msg = inp.checkException();
-    if msg: raise RuntimeError(msg)
+    if msg: raise RuntimeError("F-UDF.CL.PY-28: "+msg)
     out = ResultHandler(inp); msg = out.checkException();
-    if msg: raise RuntimeError(msg)
+    if msg: raise RuntimeError("F-UDF.CL.PY-29: "+msg)
     meta = Metadata(); msg = meta.checkException();
-    if msg: raise RuntimeError(msg)
+    if msg: raise RuntimeError("F-UDF.CL.PY-30: "+msg)
     try:
         iter = exaiter(meta, inp, out); iter_next = iter.next; iter_emit = iter.emit
         if meta.outputType() == EXACTLY_ONCE:
@@ -266,9 +279,10 @@ def __pythonvm_wrapped_run():
                     if not iter_next(): break
         out.flush()
     except Exception as err:
-        errtypel, errobj, backtrace = sys.exc_info()
-        if backtrace.tb_next: backtrace = backtrace.tb_next
-        err.args = ("".join(traceback.format_exception(errtypel, errobj, backtrace)),)
+        import traceback
+        backtrace = traceback.format_exc()
+        print("F-UDF.CL.PY-31: Caught exception:\n"+backtrace)
+        err.args = ("F-UDF.CL.PY-32: Caught exception:\n"+backtrace,)
         raise err
 
 
@@ -325,6 +339,6 @@ def __pythonvm_wrapped_singleCall(fn,arg=None):
                 exp_spec._setConnectionInformation(__ConnectionInformation(exp_spec.connection))
             return fn(exp_spec)
         else:
-            raise RuntimeError("Unknown single call function: "+str(fn))
+            raise RuntimeError("F-UDF.CL.PY-33: Unknown single call function: "+str(fn))
     else:
         return fn()

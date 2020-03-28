@@ -88,7 +88,7 @@ class exa:
         code = self.__meta.moduleContent(encodeUTF8(modname))
         msg = self.__meta.checkException()
 
-        if msg: raise ImportError(u"Importing module %s failed: %s" % (modname, msg))
+        if msg: raise ImportError(u"F-UDF.CL.PY-34: Importing module %s failed: %s" % (modname, msg))
         code = decodeUTF8(code)
         if str(code) in self.__modules:
             print("%%% found code", modname, repr(code))
@@ -105,7 +105,7 @@ class exa:
                 else:
                     exec(compile(code, script, 'exec')) in modobj.__dict__
             except Exception as err:
-                raise ImportError(u"Importing module %s failed: %s" % (modname, str(err)))
+                raise ImportError(u"F-UDF.CL.PY-35: Importing module %s failed: %s" % (modname, str(err)))
         return modobj
 
 
@@ -124,7 +124,7 @@ class exa:
         connection_name = unicode(name)
         connectionInfo = self.__meta.connectionInformation(encodeUTF8(connection_name))
         msg = self.__meta.checkException()
-        if msg: raise ImportError(u"get_connection for connection name %s failed: %s" % (name, msg))
+        if msg: raise ImportError(u"F-UDF.CL.PY-36: get_connection for connection name %s failed: %s" % (name, msg))
         return exa.ConnectionInformation(decodeUTF8(connectionInfo.copyKind()), decodeUTF8(connectionInfo.copyAddress()), decodeUTF8(connectionInfo.copyUser()), decodeUTF8(connectionInfo.copyPassword()))
 
 
@@ -148,7 +148,8 @@ def __pythonvm_wrapped_parse(env):
         else:
             exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
     except Exception as err:
-        errtypel, errobj, backtrace = sys.exc_info()
-        if backtrace.tb_next: backtrace = backtrace.tb_next
-        err.args = ("".join(traceback.format_exception(errtypel, errobj, backtrace)),)
+        import traceback
+        backtrace = traceback.format_exc()
+        print("F-UDF.CL.PY-37: Caught exception:\n"+backtrace)
+        err.args = ("F-UDF.CL.PY-38: Caught exception:\n"+backtrace,)
         raise err

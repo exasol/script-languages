@@ -1692,7 +1692,8 @@ unsigned int handle_error(zmq::socket_t& socket, std::string socket_name, SWIGVM
     DBG_STREAM_MSG(cerr,"### handle error in '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << msg);
     try{
         if(vm!=nullptr && shutdown_vm){
-            vm->shutdown();
+            vm->exception_msg = "";
+            vm->shutdown(); // Calls cleanup
             if (vm->exception_msg.size()>0) {
                 PRINT_ERROR_MESSAGE(cerr,"F-UDF.CL.L-110","### Caught error in vm->shutdown '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << vm->exception_msg);
                 msg ="F-UDF.CL.L-111: Caught exception\n\n"+msg+"\n\n and caught another exception during cleanup\n\n"+vm->exception_msg;

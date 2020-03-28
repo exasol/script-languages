@@ -73,7 +73,7 @@ std::map<int, std::string> emitTypeMap {
 inline void checkPyObjectIsNull(const PyObject *obj) {
     // Error message set by Python
     if (!obj)
-        throw std::runtime_error("");
+        throw std::runtime_error("F-UDF.CL.PY-72");
 }
 
 
@@ -110,7 +110,7 @@ struct PyPtr {
 inline void checkPyPtrIsNull(const PyPtr& obj) {
     // Error message set by Python
     if (!obj)
-        throw std::runtime_error("");
+        throw std::runtime_error("F-UDF.CL.PY-73");
 }
 
 
@@ -142,20 +142,20 @@ void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::ve
     PyPtr pyColTypes(PyObject_GetAttrString(ctxIter, ctxColumnTypeList));
     if (!PyList_Check(pyColTypes.get())) {
         std::stringstream ss;
-        ss << "getColumnInfo: " << ctxColumnTypeList << " is not a list";
+        ss << "F-UDF.CL.PY-74: " << "getColumnInfo: " << ctxColumnTypeList << " is not a list";
         throw std::runtime_error(ss.str().c_str());
     }
 
     if (!PyList_Check(colNames)) {
         std::stringstream ss;
-        ss << "getColumnInfo: colNames is not a list";
+        ss << "F-UDF.CL.PY-75: " << "getColumnInfo: colNames is not a list";
         throw std::runtime_error(ss.str().c_str());
     }
 
     Py_ssize_t pyNumCols = PyList_Size(pyColTypes.get());
     if (pyNumCols != PyList_Size(colNames)) {
         std::stringstream ss;
-        ss << "getColumnInfo: ";
+        ss << "F-UDF.CL.PY-76" << "getColumnInfo: ";
         ss << ctxColumnTypeList << " has length " << pyNumCols << ", but ";
         ss << "colNames has length " << PyList_Size(colNames);
         throw std::runtime_error(ss.str().c_str());
@@ -166,13 +166,13 @@ void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::ve
         checkPyObjectIsNull(pyColType);
         int colType = PyLong_AsLong(pyColType);
         if (colType < 0 && PyErr_Occurred())
-            throw std::runtime_error("getColumnInfo(): PyLong_AsLong error");
+            throw std::runtime_error("F-UDF.CL.PY-77 getColumnInfo(): PyLong_AsLong error");
 
         PyObject *pyColName = PyList_GetItem(colNames, i);
         checkPyObjectIsNull(pyColName);
         const char *colName = PyUnicode_AsUTF8(pyColName);
         if (!colName)
-            throw std::runtime_error("");
+            throw std::runtime_error("F-UDF.CL.PY-78");
 
         colInfo.push_back(ColumnInfo(std::string(colName), colType));
     }
@@ -255,7 +255,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             default:
             {
                 std::stringstream ss;
-                ss << "getColumnData(): unexpected type " << colInfo[i].type;
+                ss << "F-UDF.CL.PY-79" << "getColumnData(): unexpected type " << colInfo[i].type;
                 throw std::runtime_error(ss.str().c_str());
             }
         }
@@ -263,7 +263,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
 
         Py_ssize_t colNum = PyLong_AsSsize_t(pyColNum.get());
         if (colNum < 0 && PyErr_Occurred())
-            throw std::runtime_error("getColumnData(): PyLong_AsSsize_t error");
+            throw std::runtime_error("F-UDF.CL.PY-80: getColumnData(): PyLong_AsSsize_t error");
 
         pyColGetMethods.push_back(std::make_tuple(colNum, std::move(pyColNum), std::move(pyMethodName), postFunction));
     }
@@ -282,7 +282,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 PyObject *ptype, *pvalue, *ptraceback;
                 PyErr_Fetch(&ptype, &pvalue, &ptraceback);
                 std::stringstream ss;
-                ss << "getColumnData(): Error fetching value for row " << r << ", column " << c << ": ";
+                ss << "F-UDF.CL.PY-81: getColumnData(): Error fetching value for row " << r << ", column " << c << ": ";
                 ss << PyUnicode_AsUTF8(pvalue);
                 throw std::runtime_error(ss.str().c_str());
             }
@@ -292,7 +292,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
                 if (exMsg) {
                     std::stringstream ss;
-                    ss << "getColumnData(): get row " << r << ", column " << c << ": " << exMsg;
+                    ss << "F-UDF.CL.PY-82: getColumnData(): get row " << r << ", column " << c << ": " << exMsg;
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
@@ -300,7 +300,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             PyPtr pyWasNull(PyObject_CallMethodObjArgs(tableIter, pyWasNullMethodName.get(), NULL));
             int wasNull = PyObject_IsTrue(pyWasNull.get());
             if (wasNull < 0)
-                throw std::runtime_error("getColumnData(): wasNull() PyObject_IsTrue() error");
+                throw std::runtime_error("F-UDF.CL.PY-83: getColumnData(): wasNull() PyObject_IsTrue() error");
 
             if (wasNull) {
                 Py_INCREF(Py_None);
@@ -316,7 +316,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
 
         int ok = PyList_Append(pyData.get(), pyRow.get());
         if (ok < 0)
-            throw std::runtime_error("getColumnData(): PyList_Append error");
+            throw std::runtime_error("F-UDF.CL.PY-84: getColumnData(): PyList_Append error");
 
         if (isSetInput) {
             PyPtr pyNext(PyObject_CallMethodObjArgs(tableIter, pyNextMethodName.get(), NULL));
@@ -326,14 +326,14 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
                 if (exMsg) {
                     std::stringstream ss;
-                    ss << "getColumnData(): next(): " << exMsg;
+                    ss << "F-UDF.CL.PY-85: getColumnData(): next(): " << exMsg;
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
 
             int next = PyObject_IsTrue(pyNext.get());
             if (next < 0) {
-                throw std::runtime_error("getColumnData(): next() PyObject_IsTrue() error");
+                throw std::runtime_error("F-UDF.CL.PY-86: getColumnData(): next() PyObject_IsTrue() error");
             }
             else if (!next) {
                 isFinished = true;
@@ -380,7 +380,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
             default:
             {
                 std::stringstream ss;
-                ss << "emit(): unexpected type " << emitTypeMap.at(colInfo[i].type);
+                ss << "F-UDF.CL.PY-87: emit(): unexpected type " << emitTypeMap.at(colInfo[i].type);
                 throw std::runtime_error(ss.str().c_str());
             }
         }
@@ -400,7 +400,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         }
         else {
             std::stringstream ss;
-            ss << "emit: unexpected type: " << typeName;
+            ss << "F-UDF.CL.PY-88: emit: unexpected type: " << typeName;
             throw std::runtime_error(ss.str().c_str());
         }
     }
@@ -429,7 +429,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
             if (!PyList_Check(pyList.get())) {
                 std::stringstream ss;
-                ss << "emit(): column array " << c << " is not a list";
+                ss << "F-UDF.CL.PY-89: emit(): column array " << c << " is not a list";
                 throw std::runtime_error(ss.str().c_str());
             }
 
@@ -454,7 +454,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
             }
             else {
                 std::stringstream ss;
-                ss << "emit: column " <<  c << ", unexpected python type: " << pyTypeName;
+                ss << "F-UDF.CL.PY-90: emit: column " <<  c << ", unexpected python type: " << pyTypeName;
                 throw std::runtime_error(ss.str().c_str());
             }
 
@@ -465,7 +465,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
             if (!PyList_Check(pyList.get())) {
                 std::stringstream ss;
-                ss << "emit(): column array " << c << " is not a list";
+                ss << "F-UDF.CL.PY-91: emit(): column array " << c << " is not a list";
                 throw std::runtime_error(ss.str().c_str());
             }
 
@@ -518,7 +518,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-92: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -548,7 +548,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-93: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -578,7 +578,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-94: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -608,7 +608,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-95: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -637,7 +637,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-96: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -666,7 +666,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-97: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -695,7 +695,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-98: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -724,7 +724,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-99: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -757,7 +757,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-100: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -786,14 +786,14 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         {
                             double value = PyFloat_AsDouble(pyInt.get());
                             if (value < 0 && PyErr_Occurred())
-                                throw std::runtime_error("emit() PY_INT: PyFloat_AsDouble error");
+                                throw std::runtime_error("F-UDF.CL.PY-101: emit() PY_INT: PyFloat_AsDouble error");
                             pyValue.reset(PyFloat_FromDouble(value));
                             break;
                         }
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-102: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -828,7 +828,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-103: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -860,7 +860,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-104: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -884,7 +884,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-105: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -908,7 +908,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         default:
                         {
                             std::stringstream ss;
-                            ss << "emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+                            ss << "F-UDF.CL.PY-106: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
                             throw std::runtime_error(ss.str().c_str());
                         }
                     }
@@ -922,7 +922,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 default:
                 {
                     std::stringstream ss;
-                    ss << "emit: unexpected type: " << colTypes[c].first;
+                    ss << "F-UDF.CL.PY-107: emit: unexpected type: " << colTypes[c].first;
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
@@ -932,7 +932,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 PyErr_Fetch(&ptype, &pvalue, &ptraceback);
                 if (pvalue) {
                     std::stringstream ss;
-                    ss << "emit(): Error setting value for row " << r << ", column " << c << ": ";
+                    ss << "F-UDF.CL.PY-108: emit(): Error setting value for row " << r << ", column " << c << ": ";
                     ss << PyUnicode_AsUTF8(pvalue);
                     throw std::runtime_error(ss.str().c_str());
                 }
@@ -943,7 +943,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
                 if (exMsg) {
                     std::stringstream ss;
-                    ss << "emit(): " << exMsg;
+                    ss << "F-UDF.CL.PY-109: emit(): " << exMsg;
                     throw std::runtime_error(ss.str().c_str());
                 }
             }
@@ -981,7 +981,7 @@ PyObject *getNumpyTypes(PyObject *dataframe)
 
     if (!PyList_Check(pyDtypeValues.get())) {
         std::stringstream ss;
-        ss << "DataFrame.dtypes.values is not a list";
+        ss << "F-UDF.CL.PY-110: DataFrame.dtypes.values is not a list";
         throw std::runtime_error(ss.str().c_str());
     }
 
@@ -1001,7 +1001,7 @@ void getOutputColumnTypes(PyObject *colTypes, std::vector<ColumnInfo>& colInfo)
 {
     if (!PyList_Check(colTypes)) {
         std::stringstream ss;
-        ss << "getOutputColumnTypes(): colTypes is not a list";
+        ss << "F-UDF.CL.PY-111: getOutputColumnTypes(): colTypes is not a list";
         throw std::runtime_error(ss.str().c_str());
     }
 
@@ -1011,7 +1011,7 @@ void getOutputColumnTypes(PyObject *colTypes, std::vector<ColumnInfo>& colInfo)
         checkPyObjectIsNull(pyColType);
         int colType = PyLong_AsLong(pyColType);
         if (colType < 0 && PyErr_Occurred())
-            throw std::runtime_error("getColumnInfo(): PyLong_AsLong error");
+            throw std::runtime_error("F-UDF.CL.PY-112: getColumnInfo(): PyLong_AsLong error");
 
         colInfo.push_back(ColumnInfo(std::to_string(i), colType));
     }
@@ -1034,7 +1034,7 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         PyPtr pyInputType(PyObject_GetAttrString(ctxIter, "_exaiter__intype"));
         int inputType = PyLong_AsLong(pyInputType.get());
         if (inputType < 0 && PyErr_Occurred())
-            throw std::runtime_error("getDataframe(): PyLong_AsLong error");
+            throw std::runtime_error("F-UDF.CL.PY-113: getDataframe(): PyLong_AsLong error");
 
         // Get script input type
         bool isSetInput = (static_cast<SWIGVMContainers::SWIGVM_itertype_e>(inputType) == SWIGVMContainers::MULTIPLE);
@@ -1049,7 +1049,7 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
         if (isFinished) {
             int ok = PyObject_SetAttrString(ctxIter, "_exaiter__finished", Py_True);
             if (ok < 0)
-                throw std::runtime_error("getDataframe(): error setting exaiter.__finished");
+                throw std::runtime_error("F-UDF.CL.PY-114: getDataframe(): error setting exaiter.__finished");
         }
         // Create DataFrame
         pyDataFrame.reset(createDataFrame(pyData.get(), colInfo));
