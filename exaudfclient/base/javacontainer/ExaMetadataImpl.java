@@ -155,10 +155,10 @@ class ExaMetadataImpl implements ExaMetadata {
             if (exMsg != null && exMsg.length() > 0) {
                 throw new ExaCompilationException("F-UDF.CL.J-127: "+exMsg);
             }
-            try:
+            try{
                 ExaCompiler.compile("com.exasol." + scriptName, code);
-            catch(ExaCompilationException ex){
-                throw ExaCompilationException("F-UDF.CL.J-128: "+ex.toString())
+            }catch(ExaCompilationException ex){
+                throw new ExaCompilationException("F-UDF.CL.J-128: "+ex.toString());
             }
             importedScripts.add(scriptName);
         }

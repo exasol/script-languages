@@ -25,11 +25,12 @@ class SWIGVMContainers::JavaVMImpl {
         void createJvm();
         void addPackageToScript();
         void compileScript();
-        bool check(string& calledUndefinedSingleCall); // returns 0 if the check failed
+        bool check(const string& errorCode, string& calledUndefinedSingleCall); // returns 0 if the check failed
         void registerFunctions();
         void setClasspath();
         void throwException(const char *message);
-        void throwException(std::exception& ex);
+        void throwException(const std::exception& ex);
+        void throwException(const std::string& ex);
         //void throwException(swig_undefined_single_call_exception& ex);
         void importScripts();
         void addExternalJarPaths();
@@ -133,15 +134,15 @@ bool JavaVMImpl::run() {
         throwException("F-UDF.CL.J-9: Java VM in check only mode");
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
     string calledUndefinedSingleCall;
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-133",calledUndefinedSingleCall);
     if (!cls)
         throwException("F-UDF.CL.J-10: FindClass for ExaWrapper failed");
     jmethodID mid = m_env->GetStaticMethodID(cls, "run", "()V");
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-134",calledUndefinedSingleCall);
     if (!mid)
         throwException("F-UDF.CL.J-11: GetStaticMethodID for run failed");
     m_env->CallStaticVoidMethod(cls, mid);
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-135",calledUndefinedSingleCall);
     return true;
 }
 
@@ -164,15 +165,15 @@ const char* JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
         throwException("F-UDF.CL.J-13: Unknown single call "+std::to_string(fn));
     }
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-136",calledUndefinedSingleCall);
     if (!cls)
         throwException("F-UDF.CL.J-14: FindClass for ExaWrapper failed");
     jmethodID mid = m_env->GetStaticMethodID(cls, "runSingleCall", "(Ljava/lang/String;Ljava/lang/Object;)[B");
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-137",calledUndefinedSingleCall);
     if (!mid)
         throwException("F-UDF.CL.J-15: GetStaticMethodID for run failed");
     jstring fn_js = m_env->NewStringUTF(func);
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-138",calledUndefinedSingleCall);
 
 
     // Prepare arg
@@ -189,9 +190,9 @@ const char* JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
         if (imp_spec)
         {         
             jclass import_spec_wrapper_cls = m_env->FindClass("com/exasol/swig/ImportSpecificationWrapper");
-            check(calledUndefinedSingleCall);
+            check("F-UDF.CL.J-139",calledUndefinedSingleCall);
             jmethodID import_spec_wrapper_constructor = m_env->GetMethodID(import_spec_wrapper_cls, "<init>", "(JZ)V");
-            check(calledUndefinedSingleCall);
+            check("F-UDF.CL.J-140",calledUndefinedSingleCall);
             args_js = m_env->NewObject(import_spec_wrapper_cls, import_spec_wrapper_constructor, &imp_spec_wrapper, false);
         }
     } else if (fn == SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC) {
@@ -200,9 +201,9 @@ const char* JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
         if (exp_spec)
         {
             jclass export_spec_wrapper_cls = m_env->FindClass("com/exasol/swig/ExportSpecificationWrapper");
-            check(calledUndefinedSingleCall);
+            check("F-UDF.CL.J-141",calledUndefinedSingleCall);
             jmethodID export_spec_wrapper_constructor = m_env->GetMethodID(export_spec_wrapper_cls, "<init>", "(JZ)V");
-            check(calledUndefinedSingleCall);
+            check("F-UDF.CL.J-142",calledUndefinedSingleCall);
             args_js = m_env->NewObject(export_spec_wrapper_cls, export_spec_wrapper_constructor, &exp_spec_wrapper, false);
         }
     } else if (fn == SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL) {
@@ -211,11 +212,11 @@ const char* JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
         args_js = m_env->NewStringUTF(string_arg.c_str());
     }
     
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-143",calledUndefinedSingleCall);
     jbyteArray resJ = (jbyteArray)m_env->CallStaticObjectMethod(cls, mid, fn_js, args_js);
-    if (check(calledUndefinedSingleCall) == 0) return strdup("<error during singleCall>");
+    if (check("F-UDF.CL.J-144",calledUndefinedSingleCall) == 0) return strdup("<error during singleCall>");
     jsize resLen = m_env->GetArrayLength(resJ);
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-145",calledUndefinedSingleCall);
     char* buffer = new char[resLen + 1];
     m_env->GetByteArrayRegion(resJ, 0, resLen, reinterpret_cast<jbyte*>(buffer));
     buffer[resLen] = '\0';
@@ -278,23 +279,23 @@ void JavaVMImpl::createJvm() {
 void JavaVMImpl::compileScript() {
     string calledUndefinedSingleCall;
     jstring classnameStr = m_env->NewStringUTF(SWIGVM_params->script_name);
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-146",calledUndefinedSingleCall);
     jstring codeStr = m_env->NewStringUTF(m_scriptCode.c_str());
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-147",calledUndefinedSingleCall);
     jstring classpathStr = m_env->NewStringUTF(m_localClasspath.c_str());
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-148",calledUndefinedSingleCall);
     if (!classnameStr || !codeStr || !classpathStr)
         throwException("F-UDF.CL.J-17: NewStringUTF for compile failed");
     jclass cls = m_env->FindClass("com/exasol/ExaCompiler");
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-149",calledUndefinedSingleCall);
     if (!cls)
         throwException("F-UDF.CL.J-18: FindClass for ExaCompiler failed");
     jmethodID mid = m_env->GetStaticMethodID(cls, "compile", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-150",calledUndefinedSingleCall);
     if (!mid)
         throwException("F-UDF.CL.J-19: GetStaticMethodID for compile failed");
     m_env->CallStaticVoidMethod(cls, mid, classnameStr, codeStr, classpathStr);
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-151",calledUndefinedSingleCall);
 }
 
 void JavaVMImpl::addExternalJarPaths() {
@@ -386,7 +387,7 @@ void JavaVMImpl::importScripts() {
         delete meta;
 }
 
-bool JavaVMImpl::check(string& calledUndefinedSingleCall, string& errorCode) {
+bool JavaVMImpl::check(const string& errorCode, string& calledUndefinedSingleCall) {
     jthrowable ex = m_env->ExceptionOccurred();
     if (ex) {
         m_env->ExceptionClear();
@@ -397,7 +398,7 @@ bool JavaVMImpl::check(string& calledUndefinedSingleCall, string& errorCode) {
         }
         if (m_env->IsInstanceOf(ex, undefinedSingleCallExceptionClass)) {
             jmethodID undefinedRemoteFn = m_env->GetMethodID(undefinedSingleCallExceptionClass, "getUndefinedRemoteFn", "()Ljava/lang/String;");
-            check(calledUndefinedSingleCall);
+            check("F-UDF.CL.J-152",calledUndefinedSingleCall);
             if (!undefinedRemoteFn)
                 throwException(errorCode+": F-UDF.CL.J-24: com.exasol.ExaUndefinedSingleCallException.getUndefinedRemoteFn() could not be found");
             jobject undefinedRemoteFnString = m_env->CallObjectMethod(ex,undefinedRemoteFn);
@@ -421,7 +422,7 @@ bool JavaVMImpl::check(string& calledUndefinedSingleCall, string& errorCode) {
             throwException(errorCode+": F-UDF.CL.J-26: FindClass for Throwable failed");
         // Throwable.toString()
         jmethodID toString = m_env->GetMethodID(exClass, "toString", "()Ljava/lang/String;");
-        check(calledUndefinedSingleCall);
+        check("F-UDF.CL.J-153",calledUndefinedSingleCall);
         if (!toString)
             throwException(errorCode+": F-UDF.CL.J-27: Throwable.toString() could not be found");
         jobject object = m_env->CallObjectMethod(ex, toString);
@@ -437,23 +438,23 @@ bool JavaVMImpl::check(string& calledUndefinedSingleCall, string& errorCode) {
         }
         // Throwable.getStackTrace()
         jmethodID getStackTrace = m_env->GetMethodID(exClass, "getStackTrace", "()[Ljava/lang/StackTraceElement;");
-        check(calledUndefinedSingleCall);
+        check("F-UDF.CL.J-154",calledUndefinedSingleCall);
         if (!getStackTrace)
             throwException(errorCode+": F-UDF.CL.J-29: Throwable.getStackTrace() could not be found");
         jobjectArray frames = (jobjectArray)m_env->CallObjectMethod(ex, getStackTrace);
         if (frames) {
             jclass frameClass = m_env->FindClass("java/lang/StackTraceElement");
-            check(calledUndefinedSingleCall);
+            check("F-UDF.CL.J-155",calledUndefinedSingleCall);
             if (!frameClass)
                 throwException(errorCode+": F-UDF.CL.J-30: FindClass for StackTraceElement failed");
             jmethodID frameToString = m_env->GetMethodID(frameClass, "toString", "()Ljava/lang/String;");
-            check(calledUndefinedSingleCall);
+            check("F-UDF.CL.J-156",calledUndefinedSingleCall);
             if (!frameToString)
                 throwException(errorCode+": F-UDF.CL.J-31: StackTraceElement.toString() could not be found");
             jsize framesLength = m_env->GetArrayLength(frames);
             for (int i = 0; i < framesLength; i++) {
                 jobject frame = m_env->GetObjectArrayElement(frames, i);
-                check(calledUndefinedSingleCall);
+                check("F-UDF.CL.J-157",calledUndefinedSingleCall);
                 jobject frameMsgObj = m_env->CallObjectMethod(frame, frameToString);
                 if (frameMsgObj) {
                     jstring message = static_cast<jstring>(frameMsgObj);
@@ -484,11 +485,11 @@ bool JavaVMImpl::check(string& calledUndefinedSingleCall, string& errorCode) {
 void JavaVMImpl::registerFunctions() {
     string calledUndefinedSingleCall;
     jclass cls = m_env->FindClass("com/exasol/swig/exascript_javaJNI");
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-158",calledUndefinedSingleCall);
     if (!cls)
         throwException("F-UDF.CL.J-32: FindClass for exascript_javaJNI failed");
     int rc = m_env->RegisterNatives(cls, methods, sizeof(methods) / sizeof(methods[0]));
-    check(calledUndefinedSingleCall);
+    check("F-UDF.CL.J-159",calledUndefinedSingleCall);
     if (rc)
         throwException("F-UDF.CL.J-33: RegisterNatives failed");
 }
@@ -616,22 +617,22 @@ void JavaVMImpl::setJvmOptions() {
 }
 
 
-
-void JavaVMImpl::throwException(const char *message) {
+void JavaVMImpl::throwException(const std::string&  message) {
     if (!m_exceptionThrown) {
         m_exceptionThrown = true;
     }
     throw JavaVMach::exception(message);
 }
 
-void JavaVMImpl::throwException(std::string&  message) {
+
+void JavaVMImpl::throwException(const char*  message) {
     if (!m_exceptionThrown) {
         m_exceptionThrown = true;
     }
     throw JavaVMach::exception(message);
 }
 
-void JavaVMImpl::throwException(std::exception& ex) {
+void JavaVMImpl::throwException(const std::exception& ex) {
     if (!m_exceptionThrown) {
         m_exceptionThrown = true;
     }

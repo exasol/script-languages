@@ -224,7 +224,7 @@ class ExaWrapper {
         }
     }
 
-    private static Throwable convertReflectiveExceptionToCause(string error_code, Throwable ex) {
+    private static Throwable convertReflectiveExceptionToCause(String error_code, Throwable ex) {
         Throwable exc = ex;
         while (exc != null && (exc instanceof InvocationTargetException ||
                     exc instanceof MalformedParameterizedTypeException ||
