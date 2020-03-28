@@ -26,6 +26,10 @@ copy_hook() {
     local RELATIVE_PATH=$(realpath --relative-to="$GITHOOKS_PATH" "$SCRIPT_PATH")
     echo $RELATIVE_PATH
     pushd "$GITHOOKS_PATH"
+    if [ -f "$2" ]
+    then
+      rm "$2"
+    fi
     ln -s "$RELATIVE_PATH" "$2"
     chmod +x "$2"
     popd
