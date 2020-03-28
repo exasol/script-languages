@@ -68,37 +68,37 @@ class ExaMetadataImpl implements ExaMetadata {
     @Override
     public String getInputColumnName(int column) throws ExaIterationException {
         if (column < 0 || column >= inputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-114: Column number " + column + " does not exist");
         return inputColumns[column].name;
     }
     @Override
     public Class<?> getInputColumnType(int column) throws ExaIterationException {
         if (column < 0 || column >= inputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-115: Column number " + column + " does not exist");
         return inputColumns[column].type;
     }
     @Override
     public String getInputColumnSqlType(int column) throws ExaIterationException {
         if (column < 0 || column >= inputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-116: Column number " + column + " does not exist");
         return inputColumns[column].sqlType;
     }
     @Override
     public long getInputColumnPrecision(int column) throws ExaIterationException {
         if (column < 0 || column >= inputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-117: Column number " + column + " does not exist");
         return inputColumns[column].precision;
     }
     @Override
     public long getInputColumnScale(int column) throws ExaIterationException {
         if (column < 0 || column >= inputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-118: Column number " + column + " does not exist");
         return inputColumns[column].scale;
     }
     @Override
     public long getInputColumnLength(int column) throws ExaIterationException {
         if (column < 0 || column >= inputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-119: Column number " + column + " does not exist");
         return inputColumns[column].length;
     }
     @Override
@@ -108,44 +108,44 @@ class ExaMetadataImpl implements ExaMetadata {
     @Override
     public String getOutputColumnName(int column) throws ExaIterationException {
         if (column < 0 || column >= outputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-120: Column number " + column + " does not exist");
         return outputColumns[column].name;
     }
     @Override
     public Class<?> getOutputColumnType(int column) throws ExaIterationException {
         if (column < 0 || column >= outputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-121: Column number " + column + " does not exist");
         return outputColumns[column].type;
     }
     @Override
     public String getOutputColumnSqlType(int column) throws ExaIterationException {
         if (column < 0 || column >= outputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-122: Column number " + column + " does not exist");
         return outputColumns[column].sqlType;
     }
     @Override
     public long getOutputColumnPrecision(int column) throws ExaIterationException {
         if (column < 0 || column >= outputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-123: Column number " + column + " does not exist");
         return outputColumns[column].precision;
     }
     @Override
     public long getOutputColumnScale(int column) throws ExaIterationException {
         if (column < 0 || column >= outputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-124: Column number " + column + " does not exist");
         return outputColumns[column].scale;
     }
     @Override
     public long getOutputColumnLength(int column) throws ExaIterationException {
         if (column < 0 || column >= outputColumns.length)
-            throw new ExaIterationException("Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.J-125: Column number " + column + " does not exist");
         return outputColumns[column].length;
     }
     
     @Override
     public Class<?> importScript(String name) throws ExaCompilationException, ClassNotFoundException {
         if (name == null)
-            throw new ExaCompilationException("Script name is null");
+            throw new ExaCompilationException("F-UDF.CL.J-126: Script name is null");
         boolean isQuoted = (name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"');
         String scriptName = isQuoted ? name.substring(1, name.length() - 1) : name.toUpperCase();
         if (!importedScripts.contains(scriptName)) {
@@ -153,9 +153,13 @@ class ExaMetadataImpl implements ExaMetadata {
             code = "package com.exasol;\r\n" + code;
             String exMsg = checkException();
             if (exMsg != null && exMsg.length() > 0) {
-                throw new ExaCompilationException(exMsg);
+                throw new ExaCompilationException("F-UDF.CL.J-127: "+exMsg);
             }
-            ExaCompiler.compile("com.exasol." + scriptName, code);
+            try:
+                ExaCompiler.compile("com.exasol." + scriptName, code);
+            catch(ExaCompilationException ex){
+                throw ExaCompilationException("F-UDF.CL.J-128: "+ex.toString())
+            }
             importedScripts.add(scriptName);
         }
         return Class.forName("com.exasol." + scriptName);
@@ -164,14 +168,14 @@ class ExaMetadataImpl implements ExaMetadata {
     @Override
     public ExaConnectionInformation getConnection(String name) throws ExaConnectionAccessException {
         if (name == null) {
-            throw new ExaConnectionAccessException("Connection name is null");
+            throw new ExaConnectionAccessException("E-UDF.CL.J-129: Connection name is null");
         }
         boolean isQuoted = (name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"');
         String connectionName = isQuoted ? name.substring(1, name.length() - 1) : name.toUpperCase();
         ConnectionInformationWrapper w = metadata.connectionInformation(connectionName);
         String exMsg = checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaConnectionAccessException(exMsg);
+            throw new ExaConnectionAccessException("E-UDF.CL.J-130: "+exMsg);
         }
         return new ExaConnectionInformationImpl(w.copyKind(), w.copyAddress(), w.copyUser(), w.copyPassword());
     }
@@ -294,7 +298,7 @@ class ExaMetadataImpl implements ExaMetadata {
                     length = 0;
                     break;
                 default:
-                    throw new ExaDataTypeException("data type " + exaType + " is not supported");
+                    throw new ExaDataTypeException("F-UDF.CL.J-131: data type " + exaType + " is not supported");
             }
         }
     }

@@ -66,7 +66,7 @@ class ExaWrapper {
                  // args is already a String with the String arg, so nothing to do
                  argClass = String.class;
              } else {
-                 throw new ExaCompilationException("Internal error: single call argument with unknown DTO: " + args.toString());
+                 throw new ExaCompilationException("F-UDF.CL.J-39: Internal error: single call argument with unknown DTO: " + args.toString());
              }
         }
 
@@ -99,12 +99,12 @@ class ExaWrapper {
             }
         } catch (java.lang.ClassNotFoundException ex) {
             if (userDefinedScriptName) {
-                throw new ExaCompilationException("The main script class defined via %scriptclass cannot be found: " + scriptClassName);
+                throw new ExaCompilationException("F-UDF.CL.J-40: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
             } else {
-                throw new ExaCompilationException("The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
+                throw new ExaCompilationException("F-UDF.CL.J-41: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-              throw convertReflectiveExceptionToCause(ex);
+              throw convertReflectiveExceptionToCause("F-UDF.CL.J-42",ex);
         } catch (NoSuchMethodException ex) {
            throw new ExaUndefinedSingleCallException(fn);
         }
@@ -114,17 +114,17 @@ class ExaWrapper {
         ExaMetadataImpl exaMetadata = new ExaMetadataImpl();
         String exMsg = exaMetadata.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException(exMsg);
+            throw new ExaIterationException("F-UDF.CL.J-43: "+exMsg);
         }
         TableIterator tableIterator = new TableIterator();
         exMsg = tableIterator.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException(exMsg);
+            throw new ExaIterationException("F-UDF.CL.J-44: "+exMsg);
         }
         ResultHandler resultHandler = new ResultHandler(tableIterator);
         exMsg = resultHandler.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException(exMsg);
+            throw new ExaIterationException("F-UDF.CL.J-45: "+exMsg);
         }
 
         ExaIteratorImpl exaIter = new ExaIteratorImpl(exaMetadata, tableIterator, resultHandler);
@@ -149,13 +149,15 @@ class ExaWrapper {
         }
         catch (java.lang.ClassNotFoundException ex) {
             if (userDefinedScriptName) {
-                throw new ExaCompilationException("The main script class defined via %scriptclass cannot be found: " + scriptClassName);
+                throw new ExaCompilationException("F-UDF.CL.J-46: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
             } else {
-                throw new ExaCompilationException("The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
+                throw new ExaCompilationException("F-UDF.CL.J-47: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause(ex);
-        } catch (NoSuchMethodException ex) { /* not defined */ }
+            throw convertReflectiveExceptionToCause("F-UDF.CL.J-54",ex);
+        } catch (NoSuchMethodException ex) { 
+            System.err.println("W-UDF.CL.J-48: Skipping init, because init method cannot be found.");
+        }
 
         // run()
         Class[] runParams = {ExaMetadata.class, ExaIterator.class};
@@ -165,14 +167,14 @@ class ExaWrapper {
             if (exaMetadata.getInputType().equals("SET")) { // MULTIPLE INPUT
                 if (exaMetadata.getOutputType().equals("EMIT")) { // MULTIPLE OUTPUT
                     if (!runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("EMITS requires a void return type for run()");
+                        throw new ExaCompilationException("F-UDF.CL.J-49: EMITS requires a void return type for run()");
                     exaIter.setInsideRun(true);
                     Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                     exaIter.setInsideRun(false);
                 }
                 else { // EXACTLY_ONCE OUTPUT
                     if (runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("RETURNS requires a non-void return type for run()");
+                        throw new ExaCompilationException("F-UDF.CL.J-50: RETURNS requires a non-void return type for run()");
                     exaIter.setInsideRun(true);
                     Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                     exaIter.setInsideRun(false);
@@ -181,18 +183,18 @@ class ExaWrapper {
             }
             else { // EXACTLY_ONCE INPUT
                 if (exaMetadata.getOutputType().equals("EMIT")) { // MULTIPLE OUTPUT
+                    if (!runMethod.getReturnType().equals(Void.TYPE))
+                        throw new ExaCompilationException("F-UDF.CL.J-51: EMITS requires a void return type for run()");
                     do {
-                        if (!runMethod.getReturnType().equals(Void.TYPE))
-                            throw new ExaCompilationException("EMITS requires a void return type for run()");
                         exaIter.setInsideRun(true);
                         Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                         exaIter.setInsideRun(false);
                     } while (exaIter.next());
                 }
                 else { // EXACTLY_ONCE OUTPUT
+                    if (runMethod.getReturnType().equals(Void.TYPE))
+                        throw new ExaCompilationException("F-UDF.CL.J-52: RETURNS requires a non-void return type for run()");
                     do {
-                        if (runMethod.getReturnType().equals(Void.TYPE))
-                            throw new ExaCompilationException("RETURNS requires a non-void return type for run()");
                         exaIter.setInsideRun(true);
                         Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                         exaIter.setInsideRun(false);
@@ -202,11 +204,12 @@ class ExaWrapper {
             }
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause(ex);
+            throw convertReflectiveExceptionToCause("F-UDF.CL.J-55",ex);
         }
 
         resultHandler.flush();
 
+        // FIXME cleanup gets only called if run is successful
         // cleanup()
         try {
             Class[] cleanupParams = {ExaMetadata.class};
@@ -214,12 +217,14 @@ class ExaWrapper {
             cleanupMethod.invoke(null, exaMetadata);
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause(ex);
+            throw convertReflectiveExceptionToCause("F-UDF.CL.J-56",ex);
         }
-        catch (NoSuchMethodException ex) { /* not defined */ }
+        catch (NoSuchMethodException ex) {
+            System.err.println("W-UDF.CL.J-53: Skipping init, because init method cannot be found.");
+        }
     }
 
-    private static Throwable convertReflectiveExceptionToCause(Throwable ex) {
+    private static Throwable convertReflectiveExceptionToCause(string error_code, Throwable ex) {
         Throwable exc = ex;
         while (exc != null && (exc instanceof InvocationTargetException ||
                     exc instanceof MalformedParameterizedTypeException ||
@@ -233,6 +238,6 @@ class ExaWrapper {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         exc.printStackTrace(pw);
-        return new Exception(sw.toString());
+        return new Exception(error_code+": "+sw.toString());
     }
 }

@@ -22,14 +22,14 @@ class ExaCompiler {
         StringWriter compilationOutput = new StringWriter();
         CompilationTask task = compiler.getTask(compilationOutput, null, null, optionList, null, compilationUnits);
 
-	boolean success = false;
-	try {	
+        boolean success = false;
+        try {	
             success = task.call();
-	} catch (Exception e) {
-		// ignore
-	}
+        } catch (Exception e) {
+            // ignore
+        }
         if (!success) {
-            throw new ExaCompilationException(compilationOutput.toString());
+            throw new ExaCompilationException("F-UDF.CL.J-113: "+compilationOutput.toString());
         }
     }
 
