@@ -242,11 +242,11 @@ def __pythonvm_wrapped_cleanup():
     except: raise RuntimeError("F-UDF.CL.PY-117: function 'cleanup' is not defined")
     try:
         cleanupfunc()
-    except Exception as err:
+    except BaseException as err:
         import traceback
         backtrace = traceback.format_exc()
-        print("F-UDF.CL.PY-118: Caught exception:\n"+backtrace)
-        err.args = ("F-UDF.CL.PY-119: Caught exception:\n"+backtrace,)
+        print("F-UDF.CL.PY-118: Caught exception while executing cleanup:\n"+backtrace)
+        err.args = ("F-UDF.CL.PY-119: Caught exception while executing cleanup:\n"+backtrace,)
         raise err
 
 def __pythonvm_wrapped_run():
@@ -278,11 +278,11 @@ def __pythonvm_wrapped_run():
                     runfunc(iter)
                     if not iter_next(): break
         out.flush()
-    except Exception as err:
+    except BaseException as err:
         import traceback
         backtrace = traceback.format_exc()
-        print("F-UDF.CL.PY-31: Caught exception:\n"+backtrace)
-        err.args = ("F-UDF.CL.PY-32: Caught exception:\n"+backtrace,)
+        print("F-UDF.CL.PY-31: Caught exception while executing run:\n"+backtrace)
+        err.args = ("F-UDF.CL.PY-32: Caught exception while executing run:\n"+backtrace,)
         raise err
 
 

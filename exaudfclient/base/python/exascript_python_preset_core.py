@@ -104,8 +104,10 @@ class exa:
                     exec(compile(code, script, 'exec'), modobj.__dict__)
                 else:
                     exec(compile(code, script, 'exec')) in modobj.__dict__
-            except Exception as err:
-                raise ImportError(u"F-UDF.CL.PY-35: Importing module %s failed: %s" % (modname, str(err)))
+            except BaseException as err:
+                import traceback
+                backtrace = traceback.format_exc()
+                raise ImportError(u"F-UDF.CL.PY-35: Importing module %s failed with\n%s" % (modname, backtrace))
         return modobj
 
 
@@ -147,9 +149,9 @@ def __pythonvm_wrapped_parse(env):
             exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec'), env)
         else:
             exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
-    except Exception as err:
+    except BaseException as err:
         import traceback
         backtrace = traceback.format_exc()
-        print("F-UDF.CL.PY-37: Caught exception:\n"+backtrace)
-        err.args = ("F-UDF.CL.PY-38: Caught exception:\n"+backtrace,)
+        print("F-UDF.CL.PY-37: Caught exception while parsing the UDF code:\n"+backtrace)
+        err.args = ("F-UDF.CL.PY-38: Caught exception while parsing the UDF code:\n"+backtrace,)
         raise err
