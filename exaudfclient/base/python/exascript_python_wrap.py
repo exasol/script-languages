@@ -332,13 +332,34 @@ def __pythonvm_wrapped_singleCall(fn,arg=None):
             imp_spec = __ImportSpecification(arg)
             if imp_spec.connection:
                 imp_spec._setConnectionInformation(__ConnectionInformation(imp_spec.connection))
-            return fn(imp_spec)
+            try:
+                return fn(imp_spec)
+            except BaseException as err:
+                import traceback
+                backtrace = traceback.format_exc()
+                print("F-UDF.CL.PY-31: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
+                err.args = ("F-UDF.CL.PY-32: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
+                raise err
         elif "generate_sql_for_export_spec" in globals() and fn == generate_sql_for_export_spec:
             exp_spec = __ExportSpecification(arg)
             if exp_spec.connection:
                 exp_spec._setConnectionInformation(__ConnectionInformation(exp_spec.connection))
-            return fn(exp_spec)
+            try:
+                return fn(exp_spec)
+            except BaseException as err:
+                import traceback
+                backtrace = traceback.format_exc()
+                print("F-UDF.CL.PY-31: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
+                err.args = ("F-UDF.CL.PY-32: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
+                raise err
         else:
             raise RuntimeError("F-UDF.CL.PY-33: Unknown single call function: "+str(fn))
     else:
-        return fn()
+        try:
+            return fn()
+        except BaseException as err:
+            import traceback
+            backtrace = traceback.format_exc()
+            print("F-UDF.CL.PY-31: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace))
+            err.args = ("F-UDF.CL.PY-32: Caught exception while executing singleCall %s:\n%s"%(fn.__name__,backtrace),)
+            raise err
