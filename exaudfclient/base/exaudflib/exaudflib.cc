@@ -1840,7 +1840,7 @@ reinit:
 
     if (!send_init(socket, socket_name)) {
         if (!get_remote_client() && exchandler.exthrowed) {
-            return handle_error(socket, socket_name, vm, exchandler.exmsg, false);
+            return handle_error(socket, socket_name, vm, "F-UDF.CL.L-128: "+exchandler.exmsg, false);
         }else{
             goto reinit;
         }
@@ -1867,7 +1867,7 @@ reinit:
             return handle_error(socket, socket_name, vm, "F-UDF.CL.L-123: Unknown or unsupported VM type", false);
         }
         if (vm->exception_msg.size()>0) {
-            return handle_error(socket, socket_name, vm, vm->exception_msg.c_str(), false);
+            return handle_error(socket, socket_name, vm, "F-UDF.CL.L-129: "+vm->exception_msg, false);
         }
         shutdown_vm_in_case_of_error = true;
         use_zmq_socket_locks = vm->useZmqSocketLocks();
@@ -1907,7 +1907,7 @@ reinit:
                             break;
                     }
                     if (vm->exception_msg.size()>0) {
-                        return handle_error(socket, socket_name, vm, vm->exception_msg,true);
+                        return handle_error(socket, socket_name, vm, "F-UDF.CL.L-130: "+vm->exception_msg,true);
                     }
 
                     if (vm->calledUndefinedSingleCall.size()>0) {
@@ -1929,7 +1929,7 @@ reinit:
                 while(!vm->run_())
                 {
                     if (vm->exception_msg.size()>0) {
-                        return handle_error(socket, socket_name, vm, vm->exception_msg,true);
+                        return handle_error(socket, socket_name, vm, "F-UDF.CL.L-131: "+vm->exception_msg,true);
                     }
                 }
                 if (!send_done(socket))
@@ -1941,7 +1941,7 @@ reinit:
         {
             vm->shutdown();
             if (vm->exception_msg.size()>0) {
-                return handle_error(socket, socket_name, vm, vm->exception_msg,false);
+                return handle_error(socket, socket_name, vm, "F-UDF.CL.L-132: "+vm->exception_msg,false);
             }
         }
         send_finished(socket);
