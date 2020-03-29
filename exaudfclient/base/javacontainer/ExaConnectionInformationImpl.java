@@ -13,7 +13,7 @@ public class ExaConnectionInformationImpl implements ExaConnectionInformation {
         if (type.equals("password")) {
             this.type = ConnectionType.PASSWORD;
         } else {
-            throw new IllegalStateException("ExaConnectionInformationImpl: received unknown connection type: "+type);
+            throw new IllegalStateException("F-UDF.CL.SL.JAVA-1157: ExaConnectionInformationImpl: received unknown connection type: "+type);
         }
         this.address = address;
         this.user = user;

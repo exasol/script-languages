@@ -13,6 +13,26 @@ import datetime
 import traceback
 import imp
 
+class ExaUDFError(Exception):
+    pass 
+
+def create_exception_with_complete_backtrace(error_code, error_message, exc_info):
+    import traceback
+    import re
+    exception_type = exc_info[0]
+    exception_message = exc_info[1]
+    try:
+        backtrace_tuples=traceback.extract_tb(exc_info[2])
+        backtrace = " \n".join("%s:%s %s"%(filename, line_number, function_name) 
+                                for filename, line_number, function_name, text 
+                                in backtrace_tuples 
+                                if filename!="<EXASCRIPT>" and filename!="EXASCRIPTPP")
+        backtrace = " \n%s"%backtrace
+    except:
+        backtrace = ""
+    new_exception_message = "%s: %s: %s: %s.%s" % (error_code, error_message, exception_type.__name__, exception_message ,backtrace)
+    print(new_exception_message)
+    return ExaUDFError(new_exception_message)
 
 class exa:
     def __init__(self):
@@ -88,7 +108,7 @@ class exa:
         code = self.__meta.moduleContent(encodeUTF8(modname))
         msg = self.__meta.checkException()
 
-        if msg: raise ImportError(u"Importing module %s failed: %s" % (modname, msg))
+        if msg: raise ImportError(u"F-UDF.CL.SL.PYTHON-1119: Importing module %s failed: %s" % (modname, msg))
         code = decodeUTF8(code)
         if str(code) in self.__modules:
             print("%%% found code", modname, repr(code))
@@ -104,8 +124,11 @@ class exa:
                     exec(compile(code, script, 'exec'), modobj.__dict__)
                 else:
                     exec(compile(code, script, 'exec')) in modobj.__dict__
-            except Exception as err:
-                raise ImportError(u"Importing module %s failed: %s" % (modname, str(err)))
+            except BaseException as err:
+                raise create_exception_with_complete_backtrace(
+                        "F-UDF.CL.SL.PYTHON-1120",
+                        "Importing module %s failed"%modname,
+                        sys.exc_info())
         return modobj
 
 
@@ -124,7 +147,7 @@ class exa:
         connection_name = unicode(name)
         connectionInfo = self.__meta.connectionInformation(encodeUTF8(connection_name))
         msg = self.__meta.checkException()
-        if msg: raise ImportError(u"get_connection for connection name %s failed: %s" % (name, msg))
+        if msg: raise ImportError(u"F-UDF.CL.SL.PYTHON-1121: get_connection for connection name %s failed: %s" % (name, msg))
         return exa.ConnectionInformation(decodeUTF8(connectionInfo.copyKind()), decodeUTF8(connectionInfo.copyAddress()), decodeUTF8(connectionInfo.copyUser()), decodeUTF8(connectionInfo.copyPassword()))
 
 
@@ -147,8 +170,8 @@ def __pythonvm_wrapped_parse(env):
             exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec'), env)
         else:
             exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
-    except Exception as err:
-        errtypel, errobj, backtrace = sys.exc_info()
-        if backtrace.tb_next: backtrace = backtrace.tb_next
-        err.args = ("".join(traceback.format_exception(errtypel, errobj, backtrace)),)
-        raise err
+    except BaseException as err:
+        raise create_exception_with_complete_backtrace(
+                "F-UDF.CL.SL.PYTHON-1122",
+                "Exception while parsing UDF",
+                sys.exc_info())

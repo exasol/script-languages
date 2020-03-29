@@ -1,10 +1,15 @@
 package com.exasol;
 
 import java.io.IOError;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.MalformedParameterizedTypeException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -64,7 +69,7 @@ class ExaWrapper {
                  // args is already a String with the String arg, so nothing to do
                  argClass = String.class;
              } else {
-                 throw new ExaCompilationException("Internal error: single call argument with unknown DTO: " + args.toString());
+                 throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1065: Internal error: single call argument with unknown DTO: " + args.toString());
              }
         }
 
@@ -97,12 +102,12 @@ class ExaWrapper {
             }
         } catch (java.lang.ClassNotFoundException ex) {
             if (userDefinedScriptName) {
-                throw new ExaCompilationException("The main script class defined via %scriptclass cannot be found: " + scriptClassName);
+                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1066: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
             } else {
-                throw new ExaCompilationException("The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
+                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1067: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-              throw convertReflectiveExceptionToCause(ex);
+              throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1068","Exception during singleCall "+fn,ex);
         } catch (NoSuchMethodException ex) {
            throw new ExaUndefinedSingleCallException(fn);
         }
@@ -112,17 +117,17 @@ class ExaWrapper {
         ExaMetadataImpl exaMetadata = new ExaMetadataImpl();
         String exMsg = exaMetadata.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException(exMsg);
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1069: "+exMsg);
         }
         TableIterator tableIterator = new TableIterator();
         exMsg = tableIterator.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException(exMsg);
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1070: "+exMsg);
         }
         ResultHandler resultHandler = new ResultHandler(tableIterator);
         exMsg = resultHandler.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException(exMsg);
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1071: "+exMsg);
         }
 
         ExaIteratorImpl exaIter = new ExaIteratorImpl(exaMetadata, tableIterator, resultHandler);
@@ -147,13 +152,15 @@ class ExaWrapper {
         }
         catch (java.lang.ClassNotFoundException ex) {
             if (userDefinedScriptName) {
-                throw new ExaCompilationException("The main script class defined via %scriptclass cannot be found: " + scriptClassName);
+                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1072: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
             } else {
-                throw new ExaCompilationException("The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
+                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1073: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause(ex);
-        } catch (NoSuchMethodException ex) { /* not defined */ }
+            throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1074","Exception during init",ex);
+        } catch (NoSuchMethodException ex) { 
+            System.err.println("W-UDF.CL.SL.JAVA-1075: Skipping init, because init method cannot be found.");
+        }
 
         // run()
         Class[] runParams = {ExaMetadata.class, ExaIterator.class};
@@ -163,14 +170,14 @@ class ExaWrapper {
             if (exaMetadata.getInputType().equals("SET")) { // MULTIPLE INPUT
                 if (exaMetadata.getOutputType().equals("EMIT")) { // MULTIPLE OUTPUT
                     if (!runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("EMITS requires a void return type for run()");
+                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1076: EMITS requires a void return type for run()");
                     exaIter.setInsideRun(true);
                     Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                     exaIter.setInsideRun(false);
                 }
                 else { // EXACTLY_ONCE OUTPUT
                     if (runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("RETURNS requires a non-void return type for run()");
+                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1077: RETURNS requires a non-void return type for run()");
                     exaIter.setInsideRun(true);
                     Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                     exaIter.setInsideRun(false);
@@ -179,18 +186,18 @@ class ExaWrapper {
             }
             else { // EXACTLY_ONCE INPUT
                 if (exaMetadata.getOutputType().equals("EMIT")) { // MULTIPLE OUTPUT
+                    if (!runMethod.getReturnType().equals(Void.TYPE))
+                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1078: EMITS requires a void return type for run()");
                     do {
-                        if (!runMethod.getReturnType().equals(Void.TYPE))
-                            throw new ExaCompilationException("EMITS requires a void return type for run()");
                         exaIter.setInsideRun(true);
                         Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                         exaIter.setInsideRun(false);
                     } while (exaIter.next());
                 }
                 else { // EXACTLY_ONCE OUTPUT
+                    if (runMethod.getReturnType().equals(Void.TYPE))
+                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1079: RETURNS requires a non-void return type for run()");
                     do {
-                        if (runMethod.getReturnType().equals(Void.TYPE))
-                            throw new ExaCompilationException("RETURNS requires a non-void return type for run()");
                         exaIter.setInsideRun(true);
                         Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                         exaIter.setInsideRun(false);
@@ -200,11 +207,12 @@ class ExaWrapper {
             }
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause(ex);
+            throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1080","Exception during run",ex);
         }
 
         resultHandler.flush();
 
+        // FIXME cleanup gets only called if run is successful
         // cleanup()
         try {
             Class[] cleanupParams = {ExaMetadata.class};
@@ -212,12 +220,14 @@ class ExaWrapper {
             cleanupMethod.invoke(null, exaMetadata);
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause(ex);
+            throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1081","Exception during cleanup",ex);
         }
-        catch (NoSuchMethodException ex) { /* not defined */ }
+        catch (NoSuchMethodException ex) {
+            System.err.println("W-UDF.CL.SL.JAVA-1082: Skipping init, because init method cannot be found.");
+        }
     }
 
-    private static Throwable convertReflectiveExceptionToCause(Throwable ex) {
+    private static String cleanStackTrace(Throwable ex){
         Throwable exc = ex;
         while (exc != null && (exc instanceof InvocationTargetException ||
                     exc instanceof MalformedParameterizedTypeException ||
@@ -228,6 +238,55 @@ class ExaWrapper {
             else
                 exc = cause;
         }
-        return exc;
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        exc.printStackTrace(pw);
+        String stacktrace = sw.toString();
+            LinkedList<String> stacktrace_lines = new LinkedList<String>(Arrays.asList(stacktrace.split("\\r?\\n")));
+
+        ListIterator list_Iter = stacktrace_lines.listIterator(0);
+        while (list_Iter.hasNext()) {
+            String line = (String) list_Iter.next();
+            list_Iter.set(line.replaceFirst("^\tat ", ""));
+        }
+        list_Iter = stacktrace_lines.listIterator(stacktrace_lines.size());
+        list_Iter = stacktrace_lines.listIterator(stacktrace_lines.size());
+        Integer start_index = null;
+
+        while (list_Iter.hasPrevious()) {
+            Integer index = list_Iter.previousIndex();
+            String line = (String) list_Iter.previous();
+            if (line.startsWith("com.exasol.Exa")) {
+                if (start_index == null) {
+                    start_index = index;
+                }
+            } else if (line.startsWith("java.base/")) {
+                if (start_index != null &&
+                        (line.startsWith("java.base/jdk.internal.reflect") ||
+                                line.startsWith("java.base/java.lang.reflect"))) {
+                    list_Iter.remove();
+                }
+            } else {
+                start_index = null;
+            }
+        }
+
+        list_Iter = stacktrace_lines.listIterator(0);
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter writer = new PrintWriter(stringWriter, true);
+        while (list_Iter.hasNext()) {
+            String line = (String) list_Iter.next();
+            writer.println(line);
+        }
+        String cleanedStacktrace = stringWriter.toString();
+        return cleanedStacktrace;
+    }
+
+    private static Throwable convertReflectiveExceptionToCause(String error_code, String errorMessage, Throwable ex) {
+        String cleanedStacktrace = cleanStackTrace(ex); 
+        String error_message=error_code+": "+errorMessage+" \n"+cleanedStacktrace;
+        System.out.println(error_message);
+        return new ExaUDFException(error_message);
     }
 }

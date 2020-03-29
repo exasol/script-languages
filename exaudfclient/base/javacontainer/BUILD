@@ -147,7 +147,8 @@ java_library(
             ":ExaExportSpecification.java",
             ":ExaIterationException.java",
             ":ExaIterator.java",
-            ":ExaMetadata.java"
+            ":ExaMetadata.java",
+            ":ExaUDFException.java"
             ],
     resources = ["//:LICENSE-exasol-script-api.txt"],
     deps = [":exaudf"]
