@@ -7,6 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.MalformedParameterizedTypeException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -104,7 +107,7 @@ class ExaWrapper {
                 throw new ExaCompilationException("F-UDF.CL.J-41: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-              throw convertReflectiveExceptionToCause("F-UDF.CL.J-42",ex);
+              throw convertReflectiveExceptionToCause("F-UDF.CL.J-42","Exception during singleCall "+fn,ex);
         } catch (NoSuchMethodException ex) {
            throw new ExaUndefinedSingleCallException(fn);
         }
@@ -154,7 +157,7 @@ class ExaWrapper {
                 throw new ExaCompilationException("F-UDF.CL.J-47: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause("F-UDF.CL.J-54",ex);
+            throw convertReflectiveExceptionToCause("F-UDF.CL.J-54","Exception during init",ex);
         } catch (NoSuchMethodException ex) { 
             System.err.println("W-UDF.CL.J-48: Skipping init, because init method cannot be found.");
         }
@@ -204,7 +207,7 @@ class ExaWrapper {
             }
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause("F-UDF.CL.J-55",ex);
+            throw convertReflectiveExceptionToCause("F-UDF.CL.J-55","Exception during run",ex);
         }
 
         resultHandler.flush();
@@ -217,14 +220,14 @@ class ExaWrapper {
             cleanupMethod.invoke(null, exaMetadata);
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause("F-UDF.CL.J-56",ex);
+            throw convertReflectiveExceptionToCause("F-UDF.CL.J-56","Exception during cleanup",ex);
         }
         catch (NoSuchMethodException ex) {
             System.err.println("W-UDF.CL.J-53: Skipping init, because init method cannot be found.");
         }
     }
 
-    private static Throwable convertReflectiveExceptionToCause(String error_code, Throwable ex) {
+    private static String cleanStackTrace(Throwable ex){
         Throwable exc = ex;
         while (exc != null && (exc instanceof InvocationTargetException ||
                     exc instanceof MalformedParameterizedTypeException ||
@@ -235,9 +238,55 @@ class ExaWrapper {
             else
                 exc = cause;
         }
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         exc.printStackTrace(pw);
-        return new Exception(error_code+": "+sw.toString());
+        String stacktrace = sw.toString();
+            LinkedList<String> stacktrace_lines = new LinkedList<String>(Arrays.asList(stacktrace.split("\\r?\\n")));
+
+        ListIterator list_Iter = stacktrace_lines.listIterator(0);
+        while (list_Iter.hasNext()) {
+            String line = (String) list_Iter.next();
+            list_Iter.set(line.replaceFirst("^\tat ", ""));
+        }
+        list_Iter = stacktrace_lines.listIterator(stacktrace_lines.size());
+        list_Iter = stacktrace_lines.listIterator(stacktrace_lines.size());
+        Integer start_index = null;
+
+        while (list_Iter.hasPrevious()) {
+            Integer index = list_Iter.previousIndex();
+            String line = (String) list_Iter.previous();
+            if (line.startsWith("com.exasol.Exa")) {
+                if (start_index == null) {
+                    start_index = index;
+                }
+            } else if (line.startsWith("java.base/")) {
+                if (start_index != null &&
+                        (line.startsWith("java.base/jdk.internal.reflect") ||
+                                line.startsWith("java.base/java.lang.reflect"))) {
+                    list_Iter.remove();
+                }
+            } else {
+                start_index = null;
+            }
+        }
+
+        list_Iter = stacktrace_lines.listIterator(0);
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter writer = new PrintWriter(stringWriter, true);
+        while (list_Iter.hasNext()) {
+            String line = (String) list_Iter.next();
+            writer.println(line);
+        }
+        String cleanedStacktrace = stringWriter.toString();
+        return cleanedStacktrace;
+    }
+
+    private static Throwable convertReflectiveExceptionToCause(String error_code, String errorMessage, Throwable ex) {
+        String cleanedStacktrace = cleanStackTrace(ex); 
+        String error_message=error_code+": "+errorMessage+" \n"+cleanedStacktrace;
+        System.out.println(error_message);
+        return new ExaUDFException(error_message);
     }
 }

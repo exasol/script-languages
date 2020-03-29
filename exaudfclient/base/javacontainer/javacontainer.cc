@@ -71,7 +71,7 @@ bool JavaVMach::run() {
         return m_impl->run();
     }  catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF.CL.J-3"+std::string(err.what());
+        exception_msg = "F-UDF.CL.J-3: "+std::string(err.what());
     } catch (...) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF.CL.J-4: some unknown exception occurred";
@@ -436,47 +436,50 @@ bool JavaVMImpl::check(const string& errorCode, string& calledUndefinedSingleCal
         else {
             exceptionMessage.append(errorCode+": F-UDF.CL.J-28: Throwable.toString(): result is null");
         }
-        // Throwable.getStackTrace()
-        jmethodID getStackTrace = m_env->GetMethodID(exClass, "getStackTrace", "()[Ljava/lang/StackTraceElement;");
-        check("F-UDF.CL.J-154",calledUndefinedSingleCall);
-        if (!getStackTrace)
-            throwException(errorCode+": F-UDF.CL.J-29: Throwable.getStackTrace() could not be found");
-        jobjectArray frames = (jobjectArray)m_env->CallObjectMethod(ex, getStackTrace);
-        if (frames) {
-            jclass frameClass = m_env->FindClass("java/lang/StackTraceElement");
-            check("F-UDF.CL.J-155",calledUndefinedSingleCall);
-            if (!frameClass)
-                throwException(errorCode+": F-UDF.CL.J-30: FindClass for StackTraceElement failed");
-            jmethodID frameToString = m_env->GetMethodID(frameClass, "toString", "()Ljava/lang/String;");
-            check("F-UDF.CL.J-156",calledUndefinedSingleCall);
-            if (!frameToString)
-                throwException(errorCode+": F-UDF.CL.J-31: StackTraceElement.toString() could not be found");
-            jsize framesLength = m_env->GetArrayLength(frames);
-            for (int i = 0; i < framesLength; i++) {
-                jobject frame = m_env->GetObjectArrayElement(frames, i);
-                check("F-UDF.CL.J-157",calledUndefinedSingleCall);
-                jobject frameMsgObj = m_env->CallObjectMethod(frame, frameToString);
-                if (frameMsgObj) {
-                    jstring message = static_cast<jstring>(frameMsgObj);
-                    const char *utfMessage = m_env->GetStringUTFChars(message, 0);
-                    string line = utfMessage;
-                    // If stack trace lines are wrapper or reflection entries, stop
-                    if ((line.find("ExaWrapper.") == 0) || (line.find("ExaCompiler.") == 0) || (line.find("sun.reflect.") == 0)) {
-                        if (i != 0)
-                            exceptionMessage.append("\n");
-                        m_env->ReleaseStringUTFChars(message, utfMessage);
-                        break;
-                    }
-                    else {
-                        if (i == 0)
-                            exceptionMessage.append("\nStack trace:");
-                        exceptionMessage.append("\n");
-                        exceptionMessage.append(utfMessage);
-                        m_env->ReleaseStringUTFChars(message, utfMessage);
-                    }
-                }
-            }
-        }
+
+//        // Build Stacktrace
+//
+//        // Throwable.getStackTrace()
+//        jmethodID getStackTrace = m_env->GetMethodID(exClass, "getStackTrace", "()[Ljava/lang/StackTraceElement;");
+//        check("F-UDF.CL.J-154",calledUndefinedSingleCall);
+//        if (!getStackTrace)
+//            throwException(errorCode+": F-UDF.CL.J-29: Throwable.getStackTrace() could not be found");
+//        jobjectArray frames = (jobjectArray)m_env->CallObjectMethod(ex, getStackTrace);
+//        if (frames) {
+//            jclass frameClass = m_env->FindClass("java/lang/StackTraceElement");
+//            check("F-UDF.CL.J-155",calledUndefinedSingleCall);
+//            if (!frameClass)
+//                throwException(errorCode+": F-UDF.CL.J-30: FindClass for StackTraceElement failed");
+//            jmethodID frameToString = m_env->GetMethodID(frameClass, "toString", "()Ljava/lang/String;");
+//            check("F-UDF.CL.J-156",calledUndefinedSingleCall);
+//            if (!frameToString)
+//                throwException(errorCode+": F-UDF.CL.J-31: StackTraceElement.toString() could not be found");
+//            jsize framesLength = m_env->GetArrayLength(frames);
+//            for (int i = 0; i < framesLength; i++) {
+//                jobject frame = m_env->GetObjectArrayElement(frames, i);
+//                check("F-UDF.CL.J-157",calledUndefinedSingleCall);
+//                jobject frameMsgObj = m_env->CallObjectMethod(frame, frameToString);
+//                if (frameMsgObj) {
+//                    jstring message = static_cast<jstring>(frameMsgObj);
+//                    const char *utfMessage = m_env->GetStringUTFChars(message, 0);
+//                    string line = utfMessage;
+//                    // If stack trace lines are wrapper or reflection entries, stop
+//                    if ((line.find("ExaWrapper.") == 0) || (line.find("ExaCompiler.") == 0) || (line.find("sun.reflect.") == 0)) {
+//                        if (i != 0)
+//                            exceptionMessage.append("\n");
+//                        m_env->ReleaseStringUTFChars(message, utfMessage);
+//                        break;
+//                    }
+//                    else {
+//                        if (i == 0)
+//                            exceptionMessage.append("\nStack trace:");
+//                        exceptionMessage.append("\n");
+//                        exceptionMessage.append(utfMessage);
+//                        m_env->ReleaseStringUTFChars(message, utfMessage);
+//                    }
+//                }
+//            }
+//        }
         throwException(errorCode+": "+exceptionMessage);
     }
     return 1;
