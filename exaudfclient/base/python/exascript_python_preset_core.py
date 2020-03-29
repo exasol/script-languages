@@ -13,6 +13,26 @@ import datetime
 import traceback
 import imp
 
+class ExaUDFError(Exception):
+    pass 
+
+def create_exception_with_complete_backtrace(error_code, error_message, exc_info):
+    import traceback
+    import re
+    exception_type = exc_info[0]
+    exception_message = exc_info[1]
+    try:
+        backtrace_tuples=traceback.extract_tb(exc_info[2])
+        backtrace = " \n".join("%s:%s %s"%(filename, line_number, function_name) 
+                                for filename, line_number, function_name, text 
+                                in backtrace_tuples 
+                                if filename!="<EXASCRIPT>" and filename!="EXASCRIPTPP")
+        backtrace = " \n%s"%backtrace
+    except:
+        backtrace = ""
+    new_exception_message = "%s: %s: %s: %s.%s" % (error_code, error_message, exception_type.__name__, exception_message ,backtrace)
+    print(new_exception_message)
+    return ExaUDFError(new_exception_message)
 
 class exa:
     def __init__(self):
@@ -105,9 +125,10 @@ class exa:
                 else:
                     exec(compile(code, script, 'exec')) in modobj.__dict__
             except BaseException as err:
-                import traceback
-                backtrace = traceback.format_exc()
-                raise ImportError(u"F-UDF.CL.PY-35: Importing module %s failed with\n%s" % (modname, backtrace))
+                raise create_exception_with_complete_backtrace(
+                        "F-UDF.CL.PY-35",
+                        "Importing module %s failed"%modname,
+                        sys.exc_info())
         return modobj
 
 
@@ -150,8 +171,7 @@ def __pythonvm_wrapped_parse(env):
         else:
             exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
     except BaseException as err:
-        import traceback
-        backtrace = traceback.format_exc()
-        print("F-UDF.CL.PY-37: Caught exception while parsing the UDF code:\n"+backtrace)
-        err.args = ("F-UDF.CL.PY-38: Caught exception while parsing the UDF code:\n"+backtrace,)
-        raise err
+        raise create_exception_with_complete_backtrace(
+                "F-UDF.CL.PY-38",
+                "Exception while parsing UDF",
+                sys.exc_info())

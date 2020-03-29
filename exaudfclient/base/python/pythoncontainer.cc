@@ -33,6 +33,8 @@ static void check(const std::string& error_code) {
     PyErr_Fetch(&pt, &pv, &tb); if (pt == NULL) return;
     PyErr_NormalizeException(&pt, &pv, &tb); if (pt == NULL) return;
     s = PyObject_Str(pv);
+    
+    // Get Exception name
     if (NULL != (pvc = PyObject_GetAttrString(pv, "__class__"))) {
         if (NULL != (pvcn = PyObject_GetAttrString(pvc, "__name__"))) {
 #ifdef ENABLE_PYTHON3
@@ -48,6 +50,8 @@ static void check(const std::string& error_code) {
         }
         Py_XDECREF(pvc);
     }
+
+
     string exception_string("");
 #ifdef ENABLE_PYTHON3
     PyObject* repr = PyObject_Str(s);
