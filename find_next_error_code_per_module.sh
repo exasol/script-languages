@@ -13,7 +13,7 @@ do
 #  echo module: $module
 #  echo highest_error_code: $highest_error_code
   error_codes_for_module=$(echo $error_codes | tr " " "\n" | cut -f 2,3 -d "-" | grep "$module" | cut -f 2)
-  miss_algined_error_code=$(echo "$error_codes_for_module" | tr " " "\n" | cut -f 2 -d "-" | awk 'BEGIN{ line=1 } { if ($1 != line) { print $1; exit } ; line++}') # we assume find_error_codes.sh returns the error codes sorted by their module and number
+  miss_algined_error_code=$(echo "$error_codes_for_module" | tr " " "\n" | cut -f 2 -d "-" | awk 'BEGIN{ line=1000 } { if ($1 != line) { print $1; exit } ; line++}') # we assume find_error_codes.sh returns the error codes sorted by their module and number
   # echo "$error_codes_for_module" | tr " " "\n" | cut -f 2 -d "-" | awk 'BEGIN{ line=1 } { print $1 "," line ; line++}' # DEBUG Allgnment
   if [ -n "$miss_algined_error_code" ]
   then

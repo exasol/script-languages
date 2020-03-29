@@ -30,7 +30,7 @@ class ExaIteratorImpl implements ExaIterator {
         long size = tableIterator.rowsInGroup();
         String exMsg = tableIterator.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF.CL.J-57: "+exMsg);
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1101: "+exMsg);
         }
         return size;
     }
@@ -38,14 +38,14 @@ class ExaIteratorImpl implements ExaIterator {
     @Override
     public boolean next() throws ExaIterationException {
         if (insideRun && singleInput)
-            throw new ExaIterationException("E-UDF.CL.J-58: next() function is not allowed in scalar context");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1102: next() function is not allowed in scalar context");
         clearCache();
         if (finished)
             return false;
         boolean next = tableIterator.next();
         String exMsg = tableIterator.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF.CL.J-59: "+exMsg);
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1103: "+exMsg);
         }
         if (!next)
             finished = true;
@@ -55,12 +55,12 @@ class ExaIteratorImpl implements ExaIterator {
     @Override
     public void reset() throws ExaIterationException {
         if (singleInput)
-            throw new ExaIterationException("E-UDF.CL.J-60: reset() function is not allowed in scalar context");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1104: reset() function is not allowed in scalar context");
         clearCache();
         tableIterator.reset();
         String exMsg = tableIterator.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF.CL.J-61: "+exMsg);
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1105: "+exMsg);
         }
         finished = false;
     }
@@ -68,11 +68,11 @@ class ExaIteratorImpl implements ExaIterator {
     @Override
     public void emit(Object... values) throws ExaIterationException, ExaDataTypeException {
         if (insideRun && singleOutput)
-            throw new ExaIterationException("E-UDF.CL.J-62: emit() function is not allowed in scalar context");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1106: emit() function is not allowed in scalar context");
 
         if(values != null){
             if (values.length != exaMetadata.getOutputColumnCount()) {
-                String errorText = "E-UDF.CL.J-63: emit() takes exactly " + exaMetadata.getOutputColumnCount();
+                String errorText = "E-UDF.CL.SL.JAVA-1107: emit() takes exactly " + exaMetadata.getOutputColumnCount();
                 errorText += (exaMetadata.getOutputColumnCount() > 1) ? " arguments" : " argument";
                 errorText += " (" + values.length + " given)";
                 throw new ExaIterationException(errorText);
@@ -94,7 +94,7 @@ class ExaIteratorImpl implements ExaIterator {
                         resultHandler.setDouble(i, val.doubleValue());
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-64: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1108: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type " + 
                             outputColumnTypes[i] + 
@@ -116,7 +116,7 @@ class ExaIteratorImpl implements ExaIterator {
                         resultHandler.setDouble(i, val.doubleValue());
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-65: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1109: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type " + 
                             outputColumnTypes[i] + 
@@ -140,7 +140,7 @@ class ExaIteratorImpl implements ExaIterator {
                         resultHandler.setDouble(i, val.doubleValue());
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-66: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1110: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type "+ 
                             outputColumnTypes[i] + 
@@ -160,7 +160,7 @@ class ExaIteratorImpl implements ExaIterator {
                         resultHandler.setDouble(i, val.doubleValue());
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-67: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1111: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type " + 
                             outputColumnTypes[i] + 
@@ -174,7 +174,7 @@ class ExaIteratorImpl implements ExaIterator {
                         resultHandler.setBoolean(i, val.booleanValue());
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-68: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1112: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type " + 
                             outputColumnTypes[i] + 
@@ -190,7 +190,7 @@ class ExaIteratorImpl implements ExaIterator {
                             utf8Bytes = val.getBytes("UTF-8");
                         } catch (java.io.UnsupportedEncodingException ex) {
                             throw new ExaDataTypeException(
-                                "E-UDF.CL.J-69: Column with name '" + 
+                                "E-UDF.CL.SL.JAVA-1113: Column with name '" + 
                                 exaMetadata.getOutputColumnName(i) + 
                                 "' contains invalid UTF-8 data"
                                 );
@@ -199,7 +199,7 @@ class ExaIteratorImpl implements ExaIterator {
                     }
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-70: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1114: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type " + 
                             outputColumnTypes[i] + 
@@ -213,7 +213,7 @@ class ExaIteratorImpl implements ExaIterator {
                         resultHandler.setDate(i, val.toString());
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-71: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1115: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type " + 
                             outputColumnTypes[i] + 
@@ -227,7 +227,7 @@ class ExaIteratorImpl implements ExaIterator {
                         resultHandler.setTimestamp(i, val.toString());
                     else
                         throw new ExaDataTypeException(
-                            "E-UDF.CL.J-72: emit column '" + 
+                            "E-UDF.CL.SL.JAVA-1116: emit column '" + 
                             exaMetadata.getOutputColumnName(i) + 
                             "' is of type " + 
                             outputColumnTypes[i] + 
@@ -237,7 +237,7 @@ class ExaIteratorImpl implements ExaIterator {
                 }
                 else {
                     throw new ExaDataTypeException(
-                        "E-UDF.CL.J-73: emit column '" + 
+                        "E-UDF.CL.SL.JAVA-1117: emit column '" + 
                         exaMetadata.getOutputColumnName(i) + 
                         "' is of unsupported type " + 
                         values[i].getClass().getCanonicalName()
@@ -246,14 +246,14 @@ class ExaIteratorImpl implements ExaIterator {
 
                 String exMsg = resultHandler.checkException();
                 if (exMsg != null && exMsg.length() > 0) {
-                    throw new ExaIterationException("E-UDF.CL.J-74: "+exMsg);
+                    throw new ExaIterationException("E-UDF.CL.SL.JAVA-1118: "+exMsg);
                 }
             }
         }else{
             if(exaMetadata.getOutputColumnCount()==1){
               resultHandler.setNull(0);
             }else{
-              String errorText = "E-UDF.CL.J-75: emit() takes exactly " + exaMetadata.getOutputColumnCount();
+              String errorText = "E-UDF.CL.SL.JAVA-1119: emit() takes exactly " + exaMetadata.getOutputColumnCount();
               errorText += (exaMetadata.getOutputColumnCount() > 1) ? " arguments" : " argument";
               errorText += " (" + 1 + " given)";
               throw new ExaIterationException(errorText);
@@ -263,10 +263,10 @@ class ExaIteratorImpl implements ExaIterator {
         boolean next = resultHandler.next();
         String exMsg = resultHandler.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF.CL.J-76: "+exMsg);
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1120: "+exMsg);
         }
         if (!next) {
-            throw new ExaIterationException("F-UDF.CL.J-77: Internal error while emiting row");
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1121: Internal error while emiting row");
         }
     }
 
@@ -288,7 +288,7 @@ class ExaIteratorImpl implements ExaIterator {
         else
             throw 
               new ExaDataTypeException(
-                "E-UDF.CL.J-78: getInteger cannot convert column '" + 
+                "E-UDF.CL.SL.JAVA-1122: getInteger cannot convert column '" + 
                 columnNames.get(column) + 
                 "' of type " + 
                 exaMetadata.getInputColumnSqlType(column) + 
@@ -300,7 +300,7 @@ class ExaIteratorImpl implements ExaIterator {
     public Integer getInteger(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-79: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1123: Column with name '" + name + "' does not exist");
         return getInteger(col);
     }
 
@@ -322,7 +322,7 @@ class ExaIteratorImpl implements ExaIterator {
         else
             throw 
               new ExaDataTypeException(
-                "E-UDF.CL.J-80: getLong cannot convert column '" + 
+                "E-UDF.CL.SL.JAVA-1124: getLong cannot convert column '" + 
                 columnNames.get(column) + 
                 "' of type " + 
                 exaMetadata.getInputColumnSqlType(column) + 
@@ -334,7 +334,7 @@ class ExaIteratorImpl implements ExaIterator {
     public Long getLong(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-81: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1125: Column with name '" + name + "' does not exist");
         return getLong(col);
     }
 
@@ -354,7 +354,7 @@ class ExaIteratorImpl implements ExaIterator {
         else
             throw 
               new ExaDataTypeException(
-                "E-UDF.CL.J-82: getBigDecimal cannot convert column '" + 
+                "E-UDF.CL.SL.JAVA-1126: getBigDecimal cannot convert column '" + 
                 columnNames.get(column) + 
                 "' of type " + 
                 exaMetadata.getInputColumnSqlType(column) + 
@@ -366,7 +366,7 @@ class ExaIteratorImpl implements ExaIterator {
     public BigDecimal getBigDecimal(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-83: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1127: Column with name '" + name + "' does not exist");
         return getBigDecimal(col);
     }
 
@@ -386,7 +386,7 @@ class ExaIteratorImpl implements ExaIterator {
         else
             throw 
               new ExaDataTypeException(
-                  "E-UDF.CL.J-84: getDouble cannot convert column '" + 
+                  "E-UDF.CL.SL.JAVA-1128: getDouble cannot convert column '" + 
                   columnNames.get(column) + 
                   "' of type " + 
                   exaMetadata.getInputColumnSqlType(column) + 
@@ -398,7 +398,7 @@ class ExaIteratorImpl implements ExaIterator {
     public Double getDouble(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-85: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1129: Column with name '" + name + "' does not exist");
         return getDouble(col);
     }
 
@@ -415,7 +415,7 @@ class ExaIteratorImpl implements ExaIterator {
         else
             throw 
               new ExaDataTypeException(
-                  "E-UDF.CL.J-86: getString cannot convert column '" + 
+                  "E-UDF.CL.SL.JAVA-1130: getString cannot convert column '" + 
                   columnNames.get(column) + 
                   "' of type " + 
                   exaMetadata.getInputColumnSqlType(column) + 
@@ -427,7 +427,7 @@ class ExaIteratorImpl implements ExaIterator {
     public String getString(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-87: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1131: Column with name '" + name + "' does not exist");
         return getString(col);
     }
 
@@ -440,7 +440,7 @@ class ExaIteratorImpl implements ExaIterator {
             return (Boolean) object;
         else
             throw new ExaDataTypeException(
-                "E-UDF.CL.J-88: getBoolean cannot convert column '" + 
+                "E-UDF.CL.SL.JAVA-1132: getBoolean cannot convert column '" + 
                 columnNames.get(column) + 
                 "' of type " + 
                 exaMetadata.getInputColumnSqlType(column) + 
@@ -452,7 +452,7 @@ class ExaIteratorImpl implements ExaIterator {
     public Boolean getBoolean(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-89: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1133: Column with name '" + name + "' does not exist");
         return getBoolean(col);
     }
 
@@ -466,7 +466,7 @@ class ExaIteratorImpl implements ExaIterator {
         else
             throw 
               new ExaDataTypeException(
-                  "E-UDF.CL.J-90: getDate cannot convert column '" + 
+                  "E-UDF.CL.SL.JAVA-1134: getDate cannot convert column '" + 
                   columnNames.get(column) + 
                   "' of type " + 
                   exaMetadata.getInputColumnSqlType(column) + 
@@ -477,7 +477,7 @@ class ExaIteratorImpl implements ExaIterator {
     public Date getDate(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-91: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1135: Column with name '" + name + "' does not exist");
         return getDate(col);
     }
 
@@ -491,7 +491,7 @@ class ExaIteratorImpl implements ExaIterator {
         else
             throw 
               new ExaDataTypeException(
-                  "E-UDF.CL.J-92: getTimestamp cannot convert column '" + 
+                  "E-UDF.CL.SL.JAVA-1136: getTimestamp cannot convert column '" + 
                   columnNames.get(column) + 
                   "' of type " + 
                   exaMetadata.getInputColumnSqlType(column) + 
@@ -503,17 +503,17 @@ class ExaIteratorImpl implements ExaIterator {
     public Timestamp getTimestamp(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-93: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1137: Column with name '" + name + "' does not exist");
         return getTimestamp(col);
     }
 
     @Override
     public Object getObject(int column) throws ExaIterationException, ExaDataTypeException {
         if (column < 0 || column >= exaMetadata.getInputColumnCount())
-            throw new ExaIterationException("E-UDF.CL.J-94: Column number " + column + " does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1138: Column number " + column + " does not exist");
 
         if (finished)
-            throw new ExaIterationException("E-UDF.CL.J-95: Iteration finished");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1139: Iteration finished");
 
         if (cache[column] != null)
             return cache[column];
@@ -539,7 +539,7 @@ class ExaIteratorImpl implements ExaIterator {
                 try {
                     val = new String(utf8Bytes, "UTF-8");
                 } catch (java.io.UnsupportedEncodingException ex) {
-                    throw new ExaDataTypeException("F-UDF.CL.J-96: Column with name '" + columnNames.get(column) + "' contains invalid UTF-8 data");
+                    throw new ExaDataTypeException("F-UDF.CL.SL.JAVA-1140: Column with name '" + columnNames.get(column) + "' contains invalid UTF-8 data");
                 }
                 break;
             case "BOOLEAN":
@@ -556,7 +556,7 @@ class ExaIteratorImpl implements ExaIterator {
                     val = Timestamp.valueOf(timestamp);
                 break;
             default:
-                throw new ExaDataTypeException("F-UDF.CL.J-97: Column with name '" + columnNames.get(column) + "' has an invalid data type");
+                throw new ExaDataTypeException("F-UDF.CL.SL.JAVA-1141: Column with name '" + columnNames.get(column) + "' has an invalid data type");
         }
         if (tableIterator.wasNull())
             val = null;
@@ -568,7 +568,7 @@ class ExaIteratorImpl implements ExaIterator {
     public Object getObject(String name) throws ExaIterationException, ExaDataTypeException {
         int col = columnNames.indexOf(name);
         if (col == -1)
-            throw new ExaIterationException("E-UDF.CL.J-98: Column with name '" + name + "' does not exist");
+            throw new ExaIterationException("E-UDF.CL.SL.JAVA-1142: Column with name '" + name + "' does not exist");
         return getObject(col);
     }
 
@@ -579,33 +579,33 @@ class ExaIteratorImpl implements ExaIterator {
         if (from instanceof Long) {
             long val = (Long) from;
             if (val > Integer.MAX_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-99: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1143: emit column '" + name + "' has value of "
                             + val + " but column can only have maximum value of " + Integer.MAX_VALUE);
             if (val < Integer.MIN_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-100: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1144: emit column '" + name + "' has value of "
                             + val + " but column can only have minimum value of " + Integer.MIN_VALUE);
         }
         else if (from instanceof Float) {
             float val = (Float) from;
             if (val > Integer.MAX_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-101: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1145: emit column '" + name + "' has value of "
                             + val + " but column can only have maximum value of " + Integer.MAX_VALUE);
             if (val < Integer.MIN_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-102: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1146: emit column '" + name + "' has value of "
                             + val + " but column can only have minimum value of " + Integer.MIN_VALUE);
             if (val != Math.floor(val))
-                throw new ExaDataTypeException("E-UDF.CL.J-103: emit column '" + name + "' has a non-integer value of " + val);
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1147: emit column '" + name + "' has a non-integer value of " + val);
         }
         else if (from instanceof Double) {
             double val = (Double) from;
             if (val > Integer.MAX_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-112: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1148: emit column '" + name + "' has value of "
                             + val + " but column can only have maximum value of " + Integer.MAX_VALUE);
             if (val < Integer.MIN_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-104: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1149: emit column '" + name + "' has value of "
                             + val + " but column can only have minimum value of " + Integer.MIN_VALUE);
             if (val != Math.floor(val))
-                throw new ExaDataTypeException("E-UDF.CL.J-105: emit column '" + name + "' has a non-integer value of " + val);
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1150: emit column '" + name + "' has a non-integer value of " + val);
         }
 
         return true;
@@ -618,24 +618,24 @@ class ExaIteratorImpl implements ExaIterator {
         if (from instanceof Float) {
             float val = (Float) from;
             if (val > Long.MAX_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-106: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1151: emit column '" + name + "' has value of "
                             + val + " but column can only have maximum value of " + Long.MAX_VALUE);
             if (val < Long.MIN_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-107: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1152: emit column '" + name + "' has value of "
                             + val + " but column can only have minimum value of " + Long.MIN_VALUE);
             if (val != Math.floor(val))
-                throw new ExaDataTypeException("E-UDF.CL.J-108: emit column '" + name + "' has a non-integer value of " + val);
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1153: emit column '" + name + "' has a non-integer value of " + val);
         }
         else if (from instanceof Double) {
             double val = (Double) from;
             if (val > Long.MAX_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-109: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1154: emit column '" + name + "' has value of "
                             + val + " but column can only have maximum value of " + Long.MAX_VALUE);
             if (val < Long.MIN_VALUE)
-                throw new ExaDataTypeException("E-UDF.CL.J-110: emit column '" + name + "' has value of "
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1155: emit column '" + name + "' has value of "
                             + val + " but column can only have minimum value of " + Long.MIN_VALUE);
             if (val != Math.floor(val))
-                throw new ExaDataTypeException("E-UDF.CL.J-111: emit column '" + name + "' has a non-integer value of " + val);
+                throw new ExaDataTypeException("E-UDF.CL.SL.JAVA-1156: emit column '" + name + "' has a non-integer value of " + val);
         }
 
         return true;
