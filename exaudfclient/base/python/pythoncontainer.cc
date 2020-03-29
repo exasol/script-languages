@@ -294,7 +294,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
         }
         if (func == NULL)
         {
-            abort();
+            throw PythonVM::exception("F-UDF.CL.PY-128: Unknown single call function "+fn);
         }
         PyObject* argObject = NULL;
 
@@ -477,7 +477,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
         } else {
             runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_singleCall"); check("F-UDF.CL.PY-64");
             if (runobj == NULL) {
-                abort();
+                throw PythonVM::exception("F-UDF.CL.PY-129: Cannot find function __pythonvm_wrapped_singleCall");
             }
             // Call indirectly
             if (argObject == NULL) {
