@@ -260,22 +260,24 @@ def __pythonvm_wrapped_run():
     if msg: raise RuntimeError("F-UDF.CL.SL.PYTHON-1113: "+msg)
     try:
         iter = exaiter(meta, inp, out); iter_next = iter.next; iter_emit = iter.emit
-        if meta.outputType() == EXACTLY_ONCE:
-            iter.emit = __disallowed_function
-        if meta.inputType() == EXACTLY_ONCE:
-            iter.next = iter.reset = __disallowed_function
         if meta.inputType() == MULTIPLE:
-            if meta.outputType() == EXACTLY_ONCE: iter_emit(runfunc(iter))
-            else: runfunc(iter)
+            if meta.outputType() == EXACTLY_ONCE: 
+                iter.emit = __disallowed_function
+                iter_emit(runfunc(iter))
+            else: 
+                runfunc(iter)
         else:
-            if meta.outputType() == EXACTLY_ONCE:
-                while(True):
-                    iter_emit(runfunc(iter))
-                    if not iter_next(): break
-            else:
-                while(True):
-                    runfunc(iter)
-                    if not iter_next(): break
+#            iter.next = iter.reset = __disallowed_function
+            iter.reset = __disallowed_function
+            runfunc(iter)
+#            if meta.outputType() == EXACTLY_ONCE:
+#                while(True):
+#                    iter_emit(runfunc(iter))
+#                    if not iter_next(): break
+#            else:
+#                while(True):
+#                    runfunc(iter)
+#                    if not iter_next(): break
         out.flush()
     except BaseException as err:
         raise create_exception_with_complete_backtrace(
