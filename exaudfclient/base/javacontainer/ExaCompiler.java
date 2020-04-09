@@ -29,7 +29,7 @@ class ExaCompiler {
             // ignore
         }
         if (!success) {
-            throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1158: "+compilationOutput.toString());
+            throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1158: "+compilationOutput.toString());
         }
     }
 

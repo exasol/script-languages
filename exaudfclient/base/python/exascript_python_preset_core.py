@@ -108,7 +108,7 @@ class exa:
         code = self.__meta.moduleContent(encodeUTF8(modname))
         msg = self.__meta.checkException()
 
-        if msg: raise ImportError(u"F-UDF.CL.SL.PYTHON-1119: Importing module %s failed: %s" % (modname, msg))
+        if msg: raise ImportError(u"F-UDF-CL-SL-PYTHON-1119: Importing module %s failed: %s" % (modname, msg))
         code = decodeUTF8(code)
         if str(code) in self.__modules:
             print("%%% found code", modname, repr(code))
@@ -126,7 +126,7 @@ class exa:
                     exec(compile(code, script, 'exec')) in modobj.__dict__
             except BaseException as err:
                 raise create_exception_with_complete_backtrace(
-                        "F-UDF.CL.SL.PYTHON-1120",
+                        "F-UDF-CL-SL-PYTHON-1120",
                         "Importing module %s failed"%modname,
                         sys.exc_info())
         return modobj
@@ -147,7 +147,7 @@ class exa:
         connection_name = unicode(name)
         connectionInfo = self.__meta.connectionInformation(encodeUTF8(connection_name))
         msg = self.__meta.checkException()
-        if msg: raise ImportError(u"F-UDF.CL.SL.PYTHON-1121: get_connection for connection name %s failed: %s" % (name, msg))
+        if msg: raise ImportError(u"F-UDF-CL-SL-PYTHON-1121: get_connection for connection name %s failed: %s" % (name, msg))
         return exa.ConnectionInformation(decodeUTF8(connectionInfo.copyKind()), decodeUTF8(connectionInfo.copyAddress()), decodeUTF8(connectionInfo.copyUser()), decodeUTF8(connectionInfo.copyPassword()))
 
 
@@ -172,6 +172,6 @@ def __pythonvm_wrapped_parse(env):
             exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
     except BaseException as err:
         raise create_exception_with_complete_backtrace(
-                "F-UDF.CL.SL.PYTHON-1122",
+                "F-UDF-CL-SL-PYTHON-1122",
                 "Exception while parsing UDF",
                 sys.exc_info())

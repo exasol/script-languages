@@ -102,7 +102,7 @@ PythonVM::PythonVM(bool checkOnly) {
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         DBG_EXCEPTION(cerr, err);
-        exception_msg = "F-UDF.CL.SL.PYTHON-1000: " + std::string(err.what());
+        exception_msg = "F-UDF-CL-SL-PYTHON-1000: " + std::string(err.what());
     }
 
 }
@@ -112,7 +112,7 @@ void PythonVM::shutdown() {
        DBG_FUNC_CALL(cerr, m_impl->shutdown());
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF.CL.SL.PYTHON-1001: " + std::string(err.what());
+        exception_msg = "F-UDF-CL-SL-PYTHON-1001: " + std::string(err.what());
     }
 }
 
@@ -122,10 +122,10 @@ bool PythonVM::run() {
         return result; 
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF.CL.SL.PYTHON-1002: "+ std::string(err.what());
+        exception_msg = "F-UDF-CL-SL-PYTHON-1002: "+ std::string(err.what());
     } catch (...) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF.CL.SL.PYTHON-1003: python crashed for unknown reasons";
+        exception_msg = "F-UDF-CL-SL-PYTHON-1003: python crashed for unknown reasons";
     }
     return false;
 }
@@ -136,7 +136,7 @@ const char* PythonVM::singleCall(single_call_function_id_e fn, const ExecutionGr
         return m_impl->singleCall(fn, args,calledUndefinedSingleCall);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF.CL.SL.PYTHON-1004: "+std::string(err.what());
+        exception_msg = "F-UDF-CL-SL-PYTHON-1004: "+std::string(err.what());
     }
     return strdup("<this is an error>");
 }
@@ -177,13 +177,13 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
         
 	globals = PyDict_New();
 	PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
-	script = Py_CompileString(script_code.c_str(), SWIGVM_params->script_name, Py_file_input); check("F-UDF.CL.SL.PYTHON-1005");
-        if (script == NULL) throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1006: Failed to compile script");
+	script = Py_CompileString(script_code.c_str(), SWIGVM_params->script_name, Py_file_input); check("F-UDF-CL-SL-PYTHON-1005");
+        if (script == NULL) throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1006: Failed to compile script");
 
 #ifndef DISABLE_PYTHON_SUBINTERP
         pythread = PyThreadState_New(main_thread->interp);
         if (pythread == NULL)
-            throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1007: Failed to create Python interpreter");
+            throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1007: Failed to create Python interpreter");
 #endif
     }
 
@@ -197,34 +197,34 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 #ifndef ENABLE_PYTHON3
          init_exascript_python();
 #endif
-        code = Py_CompileString(integrated_exascript_python_py, "exascript_python.py", Py_file_input); check("F-UDF.CL.SL.PYTHON-1008");
-        if (code == NULL) throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1009: Failed to compile internal module");
+        code = Py_CompileString(integrated_exascript_python_py, "exascript_python.py", Py_file_input); check("F-UDF-CL-SL-PYTHON-1008");
+        if (code == NULL) throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1009: Failed to compile internal module");
         exatable = PyImport_ExecCodeModule((char*)"exascript_python", code);
-	check("F-UDF.CL.SL.PYTHON-1010");
-	if (exatable == NULL) throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1011: Failed to import code module");
+	check("F-UDF-CL-SL-PYTHON-1010");
+	if (exatable == NULL) throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1011: Failed to import code module");
 
-        code = Py_CompileString(integrated_exascript_python_preset_py, "<EXASCRIPTPP>", Py_file_input); check("F-UDF.CL.SL.PYTHON-1012");
-        if (code == NULL) {check("F-UDF.CL.SL.PYTHON-1013");}
+        code = Py_CompileString(integrated_exascript_python_preset_py, "<EXASCRIPTPP>", Py_file_input); check("F-UDF-CL-SL-PYTHON-1012");
+        if (code == NULL) {check("F-UDF-CL-SL-PYTHON-1013");}
 
  #ifdef ENABLE_PYTHON3
- 	PyEval_EvalCode(code, globals, globals); check("F-UDF.CL.SL.PYTHON-1014"); 
+ 	PyEval_EvalCode(code, globals, globals); check("F-UDF-CL-SL-PYTHON-1014"); 
  #else
-	PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check("F-UDF.CL.SL.PYTHON-1015");
+	PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check("F-UDF-CL-SL-PYTHON-1015");
  #endif
         Py_DECREF(code);
 
-         PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check("F-UDF.CL.SL.PYTHON-1016");
+         PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check("F-UDF-CL-SL-PYTHON-1016");
          //PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
-	 PyObject *retvalue = PyObject_CallFunctionObjArgs(runobj, globals, NULL); check("F-UDF.CL.SL.PYTHON-1017");
+	 PyObject *retvalue = PyObject_CallFunctionObjArgs(runobj, globals, NULL); check("F-UDF-CL-SL-PYTHON-1017");
          Py_XDECREF(retvalue); retvalue = NULL;
 
-	code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check("F-UDF.CL.SL.PYTHON-1018");
+	code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check("F-UDF-CL-SL-PYTHON-1018");
         if (code == NULL) throw PythonVM::exception("Failed to compile wrapping script");
 
 #ifdef ENABLE_PYTHON3
-	PyEval_EvalCode(code, globals, globals); check("F-UDF.CL.SL.PYTHON-1019");
+	PyEval_EvalCode(code, globals, globals); check("F-UDF-CL-SL-PYTHON-1019");
 #else
-        PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check("F-UDF.CL.SL.PYTHON-1020");
+        PyEval_EvalCode(reinterpret_cast<PyCodeObject*>(code), globals, globals); check("F-UDF-CL-SL-PYTHON-1020");
 #endif
 
         Py_XDECREF(code); 
@@ -241,12 +241,12 @@ void PythonVMImpl::shutdown() {
 #endif
         Py_XDECREF(retvalue);
         if (!m_checkOnly) {
-            cleanobj = PyDict_GetItemString(globals, "cleanup"); check("F-UDF.CL.SL.PYTHON-1021");
+            cleanobj = PyDict_GetItemString(globals, "cleanup"); check("F-UDF-CL-SL-PYTHON-1021");
             if (cleanobj){
-                clean_wrap_obj = PyDict_GetItemString(globals, "__pythonvm_wrapped_cleanup"); check("F-UDF.CL.SL.PYTHON-1022");
+                clean_wrap_obj = PyDict_GetItemString(globals, "__pythonvm_wrapped_cleanup"); check("F-UDF-CL-SL-PYTHON-1022");
                 if (clean_wrap_obj) {
                     retvalue = PyObject_CallObject(clean_wrap_obj, NULL);
-                    check("F-UDF.CL.SL.PYTHON-1023");
+                    check("F-UDF-CL-SL-PYTHON-1023");
                 } 
             }
         }
@@ -260,17 +260,17 @@ void PythonVMImpl::shutdown() {
 bool PythonVMImpl::run() {
     DBG_FUNC_BEGIN( cerr );
 
-    if (m_checkOnly) throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1024: Python VM in check only mode");
+    if (m_checkOnly) throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1024: Python VM in check only mode");
 
     {
 #ifndef DISABLE_PYTHON_SUBINTERP
         PythonThreadBlock block;
         PyThreadState_Swap(pythread);
 #endif
-        DBG_FUNC_CALL(cerr, runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_run")); check("F-UDF.CL.SL.PYTHON-1025");
-        DBG_FUNC_CALL(cerr, retvalue = PyObject_CallFunction(runobj, NULL)); check("F-UDF.CL.SL.PYTHON-1026");
+        DBG_FUNC_CALL(cerr, runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_run")); check("F-UDF-CL-SL-PYTHON-1025");
+        DBG_FUNC_CALL(cerr, retvalue = PyObject_CallFunction(runobj, NULL)); check("F-UDF-CL-SL-PYTHON-1026");
 	if (retvalue == NULL) {
-	  throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1027: Python VM: calling 'run' failed without an exception)");
+	  throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1027: Python VM: calling 'run' failed without an exception)");
 	}
         Py_XDECREF(retvalue); retvalue = NULL;
     }
@@ -281,7 +281,7 @@ bool PythonVMImpl::run() {
 static string singleCallResult;
 
 const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args , string& calledUndefinedSingleCall) {
-    if (m_checkOnly) throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1028: Python VM in check only mode (singleCall)"); // @@@@ TODO: better exception text
+    if (m_checkOnly) throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1028: Python VM in check only mode (singleCall)"); // @@@@ TODO: better exception text
     //{
 #ifndef DISABLE_PYTHON_SUBINTERP
         PythonThreadBlock block;
@@ -298,7 +298,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
         }
         if (func == NULL)
         {
-            throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1029: Unknown single call function "+fn);
+            throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1029: Unknown single call function "+fn);
         }
         PyObject* argObject = NULL;
 
@@ -308,7 +308,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
             const ExecutionGraph::ImportSpecification* imp_spec = dynamic_cast<const ExecutionGraph::ImportSpecification*>(&args);
             if (imp_spec == NULL)
             {
-                throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1030: Internal Python VM error: cannot cast argument DTO to import specification");
+                throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1030: Internal Python VM error: cannot cast argument DTO to import specification");
             }
             //        import_spec.is_subselect
             PyDict_SetItemString(argObject,"is_subselect", (imp_spec->isSubselect())?Py_True:Py_False);
@@ -389,7 +389,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
             const ExecutionGraph::ExportSpecification* exp_spec = dynamic_cast<const ExecutionGraph::ExportSpecification*>(&args);
             if (exp_spec == NULL)
             {
-                throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1031: Internal Python VM error: cannot cast argument DTO to export specification");
+                throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1031: Internal Python VM error: cannot cast argument DTO to export specification");
             }
 
             if (exp_spec->hasConnectionName()) {
@@ -465,7 +465,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
 
 //        Py_XINCREF(argObject);
 
-        PyObject* funcToCall = PyDict_GetItemString(globals, func); check("F-UDF.CL.SL.PYTHON-1032");
+        PyObject* funcToCall = PyDict_GetItemString(globals, func); check("F-UDF-CL-SL-PYTHON-1032");
         if (funcToCall == NULL) {
             calledUndefinedSingleCall = func;
             return strdup("<error>");
@@ -476,12 +476,12 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
             // TODO VS This will all be refactored
             const ExecutionGraph::StringDTO* argDto = dynamic_cast<const ExecutionGraph::StringDTO*>(&args);
             string string_arg = argDto->getArg();
-            runobj = PyDict_GetItemString(globals, func); check("F-UDF.CL.SL.PYTHON-1033");
+            runobj = PyDict_GetItemString(globals, func); check("F-UDF-CL-SL-PYTHON-1033");
             retvalue = PyObject_CallFunction(runobj, (char *)"s", string_arg.c_str());
         } else {
-            runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_singleCall"); check("F-UDF.CL.SL.PYTHON-1034");
+            runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_singleCall"); check("F-UDF-CL-SL-PYTHON-1034");
             if (runobj == NULL) {
-                throw PythonVM::exception("F-UDF.CL.SL.PYTHON-1035: Cannot find function __pythonvm_wrapped_singleCall");
+                throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1035: Cannot find function __pythonvm_wrapped_singleCall");
             }
             // Call indirectly
             if (argObject == NULL) {
@@ -490,14 +490,14 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
                 retvalue = PyObject_CallFunctionObjArgs(runobj, funcToCall, argObject, NULL);
             }
         }
-        check("F-UDF.CL.SL.PYTHON-1036");
+        check("F-UDF-CL-SL-PYTHON-1036");
 
         Py_XDECREF(argObject);
 
         if (!PyString_Check(retvalue) && !PyUnicode_Check(retvalue))
         {
             std::stringstream sb;
-            sb << "F-UDF.CL.SL.PYTHON-1037: ";
+            sb << "F-UDF-CL-SL-PYTHON-1037: ";
             sb << fn;
             sb << " did not return string type (singleCall)";
             throw PythonVM::exception(sb.str().c_str());
