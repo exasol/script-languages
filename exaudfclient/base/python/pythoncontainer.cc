@@ -103,6 +103,9 @@ PythonVM::PythonVM(bool checkOnly) {
         lock_guard<mutex> lock(exception_msg_mtx);
         DBG_EXCEPTION(cerr, err);
         exception_msg = "F-UDF-CL-SL-PYTHON-1000: " + std::string(err.what());
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "F-UDF-CL-SL-PYTHON-1125: python crashed for unknown reasons";
     }
 
 }
@@ -113,6 +116,9 @@ void PythonVM::shutdown() {
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF-CL-SL-PYTHON-1001: " + std::string(err.what());
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "F-UDF-CL-SL-PYTHON-1124: python crashed for unknown reasons";
     }
 }
 
@@ -137,6 +143,9 @@ const char* PythonVM::singleCall(single_call_function_id_e fn, const ExecutionGr
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF-CL-SL-PYTHON-1004: "+std::string(err.what());
+    } catch (...) {
+        lock_guard<mutex> lock(exception_msg_mtx);
+        exception_msg = "F-UDF-CL-SL-PYTHON-1123: python crashed for unknown reasons";
     }
     return strdup("<this is an error>");
 }

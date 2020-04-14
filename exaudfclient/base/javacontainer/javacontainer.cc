@@ -61,7 +61,7 @@ JavaVMach::JavaVMach(bool checkOnly) {
         exception_msg = "F-UDF-CL-SL-JAVA-1000: "+std::string(err.what());
     } catch (...) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF-CL-SL-JAVA-1001: some unknown exception occurred";
+        exception_msg = "F-UDF-CL-SL-JAVA-1001: JVM crashed for unknown reason";
     }
 }
 
@@ -74,7 +74,7 @@ bool JavaVMach::run() {
         exception_msg = "F-UDF-CL-SL-JAVA-1002: "+std::string(err.what());
     } catch (...) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF-CL-SL-JAVA-1003: some unknown exception occurred";
+        exception_msg = "F-UDF-CL-SL-JAVA-1003: JVM crashed for unknown reason";
     }
     return false;
 }
@@ -87,7 +87,7 @@ void JavaVMach::shutdown() {
         exception_msg = "F-UDF-CL-SL-JAVA-1004: "+std::string(err.what());
     } catch (...) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF-CL-SL-JAVA-1005: some unknown exception occurred";
+        exception_msg = "F-UDF-CL-SL-JAVA-1005: JVM crashed for unknown reason";
     }
 }
 
@@ -99,7 +99,7 @@ const char* JavaVMach::singleCall(single_call_function_id_e fn, const ExecutionG
         exception_msg = "F-UDF-CL-SL-JAVA-1006: "+std::string(err.what());
     } catch (...) {
         lock_guard<mutex> lock(exception_msg_mtx);
-        exception_msg = "F-UDF-CL-SL-JAVA-1007: some unknown exception occurred";
+        exception_msg = "F-UDF-CL-SL-JAVA-1007: JVM crashed for unknown reason";
     }
     return strdup("<this is an error>");
 }
