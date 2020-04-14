@@ -10,27 +10,42 @@ else:
 from exascript_python import *
 import decimal
 import datetime
-import traceback
 import imp
 
 class ExaUDFError(Exception):
     pass 
 
-def create_exception_with_complete_backtrace(error_code, error_message, exc_info):
-    import traceback
+def clean_stacktrace_line(line):
     import re
+    match = re.match("""^\s+File "(.+)", line ([0-9]+), in (.+)$""",line)
+    if match is not None:
+        filename=match.group(1)
+        lineno=match.group(2)
+        text=match.group(3)
+        if filename!="<EXASCRIPTPP>" and filename!="<EXASCRIPT>":
+            return "{filename}:{lineno} {text}\n".format(
+                            filename=filename,
+                            lineno=lineno,
+                            text=text)
+        else:
+            return ""
+    elif "Traceback (most recent call last):" in line:
+        return ""
+    else:
+        return line
+
+def create_clean_stacktrace(etype, evalue, etb):
+    import traceback as tb
+    st=tb.format_exception(etype, evalue, etb)
+    new_st=[clean_stacktrace_line(line) for line in st]
+    return "".join(new_st)
+
+def create_exception_with_complete_backtrace(error_code, error_message, exc_info):
     exception_type = exc_info[0]
     exception_message = exc_info[1]
-    try:
-        backtrace_tuples=traceback.extract_tb(exc_info[2])
-        backtrace = " \n".join("%s:%s %s"%(filename, line_number, function_name) 
-                                for filename, line_number, function_name, text 
-                                in backtrace_tuples 
-                                if filename!="<EXASCRIPT>" and filename!="EXASCRIPTPP")
-        backtrace = " \n%s"%backtrace
-    except:
-        backtrace = ""
-    new_exception_message = "%s: %s: %s: %s.%s" % (error_code, error_message, exception_type.__name__, exception_message ,backtrace)
+    exception_bt = exc_info[2]
+    backtrace = create_clean_stacktrace(exception_type,exception_message,exception_bt)
+    new_exception_message = "%s: %s \n%s" % (error_code, error_message, backtrace)
     print(new_exception_message)
     return ExaUDFError(new_exception_message)
 
