@@ -1,7 +1,7 @@
 pyexasol
 keras
 tensorflow==1.13.1
-tensorflow-hub
+tensorflow-hub==0.4.0
 kmodes
 seaborn
 matplotlib
