@@ -115,6 +115,23 @@ class JavaInterpreter(udf.TestCase):
             '''))
         with self.assertRaisesRegexp(Exception, '4711'):
             self.query('SELECT foo() FROM dual')
+            
+    def test_exception_in_run_and_cleanup_is_propagated(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE java SCALAR SCRIPT
+            foo()
+            RETURNS INT AS
+            class FOO {
+                static int run(ExaMetadata exa, ExaIterator ctx) {
+                    throw new Exception("42);
+                }
+                static int cleanup(ExaMetadata exa) throws Exception {
+                    throw new Exception("4711");
+                }
+            }
+            '''))
+        with self.assertRaisesRegexp(Exception, '42.*4711'):
+            self.query('SELECT foo() FROM dual')
 
     def test_cleanup_has_global_context(self):
         self.query(udf.fixindent('''

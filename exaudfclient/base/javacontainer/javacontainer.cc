@@ -122,6 +122,19 @@ JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""
 }
 
 void JavaVMImpl::shutdown() {
+    if (m_checkOnly)
+        throwException("F-UDF.CL.SL.JAVA-1159: Java VM in check only mode");
+    jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
+    string calledUndefinedSingleCall;
+    check("F-UDF.CL.SL.JAVA-1160",calledUndefinedSingleCall);
+    if (!cls)
+        throwException("F-UDF.CL.SL.JAVA-1161: FindClass for ExaWrapper failed");
+    jmethodID mid = m_env->GetStaticMethodID(cls, "cleanup", "()V");
+    check("F-UDF.CL.SL.JAVA-1162",calledUndefinedSingleCall);
+    if (!mid)
+        throwException("F-UDF.CL.SL.JAVA-1163: GetStaticMethodID for run failed");
+    m_env->CallStaticVoidMethod(cls, mid);
+    check("F-UDF.CL.SL.JAVA-1164",calledUndefinedSingleCall);
     try {
         m_jvm->DestroyJavaVM();
     } catch(...) { 
