@@ -76,7 +76,7 @@ class ExaWrapper {
         ExaMetadataImpl exaMetadata = new ExaMetadataImpl();
         String exMsg = exaMetadata.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException(exMsg);
+            throw new ExaIterationException("UDF.CL.SL.JAVA-1161: "+exMsg);
         }
         // Take the scriptClass name specified by user in the script, or the name of the script as fallback
         boolean userDefinedScriptName = true;
@@ -113,14 +113,48 @@ class ExaWrapper {
         }
     }
 
-    static void run() throws Throwable {
+    static Class<?> getScriptClass(ExaMetadataImpl exaMetadata) throws Throwable {
+        boolean userDefinedScriptName = true;
+        String scriptClassName = System.getProperty("exasol.scriptclass", "");
+        if (scriptClassName.trim().isEmpty()) {
+            userDefinedScriptName = false;
+            scriptClassName = exaMetadata.getScriptName();
+            // Only for test simulator (e.g., script.java -> script_java)
+            scriptClassName = scriptClassName.replace('.', '_');
+            scriptClassName = "com.exasol." + scriptClassName;
+        }
+        try{
+            // Take the scriptClass name specified by user in the script, or the name of the script as fallback
+            Class<?> scriptClass = Class.forName(scriptClassName);
+            return scriptClass;
+        } catch (java.lang.ClassNotFoundException ex) {
+            if (userDefinedScriptName) {
+                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1072: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
+            } else {
+                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1073: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
+            }
+        }
+    }
+
+  
+    static ExaMetadataImpl getMetaData() throws Throwable {
         ExaMetadataImpl exaMetadata = new ExaMetadataImpl();
         String exMsg = exaMetadata.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF-CL-SL-JAVA-1069: "+exMsg);
+            throw new ExaIterationException("UDF.CL.SL.JAVA-1165: "+exMsg);
+        }
+        return exaMetadata;
+    }
+
+    static void run() throws Throwable {
+        ExaMetadataImpl exaMetadata = null;
+        try{
+            exaMetadata = getMetaData();
+        }catch(ExaIterationException ex){
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1069: "+ex.getMessage());
         }
         TableIterator tableIterator = new TableIterator();
-        exMsg = tableIterator.checkException();
+        String exMsg = tableIterator.checkException();
         if (exMsg != null && exMsg.length() > 0) {
             throw new ExaIterationException("F-UDF-CL-SL-JAVA-1070: "+exMsg);
         }
@@ -132,30 +166,17 @@ class ExaWrapper {
 
         ExaIteratorImpl exaIter = new ExaIteratorImpl(exaMetadata, tableIterator, resultHandler);
 
-        // Take the scriptClass name specified by user in the script, or the name of the script as fallback
-        boolean userDefinedScriptName = true;
-        String scriptClassName = System.getProperty("exasol.scriptclass", "");
-        if (scriptClassName.trim().isEmpty()) {
-            userDefinedScriptName = false;
-            scriptClassName = exaMetadata.getScriptName();
-            // Only for test simulator (e.g., script.java -> script_java)
-            scriptClassName = scriptClassName.replace('.', '_');
-            scriptClassName = "com.exasol." + scriptClassName;
-        }
-        // init()
         Class<?> scriptClass = null;
         try {
-            scriptClass = Class.forName(scriptClassName);
+            scriptClass = getScriptClass(exaMetadata);
+        } catch (ExaCompilationException ex){
+            throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1165: "+ex.getMessage());
+        }
+        // init()
+        try {
             Class[] initParams = {ExaMetadata.class};
             Method initMethod = scriptClass.getDeclaredMethod("init", initParams);
             initMethod.invoke(null, exaMetadata);
-        }
-        catch (java.lang.ClassNotFoundException ex) {
-            if (userDefinedScriptName) {
-                throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1072: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
-            } else {
-                throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1073: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
-            }
         } catch (InvocationTargetException ex) {
             throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1074","Exception during init",ex);
         } catch (NoSuchMethodException ex) { 
@@ -211,9 +232,23 @@ class ExaWrapper {
         }
 
         resultHandler.flush();
+    }
 
+    static void cleanup() throws Throwable {
         // FIXME cleanup gets only called if run is successful
         // cleanup()
+        ExaMetadataImpl exaMetadata = null;
+        try{
+            exaMetadata = getMetaData();
+        }catch(ExaIterationException ex){
+            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1166: "+ex.getMessage());
+        }
+        Class<?> scriptClass = null;
+        try {
+            scriptClass = getScriptClass(exaMetadata);
+        } catch (ExaCompilationException ex){
+            throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1167: "+ex.getMessage());
+        }
         try {
             Class[] cleanupParams = {ExaMetadata.class};
             Method cleanupMethod = scriptClass.getDeclaredMethod("cleanup", cleanupParams);
@@ -223,7 +258,7 @@ class ExaWrapper {
             throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1081","Exception during cleanup",ex);
         }
         catch (NoSuchMethodException ex) {
-            System.err.println("W-UDF-CL-SL-JAVA-1082: Skipping init, because init method cannot be found.");
+            System.err.println("W-UDF.CL.SL.JAVA-1082: Skipping init, because cleanup method cannot be found.");
         }
     }
 

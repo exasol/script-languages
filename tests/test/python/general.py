@@ -79,12 +79,12 @@ class PythonInterpreter(udf.TestCase):
             RETURNS INT AS
 
             def run(ctx):
-                raise ValueError('42')
+                raise ValueError('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.')
 
             def cleanup():
-                raise ValueError('4711')
+                raise ValueError('YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY')
             '''))
-        with self.assertRaisesRegexp(Exception, '42.*4711'):
+        with self.assertRaisesRegexp(Exception, 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.*YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'):
             self.query('SELECT foo() FROM dual')
 
     def test_cleanup_has_global_context(self):

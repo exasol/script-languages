@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import unittest
+import subprocess
 
 import pyodbc
 from decimal import Decimal
@@ -15,7 +16,7 @@ from datetime import datetime
 import exatest
 from exatest import *
 
-from exatest.clients.odbc import ODBCClient
+from exatest.clients.odbc import ODBCClient, getScriptLanguagesFromArgs
 
 capabilities = []
 opts = None
@@ -210,42 +211,45 @@ class TestCase(exatest.TestCase):
         new_args[0] = _rewrite_redirector(new_args[0], opts.redirector_url)
         return super(TestCase, self).query(*new_args, **kwargs)
 
+    def query_via_exaplus(self, query):
+        cmd = '''%(exaplus)s -c %(conn)s -u %(user)s -P %(password)s
+                        -no-config -autocommit ON -L -pipe''' % {
+                                'exaplus': os.environ.get('EXAPLUS'),
+                                'conn': opts.server,
+                                'user': self.user,
+                                'password': self.password,
+                                }
+        print("Running the following exaplus command %s" % cmd)
+        env = os.environ.copy()
+        env['LC_ALL'] = 'en_US.UTF-8'
+        exaplus = subprocess.Popen(
+                    cmd.split(), 
+                    env=env, 
+                    stdin=subprocess.PIPE, 
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+        langs=getScriptLanguagesFromArgs()
+        query = "ALTER SESSION SET SCRIPT_LANGUAGES='%s';" % langs + "\n" + query
+        print("Executing SQL in exaplus: %s" % query)
+        out, err = exaplus.communicate(query.encode('utf8'))
+        return out, err
     
-    def import_via_exaplus(self, table_name, table_generator):
+    def import_via_exaplus(self, table_name, table_generator, prepare_sql):
         tmpdir = tempfile.mkdtemp()
         fifo_filename = os.path.join(tmpdir, 'myfifo')
         import_table_sql = '''IMPORT INTO %s FROM LOCAL CSV FILE '%s';'''%(table_name,fifo_filename)
         try:
             os.mkfifo(fifo_filename)
-            cmd = '''%(exaplus)s -c %(conn)s -u %(user)s -P %(password)s -s %(schema)s
-                            -no-config -autocommit ON -L -pipe''' % {
-                                    'exaplus': os.environ.get('EXAPLUS'),
-                                    'conn': udf.opts.server,
-                                    'user': self.user,
-                                    'password': self.password,
-                                    'schema': self.schema
-                                    }
-            print("Running the following exaplus command %s" % cmd)
-            env = os.environ.copy()
-            env['LC_ALL'] = 'en_US.UTF-8'
-            exaplus = subprocess.Popen(
-                        cmd.split(), 
-                        env=env, 
-                        stdin=subprocess.PIPE, 
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
             write_trhead = threading.Thread(target=self._write_into_fifo, args=(fifo_filename, table_generator))
             write_trhead.start()
-            sql=create_table_sql+"\n"+import_table_sql+"\n"+"commit;"
-            print("Executing SQL in exaplus: %s" % sql)
-            out, _err = exaplus.communicate(sql.encode('utf8'))
+            sql=prepare_sql+"\n"+create_table_sql+"\n"+import_table_sql+"\n"+"commit;"
+            out,err=self.query_via_exaplus(schema,sql)
             print(out)
-            print(_err)
+            print(err)
             write_trhead.join()
         finally:
             os.remove(fifo_filename)
             os.rmdir(tmpdir)
-
 
     def _write_into_fifo(self, fifo_filename, table_generator):
         with open(fifo_filename,"w") as f:
