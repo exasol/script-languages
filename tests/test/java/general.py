@@ -122,8 +122,8 @@ class JavaInterpreter(udf.TestCase):
             foo()
             RETURNS INT AS
             class FOO {
-                static int run(ExaMetadata exa, ExaIterator ctx) {
-                    throw new Exception("42);
+                static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    throw new Exception("42");
                 }
                 static int cleanup(ExaMetadata exa) throws Exception {
                     throw new Exception("4711");
