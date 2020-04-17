@@ -4,6 +4,13 @@ import pyodbc
 class ClientError(Exception):
     pass
 
+def getScriptLanguagesFromArgs():
+    for i, arg in enumerate(sys.argv):
+        if arg == '--script-languages':
+            if len(sys.argv) == i + 1:
+                raise ClientError('Value for --script-languages missing')
+            return sys.argv[i + 1]
+
 class ODBCClient(object):
     def __init__(self, dsn, user="sys", password="exasol"):
         self.cursor = None
@@ -26,7 +33,8 @@ class ODBCClient(object):
             if arg == '--script-languages':
                 if len(sys.argv) == i + 1:
                     raise ClientError('Value for --script-languages missing')
-                self.query("ALTER SESSION SET SCRIPT_LANGUAGES='%s'" % sys.argv[i + 1])
+                langs=getScriptLanguagesFromArgs()
+                self.query("ALTER SESSION SET SCRIPT_LANGUAGES='%s'" % langs)
                 break
 
     def query(self, qtext, *args):

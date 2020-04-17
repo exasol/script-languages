@@ -117,21 +117,31 @@ class JavaInterpreter(udf.TestCase):
             self.query('SELECT foo() FROM dual')
             
     def test_exception_in_run_and_cleanup_is_propagated(self):
-        self.query(udf.fixindent('''
+        out, _err = self.query_via_exaplus(udf.fixindent('''
+            DROP SCHEMA test_exception_in_run_and_cleanup_is_propagated CASCADE;
+            CREATE SCHEMA test_exception_in_run_and_cleanup_is_propagated;
+            OPEN SCHEMA test_exception_in_run_and_cleanup_is_propagated;
             CREATE OR REPLACE java SCALAR SCRIPT
             foo()
             RETURNS INT AS
             class FOO {
                 static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    throw new Exception("42");
+                    throw new Exception("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
                 }
                 static int cleanup(ExaMetadata exa) throws Exception {
-                    throw new Exception("4711");
+                    throw new Exception("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
                 }
             }
+            /
+            SELECT foo() FROM dual;
+            DROP SCHEMA test_exception_in_run_and_cleanup_is_propagated CASCADE;
+            ROLLBACK;
             '''))
-        with self.assertRaisesRegexp(Exception, '42.*4711'):
-            self.query('SELECT foo() FROM dual')
+        print(out)
+        print()
+        print()
+        print(_err)
+        self.assertRegexpMatches(_err.replace("\n"," "),"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.*YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
 
     def test_cleanup_has_global_context(self):
         self.query(udf.fixindent('''
