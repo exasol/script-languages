@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-DUPLICATES=$(bash find_error_codes.sh | IFS="-"  uniq -D -f 1)
+DUPLICATES=$(bash find_error_codes.sh | uniq -D -f 2 | awk '{print $1 "\t" $2 "-" $3 "-" $4}')
 if [ -z "$DUPLICATES" ]
 then
   echo "No duplicated error codes found"

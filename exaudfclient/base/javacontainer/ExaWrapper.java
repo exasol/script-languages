@@ -69,7 +69,7 @@ class ExaWrapper {
                  // args is already a String with the String arg, so nothing to do
                  argClass = String.class;
              } else {
-                 throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1065: Internal error: single call argument with unknown DTO: " + args.toString());
+                 throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1065: Internal error: single call argument with unknown DTO: " + args.toString());
              }
         }
 
@@ -102,12 +102,12 @@ class ExaWrapper {
             }
         } catch (java.lang.ClassNotFoundException ex) {
             if (userDefinedScriptName) {
-                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1066: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
+                throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1066: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
             } else {
-                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1067: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
+                throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1067: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-              throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1068","Exception during singleCall "+fn,ex);
+              throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1068","Exception during singleCall "+fn,ex);
         } catch (NoSuchMethodException ex) {
            throw new ExaUndefinedSingleCallException(fn);
         }
@@ -117,17 +117,17 @@ class ExaWrapper {
         ExaMetadataImpl exaMetadata = new ExaMetadataImpl();
         String exMsg = exaMetadata.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1069: "+exMsg);
+            throw new ExaIterationException("F-UDF-CL-SL-JAVA-1069: "+exMsg);
         }
         TableIterator tableIterator = new TableIterator();
         exMsg = tableIterator.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1070: "+exMsg);
+            throw new ExaIterationException("F-UDF-CL-SL-JAVA-1070: "+exMsg);
         }
         ResultHandler resultHandler = new ResultHandler(tableIterator);
         exMsg = resultHandler.checkException();
         if (exMsg != null && exMsg.length() > 0) {
-            throw new ExaIterationException("F-UDF.CL.SL.JAVA-1071: "+exMsg);
+            throw new ExaIterationException("F-UDF-CL-SL-JAVA-1071: "+exMsg);
         }
 
         ExaIteratorImpl exaIter = new ExaIteratorImpl(exaMetadata, tableIterator, resultHandler);
@@ -152,14 +152,14 @@ class ExaWrapper {
         }
         catch (java.lang.ClassNotFoundException ex) {
             if (userDefinedScriptName) {
-                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1072: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
+                throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1072: The main script class defined via %scriptclass cannot be found: " + scriptClassName);
             } else {
-                throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1073: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
+                throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1073: The main script class (same name as the script) cannot be found: " + scriptClassName + ". Please create the class or specify the class via %scriptclass.");
             }
         } catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1074","Exception during init",ex);
+            throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1074","Exception during init",ex);
         } catch (NoSuchMethodException ex) { 
-            System.err.println("W-UDF.CL.SL.JAVA-1075: Skipping init, because init method cannot be found.");
+            System.err.println("W-UDF-CL-SL-JAVA-1075: Skipping init, because init method cannot be found.");
         }
 
         // run()
@@ -170,14 +170,14 @@ class ExaWrapper {
             if (exaMetadata.getInputType().equals("SET")) { // MULTIPLE INPUT
                 if (exaMetadata.getOutputType().equals("EMIT")) { // MULTIPLE OUTPUT
                     if (!runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1076: EMITS requires a void return type for run()");
+                        throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1076: EMITS requires a void return type for run()");
                     exaIter.setInsideRun(true);
                     Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                     exaIter.setInsideRun(false);
                 }
                 else { // EXACTLY_ONCE OUTPUT
                     if (runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1077: RETURNS requires a non-void return type for run()");
+                        throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1077: RETURNS requires a non-void return type for run()");
                     exaIter.setInsideRun(true);
                     Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
                     exaIter.setInsideRun(false);
@@ -187,7 +187,7 @@ class ExaWrapper {
             else { // EXACTLY_ONCE INPUT
                 if (exaMetadata.getOutputType().equals("EMIT")) { // MULTIPLE OUTPUT
                     if (!runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1078: EMITS requires a void return type for run()");
+                        throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1078: EMITS requires a void return type for run()");
                     do {
                         exaIter.setInsideRun(true);
                         Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
@@ -196,7 +196,7 @@ class ExaWrapper {
                 }
                 else { // EXACTLY_ONCE OUTPUT
                     if (runMethod.getReturnType().equals(Void.TYPE))
-                        throw new ExaCompilationException("F-UDF.CL.SL.JAVA-1079: RETURNS requires a non-void return type for run()");
+                        throw new ExaCompilationException("F-UDF-CL-SL-JAVA-1079: RETURNS requires a non-void return type for run()");
                     do {
                         exaIter.setInsideRun(true);
                         Object returnValue = runMethod.invoke(null, exaMetadata, exaIter);
@@ -207,7 +207,7 @@ class ExaWrapper {
             }
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1080","Exception during run",ex);
+            throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1080","Exception during run",ex);
         }
 
         resultHandler.flush();
@@ -220,10 +220,10 @@ class ExaWrapper {
             cleanupMethod.invoke(null, exaMetadata);
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause("F-UDF.CL.SL.JAVA-1081","Exception during cleanup",ex);
+            throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1081","Exception during cleanup",ex);
         }
         catch (NoSuchMethodException ex) {
-            System.err.println("W-UDF.CL.SL.JAVA-1082: Skipping init, because init method cannot be found.");
+            System.err.println("W-UDF-CL-SL-JAVA-1082: Skipping init, because init method cannot be found.");
         }
     }
 
