@@ -57,5 +57,7 @@ my $cmd =
     utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators);
 
-utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);
-utils::execute($cmd,$dry_run);
+if($cmd ne ""){
+    utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);
+    utils::execute($cmd,$dry_run);
+}

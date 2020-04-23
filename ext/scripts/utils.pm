@@ -2,21 +2,36 @@ use strict;
 
 package utils;
 
-sub remove_comments{
-    my ($line) = @_;
-    # check for: <whitespaces><content><whitespace><#comment>
-    my $comment_start = "#";
-    if ($line =~ /^[ \t]*([^ \ŧ]+)([ \t]$comment_start.*)?[ \t]*$/g) {
-        my $line_without_comments = $1;
-        return $line_without_comments;
-    } else {
-        # check for: <#comment>
-        if ($line =~ /^[ \t]*$comment_start.*$/g) {
-            return ""
-        }else{
-            die "'$line' doesn't match regex"
-        }
+use Data::Dumper;
+
+sub generate_joined_and_transformed_string_from_file{
+    my ($file, $element_separator, $combining_template, $templates_ref, $separators_ref) = @_;
+    my @templates = @$templates_ref;
+    my @separators = @$separators_ref;
+    my @elements_of_lines = get_lines_with_elements_from_file($file, $element_separator);
+    my @transformed_lines = map(fill_template_for_lines($_,\@elements_of_lines),@templates);
+    my $count_transformed_lines=scalar @transformed_lines;
+    if($count_transformed_lines == 0){
+        return "";
     }
+    my $final_string = fill_template_with_joined_lines_of_elements($combining_template, \@separators, \@transformed_lines);
+    return $final_string;
+}
+
+sub get_lines_with_elements_from_file{
+    my ($file, $element_separator) = @_;
+    my @lines = get_lines_from_commented_file($file);
+    my @elements_of_lines = map(parse_lines_to_elements($element_separator,$_),@lines);
+    return @elements_of_lines;
+}
+
+sub get_lines_from_commented_file{
+    my ($file) = @_;
+    my @lines = read_package_file($file);
+    @lines = grep { $_ ne '' } @lines;
+    @lines = map(remove_comments($_),@lines); 
+    @lines = grep { $_ ne '' } @lines;
+    return @lines;
 }
 
 sub read_package_file{
@@ -30,16 +45,35 @@ sub read_package_file{
     return @lines
 }
 
+sub remove_comments{
+    my ($line) = @_;
+    # check for: <whitespaces><content><whitespace><#comment>
+    my $comment_start = "#";
+    if($line =~ /^[ \t]*$comment_start.*$/g){
+        return ""
+    } elsif ($line =~ /^[ \t]*([^ \ŧ]+)([ \t]$comment_start.*)?[ \t]*$/g) {
+        my $line_without_comments = $1;
+        return $line_without_comments;
+    } else {
+        die "'$line' doesn't match regex"
+    }
+}
+
 sub parse_lines_to_elements{
     my ($element_separator, $line) = @_;
     my @elements = split /$element_separator/, $line;
     return \@elements
 }
 
-sub replace {
-    my ($from,$to,$string) = @_;
-    $string =~s/$from/$to/g;
-    return $string;
+sub fill_template_for_lines{
+    my ($template, $elements_for_lines_ref) = @_;
+    my @elements_for_lines = @$elements_for_lines_ref;
+    my @filled_template_for_lines = map(fill_template($template,$_),@elements_for_lines);
+    if(scalar @filled_template_for_lines == 0){
+        return ();
+    }else{
+        return \@filled_template_for_lines;
+    }
 }
 
 sub fill_template{
@@ -54,57 +88,29 @@ sub fill_template{
     return $filled_template;
 }
 
-sub fill_template_for_lines{
-    my ($template, $elements_for_lines_ref) = @_;
-    my @elements_for_lines = @$elements_for_lines_ref;
-    my @filled_template_for_lines = map(fill_template($template,$_),@elements_for_lines);
-    return \@filled_template_for_lines
+sub replace {
+    my ($from,$to,$string) = @_;
+    $string =~s/$from/$to/g;
+    return $string;
+}
+
+
+sub fill_template_with_joined_lines_of_elements{
+    my ($combining_template, $separators_ref, $lines_ref) = @_;
+    my @separators = @$separators_ref;
+    my @lines = @$lines_ref;
+
+    my @joined_lines = map(join_lines($separators[$_], $lines[$_]), 0 .. $#lines);
+    my $final_string = fill_template($combining_template, \@joined_lines);
+    return $final_string;
 }
 
 sub join_lines{
     my ($separator, $lines_ref) = @_;
     my @lines = @$lines_ref;
+    
     my $joined_lines = join($separator,@lines);
     return $joined_lines;
-}
-
-sub get_lines_from_commented_file{
-    my ($file) = @_;
-    my @lines = read_package_file($file);
-    @lines = grep { $_ ne '' } @lines;
-    @lines = map(remove_comments($_),@lines); 
-    @lines = grep { $_ ne '' } @lines;
-    return @lines;
-}
-
-sub fill_template_with_joined_lines_of_elements{
-    my ($combining_template, $separators_ref, $elements_of_lines_ref) = @_;
-    my @separators = @$separators_ref;
-    my @elements_of_lines = @$elements_of_lines_ref;
-
-    my @joined_transformed_lines = map(join_lines($separators[$_], $elements_of_lines[$_]), 0 .. $#elements_of_lines);
-    my $final_string = fill_template($combining_template, \@joined_transformed_lines);
-    return $final_string;
-}
-
-sub get_lines_with_elements_from_file{
-    my ($file, $element_separator) = @_;
-    my @lines = get_lines_from_commented_file($file);
-    my @elements_of_lines = map(parse_lines_to_elements($element_separator,$_),@lines);
-    return @elements_of_lines;
-}
-
-sub generate_joined_and_transformed_string_from_file{
-    my ($file, $element_separator, $combining_template, $templates_ref, $separators_ref) = @_;
-    my @templates = @$templates_ref;
-    my @separators = @$separators_ref;
-    my @elements_of_lines = get_lines_with_elements_from_file($file, $element_separator);
-    my @transformed_lines = map(fill_template_for_lines($_,\@elements_of_lines),@templates);
-    if(scalar @transformed_lines == 0){
-        return "";
-    }
-    my $final_string = fill_template_with_joined_lines_of_elements($combining_template, \@separators, \@transformed_lines);
-    return $final_string;
 }
 
 sub execute{

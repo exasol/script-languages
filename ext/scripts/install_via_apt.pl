@@ -51,7 +51,6 @@ sub generate_install_command{
     my $combining_template = 'apt-get install -V -y --no-install-recommends <<<<0>>>>';
     my @separators = (" ");
     my @templates = ("'<<<<0>>>>'");
-    print("$with_versions\n");
     if($with_versions){
         @templates=("'<<<<0>>>>=<<<<1>>>>'")
     }
@@ -78,13 +77,15 @@ sub generate_mark_command{
 my $install_cmd = generate_install_command($element_separator,$with_versions);
 my $mark_cmd = generate_mark_command($element_separator);
 
-utils::execute("apt-get -y update",$dry_run);
-utils::execute($install_cmd,$dry_run);
-if($mark_hold){
-    utils::execute($mark_cmd,$dry_run);
+if($install_cmd ne ""){
+    utils::execute("apt-get -y update",$dry_run);
+    utils::execute($install_cmd,$dry_run);
+    if($mark_hold && ($mark_cmd ne "")){
+        utils::execute($mark_cmd,$dry_run);
+    }
+    utils::execute("locale-gen en_US.UTF-8",$dry_run);
+    utils::execute("update-locale LC_ALL=en_US.UTF-8",$dry_run);
+    utils::execute("apt-get -y clean",$dry_run);
+    utils::execute("apt-get -y autoremove",$dry_run);
+    utils::execute("ldconfig",$dry_run);
 }
-utils::execute("locale-gen en_US.UTF-8",$dry_run);
-utils::execute("update-locale LC_ALL=en_US.UTF-8",$dry_run);
-utils::execute("apt-get -y clean",$dry_run);
-utils::execute("apt-get -y autoremove",$dry_run);
-utils::execute("ldconfig",$dry_run);

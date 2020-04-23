@@ -54,5 +54,6 @@ my $cmd =
         $file,$element_separator,$combining_template,\@templates,\@separators);
 $cmd =~ s/==<<<<1>>>>//ig;
 
-
-utils::execute($cmd,$dry_run);
+if($cmd ne ""){
+   utils::execute($cmd,$dry_run);
+}
