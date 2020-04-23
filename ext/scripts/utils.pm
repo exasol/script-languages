@@ -27,9 +27,6 @@ sub read_package_file{
     chomp(my @lines = <$fh>);
     close($fh)
       or die "Could not close file '$filename' $!"; 
-    if(scalar @lines == 0){
-        die("No lines found in $filename");
-    }
     return @lines
 }
 
@@ -74,21 +71,9 @@ sub join_lines{
 sub get_lines_from_commented_file{
     my ($file) = @_;
     my @lines = read_package_file($file);
-    
     @lines = grep { $_ ne '' } @lines;
-    if(scalar @lines == 0){
-        die("No lines found in $file");
-    }
-    
-    @lines = map(remove_comments($_),@lines);
-    if(scalar @lines == 0){
-        die("No lines found in $file");
-    }
-    
+    @lines = map(remove_comments($_),@lines); 
     @lines = grep { $_ ne '' } @lines;
-    if(scalar @lines == 0){
-        die("No lines found in $file");
-    }
     return @lines;
 }
 
@@ -115,6 +100,9 @@ sub generate_joined_and_transformed_string_from_file{
     my @separators = @$separators_ref;
     my @elements_of_lines = get_lines_with_elements_from_file($file, $element_separator);
     my @transformed_lines = map(fill_template_for_lines($_,\@elements_of_lines),@templates);
+    if(scalar @transformed_lines == 0){
+        return "";
+    }
     my $final_string = fill_template_with_joined_lines_of_elements($combining_template, \@separators, \@transformed_lines);
     return $final_string;
 }
