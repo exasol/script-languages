@@ -12,6 +12,7 @@
     --file            Input file with each line represents a input. 
                       A line can have multiple elements separated by --element-separator. 
                       Lines everything after a # is interpreted as comment
+    --with-versions       Uses versions specified in the input file in the second element of each line
     --python-binary   Python-binary to use for the installation
                                      
 =cut
@@ -46,13 +47,15 @@ if($python_binary eq ''){
 
 my $element_separator = '\\|';
 my $combining_template = "$python_binary -m pip install --ignore-installed --progress-bar ascii --no-cache-dir <<<<0>>>>";
-my @templates = ("'<<<<0>>>>==<<<<1>>>>'");
+my @templates = ("'<<<<0>>>>'");
+if($with_versions){
+    @templates=("'<<<<0>>>>=<<<<1>>>>'")
+}
 my @separators = (" ");
 
 my $cmd = 
     utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators);
-$cmd =~ s/==<<<<1>>>>//ig;
 
 if($cmd ne ""){
    utils::execute($cmd,$dry_run);
