@@ -5,7 +5,9 @@ set -o pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 REPO_DIR=$(git rev-parse --show-toplevel)
+REPO_DIR="$(readlink -f "${REPO_DIR}")"
 GIT_DIR="$REPO_DIR/.git"
+GIT_DIR="$(readlink -f "${GIT_DIR}")"
 
 if [[ ! -d "$GIT_DIR" ]]; then
   if [[ -d "$REPO_DIR/../.git" ]]; then
@@ -18,6 +20,8 @@ if [[ ! -d "$GIT_DIR" ]]; then
 else
     GITHOOKS_PATH="$GIT_DIR/hooks"
 fi
+
+GITHOOKS_PATH="$(readlink -f "${GITHOOKS_PATH}")"
 
 copy_hook() {
     local SCRIPT_PATH="$SCRIPT_DIR/$1"
