@@ -153,10 +153,10 @@ class ExportContainerBaseTask(FlavorBaseTask):
             with CommandLogHandler(log_file_path, self.logger, description) as log_handler:
                 still_running_logger = StillRunningLogger(
                     self.logger, description)
-                log_handler.handle_log_line((command + "\n").encode("utf-8"))
+                log_handler.handle_log_lines((command + "\n").encode("utf-8"))
                 for line in iter(process.stdout.readline, b''):
                     still_running_logger.log()
-                    log_handler.handle_log_line(line)
+                    log_handler.handle_log_lines(line)
                 process.wait(timeout=60 * 2)
                 return_code_log_line = "return code %s" % process.returncode
-                log_handler.handle_log_line(return_code_log_line.encode("utf-8"), process.returncode != 0)
+                log_handler.handle_log_lines(return_code_log_line.encode("utf-8"), process.returncode != 0)
