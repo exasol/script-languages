@@ -22,8 +22,16 @@ echo ./install_via_apt.pl with empty
 $PATH_TO_INSTALL_SCRIPTS/install_via_apt.pl --file install_empty_test_file --with-versions --dry-run
 echo
 
-echo ./install_via_pip.pl with version seperator
+echo ./install_via_pip.pl with version seperator, without versions
 $PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file install_via_pip_test_file_with_version_seperator --python-binary python3 --dry-run
+echo
+
+echo ./install_via_pip.pl with version seperator, with versions, without allow-no-version
+$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file install_via_pip_test_file_with_version_seperator --python-binary python3 --with-versions --dry-run
+echo
+
+echo ./install_via_pip.pl with version seperator, with versions, with allow-no-version
+$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file install_via_pip_test_file_with_version_seperator --python-binary python3 --with-versions --allow-no-version --dry-run
 echo
 
 echo ./install_via_pip.pl with pip version syntax
