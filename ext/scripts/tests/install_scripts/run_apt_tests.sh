@@ -4,7 +4,7 @@ set -e
 set -u
 set -o pipefail
 
-PATH_TO_INSTALL_SCRIPTS="../../"
+PATH_TO_INSTALL_SCRIPTS="../../install_scripts"
 
 echo ./install_via_apt.pl with empty
 $PATH_TO_INSTALL_SCRIPTS/install_via_apt.pl --file test_files/empty_test_file --with-versions --dry-run
