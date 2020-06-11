@@ -21,7 +21,7 @@ RUN curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py && \
 
 COPY scripts /scripts
 COPY language_deps/packages/pip3_packages /build_info/packages/language_deps
-RUN /scripts/install_packages_batch.sh "PYTHON3-PIP" "pip install --ignore-installed <<list>>" "<<package>>" " " /build_info/packages/language_deps/pip3_packages
+RUN /scripts/install_scripts/install_packages_batch.sh "PYTHON3-PIP" "pip install --ignore-installed <<list>>" "<<package>>" " " /build_info/packages/language_deps/pip3_packages
 
 ENV PYTHON3_PREFIX /usr
 ENV PYTHON3_VERSION python3.6

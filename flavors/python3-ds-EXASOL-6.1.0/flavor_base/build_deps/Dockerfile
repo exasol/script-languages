@@ -14,7 +14,7 @@ ENV BAZEL_PACKAGE_VERSION="1.1.0"
 ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
 ENV BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
 
-RUN /scripts/install_via_apt.pl --file /build_info/packages/build_deps/apt_get_packages
+RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/build_deps/apt_get_packages
 
 RUN apt-get -y update && \
     curl -L --output "$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL" && \
