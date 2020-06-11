@@ -56,6 +56,9 @@ my @separators = (",",",");
 my $cmd = 
     utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators);
+if (index($cmd, '<<<<1>>>>") != -1) {
+    die "Command '$cmd' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
+} 
 
 if($cmd ne ""){
     utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);

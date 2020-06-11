@@ -9,7 +9,7 @@
     --help                Brief help message
     --dry-run             Doesn't execute the command, only prints it to STDOUT
     --with-versions       Uses versions specified in the input file in the second element of each line
-    --element-separator   Element separator regex in a line in the input file, defaults to "|"
+    --allow-no-versions   If --with-versions is active, allow packages to have no version specified
     --mark-hold           Execute apt-mark hold for the package in the input file after installation
     --file                Input file with each line represents a input. 
                           A line can have multiple elements separated by --element-separator. 
@@ -29,13 +29,14 @@ my $file = '';
 my $element_separator = "\\|";
 my $with_versions = 0;
 my $mark_hold = 0;
+my $allow_no_version = 0;
 
 GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
             "file=s" => \$file,
-            "element-separator=s" => \$element_separator,
             "with-versions" => \$with_versions,
+            "allow-no-version" => \$allow_no_version,
             "mark-hold" => \$mark_hold
           ) or utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 utils::print_usage_and_abort(__FILE__,"",0) if $help;
@@ -58,6 +59,14 @@ sub generate_install_command{
     my $cmd = 
         utils::generate_joined_and_transformed_string_from_file(
             $file,$element_separator,$combining_template,\@templates,\@separators);
+    if($with_versions and $allow_no_version){
+        $cmd =~ s/=<<<<1>>>>//g;
+    }
+    if($with_versions and not $allow_no_version){
+        if (index($cmd, "=<<<<1>>>>") != -1) {
+            die "Command '$cmd' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
+        } 
+    }
     return $cmd;
 }
 

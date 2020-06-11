@@ -7,13 +7,14 @@
 
   install_via_pip.pl [OPTIONS]
   Options:
-    --help            Brief help message
-    --dry-run         Doesn't execute the command, only prints it to STDOUT
-    --file            Input file with each line represents a input. 
-                      A line can have multiple elements separated by --element-separator. 
-                      Lines everything after a # is interpreted as comment
-    --with-versions   Uses versions specified in the input file in the second element of each line
-    --python-binary   Python-binary to use for the installation
+    --help               Brief help message
+    --dry-run            Doesn't execute the command, only prints it to STDOUT
+    --file               Input file with each line represents a input. 
+                         A line can have multiple elements separated by --element-separator. 
+                         Lines everything after a # is interpreted as comment
+    --with-versions      Uses versions specified in the input file in the second element of each line
+    --allow-no-versions  If --with-versions is active, allow packages to have no version specified
+    --python-binary      Python-binary to use for the installation
                                      
 =cut
 
@@ -62,12 +63,12 @@ my $cmd =
         $file,$element_separator,$combining_template,\@templates,\@separators);
 
 if($with_versions and $allow_no_version){
-  $cmd =~ s/==<<<<1>>>>//g;
+    $cmd =~ s/==<<<<1>>>>//g;
 }
 if($with_versions and not $allow_no_version){
-  if (index($cmd, "==<<<<1>>>>") != -1) {
-    die "Command '$cmd' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
-} 
+    if (index($cmd, "==<<<<1>>>>") != -1) {
+        die "Command '$cmd' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
+    } 
 }
 
 if($cmd ne ""){
