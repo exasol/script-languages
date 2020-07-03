@@ -1,22 +1,23 @@
 
+from datetime import date
+from datetime import datetime
+from decimal import Decimal
+import math
 import functools
 import logging
 import os
 import re
+import subprocess
+import threading
 import sys
 import unittest
-import subprocess
-
-import pyodbc
-from decimal import Decimal
-from datetime import date
-from datetime import datetime
-
+import tempfile
+import csv
 
 import exatest
 from exatest import *
-
 from exatest.clients.odbc import ODBCClient, getScriptLanguagesFromArgs
+import pyodbc
 
 capabilities = []
 opts = None
@@ -242,8 +243,8 @@ class TestCase(exatest.TestCase):
             os.mkfifo(fifo_filename)
             write_trhead = threading.Thread(target=self._write_into_fifo, args=(fifo_filename, table_generator))
             write_trhead.start()
-            sql=prepare_sql+"\n"+create_table_sql+"\n"+import_table_sql+"\n"+"commit;"
-            out,err=self.query_via_exaplus(schema,sql)
+            sql=prepare_sql+"\n"+import_table_sql+"\n"+"commit;"
+            out,err=self.query_via_exaplus(sql)
             print(out)
             print(err)
             write_trhead.join()
@@ -300,6 +301,74 @@ class TestCase(exatest.TestCase):
             return "NULL";
         else:
             raise TypeError("Type %s of value %s is not supported" % (type(value), value))
+
+
+    def create_table_by_amplifying_data_linear(
+            self, 
+            source_table_name, destination_table_name, 
+            multiplier, max_unions=10):
+        self.query("CREATE OR REPLACE TABLE {destination_table_name} like {source_table_name}"\
+                .format(
+                    destination_table_name=destination_table_name,
+                    source_table_name=source_table_name))
+        for i in range(int(math.floor(multiplier/max_unions))):
+            self.generate_insert_via_union(
+                source_table_name, destination_table_name,max_unions)
+        if multiplier % max_unions > 0:
+            self.generate_insert_via_union(
+                source_table_name, destination_table_name,multiplier % max_unions)
+
+    def generate_insert_via_union(self, source_table_name, destination_table_name, multiplier):
+        select_queries = ['''select * from {soruce_table_name}'''\
+                                .format(soruce_table_name=source_table_name)
+                            for i in range(multiplier)]
+        union_query = " union all ".join(select_queries)
+        self.query('''INSERT INTO {destination_table_name} {union_query};'''\
+                .format(
+                    destination_table_name=destination_table_name,
+                    union_query=union_query))
+
+
+    def create_table_by_amplifying_data_exponential(
+            self,
+            source_table_name, destination_table_name,
+            exponent, base=10):
+        """Amplifies the data in source_table_name by count(source_table)*base**exponent"""
+        self.query(fixindent(
+                """
+                CREATE OR REPLACE TABLE {destination_table_name} as 
+                SELECT * from {source_table_name}
+                """\
+                .format(
+                    destination_table_name=destination_table_name,
+                    source_table_name=source_table_name
+                    )))
+        select_queries = ['''select * from {destination_table_name}'''\
+                .format(destination_table_name=destination_table_name) 
+                            for i in range(base)]
+        union_query = " union all ".join(select_queries)
+        for i in range(exponent):
+            self.query('''INSERT INTO {destination_table_name} {union_query};'''\
+                        .format(
+                            destination_table_name=destination_table_name, 
+                            union_query=union_query))
+
+    # def compare_performance_against_standard_container(
+    #         self, runs, warmup, max_deviation, query):
+    #     connection = self.getConnection(self.user,self.password)
+    #     under_test_mean_elapsed_time,under_test_variance_elapsed_time,\
+    #     under_test_max_elapsed_time,under_test_min_elapsed_time=\
+    #                 self.run_queries(connection,"under_test", runs, warmup, query)
+    #     connection.close()
+
+    #     connection = self.getConnection(self.user,self.password)
+    #     connection.query("ALTER SESSION SET script_languages='PYTHON=builtin_python PYTHON3=builtin_python3 JAVA=builtin_java R=builtin_r'")
+    #     builtin_mean_elapsed_time,builtin_variance_elapsed_time,\
+    #     builtin_max_elapsed_time,builtin_min_elapsed_time=\
+    #             self.run_queries(connection,"builtin_python", runs, warmup, query)
+    #     connection.close()
+
+    #     deviation = 100-builtin_mean_elapsed_time/under_test_mean_elapsed_time*100
 
 # vim: ts=4:sts=4:sw=4:et:fdm=indent
 
