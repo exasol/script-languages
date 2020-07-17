@@ -54,9 +54,9 @@ if($rscript_binary eq ''){
 }
 
 
-my $combining_template = "$rscript_binary -e 'library(versions);install.versions(c(<<<<0>>>>))'";
+my $combining_template = "$rscript_binary -e 'library(remotes);install.versions(c(<<<<0>>>>))'";
 if($with_versions){  
-    $combining_template = "$rscript_binary -e 'library(versions);install.versions(c(<<<<0>>>>),c(<<<<1>>>>))'";
+    $combining_template = "$rscript_binary -e 'library(remotes);install.versions(c(<<<<0>>>>),c(<<<<1>>>>))'";
 }
 
 my @templates = ('"<<<<0>>>>"','"<<<<1>>>>"');
@@ -77,6 +77,6 @@ if($with_versions and not $allow_no_version){
 }
 
 if($cmd ne ""){
-    utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);
+    utils::execute("$rscript_binary -e 'install.packages(\"remotes\")'",$dry_run);
     utils::execute($cmd,$dry_run);
 }

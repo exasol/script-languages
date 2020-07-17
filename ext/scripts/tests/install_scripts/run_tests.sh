@@ -18,3 +18,6 @@ bash run_pip_tests.sh
 
 echo Run R versions Tests
 bash run_r_versions_tests.sh
+
+echo Run R remotes Tests
+bash run_r_remotes_tests.sh
