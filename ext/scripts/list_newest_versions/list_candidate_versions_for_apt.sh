@@ -15,7 +15,7 @@ apt-cache policy $PACKAGE_LIST \
   | tr "|" "\n" \
   | sed "s/Candidate//g" \
   | sed "s/Installed//g" \
-  | sed "s/://g" \
+  | sed "s/: / /g" \
   | sed "s/^ //g" \
   | sed "s/ $//g" \
   | sed -E "s/ +/ /g" \
