@@ -88,7 +88,15 @@ my $mark_cmd = generate_mark_command($element_separator);
 
 if($install_cmd ne ""){
     package_mgmt_utils::execute("apt-get -y update",$dry_run);
-    package_mgmt_utils::execute($install_cmd,$dry_run);
+    eval { package_mgmt_utils::execute($install_cmd,$dry_run) };
+    if($@ || $dry_run){
+	my $script_dir = dirname (__FILE__);
+	print("$@\n");
+	print("\n");
+	print("Checking for new version of packages in '$file'\n");
+    	package_mgmt_utils::execute("$script_dir/../list_newest_versions/list_newest_versions_for_apt.sh $file", $dry_run);
+    }
+    
     if($mark_hold && ($mark_cmd ne "")){
         package_mgmt_utils::execute($mark_cmd,$dry_run);
     }
