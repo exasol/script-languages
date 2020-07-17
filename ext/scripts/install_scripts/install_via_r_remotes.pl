@@ -54,9 +54,9 @@ if($rscript_binary eq ''){
 }
 
 
-my $combining_template = "$rscript_binary -e 'library(remotes);install.versions(c(<<<<0>>>>))'";
+my $combining_template = "$rscript_binary -e 'library(remotes);install_version(c(<<<<0>>>>))'";
 if($with_versions){  
-    $combining_template = "$rscript_binary -e 'library(remotes);install.versions(c(<<<<0>>>>),c(<<<<1>>>>))'";
+    $combining_template = "$rscript_binary -e 'library(remotes);install_version(c(<<<<0>>>>),c(<<<<1>>>>))'";
 }
 
 my @templates = ('"<<<<0>>>>"','"<<<<1>>>>"');
