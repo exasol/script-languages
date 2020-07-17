@@ -77,6 +77,6 @@ if($with_versions and not $allow_no_version){
 }
 
 if($cmd ne ""){
-    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);
+    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"devtools\"); install_github(\"https://github.com/goldingn/versions\")'",$dry_run);
     package_mgmt_utils::execute($cmd,$dry_run);
 }
