@@ -409,7 +409,7 @@ class UnicodeData(udf.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--server', help='connection string')
-    parser.add_argument('--script-languages', help='defintion of the SCRIPT_LANGUAGES variable')
+    parser.add_argument('--script-languages', help='definition of the SCRIPT_LANGUAGES variable')
     opts, _unknown = parser.parse_known_args()
     setattr(udf, 'pythonVersionInUdf', getPythonVersionInUDFs(opts.server, opts.script_languages))
     udf.main()
