@@ -40,10 +40,11 @@ class ExportContainers(FlavorsBaseTask, ExportContainerParameter):
         with self.command_line_output_target.open("w") as out_file:
             for flavor_path, releases in export_infos.items():
                 for release_name, export_info in releases.items():
+                    out_file.write("\n")
                     out_file.write("Cached container under %s" % export_info.cache_file)
                     out_file.write("\n")
                     out_file.write("\n")
-                    if export_info.output_file is not None:
+                    if export_info.output_file is not None and export_info.output_file != "None":
                         out_file.write("Copied container to %s" % export_info.output_file)
                         out_file.write("\n")
                         out_file.write("\n")

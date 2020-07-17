@@ -1,0 +1,9 @@
+# This file specifies the package list which gets installed via apt.
+# You must specify the the package and its version separated by a |.
+# We recommand here the usage of package versions, to ensure that the container 
+# builds are reproducable. However, we allow also packages without version.
+# As you can see, this file can contain comments which start with #.
+# If a line starts with # the whole line is a comment, however you can
+# also start a comment after the package defintion.
+
+# p7zip-full|16.02+dfsg-6 # you can check which versions of a package are available with apt-cache policy <package-name>

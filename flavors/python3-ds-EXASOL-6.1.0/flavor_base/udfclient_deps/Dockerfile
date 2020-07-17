@@ -10,7 +10,7 @@ COPY scripts /scripts
 RUN mkdir -p /build_info/packages
 COPY udfclient_deps/packages /build_info/packages/udfclient_deps
 
-RUN /scripts/install_via_apt.pl --file /build_info/packages/udfclient_deps/apt_get_packages
+RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/udfclient_deps/apt_get_packages
 
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First Last,RoomNumber,WorkPhone,HomePhone"

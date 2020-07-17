@@ -1,0 +1,6 @@
+numpy|1.18.1
+pandas|1.0.1
+scipy|1.0.1
+scikit-learn|2.0
+git+http://github.com/EXASOL/websocket-api.git#egg=exasol-ws-api&subdirectory=python|
+humanfriendly|

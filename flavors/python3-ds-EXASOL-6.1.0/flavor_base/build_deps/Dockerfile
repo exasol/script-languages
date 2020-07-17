@@ -14,7 +14,7 @@ ENV BAZEL_PACKAGE_VERSION="1.1.0"
 ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
 ENV BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
 
-RUN /scripts/install_via_apt.pl --file /build_info/packages/build_deps/apt_get_packages
+RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/build_deps/apt_get_packages
 
 RUN apt-get -y update && \
     curl -L --output "$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL" && \
@@ -23,7 +23,7 @@ RUN apt-get -y update && \
     apt-get -y clean && \
     apt-get -y autoremove
 	  
-RUN curl -L -o swig-2.0.4.tar.gz prdownloads.sourceforge.net/swig/swig-2.0.4.tar.gz && \
+RUN curl -L -o swig-2.0.4.tar.gz https://storage.googleapis.com/exasol-script-languages-dependencies/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
     (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
     rm -rf swig-2.0.4 swig-2.0.4.tar.gz

@@ -25,7 +25,7 @@
 use strict;
 use File::Basename;
 use lib dirname (__FILE__);
-use utils;
+use package_mgmt_utils;
 use Getopt::Long;
 use Pod::Usage;
 
@@ -69,7 +69,7 @@ for (my $i = 0; $i < $#template_separator_array; $i += 2) {
 }
 
 my $cmd = 
-   utils::generate_joined_and_transformed_string_from_file(
+   package_mgmt_utils::generate_joined_and_transformed_string_from_file(
        $file,$element_separator,$combining_template,\@templates,\@separators);
 
-utils::execute("$cmd",$dry_run)
+package_mgmt_utils::execute("$cmd",$dry_run)
