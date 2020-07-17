@@ -1,6 +1,6 @@
 use strict;
 
-package utils;
+package package_mgmt_utils;
 
 #use Data::Dumper;
 

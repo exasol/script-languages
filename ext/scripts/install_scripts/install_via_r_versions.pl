@@ -21,7 +21,7 @@
 use strict;
 use File::Basename;
 use lib dirname (__FILE__);
-use utils;
+use package_mgmt_utils;
 use Getopt::Long;
 use Pod::Usage;
 #use IPC::System::Simple;
@@ -41,16 +41,16 @@ GetOptions (
             "with-versions" => \$with_versions,
             "allow-no-version" => \$allow_no_version,
             "rscript-binary=s" => \$rscript_binary,
-          ) or utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
-utils::print_usage_and_abort(__FILE__,"",0) if $help;
+          ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
+package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
 
 if($file eq ''){
-    utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --file was not specified",1);
+    package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --file was not specified",1);
 }
 
 if($rscript_binary eq ''){
-    utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --rscript-binary was not specified",1);
+    package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --rscript-binary was not specified",1);
 }
 
 
@@ -63,7 +63,7 @@ my @templates = ('"<<<<0>>>>"','"<<<<1>>>>"');
 my @separators = (",",",");
 
 my $cmd = 
-    utils::generate_joined_and_transformed_string_from_file(
+    package_mgmt_utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators);
 
 
@@ -77,6 +77,6 @@ if($with_versions and not $allow_no_version){
 }
 
 if($cmd ne ""){
-    utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);
-    utils::execute($cmd,$dry_run);
+    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"versions\")'",$dry_run);
+    package_mgmt_utils::execute($cmd,$dry_run);
 }

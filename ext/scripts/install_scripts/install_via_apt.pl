@@ -20,7 +20,7 @@
 use strict;
 use File::Basename;
 use lib dirname (__FILE__);
-use utils;
+use package_mgmt_utils;
 use Getopt::Long;
 
 my $help = 0;
@@ -38,12 +38,12 @@ GetOptions (
             "with-versions" => \$with_versions,
             "allow-no-version" => \$allow_no_version,
             "mark-hold" => \$mark_hold
-          ) or utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
-utils::print_usage_and_abort(__FILE__,"",0) if $help;
+          ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
+package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
 
 if($file eq ''){
-    utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --file was not specified",1);
+    package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --file was not specified",1);
 }
 
 
@@ -57,7 +57,7 @@ sub generate_install_command{
     }
 
     my $cmd = 
-        utils::generate_joined_and_transformed_string_from_file(
+        package_mgmt_utils::generate_joined_and_transformed_string_from_file(
             $file,$element_separator,$combining_template,\@templates,\@separators);
     if($with_versions and $allow_no_version){
         $cmd =~ s/=<<<<1>>>>//g;
@@ -78,7 +78,7 @@ sub generate_mark_command{
     my @separators = (" ");
 
     my $cmd = 
-        utils::generate_joined_and_transformed_string_from_file(
+        package_mgmt_utils::generate_joined_and_transformed_string_from_file(
             $file,$element_separator,$combining_template,\@templates,\@separators);
     return $cmd;
 }
@@ -87,14 +87,14 @@ my $install_cmd = generate_install_command($element_separator,$with_versions);
 my $mark_cmd = generate_mark_command($element_separator);
 
 if($install_cmd ne ""){
-    utils::execute("apt-get -y update",$dry_run);
-    utils::execute($install_cmd,$dry_run);
+    package_mgmt_utils::execute("apt-get -y update",$dry_run);
+    package_mgmt_utils::execute($install_cmd,$dry_run);
     if($mark_hold && ($mark_cmd ne "")){
-        utils::execute($mark_cmd,$dry_run);
+        package_mgmt_utils::execute($mark_cmd,$dry_run);
     }
-    utils::execute("locale-gen en_US.UTF-8",$dry_run);
-    utils::execute("update-locale LC_ALL=en_US.UTF-8",$dry_run);
-    utils::execute("apt-get -y clean",$dry_run);
-    utils::execute("apt-get -y autoremove",$dry_run);
-    utils::execute("ldconfig",$dry_run);
+    package_mgmt_utils::execute("locale-gen en_US.UTF-8",$dry_run);
+    package_mgmt_utils::execute("update-locale LC_ALL=en_US.UTF-8",$dry_run);
+    package_mgmt_utils::execute("apt-get -y clean",$dry_run);
+    package_mgmt_utils::execute("apt-get -y autoremove",$dry_run);
+    package_mgmt_utils::execute("ldconfig",$dry_run);
 }
