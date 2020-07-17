@@ -56,9 +56,9 @@ if($rscript_binary eq ''){
 
 my $combining_template = "$rscript_binary -e 'library(remotes);<<<<0>>>>)'";
 my @separators = (";");
-my @templates = ('install_version(<<<<0>>>>)');
+my @templates = ('install_version("<<<<0>>>>")');
 if($with_versions){  
-    @templates = ('install_version(<<<<0>>>>,<<<<1>>>>)');
+    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>")');
 }
 
 
@@ -67,7 +67,7 @@ my $cmd =
         $file,$element_separator,$combining_template,\@templates,\@separators);
 
 if($with_versions and $allow_no_version){
-    $cmd =~ s/<<<<1>>>>/NULL/g;
+    $cmd =~ s/"<<<<1>>>>"/NULL/g;
 }
 if($with_versions and not $allow_no_version){
     if (index($cmd, "<<<<1>>>>") != -1) {
