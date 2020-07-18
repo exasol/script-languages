@@ -54,18 +54,17 @@ if($rscript_binary eq ''){
 }
 
 
-my $combining_template = "$rscript_binary -e 'library(remotes);install_version(c(<<<<0>>>>))'";
+my $combining_template = "$rscript_binary -e 'library(remotes);<<<<0>>>>'";
+my @separators = (";");
+my @templates = ('install_version("<<<<0>>>>")');
 if($with_versions){  
-    $combining_template = "$rscript_binary -e 'library(remotes);install_version(c(<<<<0>>>>),c(<<<<1>>>>))'";
+    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>")');
 }
 
-my @templates = ('"<<<<0>>>>"','"<<<<1>>>>"');
-my @separators = (",",",");
 
 my $cmd = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators);
-
 
 if($with_versions and $allow_no_version){
     $cmd =~ s/"<<<<1>>>>"/NULL/g;
