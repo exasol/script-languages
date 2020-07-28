@@ -750,6 +750,38 @@ class PandasDataFrame(udf.TestCase):
             print(select_sql)
             rows = self.query(select_sql)
 
+    def test_dataframe_set_emits_timestamp_only(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts timestamp) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                from datetime import datetime
+
+                c1=np.empty(shape=(2),dtype=np.object_)
+
+                c1[:]="2020-07-27 14:22:33.600699"
+
+                df=pd.DataFrame({0:c1})
+                df[0]=pd.to_datetime(df[0])
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertRowsEqual(
+                [
+                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 600000),),
+                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 600000),)
+                ], rows)
+
+
 
 if __name__ == '__main__':
     udf.main()
