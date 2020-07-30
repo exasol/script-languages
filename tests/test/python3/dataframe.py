@@ -750,7 +750,7 @@ class PandasDataFrame(udf.TestCase):
             print(select_sql)
             rows = self.query(select_sql)
 
-    def test_dataframe_set_emits_timestamp_only(self):
+    def test_dataframe_set_emits_timestamp_truncate_nanoseconds_only(self):
         import datetime
         udf_sql = udf.fixindent('''
             CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts timestamp) AS
@@ -758,11 +758,16 @@ class PandasDataFrame(udf.TestCase):
             def run(ctx):
                 import pandas as pd
                 import numpy as np
-                from datetime import datetime
+                import datetime
 
                 c1=np.empty(shape=(2),dtype=np.object_)
 
-                c1[:]="2020-07-27 14:22:33.600699"
+                c1[:]=datetime.datetime(2020, 7, 27, 14, 22, 33, 673251)   
+                
+                #c1[:]=datetime.datetime(2020, 7, 27, 14, 22, 33, 673000, tzinfo=datetime.timezone(datetime.timedelta(0, 3600)))   
+                #c1[:]=datetime.datetime(2020, 7, 27, 14, 22, 33, tzinfo=datetime.timezone(datetime.timedelta(0, 3600)))   
+                #c1[:]=datetime.datetime(1970, 1, 1, 0, 20, 35)   
+                #c1[:]="2020-07-27 14:22:33.600699"
 
                 df=pd.DataFrame({0:c1})
                 df[0]=pd.to_datetime(df[0])
@@ -777,11 +782,211 @@ class PandasDataFrame(udf.TestCase):
         rows = self.query(select_sql)
         self.assertRowsEqual(
                 [
-                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 600000),),
-                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 600000),)
+                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 673000),),
+                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 673000),)
                 ], rows)
 
+    def test_dataframe_set_emits_timestamp_milliseconds_only(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts timestamp) AS
 
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+
+                c1=np.empty(shape=(2),dtype=np.object_)
+
+                c1[:]=datetime.datetime(2020, 7, 27, 14, 22, 33, 673000)   
+                
+                df=pd.DataFrame({0:c1})
+                df[0]=pd.to_datetime(df[0])
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertRowsEqual(
+                [
+                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 673000),),
+                    (datetime.datetime(2020, 7, 27, 14, 22, 33, 673000),)
+                ], rows)
+
+    def test_dataframe_set_emits_timestamp_with_timezone_only_fail(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts timestamp) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+
+                c1=np.empty(shape=(2),dtype=np.object_)
+
+                c1[:]=datetime.datetime(2020, 7, 27, 14, 22, 33, 673000, tzinfo=datetime.timezone(datetime.timedelta(0, 3600)))   
+
+                df=pd.DataFrame({0:c1})
+                df[0]=pd.to_datetime(df[0])
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        with self.assertRaisesRegexp(Exception, "F-UDF-CL-SL-PYTHON-1138"):
+            rows = self.query(select_sql)
+
+    def test_dataframe_set_emits_pystring_only(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts VARCHAR(20000)) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+
+                c1=np.empty(shape=(2),dtype=np.object_)
+
+                c1[:]='abcdefgh  '   
+
+                df=pd.DataFrame({0:c1})
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertRowsEqual(
+                [
+                    ('abcdefgh  ',),
+                    ('abcdefgh  ',)
+                ], rows)
+
+    def test_dataframe_set_emits_pyint_only(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts int) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+
+                c1=np.empty(shape=(2),dtype=np.object_)
+
+                c1[:]=234
+
+                df=pd.DataFrame({0:c1})
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertRowsEqual(
+                [
+                    (234,),
+                    (234,)
+                ], rows)
+
+    def test_dataframe_set_emits_double_pyfloat_only_todo(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts double) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+
+                c1=np.empty(shape=(2),dtype=np.object_)
+
+                c1[:]=234.5
+
+                df=pd.DataFrame({0:c1})
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        #TODO implement support
+        with self.assertRaisesRegexp(Exception, 'F-UDF-CL-SL-PYTHON-1056'):
+            rows = self.query(select_sql)
+
+    def test_dataframe_set_emits_double_npfloat32_only(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts double) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+
+                c1=np.empty(shape=(2),dtype=np.float64)
+
+                c1[:]=234.5
+
+                df=pd.DataFrame({0:c1})
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertRowsEqual(
+                [
+                    (234.5,),
+                    (234.5,)
+                ], rows)
+
+    def test_dataframe_set_emits_timestamp_milliseconds_only_large_emit(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts timestamp) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+                
+                for i in range(1000):
+                    c1=np.empty(shape=(1000),dtype=np.object_)
+
+                    c1[:]=datetime.datetime(2020, 7, 27, 14, 22, 33, 673000)   
+                
+                    df=pd.DataFrame({0:c1})
+                    df[0]=pd.to_datetime(df[0])
+
+                    ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
 
 if __name__ == '__main__':
     udf.main()

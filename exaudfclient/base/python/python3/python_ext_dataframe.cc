@@ -73,7 +73,9 @@ std::map<int, std::string> emitTypeMap {
 inline void checkPyObjectIsNull(const PyObject *obj, const std::string& error_code) {
     // Error message set by Python
     if (!obj)
-        throw std::runtime_error(error_code);
+        // formerly F-UDF-CL-SL-PYTHON-1038, now we use different error codes 
+        // for the calling locations to get better clues what is happing
+        throw std::runtime_error(error_code+": PyObject is unexpectedly a null pointer"); 
 }
 
 
@@ -135,7 +137,7 @@ PyPtr pandasModule(PyImport_ImportModule("pandas"));
 
 
 
-void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::vector<ColumnInfo>& colInfo)
+inline void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::vector<ColumnInfo>& colInfo)
 {
     const char *ctxColumnTypeList = "_exaiter__incoltypes";
 
@@ -179,7 +181,7 @@ void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::ve
 }
 
 
-PyObject *getDateFromString(PyObject *value)
+inline PyObject *getDateFromString(PyObject *value)
 {
     PyPtr datetime(PyObject_GetAttrString(datetimeModule.get(), "datetime"));
     PyPtr pyDatetime(PyObject_CallMethod(datetime.get(), "strptime", "(Os)", value, "%Y-%m-%d"));
@@ -191,7 +193,7 @@ PyObject *getDateFromString(PyObject *value)
     return pyDate.release();
 }
 
-PyObject *getDatetimeFromString(PyObject *value)
+inline PyObject *getDatetimeFromString(PyObject *value)
 {
     PyPtr datetime(PyObject_GetAttrString(datetimeModule.get(), "datetime"));
     PyPtr pyDatetime(PyObject_CallMethod(datetime.get(), "strptime", "(Os)", value, "%Y-%m-%d %H:%M:%S.%f"));
@@ -199,14 +201,14 @@ PyObject *getDatetimeFromString(PyObject *value)
     return pyDatetime.release();
 }
 
-PyObject *getLongFromString(PyObject *value)
+inline PyObject *getLongFromString(PyObject *value)
 {
     PyPtr pyLong(PyLong_FromUnicodeObject(value, 10));
 
     return pyLong.release();
 }
 
-PyObject *getDecimalFromString(PyObject *value)
+inline PyObject *getDecimalFromString(PyObject *value)
 {
     PyPtr pyDecimal(PyObject_CallMethod(decimalModule.get(), "Decimal", "(O)", value));
 
@@ -388,6 +390,10 @@ inline void getColumnSetMethods(std::vector<ColumnInfo>& colInfo, std::vector<st
     }
 }
 
+inline bool isNumpyDatetime64(const char* typeName){
+    return std::string(typeName).find("datetime64[")==0;
+}
+
 inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::string, int>>& colTypes){
     PyPtr numpyTypeIter(PyObject_GetIter(numpyTypes));
     for (PyPtr numpyType(PyIter_Next(numpyTypeIter.get())); numpyType.get(); numpyType.reset(PyIter_Next(numpyTypeIter.get()))) {
@@ -395,8 +401,14 @@ inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::s
         std::map<std::string, int>::iterator it = typeMap.find(typeName);
         if (it != typeMap.end()) {
             colTypes.push_back(*it);
-        }
-        else {
+        } else if(isNumpyDatetime64(typeName)){
+            std::stringstream ss;
+            ss << "F-UDF-CL-SL-PYTHON-1138: emit: unsupported datetime type: " << typeName << 
+                " emit dataframe only supports datetime64[ns] which represents datetime with nanosecond resolution without time zone. " <<
+                "If you need time zone please use an additional result column. " << 
+                "Note: the nanosecond resolution gets truncated by the database to milliseconds";
+            throw std::runtime_error(ss.str().c_str());
+        } else {
             std::stringstream ss;
             ss << "F-UDF-CL-SL-PYTHON-1054: emit: unexpected type: " << typeName;
             throw std::runtime_error(ss.str().c_str());
@@ -405,7 +417,17 @@ inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::s
 
 }
 
-inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, std::vector<std::pair<std::string, int>>& colTypes, std::vector<PyPtr>& columnArrays){
+
+inline void printPyObject(PyObject* obj, const std::string& error_code){
+        PyTypeObject* type = obj->ob_type;
+        const char* p = type->tp_name;
+        PyObject* objectsRepresentation = PyObject_Repr(obj);
+        const char* s =  PyUnicode_AsUTF8(objectsRepresentation);
+        throw std::runtime_error(error_code+": "+std::string(s)+" "+std::string(p));
+}
+
+inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, 
+        std::vector<std::pair<std::string, int>>& colTypes, std::vector<PyPtr>& columnArrays){
     for (int c = 0; c < numCols; c++) {
         PyPtr pyStart(PyLong_FromLong(c));
         PyPtr pyStop(PyLong_FromLong(c + 1));
@@ -414,6 +436,7 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, std::v
 
         PyPtr pyZero(PyLong_FromLong(0L));
         PyPtr array(PyObject_GetItem(arraySlice.get(), pyZero.get()));
+
 
         if (colTypes[c].second == NPY_OBJECT) {
             // Convert numpy array to python list
@@ -442,8 +465,8 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, std::v
             userDefIt = typeMap.find(pyTypeName);
             if (userDefIt != typeMap.end()) {
                 colTypes[c] = *userDefIt;
-            }
-            else {
+            } else {
+                // TODO accept pandas.Timestamp values
                 std::stringstream ss;
                 ss << "F-UDF-CL-SL-PYTHON-1056: emit: column " <<  c << ", unexpected python type: " << pyTypeName;
                 throw std::runtime_error(ss.str().c_str());
@@ -452,8 +475,11 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, std::v
             columnArrays.push_back(std::move(pyList));
         }
         else if (colTypes[c].second == NPY_DATETIME) {
+            
+            
             // Convert numpy array to python list
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
+
             if (!PyList_Check(pyList.get())) {
                 std::stringstream ss;
                 ss << "F-UDF-CL-SL-PYTHON-1057: emit(): column array " << c << " is not a list";
@@ -911,6 +937,7 @@ inline void handleEmitPyStr(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    
     PyPtr pyString(PyList_GetItem(columnArrays[c].get(), r));
     if (pyString.get() == Py_None) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -926,7 +953,7 @@ inline void handleEmitPyStr(
             Py_ssize_t size = -1;
             const char *str = PyUnicode_AsUTF8AndSize(pyString.get(), &size);
             if (!str && size < 0)
-                throw std::runtime_error("UDF-CL-SL-PYTHON-1137: invalid size of string");
+                throw std::runtime_error("F-UDF-CL-SL-PYTHON-1137: invalid size of string");
             PyPtr pySize(PyLong_FromSsize_t(size));
             pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString.get(), pySize.get(), NULL));
             break;
@@ -973,6 +1000,7 @@ inline void handleEmitPyDate(
     }
 }
 
+
 inline void handleEmitNpyDateTime(
         int c, int r,
         std::vector<PyPtr>& columnArrays,
@@ -985,32 +1013,17 @@ inline void handleEmitNpyDateTime(
         PyPtr& pySetNullMethodName,
         PyPtr& pdNaT){
     PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
-    try{
-        if (pyTimestamp.get() == pdNaT.get()) {
-            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
-            return;
-        }
-    } catch (std::exception& err){
-        throw std::runtime_error("F-UDF-CL-SL-PYTHON-1151: "+std::string(err.what()));
+    if (pyTimestamp.get() == pdNaT.get()) {
+        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+        return;
     }
 
     switch (colInfo[c].type) {
         case SWIGVMContainers::TIMESTAMP:
         {
-            PyObject* pyObject;
-            try{
-                pyObject = PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " ");
-            } catch (std::exception& err){
-                throw std::runtime_error("F-UDF-CL-SL-PYTHON-1153: "+std::string(err.what()));
-            }
-
-            PyPtr pyIsoDatetime(pyObject);
-
-            try{
-                pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
-            } catch (std::exception& err){
-                throw std::runtime_error("F-UDF-CL-SL-PYTHON-1152: "+std::string(err.what()));
-            }
+            PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " "));
+            pyResult.reset(PyObject_CallMethodObjArgs(
+                resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
             break;
         }
         default:
@@ -1024,14 +1037,6 @@ inline void handleEmitNpyDateTime(
 
 void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
 {
-    {
-        checkPyObjectIsNull(dataframe,"F-UDF-CL-SL-PYTHON-2000");
-        PyObject* objectsRepresentation = PyObject_Repr(dataframe);
-        const char* s = PyString_AsString(objectsRepresentation);
-        throw std::runtime_error("TEST: "+std::string(s));
-    }
-
-
     std::vector<std::pair<PyPtr, PyPtr>> pyColSetMethods;
     try{
         getColumnSetMethods(colInfo, pyColSetMethods);
@@ -1045,20 +1050,48 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     } catch (std::exception& err){
         throw std::runtime_error("F-UDF-CL-SL-PYTHON-1134: "+std::string(err.what()));
     }
-    
 
-    PyPtr data(PyObject_GetAttrString(dataframe, "values"));
-    PyArrayObject *pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
-    int numRows = PyArray_DIM(pyArray, 0);
-    int numCols = PyArray_DIM(pyArray, 1);
+    int numRows = -1;
+    int numCols = -1;
 
-    // Transpose to column-major
-    PyObject *colArray = PyArray_Transpose(pyArray, NULL);
+
+    PyPtr data;
+    PyArrayObject *pyArray;
+    PyPtr colArray;
+    if(colTypes.size()==1 && colTypes.at(0).second == NPY_DATETIME){
+        // if we get an dataframe with a single datetime column with type datetime[ns],
+        // it doesn't get transformed into a 2D Array with the attributes values, 
+        // instead we get a DatetimeIndex like this:
+        // DatetimeIndex(['2020-07-27 14:22:33.600699', ...], dtype='datetime64[ns]', freq=None)
+        // As a workaround we add a column to the dataframe via resetIndex, use values to get a 2D Array and
+        // slice out the datetime column, which then will be an Array of pandas.Timestamp objects
+        PyPtr resetIndex(PyObject_CallMethod(dataframe, "reset_index", NULL));
+        data=PyPtr(PyObject_GetAttrString(resetIndex.get(), "values"));
+        pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        numRows = PyArray_DIM(pyArray, 0);
+        numCols = PyArray_DIM(pyArray, 1)-1;
+        // Transpose to column-major
+        PyPtr transpose = PyPtr(PyArray_Transpose(pyArray, NULL));
+
+        PyPtr pyStart(PyLong_FromLong(1));
+        PyPtr pyStop(PyLong_FromLong(2));
+        PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), Py_None));
+        colArray=PyPtr(PyObject_GetItem(transpose.get(), slice.get()));
+
+        
+    }else{
+        data=PyPtr(PyObject_GetAttrString(dataframe, "values"));
+        pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        numRows = PyArray_DIM(pyArray, 0);
+        numCols = PyArray_DIM(pyArray, 1);
+        // Transpose to column-major
+        colArray = PyPtr(PyArray_Transpose(pyArray, NULL));
+    }
 
     // Get column arrays
     std::vector<PyPtr> columnArrays;
     try{
-        getColumnArrays(colArray, numCols, numRows, colTypes, columnArrays);
+        getColumnArrays(colArray.get(), numCols, numRows, colTypes, columnArrays);
     } catch (std::exception& err){
         throw std::runtime_error("F-UDF-CL-SL-PYTHON-1135: "+std::string(err.what()));
     }
@@ -1081,134 +1114,79 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                     case NPY_INT64:
                     case NPY_UINT64:
                     {
-                        try{
-                            handleEmitNpyUint64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1137: "+std::string(err.what()));
-                        }
+                        handleEmitNpyUint64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case NPY_INT32:
                     case NPY_UINT32:
                     {
-                        try{
-                            handleEmitNpyUint32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1138: "+std::string(err.what()));
-                        }
+                        handleEmitNpyUint32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case NPY_INT16:
                     case NPY_UINT16:
                     {
-                        try{
-                            handleEmitNpyUint16(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1139: "+std::string(err.what()));
-                        }
+                        handleEmitNpyUint16(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case NPY_INT8:
                     case NPY_UINT8:
-                    {   try{
-                            handleEmitNpyUint8(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1140: "+std::string(err.what()));
-                        }
+                    {   
+                        handleEmitNpyUint8(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case NPY_FLOAT64:
                     {   
-                        try{
-                            handleEmitNpyFloat64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1141: "+std::string(err.what()));
-                        }
+                        handleEmitNpyFloat64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case NPY_FLOAT32:
                     {
-                        try{
-                            handleEmitNpyFloat64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1142: "+std::string(err.what()));
-                        }
+                        handleEmitNpyFloat64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case NPY_FLOAT16:
                     {
-                        try{
-                            handleEmitNpyFloat16(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1143: "+std::string(err.what()));
-                        }
+                        handleEmitNpyFloat16(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
 
                     case NPY_BOOL:
                     {
-                        try{
-                            handleEmitNpyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1144: "+std::string(err.what()));
-                        }
+                        handleEmitNpyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case PY_BOOL:
                     {
-                        try{
-                            handleEmitPyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1145: "+std::string(err.what()));
-                        }
+                        handleEmitPyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case PY_INT:
                     {
-                        try{
-                            handleEmitPyInt(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1146: "+std::string(err.what()));
-                        }
+                        handleEmitPyInt(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case PY_DECIMAL:
                     {
-                        try{
-                            handleEmitPyDecimal(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
+                        handleEmitPyDecimal(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
                                             pySetNullMethodName, pyIntMethodName, pyFloatMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1147: "+std::string(err.what()));
-                        }
                         break;
                     }
                     case PY_STR:
                     {
-                        try{
-                            handleEmitPyStr(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1148: "+std::string(err.what()));
-                        }
+                        handleEmitPyStr(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case PY_DATE:
                     {
-                        try{
-                            handleEmitPyDate(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
+                        handleEmitPyDate(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
                                         pySetNullMethodName, pyIsoformatMethodName);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1149: "+std::string(err.what()));
-                        }
                         break;
                     }
                     case NPY_DATETIME:
                     {
-                        try{
-                            handleEmitNpyDateTime(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
+                        handleEmitNpyDateTime(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
                                             pySetNullMethodName, pdNaT);
-                        } catch (std::exception& err){
-                            throw std::runtime_error("F-UDF-CL-SL-PYTHON-1150: "+std::string(err.what()));
-                        }
                         break;
                     }
                     case PY_NONETYPE:
