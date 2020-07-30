@@ -77,42 +77,26 @@ int main(int argc, char **argv) {
     string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
     string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
-    //string libexaudflibPath="libexaudflib_complete.so";
-    //string libexaudflibPath = string(argv[3]);
-    //string libexaudflibPath = string("/exaudf/libexaudflib_complete.so");
 #endif
-#if 1
+#if DLMOPEN_LIBEXAUDFLIB_PATH
 
     Lmid_t  my_namespace_id;
-    // DBGMSG(cerr, "Load libprotobuf into new namespace");
-    // DBGVAR(cerr, libProtobufPath);
-    // handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
-    // if (!handle) {
-    //     cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
-    //     exit(EXIT_FAILURE);
-    // }
-    // if(dlinfo(handle, RTLD_DI_LMID, &my_namespace_id) != 0) {
-    //     cerr << "Error when getting namespace id " << dlerror() << endl;
-    //     exit(EXIT_FAILURE);
-    // }
-    DBGMSG(cerr, "Load libexaudflib");
+    DBGMSG(cerr, "Load libexaudflib into new linker namespace");
     DBGVAR(cerr, libexaudflibPath);
     handle = dlmopen(LM_ID_NEWLM, libexaudflibPath.c_str(), RTLD_NOW);
-//    handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
 
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
 #else
-    handle = dlopen(libProtobufPath.c_str(),RTLD_NOW|RTLD_GLOBAL);
+    Lmid_t  my_namespace_id;
+    DBGMSG(cerr, "Load libexaudflib into new linker namespace");
+    DBGVAR(cerr, libexaudflibPath);
+    handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
+
     if (!handle) {
-        cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
-        exit(EXIT_FAILURE);
-    }
-    handle = dlopen("/exaudf/libexaudflib.so",RTLD_NOW);
-    if (!handle) {
-        fprintf(stderr, "dlopen: %s\n", dlerror());
+        fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
 #endif

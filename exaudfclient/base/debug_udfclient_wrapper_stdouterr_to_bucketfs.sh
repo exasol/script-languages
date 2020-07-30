@@ -14,15 +14,15 @@ set -o pipefail
 function before_udfclient_execution(){
     local CONNECTION_NAME="$1"
     local START_DATE_TIME="$2"
-    local TEMPORARY_BASE_DIRECTORY="$3"
+    local TEMPORARY_BASE_DIRECTORY="$3" 
     local WRAPPER_SCRIPT_DIR="$4"
     local CONFIG_FILE="$5"
-
-    # shellcheck source=debug_udfclient_wrapper_valgrind_massif_config.sh
+    
+    # shellcheck source=debug_udfclient_wrapper_stdouterr_to_bucketfs_config.sh
     source "$CONFIG_FILE"
 
-    MASSIF_FILE_NAME="valgrind_massif_${START_DATE_TIME}_${CONNECTION_NAME}"
-    MASSIF_FILE_PATH="${TEMPORARY_BASE_DIRECTORY}/${MASSIF_FILE_NAME}"
+    STDOUT_FILE_NAME="stdout_${START_DATE_TIME}_${CONNECTION_NAME}"
+    STDOUT_FILE_PATH="${TEMPORARY_BASE_DIRECTORY}/${STDOUT_FILE_NAME}"
 }
 
 # Function which gets the command to call the UDFClient, wrap it and than call it
@@ -34,11 +34,11 @@ function wrap_udfclient_execution(){
     shift 1
     local UDFCLIENT_PARAMETERS
     UDFCLIENT_PARAMETERS=( "$@" )
-    valgrind --tool=massif --massif-out-file="${MASSIF_FILE_PATH}" "$UDFCLIENT_EXECUTABLE" "${UDFCLIENT_PARAMETERS[@]}"
+    "$UDFCLIENT_EXECUTABLE" "${UDFCLIENT_PARAMETERS[@]}" &> "$STDOUT_FILE_PATH"
 }
 
 # Function which gets called after the UDFClient execution (here it is time to permamently save your debug output, either through the BucketFS or via standard out and the SCRIPT_OUTPUT_REDIRECT)
 function after_udfclient_execution(){
-    curl -v --fail -X PUT -T "${MASSIF_FILE_PATH}" "${BUCKETFS_UPLOAD_URL_PREFIX}/${MASSIF_FILE_NAME}"
+    curl -v --fail -X PUT -T "${STDOUT_FILE_PATH}" "${BUCKETFS_UPLOAD_URL_PREFIX}/${STDOUT_FILE_NAME}"
 }
 
