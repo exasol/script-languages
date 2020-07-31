@@ -131,7 +131,7 @@ cc_binary(
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
           ["//exaudflib:exaudflib-deps"],
     defines = VM_ENABLED_DEFINES,
-    copts=["-DLMOPEN_LIBEXAUDFLIB_PATH"],
+    copts=["-DDLMOPEN_LIBEXAUDFLIB"],
 )
 
 cc_binary(
@@ -141,7 +141,7 @@ cc_binary(
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
             ["//exaudflib:exaudflib-deps"],
     defines = VM_ENABLED_DEFINES,
-    copts=["-DLMOPEN_LIBEXAUDFLIB_PATH"],
+    copts=["-DDLMOPEN_LIBEXAUDFLIB"],
 )
 
 cc_binary(

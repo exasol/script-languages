@@ -1,3 +1,4 @@
+bazel-base
 bazel-bin
 bazel-genfiles
 bazel-out

@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 #else
     string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
 #endif
-#if DLMOPEN_LIBEXAUDFLIB_PATH
+#if DLMOPEN_LIBEXAUDFLIB
 
     Lmid_t  my_namespace_id;
     DBGMSG(cerr, "Load libexaudflib via dlmopen into new linker namespace");
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
 
     if (!handle) {
-        fprintf(stderr, "dmlopen: %s\n", dlerror());
+        fprintf(stderr, "dlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
 #endif
