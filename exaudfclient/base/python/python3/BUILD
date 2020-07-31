@@ -36,13 +36,23 @@ genrule(
 )
 
 genrule(
+    name = "exascript_python_wrap_py",
+    cmd = """
+          sed -E "s#path_to_pyexadataframe=.LIBPYEXADATAFRAME_DIR_PLACEHOLDER.#path_to_pyexadataframe='$${EXAUDF_BASEPATH}/python/python3'#g" $(location //python:exascript_python_wrap.py) > $(location exascript_python_wrap_changed.py)
+          """,
+    outs = ["exascript_python_wrap_changed.py"],
+    srcs = ["//python:exascript_python_wrap.py"],
+)
+
+genrule(
     name = "exascript_python_int",
     cmd = """
       cp $(SRCS) .
+      mv exascript_python_wrap_changed.py exascript_python_wrap.py
       python $(location //:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"
     """,
     outs = ["exascript_python_int.h"],
-    srcs = [":exascript_python_tmp_cc", "//python:exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
+    srcs = [":exascript_python_tmp_cc", ":exascript_python_wrap_py", ":extend_exascript_python_preset_py"],
     tools = ["//:build_integrated.py"]
 )
 

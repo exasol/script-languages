@@ -18,8 +18,7 @@ if isPython3:
         #print("sys.path append",path_to_pyexadataframe)
         sys.path.append(path_to_pyexadataframe)
     else:
-        path_to_pyexadataframe="/exaudf/python/python3"
-        #print("sys.path append",path_to_pyexadataframe)
+        path_to_pyexadataframe="LIBPYEXADATAFRAME_DIR_PLACEHOLDER"
         sys.path.append(path_to_pyexadataframe)
     import pyextdataframe
 
