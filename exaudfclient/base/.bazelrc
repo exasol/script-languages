@@ -1,17 +1,34 @@
-build --copt='-std=c++14' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX 
+build --copt='-std=c++14' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-U_FORTIFY_SOURCE" 
 # TODO add environment variables for R libraries
 build:benchmark --define benchmark=true
 build:java  --define java=true --action_env=JAVA_PREFIX
 build:python --define python=true  --action_env=PYTHON2_SYSPATH --action_env=PYTHON2_PREFIX --action_env=PYTHON2_VERSION --action_env=NUMPY_PREFIX --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION
-build:fast-binary-py2 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' --define binary_type=fast_binary //:exaudfclient //:exaudfclient_dlopen_bin
-build:fast-binary-py3 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' --define binary_type=fast_binary //:exaudfclient_py3 //:exaudfclient_py3_dlopen_bin
+
+build:custom_libexaudflib_path --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"'
+build:custom_libexaudflib_debug_path --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf_debug/libexaudflib_complete.so"'
+
+build:fast-binary-dlmopen-py2 --define binary_type=fast_binary //:exaudfclient
+build:fast-binary-dlmopen-py3 --define binary_type=fast_binary //:exaudfclient_py3
+
+build:fast-binary-py2 --config=custom_libexaudflib_path --config=fast-binary-dlmopen-py2
+build:fast-binary-py3 --config=custom_libexaudflib_path --config=fast-binary-dlmopen-py3
 build:fast-binary-both --config=fast-binary-py2 --config=fast-binary-py3
-build:slow-wrapper-py2 --define binary_type=slow_wrapper //:exaudfclient
-build:slow-wrapper-py3 --define binary_type=slow_wrapper //:exaudfclient_py3
+
+build:fast-binary-debug-py2 --config=custom_libexaudflib_debug_path --config=fast-binary-dlmopen-py2 //:exaudfclient_dlopen
+build:fast-binary-debug-py3 --config=custom_libexaudflib_debug_path --config=fast-binary-dlmopen-py3 //:exaudfclient_dlopen_py3
+build:fast-binary-debug-both --config=fast-binary-debug-py2 --config=fast-binary-debug-py3
+
+build:slow-wrapper-py2 --define binary_type=slow_wrapper //:exaudfclient //:exaudfclient_dlopen
+build:slow-wrapper-py3 --define binary_type=slow_wrapper //:exaudfclient_py3 //:exaudfclient_dlopen_py3
 build:slow-wrapper-both --config=slow-wrapper-py2 --config=slow-wrapper-py3 
-build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
+
 #TODO test linkopts="-flto"
-build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-O3" --copt="-U_FORTIFY_SOURCE" --copt="-flto"
+build:optimize --copt="-DNDEBUG" --copt="-O3" --copt="-flto"
+build:debug-base --copt="-g" --strip=never
+build:debug-optimized --config=debug-base --config=optimize 
+build:debug-unoptimized --config=debug-base --copt="-O0"
+
+build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
 build:no-tty --curses=no --color=no
 build:debug-build --sandbox_debug --config=verbose
 build:no-symlinks --symlink_prefix=/

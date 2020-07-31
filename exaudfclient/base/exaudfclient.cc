@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 #if DLMOPEN_LIBEXAUDFLIB_PATH
 
     Lmid_t  my_namespace_id;
-    DBGMSG(cerr, "Load libexaudflib into new linker namespace");
+    DBGMSG(cerr, "Load libexaudflib via dlmopen into new linker namespace");
     DBGVAR(cerr, libexaudflibPath);
     handle = dlmopen(LM_ID_NEWLM, libexaudflibPath.c_str(), RTLD_NOW);
 
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     }
 #else
     Lmid_t  my_namespace_id;
-    DBGMSG(cerr, "Load libexaudflib into new linker namespace");
+    DBGMSG(cerr, "Load libexaudflib via dlopen into same linker namespace");
     DBGVAR(cerr, libexaudflibPath);
     handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
 
