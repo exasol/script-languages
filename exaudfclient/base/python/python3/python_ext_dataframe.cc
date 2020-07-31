@@ -417,7 +417,7 @@ inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::s
 
 }
 
-
+#ifdef NDEBUG
 inline void printPyObject(PyObject* obj, const std::string& error_code){
         PyTypeObject* type = obj->ob_type;
         const char* p = type->tp_name;
@@ -425,6 +425,7 @@ inline void printPyObject(PyObject* obj, const std::string& error_code){
         const char* s =  PyUnicode_AsUTF8(objectsRepresentation);
         throw std::runtime_error(error_code+": "+std::string(s)+" "+std::string(p));
 }
+#endif
 
 inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, 
         std::vector<std::pair<std::string, int>>& colTypes, std::vector<PyPtr>& columnArrays){
