@@ -32,3 +32,4 @@ build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
 build:no-tty --curses=no --color=no
 build:debug-build --sandbox_debug --config=verbose
 build:no-symlinks --symlink_prefix=/
+build:symlinks-to-tmp --symlink_prefix=/tmp/
