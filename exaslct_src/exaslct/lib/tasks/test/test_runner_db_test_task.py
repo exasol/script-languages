@@ -108,7 +108,8 @@ class TestRunnerDBTestTask(FlavorBaseTask,
             flavor_path=self.flavor_path,
             bucket_name="myudfs",
             bucketfs_name="bfsdefault",
-            path_in_bucket="")
+            path_in_bucket="",
+            add_missing_builtin = True)
         task = self.create_child_task_with_common_params(
             RunDBTestsInTestConfig,
             test_environment_info=test_environment_info,
