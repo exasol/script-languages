@@ -7,6 +7,7 @@ COPY --from={{language_deps}} /bin /bin
 COPY --from={{language_deps}} /opt /opt
 COPY --from={{language_deps}} /etc /etc
 COPY --from={{language_deps}} /build_info /build_info
+COPY --from={{language_deps}} /var /var
 
 COPY --from={{flavor_customization}} /usr /usr
 COPY --from={{flavor_customization}} /lib /lib
@@ -14,6 +15,7 @@ COPY --from={{flavor_customization}} /bin /bin
 COPY --from={{flavor_customization}} /opt /opt
 COPY --from={{flavor_customization}} /etc /etc
 COPY --from={{flavor_customization}} /build_info /build_info
+COPY --from={{flavor_customization}} /var /var
 
 RUN ldconfig
 
