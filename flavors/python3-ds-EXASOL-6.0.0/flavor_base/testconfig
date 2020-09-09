@@ -1,3 +1,2 @@
-language_definition=PYTHON3=localzmq+protobuf:///bfsdefault/myudfs/python3-ds-EXASOL-6.0.0?lang=python#exaudf/exaudfclient_py3 JAVA=builtin_java R=builtin_r PYTHON=builtin_python
 generic_language_tests=python3
 test_folders=python3 python3-ds-flavor
