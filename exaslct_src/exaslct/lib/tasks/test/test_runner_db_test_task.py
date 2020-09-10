@@ -16,6 +16,7 @@ from exaslct_src.test_environment.src.lib.data.environment_type import Environme
 from exaslct_src.test_environment.src.lib.test_environment.spawn_test_environment import SpawnTestEnvironment
 from exaslct_src.test_environment.src.lib.test_environment.spawn_test_environment_parameter import \
     SpawnTestEnvironmentParameter
+from exaslct_src.exaslct.lib.tasks.upload.language_definition import LanguageDefinition
 
 
 class TestRunnerDBTestTask(FlavorBaseTask,
@@ -40,9 +41,11 @@ class TestRunnerDBTestTask(FlavorBaseTask,
 
     def register_export_container(self):
         export_container_task = self.create_child_task(ExportFlavorContainer,
-                                                       release_goals=[self.release_goal],
+                                                       release_goals=[
+                                                           self.release_goal],
                                                        flavor_path=self.flavor_path)
-        self._export_infos_future = self.register_dependency(export_container_task)
+        self._export_infos_future = self.register_dependency(
+            export_container_task)
 
     def register_spawn_test_environment(self):
         test_environment_name = f"""{self.get_flavor_name()}_{self.release_goal}"""
@@ -50,21 +53,23 @@ class TestRunnerDBTestTask(FlavorBaseTask,
             self.create_child_task_with_common_params(
                 SpawnTestEnvironment,
                 environment_name=test_environment_name)
-        self._test_environment_info_future = self.register_dependency(spawn_test_environment_task)
+        self._test_environment_info_future = self.register_dependency(
+            spawn_test_environment_task)
 
     def run_task(self):
-        export_infos = self.get_values_from_future(self._export_infos_future)  # type: Dict[str,ExportInfo]
+        export_infos = self.get_values_from_future(
+            self._export_infos_future)  # type: Dict[str,ExportInfo]
         export_info = export_infos[self.release_goal]
         self.test_environment_info = self.get_values_from_future(
             self._test_environment_info_future)  # type: EnvironmentInfo
         reuse_release_container = self.reuse_database and \
-                                  self.reuse_uploaded_container and \
-                                  not export_info.is_new
+            self.reuse_uploaded_container and \
+            not export_info.is_new
         database_credentials = self.get_database_credentials()
         yield from self.upload_container(database_credentials,
                                          export_info,
                                          reuse_release_container)
-        test_results = yield from self.run_test(self.test_environment_info)
+        test_results = yield from self.run_test(self.test_environment_info, export_info)
         self.return_object(test_results)
 
     def upload_container(self, database_credentials, export_info, reuse_release_container):
@@ -91,24 +96,33 @@ class TestRunnerDBTestTask(FlavorBaseTask,
                                     db_password=SpawnTestEnvironment.DEFAULT_DATABASE_PASSWORD,
                                     bucketfs_write_password=SpawnTestEnvironment.DEFAULT_BUCKETFS_WRITE_PASSWORD)
 
-    def run_test(self, test_environment_info: EnvironmentInfo) -> \
+    def run_test(self, test_environment_info: EnvironmentInfo, export_info:ExportInfo) -> \
             Generator[RunDBTestsInTestConfig, Any, RunDBTestsInTestConfigResult]:
         test_config = self.read_test_config()
         generic_language_tests = self.get_generic_language_tests(test_config)
         test_folders = self.get_test_folders(test_config)
         database_credentials = self.get_database_credentials()
+        # "myudfs/containers/" + self.export_info.name + ".tar.gz"
+        language_definition = LanguageDefinition(
+            release_name=export_info.name,
+            flavor_path=self.flavor_path,
+            bucket_name="myudfs",
+            bucketfs_name="bfsdefault",
+            path_in_bucket="",
+            add_missing_builtin = True)
         task = self.create_child_task_with_common_params(
             RunDBTestsInTestConfig,
             test_environment_info=test_environment_info,
             generic_language_tests=generic_language_tests,
             test_folders=test_folders,
-            language_definition=test_config["language_definition"],
+            language_definition=language_definition.generate_definition(),
             db_user=database_credentials.db_user,
             db_password=database_credentials.db_password,
             bucketfs_write_password=database_credentials.bucketfs_write_password
         )
         test_output_future = yield from self.run_dependencies(task)
-        test_output = self.get_values_from_future(test_output_future)  # type: RunDBTestsInTestConfigResult
+        test_output = self.get_values_from_future(
+            test_output_future)  # type: RunDBTestsInTestConfigResult
         return test_output
 
     def get_result_status(self, status):
@@ -130,13 +144,14 @@ class TestRunnerDBTestTask(FlavorBaseTask,
 
     def tests_specified_in_parameters(self):
         return len(self.generic_language_tests) != 0 or \
-               len(self.test_folders) != 0 or \
-               len(self.test_files) != 0
+            len(self.test_folders) != 0 or \
+            len(self.test_files) != 0
 
     def get_generic_language_tests(self, test_config):
         generic_language_tests = []
         if test_config["generic_language_tests"] != "":
-            generic_language_tests = test_config["generic_language_tests"].split(" ")
+            generic_language_tests = test_config["generic_language_tests"].split(
+                " ")
         if self.tests_specified_in_parameters():
             generic_language_tests = self.generic_language_tests
         return generic_language_tests

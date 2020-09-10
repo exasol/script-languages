@@ -1,4 +1,3 @@
-language_definition=PYTHON3=localzmq+protobuf:///bfsdefault/myudfs/test-flavor?lang=python#exaudf/exaudfclient_py3 JAVA=builtin_java R=builtin_r PYTHON=builtin_python
 generic_language_tests=
 test_folders=selftest
 # ending new line required!
