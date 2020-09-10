@@ -26,11 +26,9 @@ EOF
 
 FLAVOR=standard-EXASOL-7.0.0
 EXASUITE=EXASuite-7
-EXARUNTIME=@EXARuntime-7.0.dev1
-EXARUNTIME_PATH=EXARuntime-7.0.dev1
 EXASLCT_TMP="$HOME/exaslct-tmp"
-export PATH=/usr/opt/${EXASUITE}/${EXARUNTIME_PATH}/bin:$PATH
-INSTALL_PATH="$BUILDSYSTEM_LINKDIR/install"
+EXASLCT_BASE_TMP="$EXASLCT_TMP/tmp"
+EXASLCT_BUILD_OUTPUT="$EXASLCT_TMP/.build_output"
 EXPORT_PATH="$BUILDSYSTEM_LINKDIR"
 
 get_image_hash()
@@ -57,33 +55,47 @@ _cmd_requires() {
   echo
 }
 
-_cmd_build() {
-  mkdir -p "$EXASLCT_TMP"
-  "$CCC_CCC" extract -m ${EXARUNTIME}
+prepare_exaslct() {
+  mkdir -p "$EXASLCT_BASE_TMP"
+  mkdir -p "$EXASLCT_BUILD_OUTPUT"
+  EXARUNTIME=$(cat ./config/build-env | sed -E "s/ +/ /g" | grep "exaruntime = " | cut -f 3 -d " ")
+  EXARUNTIME_PATH="$EXARUNTIME"
+  export PATH=/usr/opt/${EXASUITE}/${EXARUNTIME_PATH}/bin:$PATH
+  INSTALL_PATH="$BUILDSYSTEM_LINKDIR/install"
+  "$CCC_CCC" extract -m "@${EXARUNTIME}"
+  EXASLCT_OPTIONS=(--temporary-base-directory "$EXASLCT_BASE_TMP" --output-directory "$EXASLCT_BUILD_OUTPUT")
+}
 
+_cmd_build() {
+  env
+  prepare_exaslct
   mkdir -p "$BUILDSYSTEM_LINKDIR"
-  PIP_INSTALL=YES ./exaslct export --flavor-path="flavors/${FLAVOR}" --export-path "$EXPORT_PATH" --temporary-base-directory "$EXASLCT_TMP" \
-  && mkdir "$INSTALL_PATH" \
-  && for f in "$EXPORT_PATH/"*.gz; do tar xfC "$f" "$INSTALL_PATH"; done
+  PIP_INSTALL=YES ./exaslct export --flavor-path="flavors/${FLAVOR}" --export-path "$EXPORT_PATH" "${EXASLCT_OPTIONS[@]}" \
+  && mkdir -p "$INSTALL_PATH" \
+  && for f in "$EXPORT_PATH/"*.gz; do echo "Extracting $f" ;tar xfC "$f" "$INSTALL_PATH"; done
 }
 
 _cmd_clean() {
-  ./exaslct clean-flavor-images --flavor-path "flavors/${FLAVOR}"
+  echo "Cleaning"
+  PIP_INSTALL=YES ./exaslct clean-flavor-images --flavor-path "flavors/${FLAVOR}" "${EXASLCT_OPTIONS[@]}"
   rm -rf "$EXASLCT_TMP"
   rm -rf "$INSTALL_PATH"
   rm -rf "$EXPORT_PATH/"*.gz
+  rm -rf "$BUILDSYSTEM_LINKDIR"
 }
 
 _cmd_test() {
-  ./exaslct run-db-test --flavor-path "flavors/${FLAVOR}"
+  prepare_exaslct
+  PIP_INSTALL=YES ./exaslct run-db-test --flavor-path "flavors/${FLAVOR}" "${EXASLCT_OPTIONS[@]}"
 }
+
 
 ## Command Switch
 if [ "$1" = prefix ]; then
   _cmd_prefix
 elif [ "$1" = make ]; then
   _cmd_build
-elif [ "$1" = clean ]; then
+elif [ "$1" = "clean" ]; then
   _cmd_clean
 elif [ "$1" = provides ]; then
   _cmd_provides
