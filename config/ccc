@@ -25,7 +25,6 @@ EOF
 }
 
 FLAVOR=standard-EXASOL-7.0.0
-EXASUITE=EXASuite-7
 EXASLCT_TMP="$HOME/exaslct-tmp"
 EXASLCT_BASE_TMP="$EXASLCT_TMP/tmp"
 EXASLCT_BUILD_OUTPUT="$EXASLCT_TMP/.build_output"
@@ -39,6 +38,7 @@ get_image_hash()
 
 ## CMD Functions: General C4 Query Commands - Not explicitly used by the user 
 _cmd_prefix() {
+    prepare_variables
     HASH=$(get_image_hash)
     HASH=${HASH:-NOHASH}
 
@@ -55,19 +55,25 @@ _cmd_requires() {
   echo
 }
 
+prepare_variables() {
+  # TODO: TOOLCHAIN will be provided in CURRENTTOOLCHAIN and EXARUNTIME will be provided in CCC_BUILDENV_TOOLCHAIN when branch ic.config got merged
+  EXASUITE=EXASuite-7
+  EXARUNTIME=$(cat ./config/build-env | sed -E "s/ +/ /g" | grep "exaruntime = " | cut -f 3 -d " ")  
+  EXARUNTIME_PATH="$EXARUNTIME"
+  TOOLCHAIN="/usr/opt/${EXASUITE}/${EXARUNTIME_PATH}"
+  export PATH="$TOOLCHAIN/bin:$PATH"
+  INSTALL_PATH="$BUILDSYSTEM_LINKDIR/install"
+}
+
 prepare_exaslct() {
+  prepare_variables
   mkdir -p "$EXASLCT_BASE_TMP"
   mkdir -p "$EXASLCT_BUILD_OUTPUT"
-  EXARUNTIME=$(cat ./config/build-env | sed -E "s/ +/ /g" | grep "exaruntime = " | cut -f 3 -d " ")
-  EXARUNTIME_PATH="$EXARUNTIME"
-  export PATH=/usr/opt/${EXASUITE}/${EXARUNTIME_PATH}/bin:$PATH
-  INSTALL_PATH="$BUILDSYSTEM_LINKDIR/install"
   "$CCC_CCC" extract -m "@${EXARUNTIME}"
   EXASLCT_OPTIONS=(--temporary-base-directory "$EXASLCT_BASE_TMP" --output-directory "$EXASLCT_BUILD_OUTPUT")
 }
 
 _cmd_build() {
-  env
   prepare_exaslct
   mkdir -p "$BUILDSYSTEM_LINKDIR"
   PIP_INSTALL=YES ./exaslct export --flavor-path="flavors/${FLAVOR}" --export-path "$EXPORT_PATH" "${EXASLCT_OPTIONS[@]}" \
@@ -76,6 +82,7 @@ _cmd_build() {
 }
 
 _cmd_clean() {
+  prepare_exaslct
   echo "Cleaning"
   PIP_INSTALL=YES ./exaslct clean-flavor-images --flavor-path "flavors/${FLAVOR}" "${EXASLCT_OPTIONS[@]}"
   rm -rf "$EXASLCT_TMP"

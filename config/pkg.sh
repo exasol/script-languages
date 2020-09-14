@@ -17,9 +17,9 @@
 
 case "$1" in
   extract)
-    mkdir -p install/release
-    for i in install/*.tar.gz; do
-      OUTPUT_DIR=install/release
+    OUTPUT_DIR=install
+    mkdir -p $OUTPUT_DIR
+    for i in *.tar.gz; do
       tar xf "$i" -C "$OUTPUT_DIR"
     done
     ;;
