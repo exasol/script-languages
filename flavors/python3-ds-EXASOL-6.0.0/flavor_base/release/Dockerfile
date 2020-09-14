@@ -8,6 +8,7 @@ COPY --from={{language_deps}} /opt /opt
 COPY --from={{language_deps}} /etc /etc
 COPY --from={{language_deps}} /build_info /build_info
 COPY --from={{language_deps}} /var /var
+COPY --from={{language_deps}} /scripts /scripts
 
 COPY --from={{flavor_customization}} /usr /usr
 COPY --from={{flavor_customization}} /lib /lib
