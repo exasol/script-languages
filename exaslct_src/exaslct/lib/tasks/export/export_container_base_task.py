@@ -141,7 +141,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
         extract_dir = temp_directory + "/extract"
         os.makedirs(extract_dir)
         excludes = " ".join(
-            ["--exclude='%s'" % dir for dir in ["dev/*", "proc/*", "etc/resolv.conf", "etc/hosts"]])
+            ["--exclude='%s'" % dir for dir in ["dev/*", "proc/*", "etc/resolv.conf", "etc/hosts", "var/cache/apt", "var/lib/apt", "var/lib/dpkg"]])
         self.run_command(f"""tar {excludes} -xvf '{export_file}' -C '{extract_dir}'""",
                          "extracting exported container %s" % export_file,
                          log_path.joinpath("extract_release_file.log"))
