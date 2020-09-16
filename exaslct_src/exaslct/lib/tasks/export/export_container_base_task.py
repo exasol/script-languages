@@ -37,13 +37,14 @@ class ExportContainerBaseTask(FlavorBaseTask):
         image_info_of_release_image = self._release_task_future.get_output()  # type: ImageInfo
         cache_file, release_complete_name, release_image_name = \
             self._get_cache_file_path(image_info_of_release_image)
-        self._remove_cached_exported_file_if_requested(cache_file)
+        checksum_file = Path(str(cache_file)+".sha256sum")
+        self._remove_cached_exported_file_if_requested(cache_file,checksum_file)
 
         is_new = False
         if not cache_file.exists():
-            self._export_release(release_image_name, cache_file)
+            self._export_release(release_image_name, cache_file, checksum_file)
             is_new = True
-        output_file = self._copy_cache_file_to_output_path(cache_file, is_new)
+        output_file = self._copy_cache_file_to_output_path(cache_file, checksum_file, is_new)
         export_info = self._create_export_info(image_info_of_release_image,
                                                release_complete_name,
                                                cache_file, is_new, output_file)
@@ -72,7 +73,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
         cache_file = Path(export_path, release_complete_name + ".tar.gz").absolute()
         return cache_file, release_complete_name, release_image_name
 
-    def _copy_cache_file_to_output_path(self, cache_file, is_new):
+    def _copy_cache_file_to_output_path(self, cache_file: Path, checksum_file: Path, is_new: bool):
         output_file = None
         if self.export_path is not None:
             if self.release_name is not None:
@@ -81,19 +82,24 @@ class ExportContainerBaseTask(FlavorBaseTask):
                 suffix = ""
             file_name = f"""{self.get_flavor_name()}_{self.release_goal}{suffix}.tar.gz"""
             output_file = Path(self.export_path, file_name)
-            if not output_file.exists() or is_new:
+            output_checksum_file = Path(self.export_path, file_name+".checksum")
+            if not output_file.exists() or not output_checksum_file.exists() or is_new:
                 output_file.parent.mkdir(exist_ok=True, parents=True)
+                shutil.copy2(checksum_file, output_checksum_file)
                 shutil.copy2(cache_file, output_file)
         return output_file
 
-    def _remove_cached_exported_file_if_requested(self, release_file):
+    def _remove_cached_exported_file_if_requested(self, release_file: Path, checksum_file: Path):
         if release_file.exists() and \
                 (build_config().force_rebuild or
-                 build_config().force_pull):
+                 build_config().force_pull or
+                 not checksum_file.exists()):
             self.logger.info("Removed container file %s", release_file)
             os.remove(release_file)
+            if checksum_file.exists():
+                os.remove(checksum_file)
 
-    def _export_release(self, release_image_name: str, release_file: str):
+    def _export_release(self, release_image_name: str, release_file: Path, checksum_file: Path):
         self.logger.info("Create container file %s", release_file)
         temp_directory = tempfile.mkdtemp(prefix="release_archive_",
                                           dir=build_config().temporary_base_directory)
@@ -103,15 +109,19 @@ class ExportContainerBaseTask(FlavorBaseTask):
             extract_dir = self._extract_exported_container(log_path, export_file, temp_directory)
             self._modify_extracted_container(extract_dir)
             self._pack_release_file(log_path, extract_dir, release_file)
-            self._compute_checksum(release_file)
+            self._compute_checksum(release_file, checksum_file)
         finally:
             shutil.rmtree(temp_directory)
 
-    def _compute_checksum(self, release_file:str):
+    def _compute_checksum(self, release_file: Path, checksum_file: Path):
         self.logger.info("Compute checksum for container file %s", release_file)
         command = f"""sha512sum '{release_file}'"""
-        self.run_command(command, "computing checksum of container file %s" % release_file,
-                         log_path.joinpath("compute_checksum_for_release_file.log"))
+        completed_process = subprocess.run(shlex.split(command),capture_output=True)
+        completed_process.check_returncode()
+        stdout = completed_process.stdout.decode("utf-8")
+        stdout = stdout.replace(str(release_file),release_file.name)
+        with open(checksum_file,"w") as f:
+            f.write(stdout)
 
     def _create_and_export_container(self, release_image_name: str, temp_directory: str):
         self.logger.info("Export container %s", release_image_name)
@@ -132,7 +142,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
                 file.write(chunk)
         return export_file
 
-    def _pack_release_file(self, log_path: Path, extract_dir: str, release_file: str):
+    def _pack_release_file(self, log_path: Path, extract_dir: str, release_file: Path):
         self.logger.info("Pack container file %s", release_file)
         extract_content = " ".join("'%s'" % file for file in os.listdir(extract_dir))
         command = f"""tar -C '{extract_dir}' -cvzf '{release_file}' {extract_content}"""
