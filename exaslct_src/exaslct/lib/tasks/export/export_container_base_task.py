@@ -103,8 +103,15 @@ class ExportContainerBaseTask(FlavorBaseTask):
             extract_dir = self._extract_exported_container(log_path, export_file, temp_directory)
             self._modify_extracted_container(extract_dir)
             self._pack_release_file(log_path, extract_dir, release_file)
+            self._compute_checksum(release_file)
         finally:
             shutil.rmtree(temp_directory)
+
+    def _compute_checksum(self, release_file:str):
+        self.logger.info("Compute checksum for container file %s", release_file)
+        command = f"""sha512sum '{release_file}'"""
+        self.run_command(command, "computing checksum of container file %s" % release_file,
+                         log_path.joinpath("compute_checksum_for_release_file.log"))
 
     def _create_and_export_container(self, release_image_name: str, temp_directory: str):
         self.logger.info("Export container %s", release_image_name)
