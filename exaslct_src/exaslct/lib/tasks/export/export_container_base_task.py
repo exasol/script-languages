@@ -116,7 +116,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
     def _compute_checksum(self, release_file: Path, checksum_file: Path):
         self.logger.info("Compute checksum for container file %s", release_file)
         command = f"""sha512sum '{release_file}'"""
-        completed_process = subprocess.run(shlex.split(command),capture_output=True)
+        completed_process = subprocess.run(shlex.split(command),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         completed_process.check_returncode()
         stdout = completed_process.stdout.decode("utf-8")
         stdout = stdout.replace(str(release_file),release_file.name)
