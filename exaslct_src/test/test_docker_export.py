@@ -20,7 +20,7 @@ class DockerExportTest(unittest.TestCase):
         command=f"./exaslct export --export-path {self.export_path}"
         self.test_environment.run_command(command,track_task_dependencies=True)
         exported_files = os.listdir(self.export_path)
-        self.assertTrue(len(exported_files) == 1,
+        self.assertEqual(list(exported_files),['test-flavor_release.tar.gz', 'test-flavor_release.tar.gz.checksum'],
                         f"Did not found saved files for repository {self.test_environment.repository_name} "
                         f"in list {exported_files}")
 
