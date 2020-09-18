@@ -5,7 +5,7 @@
   {% if disabled == true %}
   "disabled": "true",
   {% elif build_mode == "rebuild"  %}
-  "disabled": "true",
+  "disabled": "false",
   {% elif build_mode == "build" %}
   "disabled": "false",
   {% elif build_mode == "release" %} 
@@ -15,7 +15,7 @@
     "projectId": "{{ gcloud_project_name }}",
     "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
     {% if build_mode == "rebuild"  %}
-    "branchName": ".*"
+    "branchName": "^(rebuild)/.*"
     {% elif build_mode == "build" %}
     "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
     {% elif build_mode == "release" %} 
