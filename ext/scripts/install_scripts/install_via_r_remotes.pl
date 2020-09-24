@@ -56,9 +56,9 @@ if($rscript_binary eq ''){
 
 my $combining_template = "$rscript_binary -e 'library(remotes);<<<<0>>>>'";
 my @separators = (";");
-my @templates = ('install_version("<<<<0>>>>")');
+my @templates = ('install_version("<<<<0>>>>",,repos="http://cran.r-project.org")');
 if($with_versions){  
-    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>")');
+    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>",repos="http://cran.r-project.org")');
 }
 
 
@@ -76,6 +76,6 @@ if($with_versions and not $allow_no_version){
 }
 
 if($cmd ne ""){
-    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"remotes\")'",$dry_run);
+    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"remotes\",repos=\"http://cran.r-project.org\")'",$dry_run);
     package_mgmt_utils::execute($cmd,$dry_run);
 }
