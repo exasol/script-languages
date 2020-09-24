@@ -76,6 +76,6 @@ if($with_versions and not $allow_no_version){
 }
 
 if($cmd ne ""){
-    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"remotes\")'",$dry_run);
+    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"remotes\",repos=\"http://cran.r-project.org\")'",$dry_run);
     package_mgmt_utils::execute($cmd,$dry_run);
 }
