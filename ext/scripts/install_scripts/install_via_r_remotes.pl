@@ -56,9 +56,9 @@ if($rscript_binary eq ''){
 
 my $combining_template = "$rscript_binary -e 'library(remotes);<<<<0>>>>'";
 my @separators = (";");
-my @templates = ('install_version("<<<<0>>>>")');
+my @templates = ('install_version("<<<<0>>>>",,repos="http://cran.r-project.org")');
 if($with_versions){  
-    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>")');
+    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>",repos="http://cran.r-project.org")');
 }
 
 
