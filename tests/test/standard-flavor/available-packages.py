@@ -71,6 +71,7 @@ class AvailablePythonPackages(udf.TestCase):
     def test_36(self): self.import_test('paramiko')
     def test_37(self): self.import_test('pysftp')
     def test_38(self): self.import_test('boto3')
+    def test_39(self): self.import_test('simplejson')
 
 class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
@@ -139,6 +140,7 @@ class AvailablePython3Packages(udf.TestCase):
     def test_36(self): self.import_test('paramiko')
     def test_37(self): self.import_test('pysftp')
     def test_38(self): self.import_test('boto3')
+    def test_39(self): self.import_test('simplejson')
 
 
 class AvailableRPackages(udf.TestCase):
