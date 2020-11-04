@@ -135,9 +135,9 @@ class GetConnectionAccessControlTest(udf.TestCase):
 class BigConnectionTest(udf.TestCase):
 
     # Should be max. size 2.000.000, but this will cause our odbc driver to crash (sigsegv) during logging (DWA-20290). Will be increased to max size when bug is fixed
-    address = "a" * 2 * 1000 * 100
-    user = "u" * 2 * 1000 * 100
-    password = "p" * 2 * 1000 * 100
+    address = u"a" * 2 * 1000 * 100
+    user = u"u" * 2 * 1000 * 100
+    password = u"p" * 2 * 1000 * 100
 
     def setUp(self):
         self.query('''
