@@ -1,15 +1,16 @@
 from typing import Tuple
 
-from exaslct_src.test_environment.src.cli.cli import cli
-from exaslct_src.test_environment.src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
-    import_build_steps, set_job_id
+from exasol_integration_test_docker_environment.cli.cli import cli
+from exasol_integration_test_docker_environment.cli.common import add_options, import_build_steps, set_build_config, \
+    set_docker_repository_config, set_job_id, run_task
+from exasol_integration_test_docker_environment.cli.options.build_options import build_options
+from exasol_integration_test_docker_environment.cli.options.docker_repository_options import docker_repository_options
+from exasol_integration_test_docker_environment.cli.options.push_options import push_options
+from exasol_integration_test_docker_environment.cli.options.system_options import system_options
+
 from exaslct_src.exaslct.cli.options.flavor_options import flavor_options
 from exaslct_src.exaslct.cli.options.goal_options import goal_options
 from exaslct_src.exaslct.lib.tasks.push.docker_push import DockerFlavorsPush
-from exaslct_src.test_environment.src.cli.options.build_options import build_options
-from exaslct_src.test_environment.src.cli.options.docker_repository_options import docker_repository_options
-from exaslct_src.test_environment.src.cli.options.push_options import push_options
-from exaslct_src.test_environment.src.cli.options.system_options import system_options
 
 
 @cli.command()

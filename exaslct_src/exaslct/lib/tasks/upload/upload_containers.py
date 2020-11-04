@@ -1,12 +1,12 @@
 from typing import Dict
 
 import luigi
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorsBaseTask
 
 from exaslct_src.exaslct.lib.tasks.build.docker_flavor_build_base import DockerFlavorBuildBase
 from exaslct_src.exaslct.lib.tasks.export.export_container_tasks_creator import ExportContainerTasksCreator
 from exaslct_src.exaslct.lib.tasks.upload.upload_container_tasks_creator import UploadContainerTasksCreator
 from exaslct_src.exaslct.lib.tasks.upload.upload_containers_parameter import UploadContainersParameter
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorsBaseTask
 
 
 class UploadContainers(FlavorsBaseTask, UploadContainersParameter):

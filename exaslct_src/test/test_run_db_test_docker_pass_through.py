@@ -1,13 +1,13 @@
 import unittest
 
-from exaslct_src.test_environment.src.test import utils
+from exasol_integration_test_docker_environment.test import utils
 
 
 class RunDBTestDockerPassThroughTest(unittest.TestCase):
 
     def setUp(self):
         print(f"SetUp {self.__class__.__name__}")
-        self.test_environment=utils.ExaslctTestEnvironment(self)
+        self.test_environment = utils.ExaslctTestEnvironment(self)
         self.test_environment.clean_images()
 
     def tearDown(self):

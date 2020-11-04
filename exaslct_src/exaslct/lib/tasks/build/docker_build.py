@@ -1,8 +1,8 @@
 import luigi
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorsBaseTask
 from luigi import Config
 
 from exaslct_src.exaslct.lib.tasks.build.docker_flavor_build_base import DockerFlavorBuildBase
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorsBaseTask
 
 
 class DockerBuildParameter(Config):

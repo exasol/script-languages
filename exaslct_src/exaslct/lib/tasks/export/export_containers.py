@@ -1,13 +1,13 @@
 from typing import Dict
 
 import luigi
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorsBaseTask
+from exasol_integration_test_docker_environment.lib.config.build_config import build_config
 from luigi import Config
 
 from exaslct_src.exaslct.lib.tasks.build.docker_flavor_build_base import DockerFlavorBuildBase
 from exaslct_src.exaslct.lib.tasks.export.export_container_tasks_creator import ExportContainerTasksCreator
 from exaslct_src.exaslct.lib.tasks.export.export_info import ExportInfo
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorsBaseTask
-from exaslct_src.test_environment.src.lib.config.build_config import build_config
 
 
 class ExportContainerParameter(Config):

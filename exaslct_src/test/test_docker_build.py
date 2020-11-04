@@ -1,9 +1,9 @@
 import unittest
 
 import docker
+from exasol_integration_test_docker_environment.test import utils
 
 from exaslct_src.exaslct.lib.utils.docker_utils import find_images_by_tag
-from exaslct_src.test_environment.src.test import utils
 
 
 class DockerBuildTest(unittest.TestCase):

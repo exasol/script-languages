@@ -4,7 +4,8 @@ import subprocess
 import unittest
 from pathlib import Path
 
-from exaslct_src.test_environment.src.test import utils
+from exasol_integration_test_docker_environment.test import utils
+
 
 class DockerLoadTest(unittest.TestCase):
 
@@ -36,7 +37,6 @@ class DockerLoadTest(unittest.TestCase):
     def test_docker_load(self):
         command = f"./exaslct build --cache-directory {self.save_path} "
         self.test_environment.run_command(command, track_task_dependencies=True)
-
 
 
 if __name__ == '__main__':

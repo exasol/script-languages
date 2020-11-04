@@ -1,15 +1,16 @@
 from pathlib import Path
 
 import luigi
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorBaseTask
+from exasol_integration_test_docker_environment.lib.base.frozendict_to_dict import FrozenDictToDict
+from exasol_integration_test_docker_environment.lib.base.json_pickle_target import JsonPickleTarget
+from exasol_integration_test_docker_environment.lib.base.still_running_logger import StillRunningLogger, \
+    StillRunningLoggerThread
+from exasol_integration_test_docker_environment.lib.config.log_config import log_config, WriteLogFilesToConsole
+from exasol_integration_test_docker_environment.lib.data.database_credentials import DatabaseCredentialsParameter
 
 from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestResult
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_parameter import RunDBTestParameter
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.src.lib.base.frozendict_to_dict import FrozenDictToDict
-from exaslct_src.test_environment.src.lib.base.json_pickle_target import JsonPickleTarget
-from exaslct_src.test_environment.src.lib.base.still_running_logger import StillRunningLogger, StillRunningLoggerThread
-from exaslct_src.test_environment.src.lib.config.log_config import log_config, WriteLogFilesToConsole
-from exaslct_src.test_environment.src.lib.data.database_credentials import DatabaseCredentialsParameter
 
 
 class RunDBTest(FlavorBaseTask,

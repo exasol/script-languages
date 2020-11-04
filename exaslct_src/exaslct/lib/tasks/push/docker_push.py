@@ -1,12 +1,12 @@
 from typing import Dict
 
 import luigi
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorsBaseTask
+from exasol_integration_test_docker_environment.lib.docker.images.push.docker_push_parameter import DockerPushParameter
+from exasol_integration_test_docker_environment.lib.docker.images.push.push_task_creator_for_build_tasks import \
+    PushTaskCreatorFromBuildTasks
 
 from exaslct_src.exaslct.lib.tasks.build.docker_flavor_build_base import DockerFlavorBuildBase
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorsBaseTask
-from exaslct_src.test_environment.src.lib.docker.images.push.docker_push_parameter import DockerPushParameter
-from exaslct_src.test_environment.src.lib.docker.images.push.push_task_creator_for_build_tasks import \
-    PushTaskCreatorFromBuildTasks
 
 
 class DockerFlavorsPush(FlavorsBaseTask, DockerPushParameter):

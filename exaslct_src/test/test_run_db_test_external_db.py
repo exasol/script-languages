@@ -1,6 +1,6 @@
 import unittest
 
-from exaslct_src.test_environment.src.test import utils
+from exasol_integration_test_docker_environment.test import utils
 
 
 class DockerRunDBTestExternalDBTest(unittest.TestCase):
@@ -9,12 +9,11 @@ class DockerRunDBTestExternalDBTest(unittest.TestCase):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment = utils.ExaslctTestEnvironment(self)
         self.test_environment.clean_images()
-        self.docker_environment_name=self.__class__.__name__
+        self.docker_environment_name = self.__class__.__name__
         self.on_host_docker_environment, self.google_cloud_docker_environment = \
-                self.test_environment.spawn_docker_test_environment(self.docker_environment_name)
+            self.test_environment.spawn_docker_test_environment(self.docker_environment_name)
         # localhost gets translated in exaslct to the Gateway adress of the docker environment network, because thats typically the IP Adress of the bridge to the host, for google cloud this means it should be able to connect to the db via the port forwards from the test container 
-        self.docker_environment=self.on_host_docker_environment # TODO check alternative of ip address on default bridge
-
+        self.docker_environment = self.on_host_docker_environment  # TODO check alternative of ip address on default bridge
 
     def tearDown(self):
         try:
@@ -38,7 +37,7 @@ class DockerRunDBTestExternalDBTest(unittest.TestCase):
         ])
         command = f"./exaslct run-db-test {arguments}"
         self.test_environment.run_command(
-                              command, track_task_dependencies=True)
+            command, track_task_dependencies=True)
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import subprocess
 import unittest
 from pathlib import Path
 
-from exaslct_src.test_environment.src.test import utils
+from exasol_integration_test_docker_environment.test import utils
 
 
 class DockerSaveTest(unittest.TestCase):
@@ -27,7 +27,7 @@ class DockerSaveTest(unittest.TestCase):
 
     def test_docker_save(self):
         command = f"./exaslct save --save-directory {self.save_path} "
-        self.test_environment.run_command(command,track_task_dependencies=True)
+        self.test_environment.run_command(command, track_task_dependencies=True)
         saved_files = os.listdir(Path(self.save_path).joinpath(self.test_environment.repository_name).parent)
         self.assertTrue(len(saved_files) > 0,
                         f"Did not found saved files for repository {self.test_environment.repository_name} "

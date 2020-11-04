@@ -1,12 +1,14 @@
 from typing import Dict
 
+from exasol_integration_test_docker_environment.lib.base.base_task import BaseTask
+from exasol_integration_test_docker_environment.lib.docker.images.create.docker_image_create_task import \
+    DockerCreateImageTask
+from exasol_integration_test_docker_environment.lib.docker.images.required_task_info import RequiredTaskInfo
+
 from exaslct_src.exaslct.lib.tasks.export.export_container_task import ExportContainerTask
-from exaslct_src.test_environment.src.lib.base.base_task import BaseTask
-from exaslct_src.test_environment.src.lib.docker.images.create.docker_image_create_task import DockerCreateImageTask
-from exaslct_src.test_environment.src.lib.docker.images.required_task_info import RequiredTaskInfo
 
 
-class ExportContainerTasksCreator():
+class ExportContainerTasksCreator:
 
     def __init__(self, task: BaseTask, export_path: str):
         self.export_path = export_path
