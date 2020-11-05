@@ -48,7 +48,7 @@ class Combinations_1_ary(Test):
         rows = self.query('''
                 SELECT fn1.set_emits(x * 10 ,y * 10)
                 FROM small''')
-        self.assertRowsEqual([(1, 2,), (2, 1,)], rows)
+        self.assertRowsEqual([(2.0, 1.0,),(1.0, 2.0,)] , rows)
 
     @requires('SCALAR_RETURNS')
     def test_two_scalar_returns(self):
