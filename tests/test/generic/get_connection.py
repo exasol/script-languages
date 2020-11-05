@@ -154,21 +154,6 @@ class BigConnectionTest(udf.TestCase):
             ''')
         self.assertRowsEqual([('password', self.address, self.user, self.password)], rows)
 
-    def testBigConnectionSysTables(self):
-        rows = self.query('''
-            SELECT CONNECTION_STRING, USER_NAME, PASSWORD FROM "$EXA_DBA_CONNECTIONS" WHERE CONNECTION_NAME = 'LARGEST_CONN'
-            ''')
-        print("expected",[(self.address, self.user, self.password)])
-        print("rows",rows)
-        self.assertRowsEqual([(self.address, self.user, self.password)], rows)
-        rows = self.query('''
-            SELECT CONNECTION_STRING, USER_NAME FROM EXA_DBA_CONNECTIONS WHERE CONNECTION_NAME = 'LARGEST_CONN'
-            ''')
-        self.assertRowsEqual([(self.address, self.user)], rows)
-        res = self.query('''
-            SELECT count(*) FROM EXA_ALL_CONNECTIONS WHERE CONNECTION_NAME = 'LARGEST_CONN'
-            ''')
-        self.assertRowsEqual([(1, )], res)
 
 class ConnectionTest(udf.TestCase):
 
