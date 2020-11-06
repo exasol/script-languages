@@ -3,6 +3,7 @@ import unittest
 
 from exaslct_src.test_environment.src.test import utils
 
+
 class DockerExportTest(unittest.TestCase):
     def setUp(self):
         print(f"SetUp {self.__class__.__name__}")
@@ -17,12 +18,12 @@ class DockerExportTest(unittest.TestCase):
             print(e)
 
     def test_docker_export(self):
-        command=f"./exaslct export --export-path {self.export_path}"
-        self.test_environment.run_command(command,track_task_dependencies=True)
+        command = f"./exaslct export --export-path {self.export_path}"
+        self.test_environment.run_command(command, track_task_dependencies=True)
         exported_files = os.listdir(self.export_path)
-        self.assertEqual(list(exported_files),['test-flavor_release.tar.gz', 'test-flavor_release.tar.gz.checksum'],
-                        f"Did not found saved files for repository {self.test_environment.repository_name} "
-                        f"in list {exported_files}")
+        self.assertEqual(sorted(list(exported_files)), sorted(['test-flavor_release.tar.gz', 'test-flavor_release.tar.gz.checksum']),
+                         f"Did not found saved files for repository {self.test_environment.repository_name} "
+                         f"in list {exported_files}")
 
 
 if __name__ == '__main__':
