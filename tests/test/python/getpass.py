@@ -18,7 +18,7 @@ class GetpassTest(udf.TestCase):
 
     def test_getuser(self):
         self.query(udf.fixindent('''
-                CREATE OR REPLACE python3 SCALAR SCRIPT
+                CREATE OR REPLACE python SCALAR SCRIPT
                 get_user_from_passwd()
                 RETURNS VARCHAR(10000) AS
 
