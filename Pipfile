@@ -9,4 +9,4 @@ click = "==7.1.2"
 networkx = "==2.4"
 pydot = "==1.4.1"
 "stopwatch.py" = "==1.0.1"
-exasol-integration-test-docker-environment = {git = "https://github.com/exasol/integration-test-docker-environment.git",ref = "package_with_poetry"}
+exasol-integration-test-docker-environment = {git = "https://github.com/exasol/integration-test-docker-environment.git",ref = "master"}
