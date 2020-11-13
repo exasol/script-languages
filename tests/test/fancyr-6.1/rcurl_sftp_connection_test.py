@@ -15,7 +15,7 @@ class RCurlSFTPConnectionTest(udf.TestCase):
 
     @udf.skipIfNot(docker_db_environment.is_available, reason="This test requires a docker-db environment")
     def test_rcurl_sftp_connect(self):
-        schema=self.__name__.upper()
+        schema=self.__class__.__name__.upper()
         env=docker_db_environment.DockerDBEnvironment(schema)
         try:
             self.query(udf.fixindent("DROP SCHEMA %s CASCADE"%schema),ignore_errors=True)
@@ -32,18 +32,19 @@ class RCurlSFTPConnectionTest(udf.TestCase):
 
                 run <- function(ctx){
                     library(RCurl)
-                    file_name = "test_file.txt";
-                    file_url_part = paste(ctx$host, "/", file_name, sep = "");
-                    upload_url <- paste("ftp://", ctx$username, ":", $ctx.password, "@", file_url_part, sep = "");
-                    ftpUpload(what = ctx$input_string, to = upload_url, asText=TRUE);
+                    file_name = "test_file.txt"
+                    remote_file = paste("/tmp/", file_name, sep = "")
+                    upload_file_url_part = paste(ctx$host, ":", toString(ctx$port), remote_file, sep = "")
+                    upload_url <- paste("sftp://", ctx$username, ":", ctx$password, "@", upload_file_url_part, sep = "")
+                    ftpUpload(what = ctx$input_string, to = upload_url, asText=TRUE)
 
-                    get_url <- paste("ftp://", file_url_part, sep = "");
-                    userpwd <- paste(ctx$username, ctx$password, sep = " ");
-                    value <- getURL(url, userpwd = userpwd, ftp.use.epsv = FALSE);
+                    get_url <- paste("sftp://", ctx$host, remote_file, sep = "")
+                    userpwd <- paste(ctx$username, ctx$password, sep = ":")
+                    value <- getURL(url = get_url, userpwd = userpwd, port=ctx$port, ftp.use.epsv = FALSE)
                     return(value)
                 }
                 /
-                ''')
+                '''))
             env.get_client().images.pull("panubo/sshd",tag="1.1.0")
             container=env.run(
                 name="sshd_sftp",
