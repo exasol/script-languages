@@ -1,6 +1,6 @@
 import unittest
 
-from exaslct_src.test_environment.src.test import utils
+from exasol_integration_test_docker_environment.test import utils
 
 
 class DockerRunDBTestDockerDBTest(unittest.TestCase):
@@ -21,7 +21,7 @@ class DockerRunDBTestDockerDBTest(unittest.TestCase):
     def test_run_db_tests_docker_db(self):
         command = f"./exaslct run-db-test "
         self.test_environment.run_command(
-                              command, track_task_dependencies=True)
+            command, track_task_dependencies=True)
 
 
 if __name__ == '__main__':

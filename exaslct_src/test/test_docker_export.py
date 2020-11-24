@@ -1,7 +1,8 @@
 import os
 import unittest
 
-from exaslct_src.test_environment.src.test import utils
+from exasol_integration_test_docker_environment.test import utils
+
 
 
 class DockerExportTest(unittest.TestCase):

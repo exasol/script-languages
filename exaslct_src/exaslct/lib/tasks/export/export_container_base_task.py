@@ -8,16 +8,16 @@ from pathlib import Path
 
 import humanfriendly
 import luigi
-
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.src.lib.base.still_running_logger import StillRunningLogger
+from exasol_integration_test_docker_environment.lib.base.base_task import BaseTask
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorBaseTask
+from exasol_integration_test_docker_environment.lib.base.still_running_logger import StillRunningLogger
+from exasol_integration_test_docker_environment.lib.config.build_config import build_config
+from exasol_integration_test_docker_environment.lib.docker.images.image_info import ImageInfo
+from exasol_integration_test_docker_environment.lib.logging.command_log_handler import CommandLogHandler
+from exasol_integration_test_docker_environment.lib.test_environment.create_export_directory import \
+    CreateExportDirectory
 
 from exaslct_src.exaslct.lib.tasks.export.export_info import ExportInfo
-from exaslct_src.test_environment.src.lib.base.base_task import BaseTask
-from exaslct_src.test_environment.src.lib.config.build_config import build_config
-from exaslct_src.test_environment.src.lib.docker.images.image_info import ImageInfo
-from exaslct_src.test_environment.src.lib.logging.command_log_handler import CommandLogHandler
-from exaslct_src.test_environment.src.lib.test_environment.create_export_directory import CreateExportDirectory
 
 
 class ExportContainerBaseTask(FlavorBaseTask):
@@ -57,7 +57,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
             cache_file=str(cache_file),
             complete_name=release_complete_name,
             name=self.get_flavor_name(),
-            hash=str(image_info_of_release_image.hash),
+            _hash=str(image_info_of_release_image.hash),
             is_new=is_new,
             depends_on_image=image_info_of_release_image,
             release_goal=str(self.release_goal),

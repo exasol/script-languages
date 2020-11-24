@@ -1,9 +1,11 @@
 from typing import Dict
 
+from exasol_integration_test_docker_environment.lib.docker.images.create.docker_image_create_task import \
+    DockerCreateImageTask
+from exasol_integration_test_docker_environment.lib.docker.images.required_task_info import RequiredTaskInfo
+
 from exaslct_src.exaslct.lib.tasks.upload.upload_container_task import UploadContainerTask
 from exaslct_src.exaslct.lib.tasks.upload.upload_containers_parameter import UploadContainersParameter
-from exaslct_src.test_environment.src.lib.docker.images.create.docker_image_create_task import DockerCreateImageTask
-from exaslct_src.test_environment.src.lib.docker.images.required_task_info import RequiredTaskInfo
 
 
 class UploadContainerTasksCreator:

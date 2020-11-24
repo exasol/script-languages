@@ -1,10 +1,9 @@
 import luigi
+from exasol_integration_test_docker_environment.lib.base.json_pickle_parameter import JsonPickleParameter
+from exasol_integration_test_docker_environment.lib.data.environment_info import EnvironmentInfo
 
-from exaslct_src.test_environment.src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.test_environment.src.lib.data.environment_info import EnvironmentInfo
 
-
-class GeneralRunDBTestParameter():
+class GeneralRunDBTestParameter:
     test_restrictions = luigi.ListParameter([])
     test_environment_vars = luigi.DictParameter({"TRAVIS": ""}, significant=False)
     test_log_level = luigi.Parameter("critical", significant=False)

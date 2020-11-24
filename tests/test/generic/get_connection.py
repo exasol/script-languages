@@ -135,9 +135,9 @@ class GetConnectionAccessControlTest(udf.TestCase):
 class BigConnectionTest(udf.TestCase):
 
     # Should be max. size 2.000.000, but this will cause our odbc driver to crash (sigsegv) during logging (DWA-20290). Will be increased to max size when bug is fixed
-    address = "a" * 2 * 1000 * 100
-    user = "u" * 2 * 1000 * 100
-    password = "p" * 2 * 1000 * 100
+    address = u"a" * 2 * 1000 * 100
+    user = u"u" * 2 * 1000 * 100
+    password = u"p" * 2 * 1000 * 100
 
     def setUp(self):
         self.query('''
@@ -154,19 +154,6 @@ class BigConnectionTest(udf.TestCase):
             ''')
         self.assertRowsEqual([('password', self.address, self.user, self.password)], rows)
 
-    def testBigConnectionSysTables(self):
-        rows = self.query('''
-            SELECT CONNECTION_STRING, USER_NAME, PASSWORD FROM "$EXA_DBA_CONNECTIONS" WHERE CONNECTION_NAME = 'LARGEST_CONN'
-            ''')
-        self.assertRowsEqual([(self.address, self.user, self.password)], rows)
-        rows = self.query('''
-            SELECT CONNECTION_STRING, USER_NAME FROM EXA_DBA_CONNECTIONS WHERE CONNECTION_NAME = 'LARGEST_CONN'
-            ''')
-        self.assertRowsEqual([(self.address, self.user)], rows)
-        res = self.query('''
-            SELECT count(*) FROM EXA_ALL_CONNECTIONS WHERE CONNECTION_NAME = 'LARGEST_CONN'
-            ''')
-        self.assertRowsEqual([(1, )], res)
 
 class ConnectionTest(udf.TestCase):
 

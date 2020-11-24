@@ -1,11 +1,14 @@
 from typing import Tuple
 
-from exaslct_src.test_environment.src.cli.cli import cli
-from exaslct_src.test_environment.src.cli.common import set_docker_repository_config, run_task, set_output_directory, add_options, \
-    import_build_steps, set_job_id
+from exasol_integration_test_docker_environment.cli.cli import cli
+from exasol_integration_test_docker_environment.cli.common import add_options, set_output_directory, \
+    set_docker_repository_config, set_job_id, run_task, import_build_steps
+from exasol_integration_test_docker_environment.cli.options.docker_repository_options import \
+    simple_docker_repository_options
+from exasol_integration_test_docker_environment.cli.options.system_options import output_directory_option, \
+    system_options
+
 from exaslct_src.exaslct.cli.options.flavor_options import flavor_options
-from exaslct_src.test_environment.src.cli.options.docker_repository_options import simple_docker_repository_options
-from exaslct_src.test_environment.src.cli.options.system_options import system_options, output_directory_option
 from exaslct_src.exaslct.lib.tasks.clean.clean_images import CleanExaslcAllImages, CleanExaslcFlavorsImages
 
 

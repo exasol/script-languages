@@ -1,11 +1,12 @@
 from pathlib import Path
 from typing import Dict
 
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.src.lib.config.build_config import build_config
-from exaslct_src.test_environment.src.lib.config.docker_config import source_docker_repository_config, \
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorBaseTask
+from exasol_integration_test_docker_environment.lib.config.build_config import build_config
+from exasol_integration_test_docker_environment.lib.config.docker_config import source_docker_repository_config, \
     target_docker_repository_config
-from exaslct_src.test_environment.src.lib.docker.images.create.docker_image_analyze_task import DockerAnalyzeImageTask
+from exasol_integration_test_docker_environment.lib.docker.images.create.docker_image_analyze_task import \
+    DockerAnalyzeImageTask
 
 
 class DockerFlavorAnalyzeImageTask(DockerAnalyzeImageTask, FlavorBaseTask):

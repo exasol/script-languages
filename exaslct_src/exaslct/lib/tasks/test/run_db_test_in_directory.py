@@ -1,13 +1,13 @@
 from typing import List, Generator, Any
 
 import luigi
+from exasol_integration_test_docker_environment.lib.base.flavor_task import FlavorBaseTask
+from exasol_integration_test_docker_environment.lib.base.json_pickle_target import JsonPickleTarget
+from exasol_integration_test_docker_environment.lib.data.database_credentials import DatabaseCredentialsParameter
 
 from exaslct_src.exaslct.lib.tasks.test.run_db_test import RunDBTest
 from exaslct_src.exaslct.lib.tasks.test.run_db_test_result import RunDBTestDirectoryResult, RunDBTestResult
 from exaslct_src.exaslct.lib.tasks.test.run_db_tests_parameter import RunDBTestParameter
-from exaslct_src.test_environment.src.lib.base.flavor_task import FlavorBaseTask
-from exaslct_src.test_environment.src.lib.base.json_pickle_target import JsonPickleTarget
-from exaslct_src.test_environment.src.lib.data.database_credentials import DatabaseCredentialsParameter
 
 
 class RunDBTestsInDirectory(FlavorBaseTask,

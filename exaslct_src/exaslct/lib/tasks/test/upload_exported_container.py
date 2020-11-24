@@ -1,10 +1,11 @@
 import pathlib
 
 import luigi
+from exasol_integration_test_docker_environment.lib.base.json_pickle_parameter import JsonPickleParameter
+from exasol_integration_test_docker_environment.lib.test_environment.database_setup.upload_file_to_db import \
+    UploadFileToBucketFS
 
 from exaslct_src.exaslct.lib.tasks.export.export_info import ExportInfo
-from exaslct_src.test_environment.src.lib.base.json_pickle_parameter import JsonPickleParameter
-from exaslct_src.test_environment.src.lib.test_environment.upload_file_to_db import UploadFileToBucketFS
 
 
 class UploadExportedContainer(UploadFileToBucketFS):

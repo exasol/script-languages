@@ -14,15 +14,20 @@ echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
 # .git/)
 ROOT_DIR=$(git rev-parse --show-cdup)
 
-SUBMODULES=$(grep path ${ROOT_DIR}.gitmodules | sed 's/^.*path = //' | sort)
+GITMODULES_FILE="${ROOT_DIR}.gitmodules"
 
-CURRENT_GITMODULES="$ROOT_DIR.current_gitmodules"
-if [ -f "$CURRENT_GITMODULES" ]
+if [ -f "$GITMODULES_FILE" ]
 then
-  rm "$CURRENT_GITMODULES"
+  SUBMODULES=$(grep path "$GITMODULES_FILE" | sed 's/^.*path = //' | sort)
+
+  CURRENT_GITMODULES="$ROOT_DIR.current_gitmodules"
+  if [ -f "$CURRENT_GITMODULES" ]
+  then
+    rm "$CURRENT_GITMODULES"
+  fi
+  for SUB in $SUBMODULES
+  do
+      git ls-files -s "$SUB" >> "$CURRENT_GITMODULES"
+  done
+  git add "$CURRENT_GITMODULES"
 fi
-for SUB in $SUBMODULES
-do
-    git ls-files -s "$SUB" >> "$CURRENT_GITMODULES"
-done
-git add "$CURRENT_GITMODULES"

@@ -2,20 +2,19 @@ import json
 from typing import Tuple
 
 import click
+from exasol_integration_test_docker_environment.cli.cli import cli
+from exasol_integration_test_docker_environment.cli.common import add_options, import_build_steps, \
+    set_docker_repository_config, set_job_id, run_task, set_build_config
+from exasol_integration_test_docker_environment.cli.options.build_options import build_options
+from exasol_integration_test_docker_environment.cli.options.docker_repository_options import docker_repository_options
+from exasol_integration_test_docker_environment.cli.options.system_options import system_options
+from exasol_integration_test_docker_environment.cli.options.test_environment_options import test_environment_options, \
+    docker_db_options, external_db_options
+from exasol_integration_test_docker_environment.lib.data.environment_type import EnvironmentType
 
-from exaslct_src.test_environment.src.cli.cli import cli
-from exaslct_src.test_environment.src.cli.common import set_build_config, set_docker_repository_config, run_task, add_options, \
-    import_build_steps, set_job_id
 from exaslct_src.exaslct.cli.options.flavor_options import flavor_options
 from exaslct_src.exaslct.cli.options.goal_options import release_options
 from exaslct_src.exaslct.lib.tasks.test.test_container import TestContainer
-from exaslct_src.test_environment.src.cli.options.build_options import build_options
-from exaslct_src.test_environment.src.cli.options.docker_repository_options import docker_repository_options
-from exaslct_src.test_environment.src.cli.options.system_options import system_options
-from exaslct_src.test_environment.src.cli.options.test_environment_options import test_environment_options, \
-    docker_db_options, \
-    external_db_options
-from exaslct_src.test_environment.src.lib.data.environment_type import EnvironmentType
 
 
 @cli.command()
@@ -166,8 +165,10 @@ def run_db_test(flavor_path: Tuple[str, ...],
                                          reuse_database_setup=reuse_database_setup,
                                          reuse_test_container=reuse_test_container,
                                          reuse_database=reuse_database,
-                                         no_database_cleanup_after_end=reuse_database,
-                                         no_test_container_cleanup_after_end=reuse_test_container,
+                                         no_test_container_cleanup_after_success=reuse_test_container,
+                                         no_test_container_cleanup_after_failure=reuse_test_container,
+                                         no_database_cleanup_after_success=reuse_database,
+                                         no_database_cleanup_after_failure=reuse_database,
                                          docker_db_image_name=docker_db_image_name,
                                          docker_db_image_version=docker_db_image_version,
                                          max_start_attempts=max_start_attempts,

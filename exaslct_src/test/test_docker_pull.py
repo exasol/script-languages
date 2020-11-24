@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from exaslct_src.test_environment.src.test import utils
+from exasol_integration_test_docker_environment.test import utils
 
 
 class DockerPullTest(unittest.TestCase):
@@ -9,7 +9,7 @@ class DockerPullTest(unittest.TestCase):
     def setUp(self):
         print(f"SetUp {self.__class__.__name__}")
         self.test_environment = utils.ExaslctTestEnvironment(self)
-        self.registry_container,self.registry_host,self.registry_port=self.test_environment.create_registry()
+        self.registry_container, self.registry_host, self.registry_port = self.test_environment.create_registry()
         self.test_environment.clean_images()
         command = f"./exaslct push "
         self.test_environment.run_command(command, track_task_dependencies=False)
@@ -24,7 +24,7 @@ class DockerPullTest(unittest.TestCase):
         self.test_environment.run_command(command, track_task_dependencies=True)
         docker_pull_image_tasks = self.find_all("timers", "DockerPullImageTask", self.test_environment.temp_dir)
         print(docker_pull_image_tasks)
-        self.assertEqual(len(docker_pull_image_tasks),3,
+        self.assertEqual(len(docker_pull_image_tasks), 3,
                          f"{docker_pull_image_tasks} doesn't contain the expected 3 docker_pull_image_tasks")
 
     def find_all(self, search_root, search_name, path):
@@ -38,8 +38,6 @@ class DockerPullTest(unittest.TestCase):
                     if search_name in dir:
                         result.append(os.path.join(root, dir))
         return result
-
-
 
 
 if __name__ == '__main__':
