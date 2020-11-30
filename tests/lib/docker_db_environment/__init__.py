@@ -63,7 +63,7 @@ class DockerDBEnvironment:
         self._started_containers.remove(containers)
 
     def list_started_containers(self):
-        return list(self._started_contaienrs)
+        return list(self._started_containers)
 
     def get_docker_db_container(self):
         container = self._client.containers.get(get_db_container_name()) # TODO protect that it doesn't get killed

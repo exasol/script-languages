@@ -24,8 +24,8 @@ class JavaHive(udf.TestCase):
     #        env.get_client().images.pull("bde2020/hive:2.3.2-postgresql-metastore")
     #        env.get_client().images.pull("bde2020/hive-metastore-postgresql:2.3.0")
     #        env.get_client().images.pull("shawnzhu/prestodb:0.181")
-            env.get_client().volumes.create("namenode")
-            env.get_client().volumes.create("datanode")
+#            env.get_client().volumes.create("namenode")
+#            env.get_client().volumes.create("datanode")
             script_dir = os.path.dirname(os.path.realpath(__file__))
             container_name_prefix = env.get_container_name_prefix()
             with open(script_dir+"/hive_resources/hadoop-hive.env") as f:
@@ -35,14 +35,14 @@ class JavaHive(udf.TestCase):
             namenode=env.run(
                 name="namenode",
                 image="bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8",
-                volumes={'namenode': {'bind': '/hadoop/dfs/name', 'mode': 'rw'}},
+#                volumes={'namenode': {'bind': '/hadoop/dfs/name', 'mode': 'rw'}},
                 environment=["CLUSTER_NAME=test"]+environment_file_lines,
                 ports={"50070/tcp":"50070"},
                 )
             datanode=env.run(
                 name="datanode",
                 image="bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8",
-                volumes={'dataode': {'bind': '/hadoop/dfs/data', 'mode': 'rw'}},
+#                volumes={'datanode': {'bind': '/hadoop/dfs/data', 'mode': 'rw'}},
                 environment=[
                     "SERVICE_PRECONDITION={container_name_prefix}namenode:50070".format(container_name_prefix=container_name_prefix)
                     ]+environment_file_lines,
@@ -79,7 +79,7 @@ class JavaHive(udf.TestCase):
                 ports={"8080/tcp":"8080"},
                 )
             import time
-            time.sleep(60)
+            time.sleep(30)
            
             from io import BytesIO
             import tarfile
@@ -96,32 +96,50 @@ class JavaHive(udf.TestCase):
                 self.fail("bash -c 'hive -f /opt/hive_resources/retail.sql' failed")
 
             docker_db_container = env.get_docker_db_container()
+            
+            delete_command_template = "sed -i '/^.* {container_name}$/d' /etc/host"
+            append_command_template = "echo '{container_ip} {container_name}' >> /etc/host"
+            command_template = """bash -c "{delete_command}; {append_command}" """.format(
+                                    delete_command=delete_command_template, 
+                                    append_command=append_command_template)
+            for started_container in env.list_started_containers():
+                container_ip=env.get_ip_address_of_container(started_container)
+                command = command_template.format(
+                    container_ip=env.get_ip_address_of_container(started_container),
+                    container_name=started_container.name)
+                exit_code, output = docker_db_container.exec_run(cmd=command)
+                if exit_code != 0:
+                    raise Exception(output)
+
+
             docker_db_ip = env.get_ip_address_of_container(docker_db_container)
-            upload_url="http://{docker_db_ip}:6583/myudfs".format(docker_db_ip=docker_db_ip)
+            upload_url="http://{docker_db_ip}:6583/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar".format(docker_db_ip=docker_db_ip)
             username="w"
             password="write" # TOOD hardcoded
             import requests
             from requests.auth import HTTPBasicAuth
             download_url="https://storage.googleapis.com/exasol-script-languages-extras/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar"
             r_download = requests.get(download_url, stream=True)
-            requests.put(upload_url, data=r_download.iter_content(10 * 1024), auth=HTTPBasicAuth(username, password))
+            r_upload = requests.put(upload_url, data=r_download.iter_content(10 * 1024), auth=HTTPBasicAuth(username, password))
+            r_download.raise_for_status()
+            r_upload.raise_for_status()
 
 
-            self.query("""
+            self.query(udf.fixindent("""
 	            CREATE OR REPLACE JAVA SET SCRIPT IMPORT_HCAT_TABLE(...) EMITS (...) AS
 	            %scriptclass com.exasol.hadoop.scriptclasses.ImportHCatTable;
 	            %jar /buckets/bfsdefault/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar;
 	            /
-	            """)
-            self.query("""
+	            """))
+            self.query(udf.fixindent("""
 	            CREATE OR REPLACE JAVA SET SCRIPT IMPORT_HIVE_TABLE_FILES(...) EMITS (...) AS
 	            %env LD_LIBRARY_PATH=/tmp/;
 	            %scriptclass com.exasol.hadoop.scriptclasses.ImportHiveTableFiles;
 	            %jar /buckets/bfsdefault/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar;
 	            /
-	            """)
+	            """))
 
-            self.query("""
+            self.query(udf.fixindent("""
 	            CREATE OR REPLACE JAVA SCALAR SCRIPT HCAT_TABLE_FILES(...) EMITS (
   	              hdfs_server_port VARCHAR(200),
   	              hdfspath VARCHAR(200),
@@ -142,7 +160,7 @@ class JavaHive(udf.TestCase):
 	            %scriptclass com.exasol.hadoop.scriptclasses.HCatTableFiles;
 	            %jar /buckets/bfsdefault/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar;
 	            /
-	            """)
+	            """))
 
             self.query("""
 	            CREATE OR REPLACE TABLE SALES_POSITIONS (
@@ -158,17 +176,19 @@ class JavaHive(udf.TestCase):
 
 
             self.query("""
-	            IMPORT INTO RETAIL.SALES_POSITIONS
+	            IMPORT INTO SALES_POSITIONS
 	            FROM SCRIPT IMPORT_HCAT_TABLE WITH
   	              HCAT_DB         = 'retail'
   	              HCAT_TABLE      = 'sales_positions'
-  	              HCAT_ADDRESS    = 'thrift://hive-metastore:9083'
+  	              HCAT_ADDRESS    = 'thrift://%s:9083'
   	              HCAT_USER       = 'hive'
   	              HDFS_USER       = 'hdfs'
   	              PARALLELISM     = 'nproc()';
-	            """)
+	            """%hive_metastore.name)
 
-            self.query("SELECT * FROM SALES_POSITIONS LIMIT 10;")
+            result = self.query("SELECT * FROM SALES_POSITIONS LIMIT 10;")
+            print(result)
+
 
 
         finally:
