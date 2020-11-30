@@ -133,7 +133,6 @@ class JavaHive(udf.TestCase):
 	            """))
             self.query(udf.fixindent("""
 	            CREATE OR REPLACE JAVA SET SCRIPT IMPORT_HIVE_TABLE_FILES(...) EMITS (...) AS
-	            %env LD_LIBRARY_PATH=/tmp/;
 	            %scriptclass com.exasol.hadoop.scriptclasses.ImportHiveTableFiles;
 	            %jar /buckets/bfsdefault/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar;
 	            /

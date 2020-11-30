@@ -53,8 +53,8 @@ def _java_local_repository_impl(repository_ctx):
     print("jdk_lib_file_names: %s"%jdk_lib_file_names)
     print("jdk_lib_names: %s"%jdk_lib_names)
     libjvm_path = paths.dirname(_find_shared_library(prefix,"libjvm.so",repository_ctx))
-    linkopts_for_lib = ["""'-L{path_to_lib}','-Wl,-rpath','{path_to_lib}'""".format(path_to_lib=path_to_jdk_lib)]
-    linkopts_for_lib += [_build_linkopts(libjvm_path,"jvm",repository_ctx)]
+    linkopts_for_lib = [_build_linkopts(libjvm_path,"jvm",repository_ctx)]
+    linkopts_for_lib += ["""'-L{path_to_lib}','-Wl,-rpath','{path_to_lib}'""".format(path_to_lib=path_to_jdk_lib)]
 #    for lib in jdk_lib_names:
 #        linkopts_for_lib += [_build_linkopts(path_to_jdk_lib,lib,repository_ctx)]
     defines = '"ENABLE_JAVA_VM"'
