@@ -97,8 +97,8 @@ class JavaHive(udf.TestCase):
 
             docker_db_container = env.get_docker_db_container()
             
-            delete_command_template = "sed -i '/^.* {container_name}$/d' /etc/host"
-            append_command_template = "echo '{container_ip} {container_name}' >> /etc/host"
+            delete_command_template = "sed -i '/^.* {container_name}$/d' /etc/hosts"
+            append_command_template = "echo '{container_ip} {container_name}' >> /etc/hosts"
             command_template = """bash -c "{delete_command}; {append_command}" """.format(
                                     delete_command=delete_command_template, 
                                     append_command=append_command_template)
