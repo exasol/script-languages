@@ -2,6 +2,9 @@
 
 import os
 import sys
+import socket
+import subprocess
+import threading
 
 sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 
@@ -79,7 +82,7 @@ class JavaHive(udf.TestCase):
                 ports={"8080/tcp":"8080"},
                 )
             import time
-            time.sleep(30)
+            time.sleep(60)
            
             from io import BytesIO
             import tarfile
@@ -91,9 +94,8 @@ class JavaHive(udf.TestCase):
             hive_server.put_archive("/opt/", file_like_object.getvalue())
 
             exit_code, output = hive_server.exec_run(cmd="bash -c 'hive -f /opt/hive_resources/retail.sql'")
-            print(output)
             if exit_code != 0:
-                self.fail("bash -c 'hive -f /opt/hive_resources/retail.sql' failed")
+                self.fail("bash -c 'hive -f /opt/hive_resources/retail.sql' failed, %s"%output)
 
             docker_db_container = env.get_docker_db_container()
             
@@ -124,15 +126,17 @@ class JavaHive(udf.TestCase):
             r_download.raise_for_status()
             r_upload.raise_for_status()
 
-
             self.query(udf.fixindent("""
 	            CREATE OR REPLACE JAVA SET SCRIPT IMPORT_HCAT_TABLE(...) EMITS (...) AS
+                    %jvmoption -verbose:jni;
 	            %scriptclass com.exasol.hadoop.scriptclasses.ImportHCatTable;
 	            %jar /buckets/bfsdefault/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar;
 	            /
 	            """))
             self.query(udf.fixindent("""
 	            CREATE OR REPLACE JAVA SET SCRIPT IMPORT_HIVE_TABLE_FILES(...) EMITS (...) AS
+                    %env LD_LIBRARY_PATH=/tmp/;
+                    %jvmoption -verbose:jni;
 	            %scriptclass com.exasol.hadoop.scriptclasses.ImportHiveTableFiles;
 	            %jar /buckets/bfsdefault/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar;
 	            /
@@ -156,6 +160,7 @@ class JavaHive(udf.TestCase):
   	              enable_rpc_encryption VARCHAR(100),
   	              debug_address VARCHAR(200))
 	            AS
+                    %jvmoption -verbose:jni;
 	            %scriptclass com.exasol.hadoop.scriptclasses.HCatTableFiles;
 	            %jar /buckets/bfsdefault/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar;
 	            /
@@ -174,19 +179,46 @@ class JavaHive(udf.TestCase):
 	            """)
 
 
-            self.query("""
-	            IMPORT INTO SALES_POSITIONS
-	            FROM SCRIPT IMPORT_HCAT_TABLE WITH
-  	              HCAT_DB         = 'retail'
-  	              HCAT_TABLE      = 'sales_positions'
-  	              HCAT_ADDRESS    = 'thrift://%s:9083'
-  	              HCAT_USER       = 'hive'
-  	              HDFS_USER       = 'hdfs'
-  	              PARALLELISM     = 'nproc()';
-	            """%hive_metastore.name)
 
-            result = self.query("SELECT * FROM SALES_POSITIONS LIMIT 10;")
-            print(result)
+            hostname = socket.gethostname()
+            local_ip = socket.gethostbyname(hostname)
+            print("local_ip",local_ip)
+
+            process = subprocess.Popen(["python2","/udf_debug.py"],stderr=subprocess.STDOUT,stdout=subprocess.PIPE)
+            def print_stdout():
+                process.poll()
+                while process.returncode is None:
+                    print("UDF DEBUG",process.stdout.readline())
+                    process.poll()
+                    if process.returncode is not None and not process.stdout.closed:
+                        print("UDF DEBUG",process.stdout.readline())
+            stdout_thread = threading.Thread(target=print_stdout)
+            stdout_thread.start()
+            time.sleep(10)
+            if process.returncode is None:
+                self.query("ALTER SESSION SET SCRIPT_OUTPUT_ADDRESS='%s:3000';"%local_ip)
+                import_exception=None
+                try:
+                    self.query("""
+                        IMPORT INTO SALES_POSITIONS
+                        FROM SCRIPT IMPORT_HCAT_TABLE WITH
+                          HCAT_DB         = 'retail'
+                          HCAT_TABLE      = 'sales_positions'
+                          HCAT_ADDRESS    = 'thrift://%s:9083'
+                          HCAT_USER       = 'hive'
+                          HDFS_USER       = 'hdfs'
+                          PARALLELISM     = 'nproc()';
+                        """%hive_metastore.name)
+                except Exception as e:
+                    import_exception=e
+                time.sleep(10)  
+                process.terminate()
+                result = self.query("SELECT * FROM SALES_POSITIONS LIMIT 10;")
+                print(result)
+                if import_exception is not None:
+                    raise import_exception
+            else:
+                self.fail("Could start udf_debug.py")
 
 
 

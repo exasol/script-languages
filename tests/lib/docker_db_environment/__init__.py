@@ -71,7 +71,7 @@ class DockerDBEnvironment:
         return container
 
     def get_container_name_prefix(self):
-        return ("%s_%s_"%(get_environment_name(),self._test_name)).replace("_","-").replace(".","-").replace("-","").lower()
+        return ("%s_%s_"%(get_environment_name(),self._test_name)).replace("_","-").replace(".","-").replace("-","").lower()[:10]
 
     def run(self, name, image, command=None,**kwargs):
         kwargs["name"]="%s%s"%(self.get_container_name_prefix(),name)
