@@ -12,7 +12,7 @@ source pipenv_utils.sh
 
 run () {
     export PYTHONPATH="$SCRIPT_DIR"
-    $PIPENV_BIN run python3 "$SCRIPT_DIR/exaslct_src/exaslct.py" $COMMAND_LINE_ARGS
+    $PIPENV_BIN run python3 "$SCRIPT_DIR/exaslct_src/exaslct.py" $COMMAND_LINE_ARGS 2>&1 | tee exaslct.log
 }
 
 discover_pipenv
