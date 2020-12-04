@@ -77,6 +77,7 @@ _cmd_build() {
   prepare_exaslct
   mkdir -p "$BUILDSYSTEM_LINKDIR"
   c4 initialize wait docker
+  sleep 30
   PIP_INSTALL=YES ./exaslct export --flavor-path="flavors/${FLAVOR}" --export-path "$EXPORT_PATH" "${EXASLCT_OPTIONS[@]}" \
   && mkdir -p "$INSTALL_PATH" \
   && for f in "$EXPORT_PATH/"*.gz; do echo "Extracting $f" ;tar xfC "$f" "$INSTALL_PATH"; done
