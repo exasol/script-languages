@@ -63,13 +63,18 @@ class DockerDBEnvironment:
         self._started_containers.remove(containers)
 
     def list_started_containers(self):
-        return list(self._started_contaienrs)
+        return list(self._started_containers)
 
-    def get_docker_db_container():
-        return self._client.get("get_db_container_name") # TODO protect that it doesn't get killed
+    def get_docker_db_container(self):
+        container = self._client.containers.get(get_db_container_name()) # TODO protect that it doesn't get killed
+        container.reload()
+        return container
+
+    def get_container_name_prefix(self):
+        return ("%s_%s_"%(get_environment_name(),self._test_name)).replace("_","-").replace(".","-").replace("-","").lower()[:20] #prefix can get to long for flavor_test container, think of a good way to represent the prefix, maybe as a hash in hex format, loses the readability, but should be unique enough
 
     def run(self, name, image, command=None,**kwargs):
-        kwargs["name"]="%s_%s_%s"%(get_environment_name(),self._test_name,name)
+        kwargs["name"]="%s%s"%(self.get_container_name_prefix(),name)
         labels={"test_environment_name":get_environment_name(),"container_type":"test_case_container","test_case":self._test_name}
         if "labels" in kwargs:
             kwargs["labels"].update(labels)
@@ -90,7 +95,7 @@ class DockerDBEnvironment:
         return container
 
     def get_ip_address_of_container(self, container):
-        if container in self._started_containers:
+        if container in self._started_containers or container.name == self.get_docker_db_container().name:
             return container.attrs['NetworkSettings']['Networks'][get_docker_network_name()]['IPAddress']
         else:
             raise Exception("Container not found in started containers")
