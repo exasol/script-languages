@@ -124,7 +124,8 @@ class JavaHive(udf.TestCase):
         password="write" # TOOD hardcoded
         import requests
         from requests.auth import HTTPBasicAuth
-        download_url="https://storage.googleapis.com/exasol-script-languages-extras/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar"
+        download_url="https://storage.googleapis.com/exasol-script-languages-extras/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0-SNAPSHOT-patch-addDirToJavaLibraryPath2.jar"
+#        download_url="https://storage.googleapis.com/exasol-script-languages-extras/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar"
         r_download = requests.get(download_url, stream=True)
         r_upload = requests.put(upload_url, data=r_download.iter_content(10 * 1024), auth=HTTPBasicAuth(username, password))
         r_download.raise_for_status()
@@ -245,6 +246,16 @@ class JavaHive(udf.TestCase):
                       PARALLELISM     = 'nproc()';
                     """%hive_metastore.name)
             finally:
+                print("namenode")
+                print(namenode.logs())
+                print("datanode")
+                print(datanode.logs())
+                print("hive_metastore_postgresql")
+                print(hive_metastore_postgresql.logs())
+                print("hive_metastore")
+                print(hive_metastore.logs())
+                print(hive_server)
+                print(hive_server.logs())
                 time.sleep(10)  
                 process.terminate()
         finally:
