@@ -51,7 +51,7 @@ if($python_binary eq ''){
 }
 
 my $element_separator = '\\|';
-my $combining_template = "$python_binary -m pip install --ignore-installed --no-cache-dir <<<<0>>>>";
+my $combining_template = "$python_binary -m pip install --use-deprecated=legacy-resolver --ignore-installed --no-cache-dir <<<<0>>>>";
 my @templates = ("'<<<<0>>>>'");
 if($with_versions){
     @templates=("'<<<<0>>>>==<<<<1>>>>'")
