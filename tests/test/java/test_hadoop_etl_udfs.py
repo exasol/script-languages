@@ -124,7 +124,7 @@ class JavaHive(udf.TestCase):
         password="write" # TOOD hardcoded
         import requests
         from requests.auth import HTTPBasicAuth
-        download_url="https://drive.exasol.com/seafhttp/files/6f91556c-0a85-418d-a107-9342bbe655f3/hadoop-etl-udfs-v1.0.0-apache-hadoop-2.8.5-hive-2.3.7.jar"
+        download_url="https://storage.googleapis.com/exasol-script-languages-extras/hadoop-etl-udfs-v1.0.0-apache-hadoop-2.8.5-hive-2.3.7.jar"
 #        download_url="https://storage.googleapis.com/exasol-script-languages-extras/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar" # this jar causes https://github.com/exasol/hadoop-etl-udfs/issues/52
         r_download = requests.get(download_url, stream=True)
         r_upload = requests.put(upload_url, data=r_download.iter_content(10 * 1024), auth=HTTPBasicAuth(username, password))
