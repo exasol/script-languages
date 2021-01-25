@@ -3,7 +3,6 @@ coreutils
 locales
 unzip
 wget
-curl
 git
 python3-tk
 libcurl4-openssl-dev

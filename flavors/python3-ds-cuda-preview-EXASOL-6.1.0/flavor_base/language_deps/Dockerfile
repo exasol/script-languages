@@ -15,9 +15,9 @@ RUN apt-get update && \
     apt-get -y autoremove && \
     ldconfig
 
-RUN curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py && \
-    python3.6 get-pip.py && \
-    rm get-pip.py
+COPY scripts /scripts
+RUN /scripts/install_scripts/install_python3.6_pip.sh
+
 COPY scripts /scripts
 COPY language_deps/packages/pip3_packages /build_info/packages/language_deps
 RUN /scripts/install_scripts/install_packages_batch.sh "PYTHON3-PIP" "pip install --ignore-installed <<list>>" "<<package>>" " " /build_info/packages/language_deps/pip3_packages
