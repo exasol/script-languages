@@ -5,9 +5,7 @@ COPY language_deps/packages/apt_get_packages /build_info/packages/language_deps
 
 RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/language_deps/apt_get_packages
 
-RUN curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py && \
-    python3.6 get-pip.py && \
-    rm get-pip.py
+RUN scripts/install_scripts/install_python3.6_pip.sh
 
 COPY language_deps/packages/pip3_packages /build_info/packages/language_deps
 RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/language_deps/pip3_packages --python-binary python3
