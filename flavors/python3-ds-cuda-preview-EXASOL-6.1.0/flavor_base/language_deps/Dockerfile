@@ -15,6 +15,7 @@ RUN apt-get update && \
     apt-get -y autoremove && \
     ldconfig
 
+COPY scripts /scripts
 RUN /scripts/install_scripts/install_python3.6_pip.sh
 
 COPY scripts /scripts
