@@ -23,6 +23,10 @@ echo
 COMMAND="./exaslct build-test-container $ADDITIONAL_ARGUMENTS $SYSTEM_PARAMETER"
 echo "Executing Command: $COMMAND"
 $COMMAND || echo "fail" >> /workspace/build-status.txt
+
+echo "/workspace/build-status.txt"
+cat /workspace/build-status.txt 
+
 echo
 echo "=========================================================="
 echo "Printing docker images"
