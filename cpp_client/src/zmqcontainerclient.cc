@@ -17,8 +17,6 @@
 #endif
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
-// build with protegrity:
-// g++ -Wall -O3 -lzmq -lprotobuf -lpthread -lcrypto -DUNIX -I. -I/opt/protegrity/defiance_xc/include/ -Wl,-rpath=/opt/protegrity/defiance_xc/bin/ -o protegrityclient -DPROTEGRITY_PLUGIN_CLIENT -DBUILDINSWIGDIR -I. scriptDTO.cc scriptDTOWrapper.cc zmqcontainer.pb.cc zmqcontainerclient.cc protegrityclient.cc /opt/protegrity/defiance_xc/bin/xcpep.plm
 #include <protegrityclient.h>
 #endif
 
@@ -638,7 +636,7 @@ int main(int argc, char **argv) {
 
     if (socket_name.length() > 4 ) {
 #ifdef PROTEGRITY_PLUGIN_CLIENT
-        // protegrity client has no arguments
+        // udf plugins might not have arguments
 #else
 //        if (! ((strcmp(argv[2], "lang=python") == 0)
 //               || (strcmp(argv[2], "lang=r") == 0)
