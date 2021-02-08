@@ -19,6 +19,7 @@ from exasol_integration_test_docker_environment.lib.test_environment.create_expo
 
 from exaslct_src.exaslct.lib.tasks.export.export_info import ExportInfo
 
+CHECKSUM_ALGORITHM="sha512sum"
 
 class ExportContainerBaseTask(FlavorBaseTask):
     logger = logging.getLogger('luigi-interface')
@@ -37,7 +38,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
         image_info_of_release_image = self._release_task_future.get_output()  # type: ImageInfo
         cache_file, release_complete_name, release_image_name = \
             self._get_cache_file_path(image_info_of_release_image)
-        checksum_file = Path(str(cache_file)+".sha256sum")
+        checksum_file = Path(str(cache_file)+"."+CHECKSUM_ALGORITHM)
         self._remove_cached_exported_file_if_requested(cache_file,checksum_file)
 
         is_new = False
@@ -82,7 +83,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
                 suffix = ""
             file_name = f"""{self.get_flavor_name()}_{self.release_goal}{suffix}.tar.gz"""
             output_file = Path(self.export_path, file_name)
-            output_checksum_file = Path(self.export_path, file_name+".checksum")
+            output_checksum_file = Path(self.export_path, file_name+"."+CHECKSUM_ALGORITHM)
             if not output_file.exists() or not output_checksum_file.exists() or is_new:
                 output_file.parent.mkdir(exist_ok=True, parents=True)
                 shutil.copy2(checksum_file, output_checksum_file)
@@ -115,7 +116,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
 
     def _compute_checksum(self, release_file: Path, checksum_file: Path):
         self.logger.info("Compute checksum for container file %s", release_file)
-        command = f"""sha512sum '{release_file}'"""
+        command = f"""{CHECKSUM_ALGORITHM} '{release_file}'"""
         completed_process = subprocess.run(shlex.split(command),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         completed_process.check_returncode()
         stdout = completed_process.stdout.decode("utf-8")
