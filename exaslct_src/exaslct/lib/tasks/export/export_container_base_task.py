@@ -37,7 +37,7 @@ class ExportContainerBaseTask(FlavorBaseTask):
         image_info_of_release_image = self._release_task_future.get_output()  # type: ImageInfo
         cache_file, release_complete_name, release_image_name = \
             self._get_cache_file_path(image_info_of_release_image)
-        checksum_file = Path(str(cache_file)+".sha256sum")
+        checksum_file = Path(str(cache_file)+".sha512sum")
         self._remove_cached_exported_file_if_requested(cache_file,checksum_file)
 
         is_new = False
