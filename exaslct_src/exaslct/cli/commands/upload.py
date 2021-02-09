@@ -26,7 +26,7 @@ from exaslct_src.exaslct.lib.tasks.upload.upload_containers import UploadContain
 @click.option('--bucketfs-https/--no-bucketfs-https', default=False)
 @click.option('--bucketfs-name', type=str, required=True)
 @click.option('--bucket-name', type=str, required=True)
-@click.option('--path-in-bucket', type=str, required=True)
+@click.option('--path-in-bucket', type=str, required=False)
 @click.option('--release-name', type=str, default=None)
 @add_options(build_options)
 @add_options(docker_repository_options)
