@@ -28,7 +28,7 @@ class DockerUploadTest(unittest.TestCase):
         except Exception as e:
             print(e)
 
-    def test_docker_upload(self):
+    def test_docker_upload_with_path_in_bucket(self):
         self.path_in_bucket = "test"
         self.release_name = "TEST"
         self.bucketfs_name = "bfsdefault"
@@ -41,6 +41,24 @@ class DockerUploadTest(unittest.TestCase):
             f"--bucketfs-name {self.bucketfs_name}",
             f"--bucket-name {self.bucket_name}",
             f"--path-in-bucket {self.path_in_bucket}",
+            f"--no-bucketfs-https",
+            f"--release-name {self.release_name}",
+        ])
+        command = f"./exaslct upload {arguments}"
+
+        self.test_environment.run_command(command, track_task_dependencies=True)
+
+    def test_docker_upload_without_path_in_bucket(self):
+        self.release_name = "TEST"
+        self.bucketfs_name = "bfsdefault"
+        self.bucket_name = "default"
+        arguments = " ".join([
+            f"--database-host {self.docker_environment.database_host}",
+            f"--bucketfs-port {self.docker_environment.bucketfs_port}",
+            f"--bucketfs-username {self.docker_environment.bucketfs_username}",
+            f"--bucketfs-password {self.docker_environment.bucketfs_password}",
+            f"--bucketfs-name {self.bucketfs_name}",
+            f"--bucket-name {self.bucket_name}",
             f"--no-bucketfs-https",
             f"--release-name {self.release_name}",
         ])
