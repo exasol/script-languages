@@ -70,6 +70,7 @@ steps:
           '${_GITHUB_REPOSITORY}'
           ]
 timeout: "5400s"
+queueTtl: "21600s"
 options:
   machineType: 'N1_HIGHCPU_8'
   diskSizeGb: "200"

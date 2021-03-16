@@ -96,6 +96,7 @@ steps:
           '$BUILD_ID'
           ]
 timeout: "9000s"
+queueTtl: "21600s"
 options:
   machineType: 'N1_HIGHCPU_8'
   diskSizeGb: "50"

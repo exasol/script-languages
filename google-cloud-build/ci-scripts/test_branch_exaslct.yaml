@@ -94,6 +94,7 @@ steps:
           'exaslct_src/test/test_run_db_test_external_db.py'
         ]
 timeout: "4800s"
+queueTtl: "21600s"
 options:
   diskSizeGb: "300"
   machineType: 'N1_HIGHCPU_8'

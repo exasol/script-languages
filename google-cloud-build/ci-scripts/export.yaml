@@ -49,5 +49,6 @@ steps:
           '${_CONTAINER_BUCKET}/exports/$COMMIT_SHA/$BUILD_ID/'
           ]
 timeout: "3600s"
+queueTtl: "21600s"
 options:
   diskSizeGb: "50"
