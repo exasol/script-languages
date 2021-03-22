@@ -11,7 +11,7 @@
                                 A line can have multiple elements separated by |. 
                                 Lines everything after a # is interpreted as comment.
     --columns                   Indices of columns to extract starting with 0 seperated by ",", e.g --column "0,3,1"
-    --output-column-seperator   Seperator between columns used for the output. Default: |
+    --output-column-separator   Seperator between columns used for the output. Default: |
 =cut
 
 use strict;
@@ -29,7 +29,7 @@ my $with_versions = 0;
 my $mark_hold = 0;
 my $allow_no_version = 0;
 my $columns = '';
-my $output_column_separator = "\\|";
+my $output_column_separator = "|";
 
 GetOptions (
             "help" => \$help,
