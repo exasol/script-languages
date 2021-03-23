@@ -1,0 +1,5 @@
+numpy|
+pandas|1.0.1
+scipy|1.0.1
+scikit-learn|2.0
+git+http://git.example.com/MyProject#egg=MyProject|

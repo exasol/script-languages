@@ -1,21 +1,74 @@
 use strict;
+use warnings;
 
 package package_mgmt_utils;
 
 #use Data::Dumper;
 
 sub generate_joined_and_transformed_string_from_file{
-    my ($file, $element_separator, $combining_template, $templates_ref, $separators_ref) = @_;
-    my @templates = @$templates_ref;
+    my ($file, $element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref) = @_;
+    my @transformed_lines = generate_transformed_lines_for_templates(
+        $file, $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
+    my $final_string = generate_joined_string_from_lines(\@transformed_lines, $combining_template,, $separators_ref);
+    return $final_string;
+}
+
+sub generate_joined_string_from_lines{
+    my ($lines_ref, $combining_template, $separators_ref) = @_;
     my @separators = @$separators_ref;
-    my @elements_of_lines = get_lines_with_elements_from_file($file, $element_separator);
-    my @transformed_lines = map(fill_template_for_lines($_,\@elements_of_lines),@templates);
-    my $count_transformed_lines=scalar @transformed_lines;
-    if($count_transformed_lines == 0){
+    my @lines = @$lines_ref;
+    my $count_lines=scalar @lines;
+    if($count_lines == 0){
         return "";
     }
-    my $final_string = fill_template_with_joined_lines_of_elements($combining_template, \@separators, \@transformed_lines);
+    my $final_string = fill_template_with_joined_lines_of_elements($combining_template, \@separators, \@lines);
     return $final_string;
+}
+
+sub generate_transformed_lines_for_templates{ 
+    my ($file, $element_separator, $templates_ref, $rendered_line_transformation_functions_ref) = @_;
+    my @templates = @$templates_ref;
+    my @rendered_line_transformation_functions = @$rendered_line_transformation_functions_ref;
+    my @elements_of_lines = get_lines_with_elements_from_file($file, $element_separator);
+    my @template_transformation_function_pairs = zip_two_arrays($templates_ref,$rendered_line_transformation_functions_ref);
+    my @transformed_lines = map(generate_transformed_lines_for_template(\@elements_of_lines,$_),@template_transformation_function_pairs);
+    return @transformed_lines;
+}
+
+sub min{
+    my ($x, $y) = @_;
+    return $x <= $y ? $x : $y;
+}
+
+sub zip_two_arrays{
+    my ($array1_ref, $array2_ref) = @_;
+    my @array1 =  @$array1_ref;
+    my @array2 =  @$array2_ref;
+    my @result = ();
+    my $min_size = min($#array1, $#array2);
+    for my $i (0 .. $min_size) {
+        my @element = ($array1[$i], $array2[$i]);
+        push (@result, \@element); 
+    }
+    return @result;
+}
+
+sub generate_transformed_lines_for_template{
+    my ($elements_of_lines_ref, $template_transformation_function_pair_ref) = @_;
+    my @elements_of_lines=@$elements_of_lines_ref;
+    my @template_transformation_function_pair = @$template_transformation_function_pair_ref;
+    my $template=$template_transformation_function_pair[0];
+    my $transformation_function_ref=$template_transformation_function_pair[1];
+    my @rendered_lines = fill_template_for_lines($template,\@elements_of_lines);
+    my @transformed_lines = map(apply_rendered_line_transformation_function($_, $transformation_function_ref),@rendered_lines);
+    return @transformed_lines; 
+}
+
+sub apply_rendered_line_transformation_function{
+    my ($lines_ref, $transformation_function_ref) = @_;
+    my @lines = @$lines_ref;
+    my @transformed_lines = map($transformation_function_ref->($_),@lines);
+    return \@transformed_lines;
 }
 
 sub get_lines_with_elements_from_file{
