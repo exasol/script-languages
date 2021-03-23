@@ -61,14 +61,27 @@ if($with_versions){
     @templates = ('install_version("<<<<0>>>>","<<<<1>>>>",repos="http://cran.r-project.org")');
 }
 
+sub identity {
+    my ($line) = @_;
+    return $line 
+}
+
+
+sub replace_missing_version{
+    my ($line) = @_;
+    $line =~ s/==<<<<1>>>>//g;
+    return $line;
+}
+
+my @rendered_line_transformation_functions = (\&identity);
+if($with_versions and $allow_no_version){
+    @rendered_line_transformation_functions = (\&replace_missing_version);
+}
 
 my $cmd = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
-        $file,$element_separator,$combining_template,\@templates,\@separators);
+        $file,$element_separator,$combining_template,\@templates,\@separators,\@rendered_line_transformation_functions);
 
-if($with_versions and $allow_no_version){
-    $cmd =~ s/"<<<<1>>>>"/NULL/g;
-}
 if($with_versions and not $allow_no_version){
     if (index($cmd, "<<<<1>>>>") != -1) {
         die "Command '$cmd' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
