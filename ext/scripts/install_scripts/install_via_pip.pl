@@ -7,14 +7,15 @@
 
   install_via_pip.pl [OPTIONS]
   Options:
-    --help               Brief help message
-    --dry-run            Doesn't execute the command, only prints it to STDOUT
-    --file               Input file with each line represents a input. 
-                         A line can have multiple elements separated by --element-separator. 
-                         Lines everything after a # is interpreted as comment
-    --with-versions      Uses versions specified in the input file in the second element of each line
-    --allow-no-versions  If --with-versions is active, allow packages to have no version specified
-    --python-binary      Python-binary to use for the installation
+    --help                                Brief help message
+    --dry-run                             Doesn't execute the command, only prints it to STDOUT
+    --file                                Input file with each line represents a input. 
+                                          A line can have multiple elements separated by --element-separator. 
+                                          Lines everything after a # is interpreted as comment
+    --with-versions                       Uses versions specified in the input file in the second element of each line
+    --allow-no-version                    If --with-versions is active, allow packages to have no version specified
+    --allow-no-version-for-urls           If --with-versions is active, allow packages specified by urls to have no version
+    --python-binary                       Python-binary to use for the installation
                                      
 =cut
 
@@ -30,13 +31,14 @@ my $file = '';
 my $python_binary = '';
 my $with_versions = 0;
 my $allow_no_version = 0;
-
+my $allow_no_version_for_urls = 0;
 GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
             "file=s" => \$file,
             "with-versions" => \$with_versions,
             "allow-no-version" => \$allow_no_version,
+            "allow-no-version-for-urls" => \$allow_no_version_for_urls,
             "python-binary=s" => \$python_binary
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
@@ -58,14 +60,36 @@ if($with_versions){
 }
 my @separators = (" ");
 
+sub identity {
+    my ($line) = @_;
+    return $line 
+}
+
+
+sub replace_missing_version{
+    my ($line) = @_;
+    $line =~ s/==<<<<1>>>>//g;
+    return $line;
+}
+
+sub replace_missing_version_for_urls{
+    my ($line) = @_;
+    $line =~ s/([a-z+]+:\/\/.*)==<<<<1>>>>/\1/g;
+    return $line;
+}
+
+my @rendered_line_transformation_functions = (\&identity);
+if($with_versions and $allow_no_version){
+    @rendered_line_transformation_functions = (\&replace_missing_version);
+}elsif($with_versions and $allow_no_version_for_urls){
+    @rendered_line_transformation_functions = (\&replace_missing_version_for_urls);
+}
+
 my $cmd = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
-        $file,$element_separator,$combining_template,\@templates,\@separators);
+        $file, $element_separator, $combining_template, \@templates, \@separators, \@rendered_line_transformation_functions);
 
-if($with_versions and $allow_no_version){
-    $cmd =~ s/==<<<<1>>>>//g;
-}
-if($with_versions and not $allow_no_version){
+if($with_versions){
     if (index($cmd, "==<<<<1>>>>") != -1) {
         die "Command '$cmd' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
     } 

@@ -64,7 +64,13 @@ sub generate_template{
 
 my @templates = (generate_template($output_column_separator,$columns));
 
+sub identity {
+    my ($line) = @_;
+    return $line 
+}
+my @rendered_line_transformation_functions = (\&identity);
+
 my $package_list = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
-        $file,$element_separator,$combining_template,\@templates,\@separators);
+        $file,$element_separator,$combining_template,\@templates,\@separators,\@rendered_line_transformation_functions);
 print("$package_list\n");
