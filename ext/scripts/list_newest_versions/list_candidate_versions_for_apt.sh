@@ -7,7 +7,7 @@ set -o pipefail
 PACKAGE_LIST_FILE=$1
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-PACKAGE_LIST=$($SCRIPT_DIR/generate_package_list_without_version.pl --file $PACKAGE_LIST_FILE)
+PACKAGE_LIST=$($SCRIPT_DIR/extract_columns_from_package_lisl.pl --file $PACKAGE_LIST_FILE --columns 0)
 apt-cache policy $PACKAGE_LIST \
   | grep -A 2 -E "^[^ ]+:" \
   | sed "s/^--/|/g" \
