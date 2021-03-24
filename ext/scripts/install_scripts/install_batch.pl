@@ -68,8 +68,15 @@ for (my $i = 0; $i < $#template_separator_array; $i += 2) {
    push(@separators,$template_separator_array[$i+1]);
 }
 
+sub identity {
+    my ($line) = @_;
+    return $line 
+}
+
+my @rendered_line_transformation_functions = (\&identity);
+
 my $cmd = 
    package_mgmt_utils::generate_joined_and_transformed_string_from_file(
-       $file,$element_separator,$combining_template,\@templates,\@separators);
+       $file,$element_separator,$combining_template,\@templates,\@separators,\@rendered_line_transformation_functions);
 
 package_mgmt_utils::execute("$cmd",$dry_run)
