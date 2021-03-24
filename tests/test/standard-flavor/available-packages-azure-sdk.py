@@ -19,30 +19,32 @@ class AvailablePythonPackages(udf.TestCase):
             ("azure.cosmos",), 
             ("azure.eventgrid",),
             ("azure.eventhub",),
-            ("azure.eventhub.checkpointstoreblob",),
-            ("azure.eventhub.checkpointstoreblob.aio",),
+            ("azure.eventhub.extensions.checkpointstoreblob",),
+            ("azure.eventhub.extensions.checkpointstoreblobaio",),
             ("azure.identity",),
             ("azure.keyvault",),
             ("azure.keyvault.certificates",),
             ("azure.keyvault.keys",),
             ("azure.keyvault.secrets",),
-            ("azure.kusto-data",),
+            ("azure.kusto.data",),
             ("azure.loganalytics",),
             ("azure.servicebus",),
             ("azure.storage.blob",),
-            ("azure.storage.file.datalake",),
-            ("azure.storage.file.share",),
+            ("azure.storage.filedatalake",),
+            ("azure.storage.fileshare",),
             ("azure.storage.queue",),
         ]
 
     @useData(data)
-    def import_test(self, pkg, fail=False, alternative=None):
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
+    def test_package_import(self, pkg, fail=False, alternative=None):
+        sql=udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
             import %s
             def run(ctx): return 1
             /
-            ''' % (pkg)))
+            ''' % (pkg))
+        print(sql)
+        self.query(sql)
         try:
             rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
             if not fail:
