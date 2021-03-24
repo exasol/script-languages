@@ -74,9 +74,9 @@ sub replace_missing_version{
     return $line;
 }
 
-my @rendered_line_transformation_functions = (\&identity);
+my @rendered_line_transformation_functions = (\&identity,\&identity);
 if($with_versions and $allow_no_version){
-    @rendered_line_transformation_functions = (\&replace_missing_version);
+    @rendered_line_transformation_functions = (\&identity,\&replace_missing_version);
 }
 
 my $cmd = 
