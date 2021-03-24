@@ -20,8 +20,8 @@ jobs:
 
     - name: Test install scripts
       run: bash run_tests.sh 
-      working_directory: ext/scripts/tests/install_scripts
+      working-directory: ext/scripts/tests/install_scripts
 
     - name: Test list installed scripts
       run: bash run_tests.sh 
-      working_directory: ext/scripts/tests/list_installed_scripts
+      working-directory: ext/scripts/tests/list_installed_scripts
