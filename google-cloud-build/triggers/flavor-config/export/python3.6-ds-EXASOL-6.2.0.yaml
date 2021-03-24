@@ -1,2 +1,2 @@
-flavor: "python3-ds-EXASOL-6.1.0"
+flavor: "python3.6-ds-EXASOL-6.2.0"
 trigger_template_file: "export.json.jinja2"

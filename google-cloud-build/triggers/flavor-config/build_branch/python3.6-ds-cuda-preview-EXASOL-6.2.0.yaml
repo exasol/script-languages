@@ -1,4 +1,4 @@
-flavor: "python3-ds-cuda-preview-EXASOL-6.1.0"
+flavor: "python3.6-ds-cuda-preview-EXASOL-6.2.0"
 trigger_template_file: "build_branch.json.jinja2"
 build_mode: "build"
 disabled: false

@@ -1,0 +1,2 @@
+flavor: "python3.6-ds-cuda-preview-EXASOL-6.2.0"
+trigger_template_file: "export.json.jinja2"
