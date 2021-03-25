@@ -1,5 +1,5 @@
 # Pandas DataFrame support
-The `standard-EXASOL-*` and the `python3.6-ds-*` flavors now have direct DataFrame support for accessing and emitting data in Exasol.
+The `standard-EXASOL-*` and the `python3.6-data-science-*` flavors now have direct DataFrame support for accessing and emitting data in Exasol.
 
 ## Accessing data
 Instead of accessing each column of a row individually and calling `next()` for every row, the `get_dataframe(num_rows, start_col)` function can now be called which returns a block of data as a Pandas DataFrame.
