@@ -16,7 +16,7 @@ RUN apt-get update && \
     ldconfig
 
 COPY scripts /scripts
-RUN /scripts/install_scripts/install_python3.6_pip.sh
+RUN /scripts/install_scripts/install_python3_pip.sh
 
 COPY scripts /scripts
 COPY language_deps/packages/pip3_packages /build_info/packages/language_deps

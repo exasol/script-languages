@@ -1,3 +1,3 @@
-flavors: "python3-ds-EXASOL-6.1.0 python3-ds-cuda-preview-EXASOL-6.1.0"
+flavors: "python-3.6-data-science-EXASOL-6.2.0 python-3.6-data-science-cuda-EXASOL-6.2.0"
 trigger_template_file: "release.json.jinja2"
 debug: true

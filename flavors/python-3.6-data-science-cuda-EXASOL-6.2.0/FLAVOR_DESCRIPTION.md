@@ -1,4 +1,4 @@
-# Details for Python-ds-EXASOL-6.1.0 flavor
+# Details for Python-3.6-data-science-cuda-EXASOL-6.2.0 flavor
 
 ## Packages
 
