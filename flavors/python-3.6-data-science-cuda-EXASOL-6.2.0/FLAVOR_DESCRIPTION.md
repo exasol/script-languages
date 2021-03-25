@@ -1,4 +1,4 @@
-# Details for Python-3.6-data-science-cuda-preview-EXASOL-6.2.0 flavor
+# Details for Python-3.6-data-science-cuda-EXASOL-6.2.0 flavor
 
 ## Packages
 
