@@ -4,7 +4,7 @@ import os
 import sys
 import time 
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
 
 import udf
 import docker_db_environment
