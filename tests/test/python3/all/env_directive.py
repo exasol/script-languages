@@ -5,7 +5,7 @@ import os
 import sys
 import datetime
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
 
 import udf
 

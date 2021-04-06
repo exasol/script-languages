@@ -10,7 +10,7 @@ from textwrap import dedent
 
 import pytz
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
 
 import udf
 from udf import useData
