@@ -8,7 +8,7 @@ import lxml.etree as etree
 
 running_in_travis = 'TRAVIS' in os.environ
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
 
 import udf
 
