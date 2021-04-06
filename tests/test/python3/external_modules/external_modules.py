@@ -15,6 +15,31 @@ sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 import udf
 from udf import useData
 
+class ExternalModulesImportTest(udf.TestCase):
+    modules = '''
+            ujson
+            lxml
+            numpy
+            pytz
+            scipy
+            '''.split()
+    @useData((x,) for x in modules)
+    def test_3rdparty_modules_are_importable(self, module):
+        sql = udf.fixindent('''
+            CREATE OR REPLACE python3 SCALAR SCRIPT
+            i()
+            RETURNS VARCHAR(1024) AS
+            import %(module)s
+            def run(ctx):
+                try:
+                    return %(module)s.__file__
+                except AttributeError:
+                    return "(built-in)"
+            ''')
+        self.query(sql % {'module': module})
+        self.query('SELECT i() FROM DUAL')
+
+
 class UJSON(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
