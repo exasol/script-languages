@@ -16,6 +16,10 @@ import udf
 from udf import useData
 
 class ExternalModulesImportTest(udf.TestCase):
+    def setUp(self):
+        self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA t1')
+
     modules = '''
             ujson
             lxml
