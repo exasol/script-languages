@@ -1,4 +1,2 @@
-numpy|1.18.1
-pandas|1.0.1
-scipy|1.0.1
-scikit-learn|2.0
+humanfriendly|9.1
+requests|2.21.0

@@ -9,7 +9,7 @@ on:
       - "*"
 
 jobs:
-  build:
+  test_package_management_scripts:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,8 +24,8 @@ jobs:
       run: git submodule update --init --recursive
 
     - name: Test install scripts
-      run: bash run_tests.sh 
-      working-directory: ext/scripts/tests/install_scripts
+      run: bash test_scripts_in_docker.sh 
+      working-directory: ext/scripts/tests/
 
     - name: Test list installed scripts
       run: bash run_tests.sh 
