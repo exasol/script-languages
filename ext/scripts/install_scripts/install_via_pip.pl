@@ -74,7 +74,7 @@ sub replace_missing_version{
 
 sub replace_missing_version_for_urls{
     my ($line) = @_;
-    $line =~ s/([a-z+]+:\/\/.*)==<<<<1>>>>/\1/g;
+    $line =~ s/([a-z+]+:\/\/.*)==<<<<1>>>>/$1/g;
     return $line;
 }
 
