@@ -23,7 +23,12 @@ jobs:
     - name: Init submodules
       run: git submodule update --init --recursive
 
-    - name: Test install scripts
+    - name: Test install scripts dry-run
+      run: bash run_tests.sh 
+      working-directory: ext/scripts/tests/install_scripts
+
+
+    - name: Test install scripts in docker container
       run: bash test_scripts_in_docker.sh 
       working-directory: ext/scripts/tests/
 
