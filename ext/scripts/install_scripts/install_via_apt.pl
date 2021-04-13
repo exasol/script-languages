@@ -54,7 +54,7 @@ sub identity {
 
 sub replace_missing_version{
     my ($line) = @_;
-    $line =~ s/==<<<<1>>>>//g;
+    $line =~ s/=<<<<1>>>>//g;
     return $line;
 }
 
