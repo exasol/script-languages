@@ -1,1 +1,0 @@
-FROM {{udfclient_deps}}
