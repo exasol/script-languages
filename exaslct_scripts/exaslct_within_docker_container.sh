@@ -24,11 +24,12 @@ CONTAINER_DOCKER_SOCKER_PATH="/var/run/docker.sock"
 DOCKER_SOCKET_MOUNT="$HOST_DOCKER_SOCKER_PATH:$CONTAINER_DOCKER_SOCKER_PATH"
 
 function create_env_file() {
+  touch "$tmpfile_env"
   if [ -n "${TARGET_DOCKER_PASSWORD-}" ]; then
-    echo "TARGET_DOCKER_PASSWORD=$TARGET_DOCKER_PASSWORD" >"$tmpfile_env"
+    echo "TARGET_DOCKER_PASSWORD=$TARGET_DOCKER_PASSWORD" >> "$tmpfile_env"
   fi
   if [ -n "${SOURCE_DOCKER_PASSWORD-}" ]; then
-    echo "SOURCE_DOCKER_PASSWORD=$SOURCE_DOCKER_PASSWORD" >"$tmpfile_env"
+    echo "SOURCE_DOCKER_PASSWORD=$SOURCE_DOCKER_PASSWORD" >> "$tmpfile_env"
   fi
 }
 
@@ -48,7 +49,7 @@ function create_env_file_debug_protected() {
 }
 
 old_umask=$(umask)
-#umask 600
+umask 277
 tmpfile_env=$(mktemp)
 trap 'rm -f -- "$tmpfile_env"' INT TERM HUP EXIT
 
