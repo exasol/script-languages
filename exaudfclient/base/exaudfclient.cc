@@ -17,6 +17,9 @@
 #ifdef ENABLE_BENCHMARK_VM
 #include "benchmark_container/benchmark_container.h"
 #endif
+#ifdef ENABLE_CPP_EMIT_BENCHMARK_VM
+#include "cpp_emit_benchmark_container/cpp_emit_benchmark_container.h"
+#endif
 #ifdef ENABLE_STREAMING_VM
 #include "streaming_container/streamingcontainer.h"
 #endif
@@ -131,7 +134,7 @@ int main(int argc, char **argv) {
     }
 #else
     if (argc != 3) {
-        cerr << "Usage: " << argv[0] << " <socket> lang=python|lang=r|lang=java|lang=streaming|lang=benchmark" << endl;
+        cerr << "Usage: " << argv[0] << " <socket> lang=python|lang=r|lang=java|lang=streaming|lang=benchmark|lang=cpp-emit-benchmark" << endl;
         return 1;
     }
 #endif
@@ -180,6 +183,12 @@ int main(int argc, char **argv) {
     } else if (strcmp(argv[2], "lang=benchmark")==0){
 #ifdef ENABLE_BENCHMARK_VM
         vmMaker = [](){return new BenchmarkVM(false);};
+#else
+        throw SWIGVM::exception("this exaudfclient has been compilied without Benchmark support");
+#endif
+    } else if (strcmp(argv[2], "lang=cpp-emit-benchmark")==0){
+#ifdef ENABLE_CPP_EMIT_BENCHMARK_VM
+        vmMaker = [](){return new CppEmitBenchmarkVM(false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Benchmark support");
 #endif

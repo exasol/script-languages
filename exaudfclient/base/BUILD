@@ -5,6 +5,11 @@ exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-scri
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
 
 config_setting(
+    name = "cpp-emit-benchmark",
+    define_values = {"cpp-emit-benchmark": "true"},
+)
+
+config_setting(
     name = "benchmark",
     define_values = {"benchmark": "true"},
 )
@@ -85,6 +90,9 @@ cc_binary(
 )
 
 VM_ENABLED_DEPS=select({
+        ":cpp-emit-benchmark": ["//cpp_emit_benchmark_container:cpp_emit_benchmark_container"],
+        "//conditions:default": [] 
+    }) + select({
         ":benchmark": ["//benchmark_container:benchmark_container"],
         "//conditions:default": []
     }) + select({
