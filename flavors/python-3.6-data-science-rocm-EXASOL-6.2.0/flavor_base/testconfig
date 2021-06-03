@@ -1,0 +1,2 @@
+generic_language_tests=python3
+test_folders=python3/all python3/external_modules python3-ds-flavor
