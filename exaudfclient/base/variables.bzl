@@ -3,7 +3,7 @@ BENCHMARK_VM_ENABLED_DEFINE=select({
         "//conditions:default": []
     }) 
 CPP_EMIT_BENCHMARK_VM_ENABLED_DEFINE=select({
-        "//:cpp_emit_benchmark": ["ENABLE_CPP_EMIT_BENCHMARK_VM"],
+        "//:cpp-emit-benchmark": ["ENABLE_CPP_EMIT_BENCHMARK_VM"],
         "//conditions:default": []
     }) 
 STREAMING_VM_ENABLED_DEFINE=select({

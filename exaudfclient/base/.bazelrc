@@ -15,4 +15,4 @@ build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
 build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-O3" --copt="-U_FORTIFY_SOURCE" --copt="-flto"
 build:no-tty --curses=no --color=no
 build:debug-build --sandbox_debug --config=verbose
-build:no-symlinks --symlink_prefix=/
+build:no-symlinks --symlink_prefix=/tmp/

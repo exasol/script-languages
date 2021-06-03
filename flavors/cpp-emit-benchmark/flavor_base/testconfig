@@ -1,1 +1,2 @@
-test_folders=cpp-emit-benchmark
+test_folders=performance/cpp/emit_benchmark
+generic_language_tests=

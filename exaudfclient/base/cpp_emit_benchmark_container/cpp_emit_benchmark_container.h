@@ -11,8 +11,8 @@ class CppEmitBenchmarkVM: public SWIGVM {
             exception(const char *reason): SWIGVM::exception(reason) { }
             virtual ~exception() throw() { }
         };
-        BenchmarkVM(bool checkOnly);
-        virtual ~BenchmarkVM() {};
+        CppEmitBenchmarkVM(bool checkOnly);
+        virtual ~CppEmitBenchmarkVM() {};
         virtual void shutdown();
         virtual bool run();
         virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
