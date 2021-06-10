@@ -37,7 +37,7 @@ You can contribute to this project at several levels:
 We use tests on different levels, we have unit and integration tests for exaslct (Script Language Container Tool, 
 our build system for the containers) and we have integration tests for all flavors with the Exasol 
 [docker-db](https://github.com/exasol/docker-db). 
-You can see in our travis configuration how we run the tests.
+
 
 The tests for exaslct are located [here](exaslct_src/test). 
 They consists of several python unittest tests and 
@@ -47,54 +47,3 @@ which is used for integration tests.
 The integration tests for the flavors are located [here](tests). 
 They consists of generic language tests and flavor specific tests.
 You can execute them with the exaslct run-db-test command.
-
-## How to configure Travis
-
-If you want to use Travis as your continuous integration server during development 
-you need to configure it in a very specific way. Our build takes a while, 
-because we build quite extensive containers for some flavors. 
-Furthermore, our integrations tests take their time, too. 
-Therefore, we were forced to use caching between the build stages of Travis. 
-Unfortunately, the existing Travis Cache does not handle caching of artifacts 
-from multiple jobs in a stage very well, such that we had to use a 
-external cloud service for caching.
-
-Because a build of a flavor already consists of a sequence of docker images, 
-we decided to use docker registries as build cache. You can use either docker hub or 
-your own docker registry as cache. We encode the information about the docker registry
-as encrypted environment variables in the 
-[repository settings in Travis](https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings). 
-If you want to use Travis in your fork of this repository 
-you have to set your own encrypted environment variables.
-
-**NOTE: These values are used directly in your build, 
-so make sure to escape special characters (for bash) 
-accordingly. In particular, if a value contains spaces, 
-you should put quotes around that value. E.g. my secret 
-passphrase should be written "my secret passphrase".**
-
-We use the following encrypted Environment Variables 
-to provide the Information for the Docker Registry to the build.
-
-Environment Variables for the Docker Repository which is used by the Build 
-to share Docker Images between the Build Stages: 
-- BUILD_DOCKER_REPOSITORY (.e.g. for Docker Hub exasol/script-language-container-build)
-- BUILD_DOCKER_USERNAME
-- BUILD_DOCKER_PASSWORD
-
-Environment Variables for the Docker Repository which is used to 
-upload the final images to the public Build Cache for a Release: 
-- DEPLOY_DOCKER_REPOSITORY (.e.g. for Docker Hub exasol/script-language-container)
-- DEPLOY_DOCKER_USERNAME
-- DEPLOY_DOCKER_PASSWORD
-
-Environment Variable for the Personal Github Token with the rights 'public repo':
-
-GH_TOKEN
-
-The DOCKER_REPOSITORY needs to be of the following form 
-
-    [<hostname>[:port]/]<user>/<repository-name>
-    
-For more information, about encrypted Environment Variables in travis, 
-please check the [travis documentation](https://docs.travis-ci.com/user/environment-variables/#defining-encrypted-variables-in-travisyml)

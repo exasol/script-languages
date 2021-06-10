@@ -22,7 +22,7 @@ The exaudfclient was tested with the following versions of its dependencies:
 For the language support:
 
 - Python 2.7 or Python 3.6 for pythoncontainer
-    - for Python 3 the build requires [Numpy](http://www.numpy.org/) in addition for the [Pandas Dataframe Support](../flavors/docs/py_dataframe.md)
+    - for Python 3 the build requires [Numpy](http://www.numpy.org/) in addition for the [Pandas Dataframe Support](../../flavors/docs/py_dataframe.md)
 - OpenJDK 9 or 11 for javacontainer
 - R 3.4 or 3.5 for the rcontainer
 
@@ -77,4 +77,4 @@ In the build process you need to be cautious which libraries you link together a
 - Make you familiar with linker namespaces and with the library libdl.so
 - Deconstructors and different linker namespace can be fun, not! If you need to use data in one namespace which was created in the other namespace make sure to store it module wide static variables, because the lifetime of these variables is the lifetime of the program. Furthermore, static variable decleration should be in the module which creates the data and the module in the other namespace should only use a pointer to this data which is also stored in a static variable in a module in this namespace.
 
-You can find more information about linking and linkers [here](www.lurklurk.org/linkers/linkers.htm).
+You can find more information about linking and linkers [here](https://www.lurklurk.org/linkers/linkers.html).
