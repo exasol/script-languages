@@ -37,13 +37,3 @@ You can contribute to this project at several levels:
 We use tests on different levels, we have unit and integration tests for exaslct (Script Language Container Tool, 
 our build system for the containers) and we have integration tests for all flavors with the Exasol 
 [docker-db](https://github.com/exasol/docker-db). 
-
-
-The tests for exaslct are located [here](exaslct_src/test). 
-They consists of several python unittest tests and 
-defines a test flavor in the [resources](exaslct_src/test/resources)
-which is used for integration tests.
-
-The integration tests for the flavors are located [here](tests). 
-They consists of generic language tests and flavor specific tests.
-You can execute them with the exaslct run-db-test command.
