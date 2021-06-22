@@ -150,11 +150,17 @@ class TestEcho(udf.TestCase):
             FROM DUAL''')
         self.assertRowsEqual([(True, True)], rows)
 
-        rows = self.query('''
+        self.query('DROP SCHEMA ECHO_TEST CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA ECHO_TEST')
+        self.query('''CREATE OR REPLACE TABLE N1 (now VARCHAR(255))''')
+        self.query('''INSERT INTO N1 VALUES (SELECT now() AS x FROM DUAL)''')
+        self.query('''    
             SELECT x1 = x2, x1, x2, x3
             FROM (SELECT fn1.echo_timestamp(x) AS x1, x AS x2, x AS x3
-                  FROM (SELECT now() AS x FROM DUAL))''')
+                  FROM (SELECT now AS x FROM N1))
+                  ''')
         self.assertEqual(True, rows[0][0], str(rows))
+        self.query('''DROP SCHEMA ECHO_TEST CASCADE''')
 
 
 class EmptyTest(udf.TestCase):
