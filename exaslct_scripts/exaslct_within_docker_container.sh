@@ -103,8 +103,10 @@ function _get_mount_point_paths() {
     current_arg=${!idxArg}
     next_arg_idx=$((idxArg + 1))
     next_arg=${!next_arg_idx}
-    if [ -v relevant_mount_point_arguments[$current_arg] ]; then
-      _get_mount_point_path $current_arg $next_arg ${relevant_mount_point_arguments[$current_arg]}
+    #Better way to test if the argument is in $relevant_mount_point_arguments
+    #would be to use [[ -v ...]], however this does not work correctly with bash 4.2
+    if [[ -n "${relevant_mount_point_arguments[${current_arg}]-}" ]]; then
+      _get_mount_point_path $current_arg $next_arg "${relevant_mount_point_arguments[${current_arg}]}"
     fi
   done
 }
