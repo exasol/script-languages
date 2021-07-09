@@ -1,4 +1,4 @@
-# Details for Python-3.6-data-science-EXASOL-6.2.0 flavor
+# Details for Python-3.6-minimal-EXASOL-6.2.0 flavor
 
 ## Packages
 
