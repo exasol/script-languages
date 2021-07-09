@@ -120,8 +120,6 @@ class AvailablePython3Packages(udf.TestCase):
     #def test_19(self): self.import_test('ldb')         # is there a python3 version of it?
     def test_20(self): self.import_test('ldap')
     def test_21(self): self.import_test('roman')
-    #def test_22(self): self.import_test('samba')       # we include smbc now
-    def test_22(self): self.import_test('smbc')
     def test_23(self): self.import_test('sklearn')
     #def test_24(self): self.import_test('talloc')      # talloc doesn't seem to be available in python3
     #def test_25(self): self.import_test('cjson')       # cjson seems to be not supported in python3, we include ujson now
