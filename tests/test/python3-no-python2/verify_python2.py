@@ -33,7 +33,7 @@ class NoPython2(udf.TestCase):
             self.assertRowsEqual([(0,)], rows)
         except:
             print("Error executing test 'test_no_python2_bin'")
-            pass
+            raise
 
     def test_no_python2_lib(self):
         self.query(udf.fixindent('''
@@ -51,7 +51,7 @@ class NoPython2(udf.TestCase):
             self.assertRowsEqual([(None,)], rows)
         except:
             print("Error executing test 'test_no_python2_lib'")
-            pass
+            raise
 
 
 if __name__ == '__main__':
