@@ -15,11 +15,11 @@
     "projectId": "{{ gcloud_project_name }}",
     "repoName": "github_{{ github_user_name }}_{{ github_repository }}",
     {% if build_mode == "rebuild"  %}
-    "branchName": "^(rebuild)/.*"
+    "branchName": "^(develop|rebuild/.*)$"
     {% elif build_mode == "build" %}
     "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
     {% elif build_mode == "release" %} 
-    "branchName": "^(develop|master|ci-release-test/.*)$"
+    "branchName": "^(master|ci-release-test/.*)$"
     {% endif %}
   },  
   {% if build_mode == "rebuild"  %}
