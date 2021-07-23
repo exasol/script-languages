@@ -286,7 +286,6 @@ class ExaWrapper {
             list_Iter.set(line.replaceFirst("^\tat ", ""));
         }
         list_Iter = stacktrace_lines.listIterator(stacktrace_lines.size());
-        list_Iter = stacktrace_lines.listIterator(stacktrace_lines.size());
         Integer start_index = null;
 
         while (list_Iter.hasPrevious()) {
