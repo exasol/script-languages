@@ -54,9 +54,9 @@ if($rscript_binary eq ''){
 }
 
 
-my $combining_template = "$rscript_binary -e 'library(remotes);<<<<0>>>>'";
-my @separators = (";");
-my @templates = ('install_version("<<<<0>>>>",,repos="http://cran.r-project.org")');
+my $combining_template = "library(remotes)\n<<<<0>>>>";
+my @separators = ("\n");
+my @templates = ('install_version("<<<<0>>>>",NULL,repos="http://cran.r-project.org")');
 if($with_versions){  
     @templates = ('install_version("<<<<0>>>>","<<<<1>>>>",repos="http://cran.r-project.org")');
 }
@@ -78,17 +78,26 @@ if($with_versions and $allow_no_version){
     @rendered_line_transformation_functions = (\&replace_missing_version);
 }
 
-my $cmd = 
+my $script = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template,\@templates,\@separators,\@rendered_line_transformation_functions);
 
 if($with_versions and not $allow_no_version){
-    if (index($cmd, "<<<<1>>>>") != -1) {
-        die "Command '$cmd' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
+    if (index($script, "<<<<1>>>>") != -1) {
+        die "Command '$script' contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version";
     } 
 }
 
-if($cmd ne ""){
+
+
+if($script ne ""){
+    my $filename = "/tmp/install_packages_via_remotes.r";
+    open(FH, '>', $filename) or die $!;
+    print FH $script;
+    close(FH);
+    my $cmd = "$rscript_binary '$filename'";
     package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"remotes\",repos=\"http://cran.r-project.org\")'",$dry_run);
+    print "Executing:\n$script\n";
     package_mgmt_utils::execute($cmd,$dry_run);
+    unlink($filename) or die "Can't delete $filename: $!\n";
 }
