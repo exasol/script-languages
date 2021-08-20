@@ -3,12 +3,24 @@ FROM {{udfclient_deps}}
 RUN mkdir -p /build_info/packages/language_deps
 COPY language_deps/packages/apt_get_packages /build_info/packages/language_deps
 
-RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/language_deps/apt_get_packages
+# ppa:deadsnakes/ppa needed for python3.6 under ubuntu:16.04
+RUN apt-get update && \
+    apt-get -y install software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get -y update && \
+    apt-get -y install $(cat /build_info/packages/language_deps/apt_get_packages) && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 && \
+    apt-get -y clean && \
+    apt-get -y autoremove && \
+    ldconfig
 
+COPY scripts /scripts
 RUN /scripts/install_scripts/install_python3.6_pip.sh
 
-COPY language_deps/packages/pip3_packages /build_info/packages/language_deps
-RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/language_deps/pip3_packages --python-binary python3
+COPY scripts /scripts
+COPY language_deps/packages/python3_pip_packages /build_info/packages/language_deps
+RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/language_deps/python3_pip_packges --python-binary python3
 
 ENV PYTHON3_PREFIX /usr
 ENV PYTHON3_VERSION python3.6

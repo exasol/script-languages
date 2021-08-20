@@ -1,7 +1,7 @@
 FROM {{ language_deps }}
 
 RUN mkdir -p /build_info/packages
-COPY flavor_base_deps/packages /build_info/packages/flavor_base_deps
+COPY flavor_base_deps/packages/apt_get_packages /build_info/packages/flavor_base_deps
 
 RUN apt-get -y update && \
     apt-get -y install $(cat /build_info/packages/flavor_base_deps/apt_get_packages) && \
@@ -11,4 +11,6 @@ RUN apt-get -y update && \
     apt-get -y autoremove && \
     ldconfig
 
-RUN /scripts/install_scripts/install_packages_batch.sh "PYTHON3-PIP" "pip install --ignore-installed <<list>>" "'<<package>>'" " " /build_info/packages/flavor_base_deps/pip3_packages
+
+COPY flavor_base_deps/packages/python3_pip_packages /build_info/packages/flavor_base_deps
+RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_base_deps/python3_pip_packeges --python-binary python3
