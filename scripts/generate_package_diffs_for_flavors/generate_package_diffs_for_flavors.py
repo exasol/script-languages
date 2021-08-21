@@ -6,6 +6,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict, List, Optional, Tuple
 
+import click
 import pandas as pd
 
 
@@ -267,18 +268,22 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
     with overview_file.open("wt") as f:
         f.write(overview_file_content)
 
-def main():
+@click.command()
+@click.option('--output-directory', required=True, help="Directory where the diff reports are generated",
+              type=click.Path(exists=False))
+@click.option('--current-working-copy-name', required=True, help="Name of the current git working copy. "
+                                                                 "For example, the version of a new relaase.",
+              type=str)
+def main(output_directory:str, current_working_copy_name:str):
     last_tag = get_last_git_tag()
-    output_directory = Path(tempfile.mkdtemp())
-    print("output_directory", output_directory)
     with TemporaryDirectory() as working_copy_2_root:
         checkout_git_tag_as_worktree(working_copy_2_root, last_tag)
         working_copy_root = Path(".")
-        working_copy_1_name = "HEAD"
+        working_copy_1_name = current_working_copy_name
         working_copy_2_name = last_tag
         generate_dependency_diff_report_for_all_flavors(working_copy_root, working_copy_1_name,
                                                         working_copy_2_root, working_copy_2_name,
-                                                        output_directory)
+                                                        Path(output_directory))
 
 
 if __name__ == '__main__':
