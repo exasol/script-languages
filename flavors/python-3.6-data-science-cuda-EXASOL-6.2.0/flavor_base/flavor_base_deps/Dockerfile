@@ -1,6 +1,6 @@
 FROM {{ language_deps }}
 
-RUN mkdir -p /build_info/packages
+RUN mkdir -p /build_info/packages/flavor_base_deps
 COPY flavor_base_deps/packages/apt_get_packages /build_info/packages/flavor_base_deps
 
 RUN apt-get -y update && \
