@@ -18,7 +18,6 @@ RUN apt-get update && \
 COPY scripts /scripts
 RUN /scripts/install_scripts/install_python3.6_pip.sh
 
-COPY scripts /scripts
 COPY language_deps/packages/python3_pip_packages /build_info/packages/language_deps
 RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/language_deps/python3_pip_packages --python-binary python3
 
