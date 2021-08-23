@@ -13,4 +13,4 @@ RUN apt-get -y update && \
 
 
 COPY flavor_base_deps/packages/python3_pip_packages /build_info/packages/flavor_base_deps
-RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_base_deps/python3_pip_packeges --python-binary python3 --with-versions --allow-no-version
+RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_base_deps/python3_pip_packages --python-binary python3 --with-versions --allow-no-version
