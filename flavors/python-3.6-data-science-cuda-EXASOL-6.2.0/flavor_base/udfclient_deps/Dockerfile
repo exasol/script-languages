@@ -6,18 +6,12 @@ RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNT
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
+COPY scripts /scripts
+
 RUN mkdir -p /build_info/packages
 COPY udfclient_deps/packages /build_info/packages/udfclient_deps
 
-RUN apt-get update
-
-RUN apt-get update && \
-    apt-get -y install $(cat /build_info/packages/udfclient_deps/apt_get_packages) && \
-    locale-gen en_US.UTF-8 && \
-    update-locale LC_ALL=en_US.UTF-8 && \
-    apt-get -y clean && \
-    apt-get -y autoremove && \
-    ldconfig
+RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/udfclient_deps/apt_get_packages
 
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
