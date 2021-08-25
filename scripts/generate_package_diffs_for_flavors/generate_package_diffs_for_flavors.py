@@ -155,6 +155,7 @@ def generate_dependency_diff_report_for_package_list(
         diff_df: pd.DataFrame):
     package_file_diff_file.parent.mkdir(parents=True, exist_ok=True)
     with package_file_diff_file.open("wt") as f:
+        f.write("<!-- markdown-link-check-disable -->\n\n")
         diff_df.to_markdown(f)
 
 
