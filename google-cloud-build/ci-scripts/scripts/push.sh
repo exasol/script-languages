@@ -23,10 +23,6 @@ COMMAND="./exaslct push $FLAVOR_OPTIONS $SOURCE_OPTIONS $TARGET_OPTIONS $PUSH_PA
 echo "Executing Command: $COMMAND"
 bash -c "$COMMAND" || echo "fail" >> /workspace/build-status.txt
 echo
-COMMAND="./exaslct push $FLAVOR_OPTIONS $SOURCE_OPTIONS $TARGET_OPTIONS $PUSH_PARAMETER $SYSTEM_PARAMETER"
-echo "Executing Command: $COMMAND"
-bash -c "$COMMAND" || echo "fail" >> /workspace/build-status.txt
-echo
 echo "=========================================================="
 echo "Printing docker images"
 echo "=========================================================="
