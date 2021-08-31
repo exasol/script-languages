@@ -10,7 +10,7 @@
     --help                Brief help message
     --dry-run             Doesn't execute the command, only prints it to STDOUT
     --ppa                 PPA to add.
-
+    --out-file            The database file where the ppa info will be stored under /etc/apt/sources.list.d (without .list extension). This file must not exist.
 =cut
 
 use strict;
@@ -22,12 +22,14 @@ use Getopt::Long;
 my $help = 0;
 my $dry_run = 0;
 my $ppa = '';
+my $out_file = '';
 
 
 GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
-            "ppa=s" => \$ppa
+            "ppa=s" => \$ppa,
+            "out-file=s" => \$out_file
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
@@ -35,19 +37,34 @@ if($ppa eq ''){
     package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --ppa was not specified",1);
 }
 
-print("PPA is $ppa");
-my $cmd = "add-apt-repository -y '$ppa'";
+sub check_file {
+    my $file_name = @_;
+    die "out file for PPA: '$file_name' already exists!" if -e $file_name;
+}
 
-my $ppa_provider = "software-properties-common";
+
+sub generate_install_command{
+    my $ppa_name = '';
+    if ($out_file ne '') {
+        $ppa_name = $out_file;
+    } else {
+        my @column_array = split / /, $ppa;
+        $ppa_name = $column_array[-1];
+        $ppa_name =~ s/^\s+|\s+$//g; #trim whitespaces
+        $ppa_name =~ s/^\/|\/$//g;   #trim slash
+        $ppa_name =~ s/^\\|\\$//g;   #trim backslash
+    }
+    $out_file = "/etc/apt/sources.list.d/$ppa_name.list";
+    check_file($out_file);
+    return "echo '$ppa' > $out_file";
+}
+
+print("PPA is $ppa");
+
+my $cmd = generate_install_command();
+
 package_mgmt_utils::execute("apt-get -y update",$dry_run);
-package_mgmt_utils::execute("apt-get install -y $ppa_provider",$dry_run);
+package_mgmt_utils::execute("apt-get -y install ca-certificates",$dry_run); # Need ca-certificates for apt-get update after adding new ppa's
 package_mgmt_utils::execute($cmd,$dry_run);
-package_mgmt_utils::execute("apt-get -y --purge autoremove $ppa_provider",$dry_run);
-package_mgmt_utils::execute("locale-gen en_US.UTF-8",$dry_run);
-package_mgmt_utils::execute("update-locale LC_ALL=en_US.UTF-8",$dry_run);
 package_mgmt_utils::execute("apt-get -y update",$dry_run);
-package_mgmt_utils::execute("apt-get check",$dry_run);
-package_mgmt_utils::execute("apt-get -y -f install",$dry_run);
-package_mgmt_utils::execute("apt-get -y autoclean",$dry_run);
-package_mgmt_utils::execute("ldconfig",$dry_run);
 
