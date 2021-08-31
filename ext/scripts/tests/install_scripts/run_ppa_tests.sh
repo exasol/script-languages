@@ -25,7 +25,7 @@ echo
 
 # Now we should be able to install gh (which is located in the github cli repository)
 echo ./install_via_apt.pl with package gh
-$PATH_TO_INSTALL_SCRIPTS/install_via_apt.pl --file test_files/apt/github_cli --with-versions $DRY_RUN_OPTION
+$PATH_TO_INSTALL_SCRIPTS/install_via_apt.pl --file test_files/apt/github_cli --allow-no-version $DRY_RUN_OPTION
 echo
 
 echo "All apt tests passed"
