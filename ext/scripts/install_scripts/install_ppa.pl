@@ -42,12 +42,12 @@ sub check_file {
     die "out file for PPA: '$file_name' already exists!" if -e $file_name;
 }
 
-
 sub generate_install_command{
     my $ppa_name = '';
     if ($out_file ne '') {
         $ppa_name = $out_file;
     } else {
+        #If out-file was not explicitly given, we try to assemble it based on the last part of the ppa.
         my @column_array = split / /, $ppa;
         $ppa_name = $column_array[-1];
         $ppa_name =~ s/^\s+|\s+$//g; #trim whitespaces
@@ -59,12 +59,13 @@ sub generate_install_command{
     return "echo '$ppa' > $out_file";
 }
 
-print("PPA is $ppa");
-
 my $cmd = generate_install_command();
 
 package_mgmt_utils::execute("apt-get -y update",$dry_run);
 package_mgmt_utils::execute("apt-get -y install ca-certificates",$dry_run); # Need ca-certificates for apt-get update after adding new ppa's
+package_mgmt_utils::execute("apt-get -y clean", $dry_run);
+package_mgmt_utils::execute("apt-get -y autoremove", $dry_run);
 package_mgmt_utils::execute($cmd,$dry_run);
 package_mgmt_utils::execute("apt-get -y update",$dry_run);
-
+package_mgmt_utils::execute("apt-get -y clean", $dry_run);
+package_mgmt_utils::execute("apt-get -y autoremove", $dry_run);

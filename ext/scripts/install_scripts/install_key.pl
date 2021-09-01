@@ -44,5 +44,7 @@ if($key_server eq ''){
 
 package_mgmt_utils::execute("apt-get -y update",$dry_run);
 package_mgmt_utils::execute("apt-get install -y dirmngr",$dry_run);
+package_mgmt_utils::execute("apt-get -y clean", $dry_run);
+package_mgmt_utils::execute("apt-get -y autoremove", $dry_run);
 package_mgmt_utils::execute("gpg --keyserver $key_server --recv-keys $key",$dry_run);
 package_mgmt_utils::execute("gpg -a --export $key | apt-key add -",$dry_run);
