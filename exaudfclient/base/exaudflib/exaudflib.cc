@@ -25,6 +25,8 @@
 
 #include <mutex>
 
+#include "exaudflib_impl/exaudflib_check.h"
+
 #ifdef PROTEGRITY_PLUGIN_CLIENT
 #include <protegrityclient.h>
 #endif
@@ -42,9 +44,7 @@ static SWIGVM_params_t * SWIGVM_params_ref = nullptr;
 
 
 static pid_t my_pid; //parent_pid,
-static const char *socket_name_file;
 
-static const char *socket_name_str;
 
 static string output_buffer;
 static SWIGVMExceptionHandler exchandler;
@@ -71,7 +71,7 @@ static single_call_function_id_e g_singleCallFunction;
 static ExecutionGraph::ImportSpecification g_singleCall_ImportSpecificationArg;
 static ExecutionGraph::ExportSpecification g_singleCall_ExportSpecificationArg;
 static ExecutionGraph::StringDTO g_singleCall_StringArg;
-static bool remote_client;
+
 
 
 #ifndef NDEBUG
@@ -80,85 +80,12 @@ static bool remote_client;
 //#define SWIGVM_LOG_CLIENT
 //#define LOG_COMMUNICATION
 
-pthread_t check_thread;
-
 extern "C" {
 void set_SWIGVM_params(SWIGVM_params_t* p) {
     SWIGVM_params_ref = p;
 }
 }
 
-void init_socket_name(const char* the_socket_name) {
-    socket_name_str = the_socket_name;
-}
-
-static void external_process_check()
-{
-    if (remote_client) return;
-    if (::access(socket_name_file, F_OK) != 0) {
-        ::sleep(1); // give me a chance to die with my parent process
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1000","exaudfclient aborting ... cannot access socket file " << socket_name_str+6 << ".");
-        DBG_STREAM_MSG(cerr,"### SWIGVM aborting with name '" << socket_name_str << "' (" << ::getppid() << ',' << ::getpid() << ')');
-        ::abort();
-    }
-}
-
-static int first_ppid=-1;
-
-void check_parent_pid(){
-    int new_ppid=::getppid();
-    if(first_ppid==-1){ // Initialize first_ppid
-        first_ppid=new_ppid;
-    }
-    // Check if ppid has changed, if client is in own namespace, 
-    // the ppid will be forever 0 and never change. 
-    // If the client runs as udfplugin the ppid will point to the exasql process 
-    // and will change if it gets killed. Then client gets an orphaned process and 
-    // will be adopted by another process
-    if(first_ppid!=new_ppid){ 
-        ::sleep(1); // give me a chance to die with my parent process
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1001","exaudfclient aborting " << socket_name_str << " ... current parent pid " << new_ppid << " different to first parent pid " << first_ppid << "." );
-        DBG_STREAM_MSG(cerr,"### SWIGVM aborting with name '" << socket_name_str << "' (" << ::getppid() << ',' << ::getpid() << ')');
-        ::unlink(socket_name_file);
-        ::abort();
-    }
-
-}
-
-void set_remote_client(bool value) {
-    remote_client = value;
-}
-
-bool get_remote_client() {
-    return remote_client;
-}
-
-
-static bool keep_checking = true;
-
-void *check_thread_routine(void* data)
-{
-    while(keep_checking) {
-        external_process_check();
-        check_parent_pid();
-        ::usleep(100000);
-    }
-    return NULL;
-
-}
-
-void start_check_thread() {
-    if (!remote_client)
-        pthread_create(&check_thread, NULL, check_thread_routine, NULL);
-}
-
-void stop_check_thread() {
-    keep_checking = false;
-}
-
-void cancel_check_thread() {
-    ::pthread_cancel(check_thread);
-}
 
 void print_args(int argc,char**argv){
     for (int i = 0; i<argc; i++)
@@ -178,10 +105,10 @@ void delete_vm(SWIGVM*& vm){
 
 void stop_all(zmq::socket_t& socket){
     socket.close();
-    stop_check_thread();
-    if (!get_remote_client()) {
-        cancel_check_thread();
-        ::unlink(socket_name_file);
+    exaudflib_check::stop_check_thread();
+    if (!exaudflib_check::get_remote_client()) {
+        exaudflib_check::cancel_check_thread();
+        ::unlink(exaudflib_check::get_socket_name_file());
     } else {
         ::sleep(3); // give other components time to shutdown
     }
@@ -286,11 +213,11 @@ void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
                 }
                 return;
             }
-            external_process_check();
+            exaudflib_check::external_process_check();
         } catch (std::exception &err) {
-            external_process_check();
+            exaudflib_check::external_process_check();
         } catch (...) {
-            external_process_check();
+            exaudflib_check::external_process_check();
         }
         if (use_zmq_socket_locks) {
             zmq_socket_mutex.unlock();
@@ -327,12 +254,12 @@ bool socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_err
                 }
                 return true;
             }
-            external_process_check();
+            exaudflib_check::external_process_check();
         } catch (std::exception &err) {
-            external_process_check();
+            exaudflib_check::external_process_check();
 
         } catch (...) {
-            external_process_check();
+            exaudflib_check::external_process_check();
         }
         if (use_zmq_socket_locks) {
             zmq_socket_mutex.unlock();
@@ -1756,12 +1683,9 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
     stringstream socket_name_ss;
 #endif
     string socket_name = argv[1];
-    char* socket_name_str = argv[1];
-    socket_name_file = argv[1];
+    exaudflib_check::init_socket_name_file(argv[1]);
 
-    init_socket_name(socket_name_str);
-
-    set_remote_client(false);
+    exaudflib_check::set_remote_client(false);
     my_pid = ::getpid();
 
     zmq::context_t context(1);
@@ -1787,36 +1711,37 @@ int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
         abort();
     }
 
-    if (strncmp(socket_name_str, "tcp:", 4) == 0) {
-        set_remote_client(true);
+    if (strncmp(exaudflib_check::get_socket_name_str(), "tcp:", 4) == 0) {
+        exaudflib_check::set_remote_client(true);
     }
 
-    if (socket_name.length() > 6 && strncmp(socket_name_str, "ipc:", 4) == 0)
+    if (socket_name.length() > 6 && strncmp(exaudflib_check::get_socket_name_str(), "ipc:", 4) == 0)
     {        
 #ifdef PROTEGRITY_PLUGIN_CLIENT
 /*
     DO NOT REMOVE, required for Exasol 6.2
 */
-        if (strncmp(socket_name_str, "ipc:///tmp/", 11) == 0) {
-            socket_name_ss << "ipc://" << getenv("NSEXEC_TMP_PATH") << '/' << &(socket_name_file[11]);
+        if (strncmp(exaudflib_check::get_socket_name_file(), "ipc:///tmp/", 11) == 0) {
+            socket_name_ss << "ipc://" << getenv("NSEXEC_TMP_PATH") << '/' << &(exaudflib_check::get_socket_name_file()[11]);
             socket_name = socket_name_ss.str();
             socket_name_str = strdup(socket_name_ss.str().c_str());
-            socket_name_file = socket_name_str;
+            exaudflib_check::init_socket_name_file(socket_name_str);
         }
 #endif
-        socket_name_file = &(socket_name_file[6]);
+        exaudflib_check::init_socket_name_file(&(exaudflib_check::get_socket_name_file()[6]));
+
     }
 
     DBG_STREAM_MSG(cerr,"### SWIGVM starting " << argv[0] << " with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): '" << argv[1] << '\'');
 
-    start_check_thread();
+    exaudflib_check::start_check_thread();
 
 
     int linger_timeout = 0;
     int recv_sock_timeout = 1000;
     int send_sock_timeout = 1000;
 
-    if (get_remote_client()) {
+    if (exaudflib_check::get_remote_client()) {
         recv_sock_timeout = 10000;
         send_sock_timeout = 5000;
     }
@@ -1830,8 +1755,8 @@ reinit:
     socket.setsockopt(ZMQ_RCVTIMEO, &recv_sock_timeout, sizeof(recv_sock_timeout));
     socket.setsockopt(ZMQ_SNDTIMEO, &send_sock_timeout, sizeof(send_sock_timeout));
 
-    if (get_remote_client()) socket.bind(socket_name_str);
-    else socket.connect(socket_name_str);
+    if (exaudflib_check::get_remote_client()) socket.bind(exaudflib_check::get_socket_name_str());
+    else socket.connect(exaudflib_check::get_socket_name_str());
 
     SWIGVM_params_ref->sock = &socket;
     SWIGVM_params_ref->exch = &exchandler;
@@ -1839,7 +1764,7 @@ reinit:
     SWIGVM* vm=nullptr;
 
     if (!send_init(socket, socket_name)) {
-        if (!get_remote_client() && exchandler.exthrowed) {
+        if (!exaudflib_check::get_remote_client() && exchandler.exthrowed) {
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1123: "+exchandler.exmsg, false);
         }else{
             goto reinit;
