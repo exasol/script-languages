@@ -55,10 +55,6 @@ sub generate_install_command{
 
 my $cmd = generate_install_command();
 
-package_mgmt_utils::execute("apt-get -y update",$dry_run);
-package_mgmt_utils::execute("apt-get -y install ca-certificates",$dry_run); # Need ca-certificates for apt-get update after adding new ppa's
-package_mgmt_utils::execute("apt-get -y clean", $dry_run);
-package_mgmt_utils::execute("apt-get -y autoremove", $dry_run);
 package_mgmt_utils::execute($cmd,$dry_run);
 package_mgmt_utils::execute("apt-get -y update",$dry_run);
 package_mgmt_utils::execute("apt-get -y clean", $dry_run);
