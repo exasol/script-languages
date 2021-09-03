@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 import tempfile
@@ -134,11 +135,19 @@ def compare_flavor(flavor_path_1: Path, working_copy_1: Path, working_copy_1_nam
 
 
 def get_last_git_tag() -> str:
-    get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags"]
-    last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
-    last_tag_result.check_returncode()
-    last_tag = last_tag_result.stdout.decode("UTF-8").strip()
-    return last_tag
+    with TemporaryDirectory() as working_copy_main:
+        checkout_git_tag_as_worktree(working_copy_main, "master")
+        get_pull_command = ["git", "pull"]
+        pull_result = subprocess.run(get_pull_command, stdout=subprocess.PIPE)
+        pull_result.check_returncode()
+        old_dir = os. getcwd()
+        os.chdir(working_copy_main)
+        get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags"]
+        last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
+        os.chdir(old_dir)
+        last_tag_result.check_returncode()
+        last_tag = last_tag_result.stdout.decode("UTF-8").strip()
+        return last_tag
 
 
 def checkout_git_tag_as_worktree(tmp_dir, last_tag):
@@ -273,7 +282,7 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
 @click.option('--output-directory', required=True, help="Directory where the diff reports are generated",
               type=click.Path(exists=False))
 @click.option('--current-working-copy-name', required=True, help="Name of the current git working copy. "
-                                                                 "For example, the version of a new relaase.",
+                                                                 "For example, the version of a new release.",
               type=str)
 def main(output_directory:str, current_working_copy_name:str):
     last_tag = get_last_git_tag()
