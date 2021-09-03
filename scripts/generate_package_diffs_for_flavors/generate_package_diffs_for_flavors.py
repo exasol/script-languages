@@ -135,27 +135,32 @@ def compare_flavor(flavor_path_1: Path, working_copy_1: Path, working_copy_1_nam
 
 
 def get_last_git_tag() -> str:
-    with TemporaryDirectory() as working_copy_main:
-        checkout_git_tag_as_worktree(working_copy_main, "master")
-        get_pull_command = ["git", "pull"]
-        pull_result = subprocess.run(get_pull_command, stdout=subprocess.PIPE)
-        pull_result.check_returncode()
-        old_dir = os. getcwd()
-        os.chdir(working_copy_main)
-        get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags"]
-        last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
-        os.chdir(old_dir)
-        last_tag_result.check_returncode()
-        last_tag = last_tag_result.stdout.decode("UTF-8").strip()
-        return last_tag
+    working_copy_main = tempfile.mkdtemp()
+    checkout_git_tag_as_worktree(working_copy_main, "master")
+    old_dir = os. getcwd()
+    os.chdir(working_copy_main)
+    get_pull_command = ["git", "pull"]
+    pull_result = subprocess.run(get_pull_command)
+    pull_result.check_returncode()
+    get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags"]
+    last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
+    os.chdir(old_dir)
+    last_tag_result.check_returncode()
+    last_tag = last_tag_result.stdout.decode("UTF-8").strip()
+
+    get_last_tag_command = ["git", "worktree", "remove", "--force", working_copy_main]
+    last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
+    os.chdir(old_dir)
+    last_tag_result.check_returncode()
+    return last_tag
 
 
 def checkout_git_tag_as_worktree(tmp_dir, last_tag):
     checkout_last_tag_command = ["git", "worktree", "add", tmp_dir, last_tag]
-    checkout_last_tag_result = subprocess.run(checkout_last_tag_command, stderr=subprocess.PIPE)
+    checkout_last_tag_result = subprocess.run(checkout_last_tag_command)
     checkout_last_tag_result.check_returncode()
     init_submodule_command = ["git", "submodule", "update", "--init"]
-    init_submodule_result = subprocess.run(init_submodule_command, cwd=tmp_dir, stderr=subprocess.PIPE)
+    init_submodule_result = subprocess.run(init_submodule_command, cwd=tmp_dir)
     init_submodule_result.check_returncode()
 
 
