@@ -91,8 +91,13 @@ cc_library(
 # depend directly on them
 cc_library(
     name = "exaudflib",
-    srcs = ["exaudflib.cc", "impl/exaudflib_check.cc"],
-    hdrs = ["impl/exaudflib_check.h"],
+    srcs = ["exaudflib.cc",
+            "impl/exaudflib_msg_conversion.cc", "impl/exaudflib_msg_conversion.h",
+            "impl/exaudflib_check.cc", "impl/exaudflib_check.h",
+            "impl/exaudflib_socket_low_level.cc", "impl/exaudflib_socket_low_level.h",
+            "impl/exaudflib_global.cc", "impl/exaudflib_global.h",
+            "impl/exaudflib_socket_high_level.cc"],
+    hdrs = ["exaudflib.h"],
     linkstatic = 1,
     alwayslink = True,
     defines = VM_ENABLED_DEFINES,
