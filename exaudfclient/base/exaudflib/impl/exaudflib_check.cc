@@ -1,4 +1,4 @@
-#include "exaudflib_check.h"
+#include "exaudflib/impl/exaudflib_check.h"
 #include <pthread.h>
 #include <unistd.h>
 #include <iostream>

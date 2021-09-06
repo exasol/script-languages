@@ -21,7 +21,7 @@ bool send_run(zmq::socket_t &socket);
 void send_undefined_call(zmq::socket_t &socket, const std::string& fn);
 bool send_done(zmq::socket_t &socket);
 void send_finished(zmq::socket_t &socket);
-
+bool send_return(zmq::socket_t &socket, const char* result);
 
 
 
