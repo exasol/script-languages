@@ -13,7 +13,7 @@ namespace exaudflib_check {
     void cancel_check_thread();
     void set_remote_client(bool value);
     bool get_remote_client();
-};
+}
 
 
 #endif //EXAUDFCLIENT_EXAUDFLIB_CHECK_H
