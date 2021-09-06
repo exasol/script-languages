@@ -1,6 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/resource.h>
+
 #include <unistd.h>
 #define DONT_EXPOSE_SWIGVM_PARAMS
 #include "exaudflib.h"
@@ -23,9 +23,11 @@
 #include "script_data_transfer_objects_wrapper.h"
 #include <unistd.h>
 
-#include <mutex>
 
-#include "exaudflib_impl/exaudflib_check.h"
+#include "exaudflib/impl/exaudflib_check.h"
+#include "exaudflib/impl/exaudflib_socket_low_level.h"
+#include "exaudflib/impl/exaudflib_msg_conversion.h"
+#include "exaudflib/impl/exaudflib_global.h"
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
 #include <protegrityclient.h>
@@ -40,38 +42,7 @@ __thread SWIGVM_params_t* SWIGVMContainers::SWIGVM_params; // this is not used i
 #endif
 
 
-static SWIGVM_params_t * SWIGVM_params_ref = nullptr;
-
-
 static pid_t my_pid; //parent_pid,
-
-
-static string output_buffer;
-static SWIGVMExceptionHandler exchandler;
-
-//static exascript_vmtype vm_type;
-static exascript_request request;
-static exascript_response response;
-
-static string g_database_name;
-static string g_database_version;
-static string g_script_name;
-static string g_script_schema;
-static string g_current_user;
-static string g_scope_user;
-static string g_current_schema;
-static string g_source_code;
-static unsigned long long g_session_id;
-static unsigned long g_statement_id;
-static unsigned int g_node_count;
-static unsigned int g_node_id;
-static unsigned long long g_vm_id;
-static bool g_singleCallMode;
-static single_call_function_id_e g_singleCallFunction;
-static ExecutionGraph::ImportSpecification g_singleCall_ImportSpecificationArg;
-static ExecutionGraph::ExportSpecification g_singleCall_ExportSpecificationArg;
-static ExecutionGraph::StringDTO g_singleCall_StringArg;
-
 
 
 #ifndef NDEBUG
@@ -79,12 +50,6 @@ static ExecutionGraph::StringDTO g_singleCall_StringArg;
 #endif
 //#define SWIGVM_LOG_CLIENT
 //#define LOG_COMMUNICATION
-
-extern "C" {
-void set_SWIGVM_params(SWIGVM_params_t* p) {
-    SWIGVM_params_ref = p;
-}
-}
 
 
 void print_args(int argc,char**argv){
@@ -114,662 +79,6 @@ void stop_all(zmq::socket_t& socket){
     }
 }
 
-mutex zmq_socket_mutex;
-static bool use_zmq_socket_locks = false;
-
-string convert_message_type_to_string(int message_type){
-  switch (message_type)
-  {
-      case 0:
-          return "MT_UNKNOWN";
-      case 1:
-          return "MT_CLIENT";
-      case 2:
-          return "MT_INFO";
-      case 3:
-          return "MT_META";
-      case 4:
-          return "MT_CLOSE";
-      case 5:
-          return "MT_IMPORT";
-      case 6:
-          return "MT_NEXT";
-      case 7:
-          return "MT_RESET";
-      case 8:
-          return "MT_EMIT";
-      case 9:
-          return "MT_RUN";
-      case 10:
-          return "MT_DONE";
-      case 11:
-          return "MT_CLEANUP";
-      case 12:
-          return "MT_FINISHED";
-      case 13:
-          return "MT_PING_PONG";
-      case 14:
-          return "MT_TRY_AGAIN";
-      case 15:
-          return "MT_CALL";
-      case 16:
-          return "MT_RETURN";
-      case 17:
-          return "MT_UNDEFINED_CALL";
-      default:
-          return "unknown: " + message_type;
-  }
-}
-
-string convert_type_to_string(int type){
-  switch (type)
-  {
-      case 0:
-          return "PB_UNSUPPORTED";
-      case 1:
-          return "PB_DOUBLE";
-      case 2:
-          return "PB_INT32";
-      case 3:
-          return "PB_INT64";
-      case 4:
-          return "PB_NUMERIC";
-      case 5:
-          return "PB_TIMESTAMP";
-      case 6:
-          return "PB_DATE";
-      case 7:
-          return "PB_STRING";
-      case 8:
-          return "PB_BOOLEAN";
-      default:
-          return "unknown: " + type;
-  }
-
-}
-
-void socket_send(zmq::socket_t &socket, zmq::message_t &zmsg)
-{
-    DBG_FUNC_BEGIN(std::cerr);
-#ifdef LOG_COMMUNICATION
-    stringstream sb;
-    uint32_t len = zmsg.size();
-    sb << "/tmp/zmqcomm_log_" << ::getpid() << "_send.data";
-    int fd = ::open(sb.str().c_str(), O_CREAT | O_APPEND | O_WRONLY, 00644);
-    if (fd >= 0) {
-        if (::write(fd, &len, sizeof(uint32_t)) == -1 ) {perror("Log communication");}
-        if (::write(fd, zmsg.data(), len) == -1) {perror("Log communication");}
-        ::close(fd);
-    }
-#endif
-    for (;;) {
-        try {
-            if (use_zmq_socket_locks) {
-                zmq_socket_mutex.lock();
-            }
-            if (socket.send(zmsg) == true) {
-                if (use_zmq_socket_locks) {
-                    zmq_socket_mutex.unlock();
-                }
-                return;
-            }
-            exaudflib_check::external_process_check();
-        } catch (std::exception &err) {
-            exaudflib_check::external_process_check();
-        } catch (...) {
-            exaudflib_check::external_process_check();
-        }
-        if (use_zmq_socket_locks) {
-            zmq_socket_mutex.unlock();
-        }
-        ::usleep(100000);
-    }
-    if (use_zmq_socket_locks) {
-        zmq_socket_mutex.unlock();
-    }
-}
-
-bool socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_error=false)
-{
-    DBG_FUNC_BEGIN(std::cerr);
-    for (;;) {
-        try {
-            if (use_zmq_socket_locks) {
-            zmq_socket_mutex.lock();
-            }
-            if (socket.recv(&zmsg) == true) {
-#ifdef LOG_COMMUNICATION
-                stringstream sb;
-                uint32_t len = zmsg.size();
-                sb << "/tmp/zmqcomm_log_" << ::getpid() << "_recv.data";
-                int fd = ::open(sb.str().c_str(), O_CREAT | O_APPEND | O_WRONLY, 00644);
-                if (fd >= 0) {
-                    if (::write(fd, &len, sizeof(uint32_t)) == -1) {perror("Log communication");}
-                    if (::write(fd, zmsg.data(), len) == -1) {perror("Log communication");}
-                    ::close(fd);
-                }
-#endif
-                if (use_zmq_socket_locks) {
-                    zmq_socket_mutex.unlock();
-                }
-                return true;
-            }
-            exaudflib_check::external_process_check();
-        } catch (std::exception &err) {
-            exaudflib_check::external_process_check();
-
-        } catch (...) {
-            exaudflib_check::external_process_check();
-        }
-        if (use_zmq_socket_locks) {
-            zmq_socket_mutex.unlock();
-        }
-        if (return_on_error) return false;
-        ::usleep(100000);
-    }
-    if (use_zmq_socket_locks) {
-        zmq_socket_mutex.unlock();
-    }
-    return false;
-}
-
-bool send_init(zmq::socket_t &socket, const string client_name)
-{
-    request.Clear();
-    request.set_type(MT_CLIENT);
-    request.set_connection_id(0);
-    exascript_client *req = request.mutable_client();
-    req->set_client_name(client_name);
-    if (!request.SerializeToString(&output_buffer)) {
-        exchandler.setException("F-UDF-CL-LIB-1002: Communication error: failed to serialize data");
-        return false;
-    }
-    zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-    socket_send(socket, zmsg);
-
-    zmq::message_t zmsgrecv;
-    response.Clear();
-    if (!socket_recv(socket, zmsgrecv, true))
-        return false;
-    if (!response.ParseFromArray(zmsgrecv.data(), zmsgrecv.size())) {
-        exchandler.setException("F-UDF-CL-LIB-1003: Failed to parse data");
-        return false;
-    }
-
-    SWIGVM_params_ref->connection_id = response.connection_id();
-    DBG_STREAM_MSG(cerr,"### SWIGVM connected with id " << std::hex << SWIGVM_params_ref->connection_id);
-    if (response.type() == MT_CLOSE) {
-        if (response.close().has_exception_message())
-            exchandler.setException(response.close().exception_message().c_str());
-        else exchandler.setException("F-UDF-CL-LIB-1004: Connection closed by server");
-        return false;
-    }
-    if (response.type() != MT_INFO) {
-        exchandler.setException("F-UDF-CL-LIB-1005: Wrong message type, should be MT_INFO got "+
-                                convert_message_type_to_string(response.type()));
-        return false;
-    }
-    const exascript_info &rep = response.info();
-    g_database_name = rep.database_name();
-    g_database_version = rep.database_version();
-    g_script_name = rep.script_name();
-    g_script_schema = rep.script_schema();
-    g_current_user = rep.current_user();
-    g_scope_user = rep.scope_user();
-    if (g_scope_user.size()==0) {         // for backward compatibility when testing with EXASOL 6.0.8 installations at OTTO Brain
-        g_scope_user=g_current_user;
-    }
-    g_current_schema = rep.current_schema();
-    g_source_code = rep.source_code();
-    g_session_id = rep.session_id();
-    g_statement_id = rep.statement_id();
-    g_node_count = rep.node_count();
-    g_node_id = rep.node_id();
-    g_vm_id = rep.vm_id();
-    //vm_type = rep.vm_type();
-
-
-    SWIGVM_params_ref->maximal_memory_limit = rep.maximal_memory_limit();
-    struct rlimit d;
-    d.rlim_cur = d.rlim_max = rep.maximal_memory_limit();
-    if (setrlimit(RLIMIT_RSS, &d) != 0)
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "W-UDF-CL-LIB-1006: Failed to set memory limit" << endl;
-#else
-        throw SWIGVM::exception("F-UDF-CL-LIB-1007: Failed to set memory limit");
-#endif
-    d.rlim_cur = d.rlim_max = 0;    // 0 for no core dumps, RLIM_INFINITY to enable coredumps of any size
-    if (setrlimit(RLIMIT_CORE, &d) != 0)
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "W-UDF-CL-LIB-1008: Failed to set core dump size limit" << endl;
-#else
-        throw SWIGVM::exception("F-UDF-CL-LIB-1009: Failed to set core dump size limit");
-#endif
-    /* d.rlim_cur = d.rlim_max = 65536; */
-    getrlimit(RLIMIT_NOFILE,&d);
-    if (d.rlim_max < 32768)
-    {
-        //#ifdef SWIGVM_LOG_CLIENT
-        cerr << "W-UDF-CL-LIB-1010: Reducing RLIMIT_NOFILE below 32768" << endl;
-        //#endif
-    }
-    d.rlim_cur = d.rlim_max = std::min(32768,(int)d.rlim_max);
-    if (setrlimit(RLIMIT_NOFILE, &d) != 0)
-#ifdef SWIGVM_LOG_CLIENT
-        cerr << "W-UDF-CL-LIB-1011: Failed to set nofile limit" << endl;
-#else
-        throw SWIGVM::exception("F-UDF-CL-LIB-1012: Failed to set nofile limit");
-#endif
-    d.rlim_cur = d.rlim_max = 32768;
-    if (setrlimit(RLIMIT_NPROC, &d) != 0)
-    {
-        cerr << "W-UDF-CL-LIB-1013: Failed to set nproc limit to 32k trying 8k ..." << endl;
-        d.rlim_cur = d.rlim_max = 8192;
-        if (setrlimit(RLIMIT_NPROC, &d) != 0)
-#ifdef SWIGVM_LOG_CLIENT
-            cerr << "W-UDF-CL-LIB-1014: Failed to set nproc limit" << endl;
-#else
-            throw SWIGVM::exception("F-UDF-CL-LIB-1015: Failed to set nproc limit");
-#endif
-    }
-
-    { /* send meta request */
-        request.Clear();
-        request.set_type(MT_META);
-        request.set_connection_id(SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer)) {
-            exchandler.setException("F-UDF-CL-LIB-1016: Communication error: failed to serialize data");
-            return false;
-        }
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-        socket_send(socket, zmsg);
-    } /* receive meta response */
-    {   zmq::message_t zmsg;
-        socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size())) {
-            exchandler.setException("F-UDF-CL-LIB-1017: Communication error: failed to parse data");
-            return false;
-        }
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                exchandler.setException(response.close().exception_message().c_str());
-            else exchandler.setException("F-UDF-CL-LIB-1018: Connection closed by server");
-            return false;
-        }
-        if (response.type() != MT_META) {
-            exchandler.setException("F-UDF-CL-LIB-1019: Wrong message type, should be META, got "+
-                                    convert_message_type_to_string(response.type()));
-            return false;
-        }
-        const exascript_metadata &rep = response.meta();
-        g_singleCallMode = rep.single_call_mode();
-        SWIGVM_params_ref->inp_iter_type = (SWIGVM_itertype_e)(rep.input_iter_type());
-        SWIGVM_params_ref->out_iter_type = (SWIGVM_itertype_e)(rep.output_iter_type());
-        for (int col = 0; col < rep.input_columns_size(); ++col) {
-            const exascript_metadata_column_definition &coldef = rep.input_columns(col);
-            SWIGVM_params_ref->inp_names->push_back(coldef.name());
-            SWIGVM_params_ref->inp_types->push_back(SWIGVM_columntype_t());
-            SWIGVM_columntype_t &coltype = SWIGVM_params_ref->inp_types->back();
-            coltype.len = 0; coltype.prec = 0; coltype.scale = 0;
-            coltype.type_name = coldef.type_name();
-            switch (coldef.type()) {
-            case PB_UNSUPPORTED:
-                exchandler.setException("F-UDF-CL-LIB-1020: Unsupported input column type found");
-                return false;
-            case PB_DOUBLE:
-                coltype.type = DOUBLE;
-                break;
-            case PB_INT32:
-                coltype.type = INT32;
-                coltype.prec = coldef.precision();
-                coltype.scale = coldef.scale();
-                break;
-            case PB_INT64:
-                coltype.type = INT64;
-                coltype.prec = coldef.precision();
-                coltype.scale = coldef.scale();
-                break;
-            case PB_NUMERIC:
-                coltype.type = NUMERIC;
-                coltype.prec = coldef.precision();
-                coltype.scale = coldef.scale();
-                break;
-            case PB_TIMESTAMP:
-                coltype.type = TIMESTAMP;
-                break;
-            case PB_DATE:
-                coltype.type = DATE;
-                break;
-            case PB_STRING:
-                coltype.type = STRING;
-                coltype.len = coldef.size();
-                break;
-            case PB_BOOLEAN:
-                coltype.type = BOOLEAN;
-                break;
-            default:
-                exchandler.setException("F-UDF-CL-LIB-1021: Unknown input column type found, got "+coldef.type());
-                return false;
-            }
-        }
-        for (int col = 0; col < rep.output_columns_size(); ++col) {
-            const exascript_metadata_column_definition &coldef = rep.output_columns(col);
-            SWIGVM_params_ref->out_names->push_back(coldef.name());
-            SWIGVM_params_ref->out_types->push_back(SWIGVM_columntype_t());
-            SWIGVM_columntype_t &coltype = SWIGVM_params_ref->out_types->back();
-            coltype.len = 0; coltype.prec = 0; coltype.scale = 0;
-            coltype.type_name = coldef.type_name();
-            switch (coldef.type()) {
-            case PB_UNSUPPORTED:
-                exchandler.setException("F-UDF-CL-LIB-1022: Unsupported output column type found");
-                return false;
-            case PB_DOUBLE:
-                coltype.type = DOUBLE;
-                break;
-            case PB_INT32:
-                coltype.type = INT32;
-                coltype.prec = coldef.precision();
-                coltype.scale = coldef.scale();
-                break;
-            case PB_INT64:
-                coltype.type = INT64;
-                coltype.prec = coldef.precision();
-                coltype.scale = coldef.scale();
-                break;
-            case PB_NUMERIC:
-                coltype.type = NUMERIC;
-                coltype.prec = coldef.precision();
-                coltype.scale = coldef.scale();
-                break;
-            case PB_TIMESTAMP:
-                coltype.type = TIMESTAMP;
-                break;
-            case PB_DATE:
-                coltype.type = DATE;
-                break;
-            case PB_STRING:
-                coltype.type = STRING;
-                coltype.len = coldef.size();
-                break;
-            case PB_BOOLEAN:
-                coltype.type = BOOLEAN;
-                break;
-            default:
-                exchandler.setException("F-UDF-CL-LIB-1023: Unknown output column type found, got "+coldef.type());
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-void send_close(zmq::socket_t &socket, const string &exmsg)
-{
-    request.Clear();
-    request.set_type(MT_CLOSE);
-    request.set_connection_id(SWIGVM_params_ref->connection_id);
-    exascript_close *req = request.mutable_close();
-    if (exmsg != "") req->set_exception_message(exmsg);
-    request.SerializeToString(&output_buffer);
-    zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-    socket_send(socket, zmsg);
-
-    { /* receive finished response, so we know that the DB knows that we are going to close and
-         all potential exceptions have been received on DB side */
-        zmq::message_t zmsg;
-        socket_recv(socket, zmsg);
-        response.Clear();
-        if(!response.ParseFromArray(zmsg.data(), zmsg.size())){
-            throw SWIGVM::exception("F-UDF-CL-LIB-1024: Communication error: failed to parse data");
-        }
-        else if (response.type() != MT_FINISHED){
-            throw SWIGVM::exception("F-UDF-CL-LIB-1025: Wrong response type, should be MT_FINISHED, got "+
-                  convert_message_type_to_string(response.type()));
-        }
-    }
-}
-
-bool send_run(zmq::socket_t &socket)
-{
-    {
-        /* send done request */
-        request.Clear();
-        request.set_type(MT_RUN);
-        request.set_connection_id(SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
-        {
-            throw SWIGVM::exception("F-UDF-CL-LIB-1026: Communication error: failed to serialize data");
-        }
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-        socket_send(socket, zmsg);
-    } { /* receive done response */
-        zmq::message_t zmsg;
-        socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1027: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("F-UDF-CL-LIB-1028: Wrong response type, got empty MT_CLOSE");
-        } else if (response.type() == MT_CLEANUP) {
-            return false;
-        } else if (g_singleCallMode && response.type() == MT_CALL) {
-            assert(g_singleCallMode);
-            exascript_single_call_rep sc = response.call();
-            g_singleCallFunction = static_cast<single_call_function_id_e>(sc.fn());
-
-            switch (g_singleCallFunction)
-            {
-            case single_call_function_id_e::SC_FN_NIL:
-            case single_call_function_id_e::SC_FN_DEFAULT_OUTPUT_COLUMNS:
-                break;
-            case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
-            {
-
-                if (!sc.has_import_specification())
-                {
-                    throw SWIGVM::exception("F-UDF-CL-LIB-1029: internal error SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC without import specification");
-                }
-                const import_specification_rep& is_proto = sc.import_specification();
-                g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification(is_proto.is_subselect());
-                if (is_proto.has_connection_information())
-                {
-                    const connection_information_rep& ci_proto = is_proto.connection_information();
-                    ExecutionGraph::ConnectionInformation connection_info(ci_proto.kind(), ci_proto.address(), ci_proto.user(), ci_proto.password());
-                    g_singleCall_ImportSpecificationArg.setConnectionInformation(connection_info);
-                }
-                if (is_proto.has_connection_name())
-                {
-                    g_singleCall_ImportSpecificationArg.setConnectionName(is_proto.connection_name());
-                }
-                for (int i=0; i<is_proto.subselect_column_specification_size(); i++)
-                {
-                    const ::exascript_metadata_column_definition& cdef = is_proto.subselect_column_specification(i);
-                    const ::std::string& cname = cdef.name();
-                    const ::std::string& ctype = cdef.type_name();
-                    g_singleCall_ImportSpecificationArg.appendSubselectColumnName(cname);
-                    g_singleCall_ImportSpecificationArg.appendSubselectColumnType(ctype);
-                }
-                for (int i=0; i<is_proto.parameters_size(); i++)
-                {
-                    const ::key_value_pair& kvp = is_proto.parameters(i);
-                    g_singleCall_ImportSpecificationArg.addParameter(kvp.key(), kvp.value());
-                }
-            }
-                break;
-            case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC:
-            {
-                if (!sc.has_export_specification())
-                {
-                    throw SWIGVM::exception("F-UDF-CL-LIB-1030: internal error SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC without export specification");
-                }
-                const export_specification_rep& es_proto = sc.export_specification();
-                g_singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();
-                if (es_proto.has_connection_information())
-                {
-                    const connection_information_rep& ci_proto = es_proto.connection_information();
-                    ExecutionGraph::ConnectionInformation connection_info(ci_proto.kind(), ci_proto.address(), ci_proto.user(), ci_proto.password());
-                    g_singleCall_ExportSpecificationArg.setConnectionInformation(connection_info);
-                }
-                if (es_proto.has_connection_name())
-                {
-                    g_singleCall_ExportSpecificationArg.setConnectionName(es_proto.connection_name());
-                }
-                for (int i=0; i<es_proto.parameters_size(); i++)
-                {
-                    const ::key_value_pair& kvp = es_proto.parameters(i);
-                    g_singleCall_ExportSpecificationArg.addParameter(kvp.key(), kvp.value());
-                }
-                g_singleCall_ExportSpecificationArg.setTruncate(es_proto.has_truncate());
-                g_singleCall_ExportSpecificationArg.setReplace(es_proto.has_replace());
-                if (es_proto.has_created_by())
-                {
-                    g_singleCall_ExportSpecificationArg.setCreatedBy(es_proto.created_by());
-                }
-                for (int i=0; i<es_proto.source_column_names_size(); i++)
-                {
-                    const string name = es_proto.source_column_names(i);
-                    g_singleCall_ExportSpecificationArg.addSourceColumnName(name);
-                }
-            }
-                break;
-            case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
-                if (!sc.has_json_arg())
-                {
-                    throw SWIGVM::exception("F-UDF-CL-LIB-1031: internal error SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL without json arg");
-                }
-                const std::string json = sc.json_arg();
-                g_singleCall_StringArg = ExecutionGraph::StringDTO(json);
-                break;
-            }
-
-            return true;
-        } else if (response.type() != MT_RUN) {
-            throw SWIGVM::exception("F-UDF-CL-LIB-1032: Wrong response type, should be MT_RUN, got "+
-                                    convert_message_type_to_string(response.type()));
-        }
-    }
-    return true;
-}
-
-bool send_return(zmq::socket_t &socket, const char* result)
-{
-  assert(result != nullptr);
-    {   /* send return request */
-        request.Clear();
-        request.set_type(MT_RETURN);
-        ::exascript_return_req* rr = new ::exascript_return_req();
-        rr->set_result(result);
-        request.set_allocated_call_result(rr);
-        request.set_connection_id(SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1033: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-        socket_send(socket, zmsg);
-    } { /* receive return response */
-        zmq::message_t zmsg;
-        socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1034: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("F-UDF-CL-LIB-1035: Wrong response type, got empty close response");
-        } else if (response.type() == MT_CLEANUP) {
-            return false;
-        } else if (response.type() != MT_RETURN) {
-            throw SWIGVM::exception("F-UDF-CL-LIB-1036: Wrong response type, should be MT_RETURN, got "+
-                                    convert_message_type_to_string(response.type()));
-        }
-    }
-    return true;
-}
-
-void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
-{
-    {   /* send return request */
-        request.Clear();
-        request.set_type(MT_UNDEFINED_CALL);
-        ::exascript_undefined_call_req* uc = new ::exascript_undefined_call_req();
-        uc->set_remote_fn(fn);
-        request.set_allocated_undefined_call(uc);
-        request.set_connection_id(SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1037: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-        socket_send(socket, zmsg);
-    } { /* receive return response */
-        zmq::message_t zmsg;
-        socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1038: Communication error: failed to parse data");
-        if (response.type() != MT_UNDEFINED_CALL) {
-            throw SWIGVM::exception("F-UDF-CL-LIB-1039: Wrong response type, should be MT_UNDEFINED_CALL, got "+
-                                    convert_message_type_to_string(response.type()));
-        }
-    }
-}
-
-
-bool send_done(zmq::socket_t &socket)
-{
-    {   /* send done request */
-        request.Clear();
-        request.set_type(MT_DONE);
-        request.set_connection_id(SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1040: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-        socket_send(socket, zmsg);
-    } 
-    { /* receive done response */
-        zmq::message_t zmsg;
-        socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1041: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("F-UDF-CL-LIB-1042: Wrong response type, got empty close response");
-        } else if (response.type() == MT_CLEANUP) {
-            return false;
-        } else if (response.type() != MT_DONE)
-            throw SWIGVM::exception("F-UDF-CL-LIB-1043: Wrong response type, should be MT_DONE, got "+
-                                    convert_message_type_to_string(response.type()));
-    }
-    return true;
-}
-
-void send_finished(zmq::socket_t &socket)
-{
-    {   /* send done request */
-        request.Clear();
-        request.set_type(MT_FINISHED);
-        request.set_connection_id(SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1044: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
-        socket_send(socket, zmsg);
-    } { /* receive done response */
-        zmq::message_t zmsg;
-        socket_recv(socket, zmsg);
-        response.Clear();
-        if(!response.ParseFromArray(zmsg.data(), zmsg.size()))
-            throw SWIGVM::exception("F-UDF-CL-LIB-1045: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVM::exception(response.close().exception_message().c_str());
-            throw SWIGVM::exception("F-UDF-CL-LIB-1046: Wrong response type, got empty MT_CLOSE");
-        } else if (response.type() != MT_FINISHED)
-            throw SWIGVM::exception("F-UDF-CL-LIB-1047: Wrong response type, should be MT_FINISHED, got"+
-                                    convert_message_type_to_string(response.type()));
-    }
-}
 
 //
 //
@@ -781,34 +90,34 @@ class SWIGMetadata_Impl : public SWIGMetadata {
 public:
     SWIGMetadata_Impl():
         SWIGMetadata(false),
-        m_connection_id(SWIGVM_params_ref->connection_id),
-        m_socket(*(SWIGVM_params_ref->sock)),
-        m_exch(SWIGVM_params_ref->exch),
-        m_db_name(SWIGVM_params_ref->dbname),
-        m_db_version(SWIGVM_params_ref->dbversion),
-        m_script_name(SWIGVM_params_ref->script_name),
-        m_script_schema(SWIGVM_params_ref->script_schema),
-        m_current_user(SWIGVM_params_ref->current_user),
-        m_current_schema(SWIGVM_params_ref->current_schema),
-        m_scope_user(SWIGVM_params_ref->scope_user),
-        m_script_code(SWIGVM_params_ref->script_code),
-        m_session_id(SWIGVM_params_ref->session_id),
-        m_statement_id(SWIGVM_params_ref->statement_id),
-        m_node_count(SWIGVM_params_ref->node_count),
-        m_node_id(SWIGVM_params_ref->node_id),
-        m_vm_id(SWIGVM_params_ref->vm_id),
-        m_input_names(*(SWIGVM_params_ref->inp_names)),
-        m_input_types(*(SWIGVM_params_ref->inp_types)),
-        m_input_iter_type(SWIGVM_params_ref->inp_iter_type),
-        m_output_names(*(SWIGVM_params_ref->out_names)),
-        m_output_types(*(SWIGVM_params_ref->out_types)),
-        m_output_iter_type(SWIGVM_params_ref->out_iter_type),
-        m_memory_limit(SWIGVM_params_ref->maximal_memory_limit),
-        m_vm_type(SWIGVM_params_ref->vm_type),
-        m_is_emitted(*(SWIGVM_params_ref->is_emitted)),
-        m_pluginLanguageName(SWIGVM_params_ref->pluginName),
-        m_pluginURI(SWIGVM_params_ref->pluginURI),
-        m_outputAddress(SWIGVM_params_ref->outputAddress)
+        m_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id),
+        m_socket(*(exaudflib::global.SWIGVM_params_ref->sock)),
+        m_exch(exaudflib::global.SWIGVM_params_ref->exch),
+        m_db_name(exaudflib::global.SWIGVM_params_ref->dbname),
+        m_db_version(exaudflib::global.SWIGVM_params_ref->dbversion),
+        m_script_name(exaudflib::global.SWIGVM_params_ref->script_name),
+        m_script_schema(exaudflib::global.SWIGVM_params_ref->script_schema),
+        m_current_user(exaudflib::global.SWIGVM_params_ref->current_user),
+        m_current_schema(exaudflib::global.SWIGVM_params_ref->current_schema),
+        m_scope_user(exaudflib::global.SWIGVM_params_ref->scope_user),
+        m_script_code(exaudflib::global.SWIGVM_params_ref->script_code),
+        m_session_id(exaudflib::global.SWIGVM_params_ref->session_id),
+        m_statement_id(exaudflib::global.SWIGVM_params_ref->statement_id),
+        m_node_count(exaudflib::global.SWIGVM_params_ref->node_count),
+        m_node_id(exaudflib::global.SWIGVM_params_ref->node_id),
+        m_vm_id(exaudflib::global.SWIGVM_params_ref->vm_id),
+        m_input_names(*(exaudflib::global.SWIGVM_params_ref->inp_names)),
+        m_input_types(*(exaudflib::global.SWIGVM_params_ref->inp_types)),
+        m_input_iter_type(exaudflib::global.SWIGVM_params_ref->inp_iter_type),
+        m_output_names(*(exaudflib::global.SWIGVM_params_ref->out_names)),
+        m_output_types(*(exaudflib::global.SWIGVM_params_ref->out_types)),
+        m_output_iter_type(exaudflib::global.SWIGVM_params_ref->out_iter_type),
+        m_memory_limit(exaudflib::global.SWIGVM_params_ref->maximal_memory_limit),
+        m_vm_type(exaudflib::global.SWIGVM_params_ref->vm_type),
+        m_is_emitted(*(exaudflib::global.SWIGVM_params_ref->is_emitted)),
+        m_pluginLanguageName(exaudflib::global.SWIGVM_params_ref->pluginName),
+        m_pluginURI(exaudflib::global.SWIGVM_params_ref->pluginURI),
+        m_outputAddress(exaudflib::global.SWIGVM_params_ref->outputAddress)
     {
         { std::stringstream sb; sb << m_session_id; m_session_id_s = sb.str(); }
         { std::stringstream sb; sb << m_vm_id; m_vm_id_s = sb.str(); }
@@ -844,9 +153,9 @@ public:
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         zmq::message_t zmsg_req((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
-        socket_send(m_socket, zmsg_req);
+        exaudflib_socket_low_level::socket_send(m_socket, zmsg_req);
         zmq::message_t zmsg_rep;
-        socket_recv(m_socket, zmsg_rep);
+        exaudflib_socket_low_level::socket_recv(m_socket, zmsg_rep);
         exascript_response response;
         if (!response.ParseFromArray(zmsg_rep.data(), zmsg_rep.size())) {
             m_exch->setException("F-UDF-CL-LIB-1049: Communication error: failed to parse data");
@@ -854,7 +163,7 @@ public:
         }
         if (response.type() != MT_IMPORT) {
             m_exch->setException("F-UDF-CL-LIB-1050: Internal error: wrong message type, got "+
-                                  convert_message_type_to_string(response.type()));
+                msg_conversion::convert_message_type_to_string(response.type()));
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         const exascript_import_rep &rep = response.import();
@@ -882,9 +191,9 @@ public:
             return NULL;
         }
         zmq::message_t zmsg_req((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
-        socket_send(m_socket, zmsg_req);
+        exaudflib_socket_low_level::socket_send(m_socket, zmsg_req);
         zmq::message_t zmsg_rep;
-        socket_recv(m_socket, zmsg_rep);
+        exaudflib_socket_low_level::socket_recv(m_socket, zmsg_rep);
         exascript_response response;
         if (!response.ParseFromArray(zmsg_rep.data(), zmsg_rep.size())) {
             m_exch->setException("F-UDF-CL-LIB-1053: Communication error: failed to parse data");
@@ -892,7 +201,7 @@ public:
         }
         if (response.type() != MT_IMPORT) {
             m_exch->setException("F-UDF-CL-LIB-1054: Internal error: wrong message type, should MT_IMPORT, got "+
-                                  convert_message_type_to_string(response.type()));
+                                    msg_conversion::convert_message_type_to_string(response.type()));
             return NULL;
         }
         const exascript_import_rep &rep = response.import();
@@ -1007,7 +316,7 @@ class SWIGGeneralIterator {
     public:
 //        SWIGGeneralIterator(SWIGVMExceptionHandler *exch): m_exch(exch) { }
         SWIGGeneralIterator()
-            : m_exch(SWIGVM_params_ref->exch)
+            : m_exch(exaudflib::global.SWIGVM_params_ref->exch)
         {}
         virtual ~SWIGGeneralIterator() { }
         inline const char* checkException() {
@@ -1087,10 +396,10 @@ private:
                 return;
             }
             zmq::message_t zmsg((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
-            socket_send(m_socket, zmsg);
+            exaudflib_socket_low_level::socket_send(m_socket, zmsg);
         } {
             zmq::message_t zmsg;
-            socket_recv(m_socket, zmsg);
+            exaudflib_socket_low_level::socket_recv(m_socket, zmsg);
             m_next_response.Clear();
             if (!m_next_response.ParseFromArray(zmsg.data(), zmsg.size())) {
                 m_exch->setException("F-UDF-CL-LIB-1060: Communication error: failed to parse data");
@@ -1121,7 +430,7 @@ private:
                     (!reset && (m_next_response.type() != MT_NEXT)))
             {
                 m_exch->setException("F-UDF-CL-LIB-1063: Communication error: wrong message type, got "+
-                                    convert_message_type_to_string(m_next_response.type()));
+                                        msg_conversion::convert_message_type_to_string(m_next_response.type()));
                 return;
             }
             m_rows_received = m_next_response.next().table().rows();
@@ -1154,15 +463,15 @@ private:
 public:
     const char* checkException() {return SWIGGeneralIterator::checkException();}
     SWIGTableIterator_Impl():        
-        m_connection_id(SWIGVM_params_ref->connection_id),
-        m_socket(*(SWIGVM_params_ref->sock)),
-        m_column_count(SWIGVM_params_ref->inp_types->size()),
-        m_col_offsets(SWIGVM_params_ref->inp_types->size()),
+        m_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id),
+        m_socket(*(exaudflib::global.SWIGVM_params_ref->sock)),
+        m_column_count(exaudflib::global.SWIGVM_params_ref->inp_types->size()),
+        m_col_offsets(exaudflib::global.SWIGVM_params_ref->inp_types->size()),
         m_current_row((uint64_t)-1),
         m_rows_completed(0),
         m_rows_group_completed(1),
         m_was_null(false),
-        m_types(*(SWIGVM_params_ref->inp_types))
+        m_types(*(exaudflib::global.SWIGVM_params_ref->inp_types))
     {
         receive_next_data(false);
     }
@@ -1185,7 +494,7 @@ public:
         }
         ++m_rows_completed;
         ++m_rows_group_completed;
-        if (SWIGVM_params_ref->inp_force_finish)
+        if (exaudflib::global.SWIGVM_params_ref->inp_force_finish)
             return false;
         if (m_rows_completed >= m_rows_received) {
             receive_next_data(false);
@@ -1201,7 +510,7 @@ public:
     }
     inline void reset() {
         m_rows_group_completed = 1;
-        SWIGVM_params_ref->inp_force_finish = false;
+        exaudflib::global.SWIGVM_params_ref->inp_force_finish = false;
         receive_next_data(true);
     }
     inline unsigned long restBufferSize() {
@@ -1223,7 +532,7 @@ public:
         }
         if (m_types[col].type != DOUBLE) {
             m_exch->setException("E-UDF-CL-LIB-1067: Wrong input column type, expected DOUBLE, got "+
-                                convert_type_to_string(m_types[col].type));
+                                msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0.0;
         }
@@ -1241,7 +550,7 @@ public:
         }
         if (m_types[col].type != STRING) {
             m_exch->setException("E-UDF-CL-LIB-1069: Wrong input column type, expected STRING, got "+
-                                convert_type_to_string(m_types[col].type));
+                                msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return "";
         }
@@ -1259,7 +568,7 @@ public:
         }
         if (m_types[col].type != INT32) {
             m_exch->setException("E-UDF-CL-LIB-1071: Wrong input column type, expected INT32, got "+
-                                convert_type_to_string(m_types[col].type));
+                                msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0;
         }
@@ -1275,7 +584,7 @@ public:
         }
         if (m_types[col].type != INT64) {
             m_exch->setException("E-UDF-CL-LIB-1073: Wrong input column type, expected INT64, got "+
-                                convert_type_to_string(m_types[col].type));
+                                msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0LL;
         }
@@ -1291,7 +600,7 @@ public:
         }
         if (m_types[col].type != NUMERIC) { 
           m_exch->setException("E-UDF-CL-LIB-1075: Wrong input column type, expected NUMERIC, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           m_was_null = true; 
           return ""; 
         }
@@ -1307,7 +616,7 @@ public:
         }
         if (m_types[col].type != TIMESTAMP) { 
           m_exch->setException("E-UDF-CL-LIB-1077: Wrong input column type, expected TIMESTAMP, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           m_was_null = true; 
           return ""; 
         }
@@ -1323,7 +632,7 @@ public:
         }
         if (m_types[col].type != DATE) { 
           m_exch->setException("E-UDF-CL-LIB-1079: Wrong input column type, expected DATE, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           m_was_null = true; 
           return ""; 
         }
@@ -1339,7 +648,7 @@ public:
         }
         if (m_types[col].type != BOOLEAN) { 
           m_exch->setException("E-UDF-CL-LIB-1081: Wrong input column type, expected BOOLEAN, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           m_was_null = true; 
           return ""; 
         }
@@ -1373,11 +682,11 @@ public:
     const char* checkException() {return SWIGGeneralIterator::checkException();}
     SWIGResultHandler_Impl(SWIGTableIterator* table_iterator)
         : m_table_iterator(table_iterator),
-          m_connection_id(SWIGVM_params_ref->connection_id),
-          m_socket(*(SWIGVM_params_ref->sock)),
+          m_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id),
+          m_socket(*(exaudflib::global.SWIGVM_params_ref->sock)),
           m_message_size(0),
           m_rows_emited(1),
-          m_types(*(SWIGVM_params_ref->out_types))
+          m_types(*(exaudflib::global.SWIGVM_params_ref->out_types))
     { }
     ~SWIGResultHandler_Impl() {
     }
@@ -1401,12 +710,12 @@ public:
                     return;
                 }
                 zmq::message_t zmsg((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
-                socket_send(m_socket, zmsg);
+                exaudflib_socket_low_level::socket_send(m_socket, zmsg);
                 m_emit_request.Clear();
                 m_message_size = 0;
             }
             { zmq::message_t zmsg;
-                socket_recv(m_socket, zmsg);
+                exaudflib_socket_low_level::socket_recv(m_socket, zmsg);
                 exascript_response response;
                 if (!response.ParseFromArray(zmsg.data(), zmsg.size())) {
                     m_exch->setException("F-UDF-CL-LIB-1083: Communication error: failed to parse data");
@@ -1428,7 +737,7 @@ public:
                 }
                 if (response.type() != MT_EMIT) {
                     m_exch->setException("F-UDF-CL-LIB-1086: Wrong response type, got "+
-                                        convert_message_type_to_string(response.type()));
+                                            msg_conversion::convert_message_type_to_string(response.type()));
                     return;
                 }
             }
@@ -1490,7 +799,8 @@ public:
                 table->add_data_bool(m_rowdata.bool_data[col]);
                 break;
             default:
-                m_exch->setException("F-UDF-CL-LIB-1093: Unknown data type found, got "+convert_type_to_string(m_types[col].type));
+                m_exch->setException("F-UDF-CL-LIB-1093: Unknown data type found, got "+
+                                        msg_conversion::convert_type_to_string(m_types[col].type));
                 return false;
             }
         }
@@ -1500,8 +810,8 @@ public:
         else table->set_rows(table->rows() + 1);
         table->set_rows_in_group(0);
         if (m_message_size >= SWIG_MAX_VAR_DATASIZE) {
-            if (SWIGVM_params_ref->inp_iter_type == EXACTLY_ONCE && SWIGVM_params_ref->out_iter_type == EXACTLY_ONCE)
-                SWIGVM_params_ref->inp_force_finish = true;
+            if (exaudflib::global.SWIGVM_params_ref->inp_iter_type == EXACTLY_ONCE && exaudflib::global.SWIGVM_params_ref->out_iter_type == EXACTLY_ONCE)
+                exaudflib::global.SWIGVM_params_ref->inp_force_finish = true;
             else this->flush();
         }
         return true;
@@ -1513,7 +823,7 @@ public:
         }
         if (m_types[col].type != DOUBLE) { 
           m_exch->setException("E-UDF-CL-LIB-1095: Wrong output column type, expected DOUBLE, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return;
         }
         m_rowdata.null_data[col] = false;
@@ -1526,7 +836,7 @@ public:
         }
         if (m_types[col].type != STRING) { 
           m_exch->setException("E-UDF-CL-LIB-1097: Wrong output column type, expected STRING, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return; 
         }
         m_rowdata.null_data[col] = false;
@@ -1539,7 +849,7 @@ public:
         }
         if (m_types[col].type != INT32) { 
           m_exch->setException("E-UDF-CL-LIB-1099: Wrong output column type, expected INT32, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return; 
         }
         m_rowdata.null_data[col] = false;
@@ -1552,7 +862,7 @@ public:
         }
         if (m_types[col].type != INT64) { 
           m_exch->setException("E-UDF-CL-LIB-1101: Wrong output column type, expected INT64, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return; 
         }
         m_rowdata.null_data[col] = false;
@@ -1565,7 +875,7 @@ public:
         }
         if (m_types[col].type != NUMERIC) { 
           m_exch->setException("E-UDF-CL-LIB-1103: Wrong output column type, expected NUMERIC, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return; 
         }
         m_rowdata.null_data[col] = false;
@@ -1578,7 +888,7 @@ public:
         }
         if (m_types[col].type != TIMESTAMP) { 
           m_exch->setException("E-UDF-CL-LIB-1105: Wrong output column type, expected TIMESTAMP, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return; 
         }
         m_rowdata.null_data[col] = false;
@@ -1591,7 +901,7 @@ public:
         }
         if (m_types[col].type != DATE) { 
           m_exch->setException("E-UDF-CL-LIB-1107: Wrong output column type, expected DATE, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return; 
         }
         m_rowdata.null_data[col] = false;
@@ -1604,7 +914,7 @@ public:
         }
         if (m_types[col].type != BOOLEAN) { 
           m_exch->setException("E-UDF-CL-LIB-1109: Wrong output column type, expected BOOLEAN, got "+
-                              convert_type_to_string(m_types[col].type));
+                              msg_conversion::convert_type_to_string(m_types[col].type));
           return; 
         }
         m_rowdata.null_data[col] = false;
@@ -1677,7 +987,7 @@ SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMCon
 
 int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
 {
-    assert(SWIGVM_params_ref != nullptr);
+    assert(exaudflib::global.SWIGVM_params_ref != nullptr);
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
     stringstream socket_name_ss;
@@ -1758,33 +1068,22 @@ reinit:
     if (exaudflib_check::get_remote_client()) socket.bind(exaudflib_check::get_socket_name_str());
     else socket.connect(exaudflib_check::get_socket_name_str());
 
-    SWIGVM_params_ref->sock = &socket;
-    SWIGVM_params_ref->exch = &exchandler;
+    exaudflib::global.SWIGVM_params_ref->sock = &socket;
+    exaudflib::global.SWIGVM_params_ref->exch = &exaudflib::global.exchandler;
 
     SWIGVM* vm=nullptr;
 
     if (!send_init(socket, socket_name)) {
-        if (!exaudflib_check::get_remote_client() && exchandler.exthrowed) {
-            return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1123: "+exchandler.exmsg, false);
+        if (!exaudflib_check::get_remote_client() && exaudflib::global.exchandler.exthrowed) {
+            return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1123: " +
+                                exaudflib::global.exchandler.exmsg, false);
         }else{
             goto reinit;
         }
     }
 
-    SWIGVM_params_ref->dbname = (char*) g_database_name.c_str();
-    SWIGVM_params_ref->dbversion = (char*) g_database_version.c_str();
-    SWIGVM_params_ref->script_name = (char*) g_script_name.c_str();
-    SWIGVM_params_ref->script_schema = (char*) g_script_schema.c_str();
-    SWIGVM_params_ref->current_user = (char*) g_current_user.c_str();
-    SWIGVM_params_ref->current_schema = (char*) g_current_schema.c_str();
-    SWIGVM_params_ref->scope_user = (char*) g_scope_user.c_str();
-    SWIGVM_params_ref->script_code = (char*) g_source_code.c_str();
-    SWIGVM_params_ref->session_id = g_session_id;
-    SWIGVM_params_ref->statement_id = g_statement_id;
-    SWIGVM_params_ref->node_count = g_node_count;
-    SWIGVM_params_ref->node_id = g_node_id;
-    SWIGVM_params_ref->vm_id = g_vm_id;
-    SWIGVM_params_ref->singleCallMode = g_singleCallMode;
+    exaudflib::global.initSwigParams();
+
     bool shutdown_vm_in_case_of_error = false;
     try {
         vm = vmMaker();
@@ -1795,8 +1094,8 @@ reinit:
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1125: "+vm->exception_msg, false);
         }
         shutdown_vm_in_case_of_error = true;
-        use_zmq_socket_locks = vm->useZmqSocketLocks();
-        if (g_singleCallMode) {
+        exaudflib_socket_low_level::init(vm->useZmqSocketLocks());
+        if (exaudflib::global.singleCallMode) {
             ExecutionGraph::EmptyDTO noArg; // used as dummy arg
             for (;;) {
                 // in single call mode, after MT_RUN from the client,
@@ -1806,29 +1105,29 @@ reinit:
                     break;
                 }
 
-                assert(g_singleCallFunction != single_call_function_id_e::SC_FN_NIL);
+                assert(exaudflib::global.singleCallFunction != single_call_function_id_e::SC_FN_NIL);
                 try {
                     const char* result = nullptr;
-                    switch (g_singleCallFunction)
+                    switch (exaudflib::global.singleCallFunction)
                     {
                         case single_call_function_id_e::SC_FN_NIL:
                             break;
                         case single_call_function_id_e::SC_FN_DEFAULT_OUTPUT_COLUMNS:
-                            result = vm->singleCall(g_singleCallFunction,noArg);
+                            result = vm->singleCall(exaudflib::global.singleCallFunction,noArg);
                             break;
                         case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_IMPORT_SPEC:
-                            assert(!g_singleCall_ImportSpecificationArg.isEmpty());
-                            result = vm->singleCall(g_singleCallFunction,g_singleCall_ImportSpecificationArg);
-                            g_singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification();  // delete the last argument
+                            assert(!exaudflib::global.singleCall_ImportSpecificationArg.isEmpty());
+                            result = vm->singleCall(exaudflib::global.singleCallFunction,exaudflib::global.singleCall_ImportSpecificationArg);
+                            exaudflib::global.singleCall_ImportSpecificationArg = ExecutionGraph::ImportSpecification();  // delete the last argument
                             break;
                         case single_call_function_id_e::SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC:
-                            assert(!g_singleCall_ExportSpecificationArg.isEmpty());
-                            result = vm->singleCall(g_singleCallFunction,g_singleCall_ExportSpecificationArg);
-                            g_singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();  // delete the last argument
+                            assert(!exaudflib::global.singleCall_ExportSpecificationArg.isEmpty());
+                            result = vm->singleCall(exaudflib::global.singleCallFunction,exaudflib::global.singleCall_ExportSpecificationArg);
+                            exaudflib::global.singleCall_ExportSpecificationArg = ExecutionGraph::ExportSpecification();  // delete the last argument
                             break;
                         case single_call_function_id_e::SC_FN_VIRTUAL_SCHEMA_ADAPTER_CALL:
-                            assert(!g_singleCall_StringArg.isEmpty());
-                            result = vm->singleCall(g_singleCallFunction,g_singleCall_StringArg);
+                            assert(!exaudflib::global.singleCall_StringArg.isEmpty());
+                            result = vm->singleCall(exaudflib::global.singleCallFunction,exaudflib::global.singleCall_StringArg);
                             break;
                     }
                     if (vm->exception_msg.size()>0) {
@@ -1850,7 +1149,7 @@ reinit:
             for(;;) {
                 if (!send_run(socket))
                     break;
-                SWIGVM_params_ref->inp_force_finish = false;
+                exaudflib::global.SWIGVM_params_ref->inp_force_finish = false;
                 while(!vm->run_())
                 {
                     if (vm->exception_msg.size()>0) {
