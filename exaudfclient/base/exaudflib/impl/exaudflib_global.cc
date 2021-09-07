@@ -60,7 +60,10 @@ void exaudflib::Global::writeScriptParams(const exascript_info &rep) {
 
 extern "C" {
     void set_SWIGVM_params(SWIGVMContainers::SWIGVM_params_t* p) {
+        printf("Start set SWIGVM params\n");
+
         exaudflib::global.SWIGVM_params_ref = p;
+        printf("End set SWIGVM params\n");
     }
 }
 

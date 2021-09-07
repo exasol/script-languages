@@ -97,8 +97,8 @@ int main(int argc, char **argv) {
     // }
     DBGMSG(cerr, "Load libexaudflib");
     DBGVAR(cerr, libexaudflibPath);
-    handle = dlmopen(LM_ID_NEWLM, libexaudflibPath.c_str(), RTLD_NOW);
-//    handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
+//    handle = dlmopen(LM_ID_NEWLM, libexaudflibPath.c_str(), RTLD_NOW);
+    handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
 
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
@@ -119,10 +119,12 @@ int main(int argc, char **argv) {
 
 
     MAIN_FUN exaudfclient_main = (MAIN_FUN)load_dynamic("exaudfclient_main");
+    fprintf(stderr, "Hello!!!\n");
     VOID_FUN_WITH_SWIGVM_PARAMS_P set_SWIGVM_params = (VOID_FUN_WITH_SWIGVM_PARAMS_P)load_dynamic("set_SWIGVM_params");
 
 
 #endif  // ifndef PROTEGRITY_PLUGIN_CLIENT
+
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
     if (argc != 2) {
