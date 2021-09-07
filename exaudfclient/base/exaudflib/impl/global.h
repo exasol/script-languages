@@ -2,8 +2,8 @@
 #define EXAUDFCLIENT_EXUDFLIB_GLOBAL_H
 
 #include <string>
-#include "../exaudflib.h"
-#include "../script_data_transfer_objects.h"
+#include "exaudflib/exaudflib.h"
+#include "exaudflib/script_data_transfer_objects.h"
 #include "exaudflib/zmqcontainer.pb.h"
 
 namespace exaudflib {

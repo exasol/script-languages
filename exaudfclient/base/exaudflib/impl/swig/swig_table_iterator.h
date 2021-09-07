@@ -3,9 +3,9 @@
 
 #include "exaudflib/exaudflib.h"
 #include "exaudflib/impl/swig/swig_general_iterator.h"
-#include "exaudflib/impl/exaudflib_global.h"
-#include "exaudflib/impl/exaudflib_socket_low_level.h"
-#include "exaudflib/impl/exaudflib_msg_conversion.h"
+#include "exaudflib/impl/global.h"
+#include "exaudflib/impl/socket_low_level.h"
+#include "exaudflib/impl/msg_conversion.h"
 
 namespace SWIGVMContainers {
 
@@ -77,10 +77,10 @@ private:
                 return;
             }
             zmq::message_t zmsg((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
-            exaudflib_socket_low_level::socket_send(m_socket, zmsg);
+            exaudflib::socket_low_level::socket_send(m_socket, zmsg);
         } {
             zmq::message_t zmsg;
-            exaudflib_socket_low_level::socket_recv(m_socket, zmsg);
+            exaudflib::socket_low_level::socket_recv(m_socket, zmsg);
             m_next_response.Clear();
             if (!m_next_response.ParseFromArray(zmsg.data(), zmsg.size())) {
                 m_exch->setException("F-UDF-CL-LIB-1060: Communication error: failed to parse data");
@@ -111,7 +111,7 @@ private:
             (!reset && (m_next_response.type() != MT_NEXT)))
             {
                 m_exch->setException("F-UDF-CL-LIB-1063: Communication error: wrong message type, got "+
-                msg_conversion::convert_message_type_to_string(m_next_response.type()));
+                exaudflib::msg_conversion::convert_message_type_to_string(m_next_response.type()));
                 return;
             }
             m_rows_received = m_next_response.next().table().rows();
@@ -213,7 +213,7 @@ public:
         }
         if (m_types[col].type != DOUBLE) {
             m_exch->setException("E-UDF-CL-LIB-1067: Wrong input column type, expected DOUBLE, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0.0;
         }
@@ -231,7 +231,7 @@ public:
         }
         if (m_types[col].type != STRING) {
             m_exch->setException("E-UDF-CL-LIB-1069: Wrong input column type, expected STRING, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return "";
         }
@@ -249,7 +249,7 @@ public:
         }
         if (m_types[col].type != INT32) {
             m_exch->setException("E-UDF-CL-LIB-1071: Wrong input column type, expected INT32, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0;
         }
@@ -265,7 +265,7 @@ public:
         }
         if (m_types[col].type != INT64) {
             m_exch->setException("E-UDF-CL-LIB-1073: Wrong input column type, expected INT64, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return 0LL;
         }
@@ -281,7 +281,7 @@ public:
         }
         if (m_types[col].type != NUMERIC) {
             m_exch->setException("E-UDF-CL-LIB-1075: Wrong input column type, expected NUMERIC, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return "";
         }
@@ -297,7 +297,7 @@ public:
         }
         if (m_types[col].type != TIMESTAMP) {
             m_exch->setException("E-UDF-CL-LIB-1077: Wrong input column type, expected TIMESTAMP, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return "";
         }
@@ -313,7 +313,7 @@ public:
         }
         if (m_types[col].type != DATE) {
             m_exch->setException("E-UDF-CL-LIB-1079: Wrong input column type, expected DATE, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return "";
         }
@@ -329,7 +329,7 @@ public:
         }
         if (m_types[col].type != BOOLEAN) {
             m_exch->setException("E-UDF-CL-LIB-1081: Wrong input column type, expected BOOLEAN, got "+
-            msg_conversion::convert_type_to_string(m_types[col].type));
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;
             return "";
         }

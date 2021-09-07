@@ -3,9 +3,9 @@
 
 #include "exaudflib/exaudflib.h"
 #include "exaudflib/zmqcontainer.pb.h"
-#include "exaudflib/impl/exaudflib_socket_low_level.h"
-#include "exaudflib/impl/exaudflib_msg_conversion.h"
-#include "exaudflib/impl/exaudflib_global.h"
+#include "exaudflib/impl/socket_low_level.h"
+#include "exaudflib/impl/msg_conversion.h"
+#include "exaudflib/impl/global.h"
 #include <string>
 #include <vector>
 
@@ -79,9 +79,9 @@ public:
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         zmq::message_t zmsg_req((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
-        exaudflib_socket_low_level::socket_send(m_socket, zmsg_req);
+        exaudflib::socket_low_level::socket_send(m_socket, zmsg_req);
         zmq::message_t zmsg_rep;
-        exaudflib_socket_low_level::socket_recv(m_socket, zmsg_rep);
+        exaudflib::socket_low_level::socket_recv(m_socket, zmsg_rep);
         exascript_response response;
         if (!response.ParseFromArray(zmsg_rep.data(), zmsg_rep.size())) {
             m_exch->setException("F-UDF-CL-LIB-1049: Communication error: failed to parse data");
@@ -89,7 +89,7 @@ public:
         }
         if (response.type() != MT_IMPORT) {
             m_exch->setException("F-UDF-CL-LIB-1050: Internal error: wrong message type, got "+
-            msg_conversion::convert_message_type_to_string(response.type()));
+            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
             return new ExecutionGraph::ConnectionInformationWrapper(ExecutionGraph::ConnectionInformation());
         }
         const exascript_import_rep &rep = response.import();
@@ -117,9 +117,9 @@ public:
             return NULL;
         }
         zmq::message_t zmsg_req((void*)m_output_buffer.c_str(), m_output_buffer.length(), NULL, NULL);
-        exaudflib_socket_low_level::socket_send(m_socket, zmsg_req);
+        exaudflib::socket_low_level::socket_send(m_socket, zmsg_req);
         zmq::message_t zmsg_rep;
-        exaudflib_socket_low_level::socket_recv(m_socket, zmsg_rep);
+        exaudflib::socket_low_level::socket_recv(m_socket, zmsg_rep);
         exascript_response response;
         if (!response.ParseFromArray(zmsg_rep.data(), zmsg_rep.size())) {
             m_exch->setException("F-UDF-CL-LIB-1053: Communication error: failed to parse data");
@@ -127,7 +127,7 @@ public:
         }
         if (response.type() != MT_IMPORT) {
             m_exch->setException("F-UDF-CL-LIB-1054: Internal error: wrong message type, should MT_IMPORT, got "+
-            msg_conversion::convert_message_type_to_string(response.type()));
+            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
             return NULL;
         }
         const exascript_import_rep &rep = response.import();
