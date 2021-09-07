@@ -2,9 +2,7 @@
 #include <sys/stat.h>
 
 #include <unistd.h>
-#define DONT_EXPOSE_SWIGVM_PARAMS
 #include "exaudflib.h"
-#undef DONT_EXPOSE_SWIGVM_PARAMS
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -180,6 +178,8 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
 /*
     DO NOT REMOVE, required for Exasol 6.2
 */
+        //In case of protegrity the /tmp folder can't be used as it runs within the database (and not in an isolated container).
+        //There, the actual socket file path is defined in a environment variable. We need to replace it here.
         if (socket_name.compare(0, 11, "ipc:///tmp/") == 0) {
             socket_name_ss << "ipc://" << getenv("NSEXEC_TMP_PATH") << '/' << &(socket_name.c_str()[11]);
             socket_name = socket_name_ss.str();
