@@ -1,6 +1,6 @@
-#include "exaudflib/impl/exaudflib_msg_conversion.h"
+#include "exaudflib/impl/msg_conversion.h"
 
-std::string msg_conversion::convert_message_type_to_string(int message_type){
+std::string exaudflib::msg_conversion::convert_message_type_to_string(int message_type){
     switch (message_type)
     {
         case 0:
@@ -44,7 +44,7 @@ std::string msg_conversion::convert_message_type_to_string(int message_type){
     }
 }
 
-std::string msg_conversion::convert_type_to_string(int type){
+std::string exaudflib::msg_conversion::convert_type_to_string(int type){
     switch (type)
     {
         case 0:

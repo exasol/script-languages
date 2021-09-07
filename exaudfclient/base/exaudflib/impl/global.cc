@@ -1,4 +1,4 @@
-#include "exaudflib/impl/exaudflib_global.h"
+#include "exaudflib/impl/global.h"
 
 namespace exaudflib {
 static string g_database_name;
@@ -17,7 +17,6 @@ static unsigned long long g_vm_id;
 
 Global global;
 }
-
 
 exaudflib::Global::Global()
 : SWIGVM_params_ref(nullptr) {}

@@ -1,19 +1,22 @@
-#include "exaudflib/impl/exaudflib_socket_low_level.h"
-#include "exaudflib/impl/exaudflib_check.h"
+#include "exaudflib/impl/socket_low_level.h"
+#include "exaudflib/impl/check.h"
 #include "debug_message.h"
 #include <mutex>
 #include <iostream>
 #include <unistd.h>
 
+namespace exaudflib {
+    namespace socket_low_level {
+        static std::mutex zmq_socket_mutex;
+        static bool use_zmq_socket_locks = false;
+    }
+}
 
-static std::mutex zmq_socket_mutex;
-static bool use_zmq_socket_locks = false;
-
-void exaudflib_socket_low_level::init(bool _use_zmq_socket_locks) {
+void exaudflib::socket_low_level::init(bool _use_zmq_socket_locks) {
     use_zmq_socket_locks = _use_zmq_socket_locks;
 }
 
-void exaudflib_socket_low_level::socket_send(zmq::socket_t &socket, zmq::message_t &zmsg) {
+void exaudflib::socket_low_level::socket_send(zmq::socket_t &socket, zmq::message_t &zmsg) {
     DBG_FUNC_BEGIN(std::cerr);
 #ifdef LOG_COMMUNICATION
     stringstream sb;
@@ -37,11 +40,11 @@ void exaudflib_socket_low_level::socket_send(zmq::socket_t &socket, zmq::message
                 }
                 return;
             }
-            exaudflib_check::external_process_check();
+            exaudflib::check::external_process_check();
         } catch (std::exception &err) {
-            exaudflib_check::external_process_check();
+            exaudflib::check::external_process_check();
         } catch (...) {
-            exaudflib_check::external_process_check();
+            exaudflib::check::external_process_check();
         }
         if (use_zmq_socket_locks) {
             zmq_socket_mutex.unlock();
@@ -53,7 +56,7 @@ void exaudflib_socket_low_level::socket_send(zmq::socket_t &socket, zmq::message
     }
 }
 
-bool exaudflib_socket_low_level::socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_error)
+bool exaudflib::socket_low_level::socket_recv(zmq::socket_t &socket, zmq::message_t &zmsg, bool return_on_error)
 {
     DBG_FUNC_BEGIN(std::cerr);
     for (;;) {
@@ -78,12 +81,12 @@ bool exaudflib_socket_low_level::socket_recv(zmq::socket_t &socket, zmq::message
                 }
                 return true;
             }
-            exaudflib_check::external_process_check();
+            exaudflib::check::external_process_check();
         } catch (std::exception &err) {
-            exaudflib_check::external_process_check();
+            exaudflib::check::external_process_check();
 
         } catch (...) {
-            exaudflib_check::external_process_check();
+            exaudflib::check::external_process_check();
         }
         if (use_zmq_socket_locks) {
             zmq_socket_mutex.unlock();

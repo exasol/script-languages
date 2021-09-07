@@ -2,7 +2,7 @@
 #define EXAUDFCLIENT_SWIGGENERALITERATOR_H
 
 #include "exaudflib/exaudflib.h"
-#include "exaudflib/impl/exaudflib_global.h"
+#include "exaudflib/impl/global.h"
 
 namespace SWIGVMContainers {
 
