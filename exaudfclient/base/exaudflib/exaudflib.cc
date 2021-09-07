@@ -1,12 +1,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <unistd.h>
 #include "exaudflib.h"
+
+#include <unistd.h>
 #include <iostream>
 #include <sstream>
-#include <string>
-#include <vector>
 #include <zmq.hpp>
 #include <fcntl.h>
 #include <fstream>
@@ -19,13 +18,13 @@
 #include <limits>
 #include "exaudflib/zmqcontainer.pb.h"
 #include "script_data_transfer_objects_wrapper.h"
-#include <unistd.h>
 
 
-#include "exaudflib/impl/exaudflib_check.h"
-#include "exaudflib/impl/exaudflib_socket_low_level.h"
-#include "exaudflib/impl/exaudflib_msg_conversion.h"
-#include "exaudflib/impl/exaudflib_global.h"
+#include "exaudflib/impl/check.h"
+#include "exaudflib/impl/socket_info.h"
+#include "exaudflib/impl/socket_low_level.h"
+#include "exaudflib/impl/msg_conversion.h"
+#include "exaudflib/impl/global.h"
 
 #include "exaudflib/impl/swig/swig_meta_data.h"
 #include "exaudflib/impl/swig/swig_result_handler.h"
@@ -67,10 +66,10 @@ void delete_vm(SWIGVMContainers::SWIGVM*& vm){
 
 void stop_all(zmq::socket_t& socket){
     socket.close();
-    exaudflib_check::stop_check_thread();
-    if (!exaudflib_check::get_remote_client()) {
-        exaudflib_check::cancel_check_thread();
-        ::unlink(exaudflib_check::get_socket_name_file());
+    exaudflib::check::stop_check_thread();
+    if (!exaudflib::check::get_remote_client()) {
+        exaudflib::check::cancel_check_thread();
+        ::unlink(exaudflib::socket_info::get_socket_file_name());
     } else {
         ::sleep(3); // give other components time to shutdown
     }
@@ -140,10 +139,10 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
     stringstream socket_name_ss;
 #endif
     string socket_name = argv[1];
-    exaudflib_check::init_socket_name_file(argv[1]);
-    exaudflib_check::init_socket_name(argv[1]);
+    exaudflib::socket_info::set_socket_file_name(argv[1]);
+    exaudflib::socket_info::set_socket_url(argv[1]);
 
-    exaudflib_check::set_remote_client(false);
+    exaudflib::check::set_remote_client(false);
 
     zmq::context_t context(1);
 
@@ -169,7 +168,7 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
     }
 
     if (socket_name.compare(0, 4, "tcp:") == 0) {
-        exaudflib_check::set_remote_client(true);
+        exaudflib::check::set_remote_client(true);
     }
 
     if (socket_name.compare(0, 4, "ipc:") == 0)
@@ -183,23 +182,22 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
         if (socket_name.compare(0, 11, "ipc:///tmp/") == 0) {
             socket_name_ss << "ipc://" << getenv("NSEXEC_TMP_PATH") << '/' << &(socket_name.c_str()[11]);
             socket_name = socket_name_ss.str();
-            exaudflib_check::init_socket_name_file(::strdup(socket_name.c_str()));
+            socket_info::set_socket_file_name(::strdup(socket_name.c_str()));
         }
 #endif
-        exaudflib_check::init_socket_name_file(&(exaudflib_check::get_socket_name_file()[6]));
-
+        exaudflib::socket_info::set_socket_file_name(&(exaudflib::socket_info::get_socket_file_name()[6]));
     }
 
     DBG_STREAM_MSG(cerr,"### SWIGVM starting " << argv[0] << " with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): '" << argv[1] << '\'');
 
-    exaudflib_check::start_check_thread();
+    exaudflib::check::start_check_thread();
 
 
     int linger_timeout = 0;
     int recv_sock_timeout = 1000;
     int send_sock_timeout = 1000;
 
-    if (exaudflib_check::get_remote_client()) {
+    if (exaudflib::check::get_remote_client()) {
         recv_sock_timeout = 10000;
         send_sock_timeout = 5000;
     }
@@ -213,7 +211,7 @@ reinit:
     socket.setsockopt(ZMQ_RCVTIMEO, &recv_sock_timeout, sizeof(recv_sock_timeout));
     socket.setsockopt(ZMQ_SNDTIMEO, &send_sock_timeout, sizeof(send_sock_timeout));
 
-    if (exaudflib_check::get_remote_client()) socket.bind(socket_name.c_str());
+    if (exaudflib::check::get_remote_client()) socket.bind(socket_name.c_str());
     else socket.connect(socket_name.c_str());
 
     exaudflib::global.SWIGVM_params_ref->sock = &socket;
@@ -222,7 +220,7 @@ reinit:
     SWIGVMContainers::SWIGVM* vm=nullptr;
 
     if (!send_init(socket, socket_name)) {
-        if (!exaudflib_check::get_remote_client() && exaudflib::global.exchandler.exthrowed) {
+        if (!exaudflib::check::get_remote_client() && exaudflib::global.exchandler.exthrowed) {
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1123: " +
                                 exaudflib::global.exchandler.exmsg, false);
         }else{
@@ -242,7 +240,7 @@ reinit:
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1125: "+vm->exception_msg, false);
         }
         shutdown_vm_in_case_of_error = true;
-        exaudflib_socket_low_level::init(vm->useZmqSocketLocks());
+        exaudflib::socket_low_level::init(vm->useZmqSocketLocks());
         if (exaudflib::global.singleCallMode) {
             ExecutionGraph::EmptyDTO noArg; // used as dummy arg
             for (;;) {
