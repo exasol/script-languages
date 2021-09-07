@@ -2,6 +2,7 @@
 #define EXAUDFCLIENT_SWIGGENERALITERATOR_H
 
 #include "exaudflib/exaudflib.h"
+#include "exaudflib/impl/exaudflib_global.h"
 
 namespace SWIGVMContainers {
 
@@ -10,7 +11,9 @@ protected:
     SWIGVMExceptionHandler *m_exch;
 public:
     //        SWIGGeneralIterator(SWIGVMExceptionHandler *exch): m_exch(exch) { }
-    SWIGGeneralIterator();
+    SWIGGeneralIterator()
+    : m_exch(exaudflib::global.SWIGVM_params_ref->exch)
+    {}
     virtual ~SWIGGeneralIterator() { }
     inline const char* checkException() {
         if (m_exch->exthrowed) {
