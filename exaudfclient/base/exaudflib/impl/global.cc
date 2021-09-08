@@ -22,6 +22,13 @@ exaudflib::Global::Global()
 : SWIGVM_params_ref(nullptr) {}
 
 void exaudflib::Global::initSwigParams() {
+    /**
+     * We need to store the strings here in static variables as the pointers are shared between the linker namespaces.
+     * It made trouble allocating the strings on the heap in the past: it might occur that the destructor is
+     * called twice. As a workaround we keep it as static variables which are deallocated only at the final termination
+     * of the program: It still might occur that the destructor is called more than once, but at least everything else has
+     * already finished.
+     */
     SWIGVM_params_ref->dbname = (char*) g_database_name.c_str();
     SWIGVM_params_ref->dbversion = (char*) g_database_version.c_str();
     SWIGVM_params_ref->script_name = (char*) g_script_name.c_str();
@@ -59,10 +66,7 @@ void exaudflib::Global::writeScriptParams(const exascript_info &rep) {
 
 extern "C" {
     void set_SWIGVM_params(SWIGVMContainers::SWIGVM_params_t* p) {
-        printf("Start set SWIGVM params\n");
-
         exaudflib::global.SWIGVM_params_ref = p;
-        printf("End set SWIGVM params\n");
     }
 }
 
