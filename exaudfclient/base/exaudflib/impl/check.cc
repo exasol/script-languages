@@ -3,12 +3,14 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <iostream>
+#include <atomic>
+
 
 #include "debug_message.h"
 
 namespace exaudflib {
     namespace check {
-        static bool keep_checking = true;
+        static std::atomic_bool keep_checking(true);
         static pthread_t check_thread;
         static int first_ppid=-1;
         static bool remote_client;
