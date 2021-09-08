@@ -135,23 +135,13 @@ def compare_flavor(flavor_path_1: Path, working_copy_1: Path, working_copy_1_nam
 
 
 def get_last_git_tag() -> str:
-    working_copy_main = tempfile.mkdtemp()
-    checkout_git_tag_as_worktree(working_copy_main, "master")
-    old_dir = os. getcwd()
-    os.chdir(working_copy_main)
-    get_pull_command = ["git", "pull"]
-    pull_result = subprocess.run(get_pull_command, stderr=subprocess.PIPE)
-    pull_result.check_returncode()
-    get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags"]
+    get_fetch_command = ["git", "fetch"]
+    fetch_result = subprocess.run(get_fetch_command, stderr=subprocess.PIPE)
+    fetch_result.check_returncode()
+    get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags", "origin/master"]
     last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
-    os.chdir(old_dir)
     last_tag_result.check_returncode()
     last_tag = last_tag_result.stdout.decode("UTF-8").strip()
-
-    get_last_tag_command = ["git", "worktree", "remove", "--force", working_copy_main]
-    last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
-    os.chdir(old_dir)
-    last_tag_result.check_returncode()
     return last_tag
 
 
