@@ -42,7 +42,6 @@ cc_library(
     alwayslink=True,
 )
 
-
 # A collection target for the case that language container want to include all public headers of exaudflib
 cc_library(
     name = "header",
