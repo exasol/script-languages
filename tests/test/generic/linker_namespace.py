@@ -7,9 +7,7 @@ import sys
 sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 
 import udf
-from udf import requires
-import exatest
-import docker_db_environment
+
 
 class LinkerNamespaceTest(udf.TestCase):
 
@@ -17,24 +15,7 @@ class LinkerNamespaceTest(udf.TestCase):
         self.query('CREATE SCHEMA FN2', ignore_errors=True)
         self.query('OPEN SCHEMA FN2')
 
-    def upload_test_shared_lib_to_bucket_fs(self, env):
-        sys.stdout.flush()
-        docker_db_container = env.get_docker_db_container()
-        sys.stdout.flush()
-        docker_db_ip = env.get_ip_address_of_container(docker_db_container)
-        upload_url = "http://{docker_db_ip}:6583/myudfs/libsymbolscanner.so".format(docker_db_ip=docker_db_ip)
-        username = "w"
-        password = "write"  # TOOD hardcoded
-        import requests
-        from requests.auth import HTTPBasicAuth
-        shared_lib = open("/tests/test/generic/symbol-scanner/binary/libsymbolscanner.so", 'rb')
-        r_upload = requests.put(upload_url, data=shared_lib, auth=HTTPBasicAuth(username, password))
-        r_upload.raise_for_status()
-
-
     def test_linker_namespace(self):
-        env = docker_db_environment.DockerDBEnvironment("simple")
-        self.upload_test_shared_lib_to_bucket_fs(env)
         self.query(udf.fixindent('''
                     CREATE OR REPLACE python3 SCALAR SCRIPT linker_namespace_test(search_string VARCHAR(100000)) RETURNS VARCHAR(100000) AS
                     from ctypes import *
