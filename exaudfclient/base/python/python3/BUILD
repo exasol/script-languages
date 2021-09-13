@@ -39,7 +39,7 @@ genrule(
     name = "exascript_python_int",
     cmd = """
       cp $(SRCS) .
-      python $(location //:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"
+      python2 $(location //:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"
     """,
     outs = ["exascript_python_int.h"],
     srcs = [":exascript_python_tmp_cc", "//python:exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
@@ -51,7 +51,7 @@ genrule(
     cmd = """
         ACTUAL_PYTHON_VERSION=`$$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
         if [[ $$ACTUAL_PYTHON_VERSION == 2* ]] ; then
-            python $(location //:filter_swig_code.py) "$@" "$<"
+            python2 $(location //:filter_swig_code.py) "$@" "$<"
         else
             cp "$<" "$@" 
         fi
