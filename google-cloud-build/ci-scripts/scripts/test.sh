@@ -9,6 +9,7 @@ then
 else
   touch /workspace/build-status.txt
   ./exaslct run-db-test --flavor-path "flavors/$FLAVOR"  --workers 7 || echo "fail" > /workspace/build-status.txt
+  ./exaslct run-db-test --flavor-path "flavors/$FLAVOR"  --workers 7 --test-folder test/linker-namespace-sanity --release-goal base_test_build_run || echo "fail" > /workspace/build-status.txt
 echo
 echo "=========================================================="
 echo "Printing docker images"

@@ -126,12 +126,23 @@ cc_binary(
 )
 
 cc_binary(
-    name = "exaudfclient_py3_static_bin",
+    name = "exaudfclient_py2_static",
+    srcs = ["exaudfclient.cc"],
+    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
+    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
+          ["//exaudflib:exaudflib-deps"] + [":libexaudflib_complete.so"],
+    defines = VM_ENABLED_DEFINES,
+    data = [":libexaudflib_complete.so"],
+)
+
+cc_binary(
+    name = "exaudfclient_py3_static",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
             ["//exaudflib:exaudflib-deps"] + [":libexaudflib_complete.so"],
-    defines = VM_ENABLED_DEFINES
+    defines = VM_ENABLED_DEFINES,
+    data = [":libexaudflib_complete.so"],
 )
 
 # Workarround for the hardcoded paths in exaudfclient for libexaudflib_complete.so and python_ext_dataframe.cc
@@ -182,12 +193,3 @@ genrule(
     output_to_bindir = True
 )
 
-
-FAST_BINARY_PY3_STATIC="""cp "$(location exaudfclient_py3_static_bin)" "$(location exaudfclient_py3_static)" """
-genrule(
-    name = "exaudfclient_py3_static",
-    cmd = FAST_BINARY_PY3_STATIC,
-    outs = ["exaudfclient_py3_static"],
-    srcs = [":exaudfclient_py3_static_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
-    output_to_bindir = True
-)
