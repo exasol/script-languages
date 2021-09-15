@@ -126,7 +126,7 @@ cc_binary(
 )
 
 cc_binary(
-    name = "exaudfclient_py2_static",
+    name = "exaudfclient_py2_static_bin",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
@@ -136,7 +136,7 @@ cc_binary(
 )
 
 cc_binary(
-    name = "exaudfclient_py3_static",
+    name = "exaudfclient_py3_static_bin",
     srcs = ["exaudfclient.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
@@ -190,6 +190,38 @@ genrule(
     cmd = CREATE_BINARY_PY3_SCRIPT,
     outs = ["exaudfclient_py3"],
     srcs = [":exaudfclient_py3_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
+    output_to_bindir = True
+)
+
+SLOW_WRAPPER_STATIC_BINARY_PY2="""$(location //:wrapper_generator_bin) "$(location exaudfclient_py2_static_bin)" "$(location exaudfclient_py2_static)" "$(location exaudfclient.template.sh)" """
+FAST_BINARY_STATIC_PY2="""cp "$(location exaudfclient_py2_static_bin)" "$(location exaudfclient_py2_static)" """
+CREATE_STATIC_BINARY_PY2_SCRIPT=select({
+        "//:fast_binary": FAST_BINARY_STATIC_PY2,
+        "//:slow_wrapper": SLOW_WRAPPER_STATIC_BINARY_PY2,
+        "//conditions:default": FAST_BINARY_STATIC_PY2
+    })
+
+genrule(
+    name = "exaudfclient_py2_static",
+    cmd = CREATE_STATIC_BINARY_PY2_SCRIPT,
+    outs = ["exaudfclient_py2_static"],
+    srcs = [":exaudfclient_py2_static_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
+    output_to_bindir = True
+)
+
+SLOW_WRAPPER_STATIC_BINARY_PY3="""$(location //:wrapper_generator_bin) "$(location exaudfclient_py3_static_bin)" "$(location exaudfclient_py3_static)" "$(location exaudfclient.template.sh)" """
+FAST_BINARY_STATIC_PY3="""cp "$(location exaudfclient_py3_static_bin)" "$(location exaudfclient_py3_static)" """
+CREATE_STATIC_BINARY_PY3_SCRIPT=select({
+        "//:fast_binary": FAST_BINARY_STATIC_PY3,
+        "//:slow_wrapper": SLOW_WRAPPER_STATIC_BINARY_PY3,
+        "//conditions:default": FAST_BINARY_STATIC_PY3
+    })
+
+genrule(
+    name = "exaudfclient_py3_static",
+    cmd = CREATE_STATIC_BINARY_PY3_SCRIPT,
+    outs = ["exaudfclient_py3_static"],
+    srcs = [":exaudfclient_py3_static_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
     output_to_bindir = True
 )
 
