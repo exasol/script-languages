@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#####################################################################################
+###REMEMBER TO KEEP THIS FILE IN SYNC WITH exaslct_within_docker_container_slim.sh!!!
+#####################################################################################
+
 #set -e => immediately exit if any command [1] has a non-zero exit status
 #set -u => reference to any variable you haven't previously defined is an error and causes the program to immediately exit.
 #set -o pipefailt => This setting prevents errors in a pipeline from being masked.
