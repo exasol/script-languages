@@ -53,6 +53,21 @@ def requires(req):
         return wrapper
     return dec
 
+def get_supported_languages():
+    result_lang = []
+    #First we prepare a regular expression to get the first language (re.match() returns only the occurence matching from start of string)
+    languages_from_args = getScriptLanguagesFromArgs()
+    r = re.compile(r"(\w+)=")
+    first_lang = r.match(languages_from_args)
+    if first_lang:
+        result_lang.append(first_lang.group(1))
+    #And now we get the rest. All other languages must start with a whitespace and endwith the equal sign, we can take leverage of that in the regex.
+    r = re.compile(r"\s(\w+)=")
+    #re.findall is very handy here: It returns the list of the groups for each match. as we have only one group (\w+) it returns a flat list with the result.
+    result_lang.extend(r.findall(languages_from_args))
+    return result_lang
+
+
 def expectedFailureIfLang(lang):
     '''Expect test to fail if lang is opts.lang'''
     def dec(func):
@@ -122,6 +137,7 @@ class TestProgram(exatest.TestProgram):
                 is_compat_mode=None,
                 script_languages=None,
                 )
+
 
     def prepare_hook(self):
         global opts

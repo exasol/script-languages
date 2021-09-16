@@ -6,6 +6,10 @@ import re
 
 sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
 import udf
+
+from exatest.testcase import skipIf
+from udf import get_supported_languages
+
 from exatest.clients.odbc import getScriptLanguagesFromArgs
 import linker_namespace_base_test
 
@@ -15,6 +19,7 @@ class LinkerNamespaceSanityTest(linker_namespace_base_test.LinkerNamespaceBaseTe
         self.query('CREATE SCHEMA FN2', ignore_errors=True)
         self.query('OPEN SCHEMA FN2')
 
+    @skipIf('PYTHON3' not in get_supported_languages(), "UDF does not support Python3")
     def test_linker_namespace(self):
 
         lang = getScriptLanguagesFromArgs()
@@ -24,6 +29,7 @@ class LinkerNamespaceSanityTest(linker_namespace_base_test.LinkerNamespaceBaseTe
         lang_static = r_py3.sub("exaudf/exaudfclient_py3_static", lang_static)
         alter_session_query_str = "ALTER SESSION SET SCRIPT_LANGUAGES='%s'" % lang_static
         print(alter_session_query_str)
+        raise RuntimeError("test")
         self.query(alter_session_query_str)
         rows = self._execute_linker_namespace_udf(['protobuf', 'zmq'])
         self.assertGreater(len(rows), 0)
