@@ -29,7 +29,6 @@ class LinkerNamespaceSanityTest(linker_namespace_base_test.LinkerNamespaceBaseTe
         lang_static = r_py3.sub("exaudf/exaudfclient_py3_static", lang_static)
         alter_session_query_str = "ALTER SESSION SET SCRIPT_LANGUAGES='%s'" % lang_static
         print(alter_session_query_str)
-        raise RuntimeError("test")
         self.query(alter_session_query_str)
         rows = self._execute_linker_namespace_udf(['protobuf', 'zmq'])
         self.assertGreater(len(rows), 0)
