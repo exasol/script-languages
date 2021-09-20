@@ -128,14 +128,14 @@ cc_binary(
 ## The purpose of the static binaries is to verify if the linker namespace test work correctly.
 ## It is crucial that all linker symbols of exaudflib and all it's dependency are loaded into a new linker namespace,
 ## so that the user can load it's own versions of those dependencies without any conflict.
-## With this binary we simulate an error in our build system, that is a direct depdency to protobuf/zmq,
+## With this binary we simulate an error in our build system, that is a direct depedency to protobuf/zmq,
 ## which then must be detected with the linker namespace tests:
 ## test/linker-namespace-sanity/linker_namespace_sanity.py checks the wrong configuration
 ## Besides this the test under test/python3/all/linker_namespace.py checks the normal build, which expects
 ## not to find any occurence of the dependencies (protobuf/zmq) in the primary linker namespace.
 ##
 ## We need to explicitly declare the dependency of protobuf/zmq here, as the exaudflib is a static lib (//exaudflib:exaudflib)
-## an hence does not contain dependency information. We cannot declare the shared lib (:exaudflib_complete.so)
+## and hence does not contain dependency information. We cannot declare the shared lib (:exaudflib_complete.so)
 ## as dependency as it is a binary for bazel.
 
 cc_binary(
