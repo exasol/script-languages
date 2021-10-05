@@ -11,7 +11,6 @@ build:slow-wrapper-py3 --define binary_type=slow_wrapper //:exaudfclient_py3
 build:slow-wrapper-both --config=slow-wrapper-py2 --config=slow-wrapper-py3
 build:static-binary-py3 //:exaudfclient_py3_static
 build:static-binary-py2 //:exaudfclient_py2_static
-#Static binary uses the same executable as the normal exaudflclient (with dynamic linking)
 build:static-binary-both --config=static-binary-py3 --config=static-binary-py2
 build:test-binaries-py3 --config=static-binary-py3 --config=slow-wrapper-py3
 build:test-binaries-py2 --config=static-binary-py2 --config=slow-wrapper-py2
