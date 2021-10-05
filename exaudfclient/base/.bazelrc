@@ -8,7 +8,13 @@ build:fast-binary-py3 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_c
 build:fast-binary-both --config=fast-binary-py2 --config=fast-binary-py3
 build:slow-wrapper-py2 --define binary_type=slow_wrapper //:exaudfclient
 build:slow-wrapper-py3 --define binary_type=slow_wrapper //:exaudfclient_py3
-build:slow-wrapper-both --config=slow-wrapper-py2 --config=slow-wrapper-py3 
+build:slow-wrapper-both --config=slow-wrapper-py2 --config=slow-wrapper-py3
+build:static-binary-py3 //:exaudfclient_py3_static
+build:static-binary-py2 //:exaudfclient_py2_static
+build:static-binary-both --config=static-binary-py3 --config=static-binary-py2
+build:test-binaries-py3 --config=static-binary-py3 --config=slow-wrapper-py3
+build:test-binaries-py2 --config=static-binary-py2 --config=slow-wrapper-py2
+build:test-binaries-both --config=test-binaries-py2 --config=test-binaries-py3
 build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
 #TODO test linkopts="-flto"
 build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-O3" --copt="-U_FORTIFY_SOURCE" --copt="-flto"
