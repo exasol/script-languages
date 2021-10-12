@@ -4,7 +4,7 @@
 
 **Note: This package is not suitable for production, because we pull python 3.7 from a inofficial ubuntu repository which can't guarantee timely updates in case of security problems or other issues.**
 
-**Remarks:** The packages are grouped by there main usage and their type.
+**Remarks:** The packages are grouped by their main usage and their type.
 
 - [UDFclient dependencies](flavor_base/udfclient_deps/packages/apt_get_packages)
 - [Language dependencies](flavor_base/language_deps/packages/apt_get_packages)
