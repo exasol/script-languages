@@ -109,8 +109,12 @@ def compare_build_step(build_step_path_1: Path, working_copy_1: Path, working_co
                 package_list_working_copy_str_2 = load_package_file_or_alternative(working_copy_2,
                                                                                    package_list_file_2)
             diff_df = compare_package_lists(package_list_working_copy_str_2, package_list_working_copy_str_1)
-            diff_df = diff_df.rename(columns={"Version1": f"Version in {working_copy_2_name}",
-                                              "Version2": f"Version in {working_copy_1_name}"})
+            new_version1_name = f"Version in {working_copy_2_name}"
+            new_version2_name = f"Version in {working_copy_1_name}"
+
+            diff_df = diff_df.rename(columns={"Version1": new_version1_name,
+                                              "Version2": new_version2_name})
+            diff_df = diff_df[["Package",new_version1_name,new_version2_name,"Status"]]
             result[result_key] = diff_df
     return result
 
