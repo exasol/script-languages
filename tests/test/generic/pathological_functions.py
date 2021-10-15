@@ -1,14 +1,12 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import os
-import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
-from exatest.testcase import skipIf
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
+from exasol_python_test_framework.exatest.testcase import skipIf
 running_in_travis = 'TRAVIS' in os.environ
+
 
 class Test(udf.TestCase):
 
@@ -41,8 +39,6 @@ class Test(udf.TestCase):
                 mb = mb*1024*1024
             self.query('SELECT fn1.mem_hog(%d) FROM dual' % mb)
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

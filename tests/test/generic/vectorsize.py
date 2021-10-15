@@ -1,12 +1,10 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
 import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires, useData, SkipTest
 
-import udf
-from udf import requires, useData, SkipTest
 
 class Vectorsize(udf.TestCase):
 
@@ -14,8 +12,7 @@ class Vectorsize(udf.TestCase):
     def test_vectorsize_5000(self):
         self.query('''
 		        SELECT max(fn1.vectorsize5000(float1))
-                FROM TEST.ENGINETABLEBIG1''') 
-
+                FROM TEST.ENGINETABLEBIG1''')
 
     data = [
             (10,),
@@ -42,15 +39,13 @@ class Vectorsize(udf.TestCase):
             'r':        3000,
             'java':     3000
             }
-        if size > limits.get(udf.opts.lang, sys.maxint):
+        if size > limits.get(udf.opts.lang, sys.maxsize):
             raise SkipTest('test is to slow')
 
         self.query('''
                 SELECT max(fn1.vectorsize(%d, float1))
                 FROM TEST.ENGINETABLEBIG1
-                ''' % size
-                ) 
-
+                ''' % size)
 
     data = [
             (10, 10, 10),
@@ -79,10 +74,8 @@ class Vectorsize(udf.TestCase):
                         FROM DUAL
                     )
                 )
-                ''' % (a, b, c)
-                )
+                ''' % (a, b, c))
+
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent

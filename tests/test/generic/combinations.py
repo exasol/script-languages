@@ -1,16 +1,12 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import (
+    requires,
+    SkipTest,
+    useData,
+)
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import (
-        requires,
-        SkipTest,
-        useData,
-        )
 
 class Test(udf.TestCase):
     def setUp(self):
@@ -33,7 +29,7 @@ class Combinations_1_ary(Test):
         rows = self.query('''
                 SELECT round(fn1.scalar_returns(x,y) / 2)
                 FROM small''')
-        self.assertRowsEqual([(round(0.3 / 2),), ( round(0.3 / 2),)], rows)
+        self.assertRowsEqual([(round(0.3 / 2),), (round(0.3 / 2),)], rows)
 
     @requires('SCALAR_EMITS')
     def test_scalar_emits(self):
@@ -42,13 +38,12 @@ class Combinations_1_ary(Test):
                 FROM small''')
         self.assertRowsEqual([(1, 1,), (2, 4,)], rows)
 
-
     @requires('SET_EMITS')
     def test_set_emits(self):
         rows = self.query('''
                 SELECT fn1.set_emits(x * 10 ,y * 10)
                 FROM small''')
-        self.assertRowsEqual([(2.0, 1.0,),(1.0, 2.0,)] , rows)
+        self.assertRowsEqual([(2.0, 1.0,), (1.0, 2.0,)], rows)
 
     @requires('SCALAR_RETURNS')
     def test_two_scalar_returns(self):
@@ -152,7 +147,7 @@ class Combinations_2_ary_scalar_emits(Test):
                         fn1.scalar_returns(y * 10, x * 10)
                     )
                 FROM small''')
-        self.assertRowsEqual([(3,9,), (3,9,)], rows)
+        self.assertRowsEqual([(3, 9,), (3, 9,)], rows)
 
     @requires('SET_EMITS')
     @requires('SCALAR_RETURNS')
@@ -166,7 +161,7 @@ class Combinations_2_ary_scalar_emits(Test):
                     FROM small
                 )
                 ''')
-        self.assertRowsEqual([(3,9,), (3,9,)], rows)
+        self.assertRowsEqual([(3, 9,), (3, 9,)], rows)
 
     @requires('SCALAR_EMITS')
     def test_scalar_emits_scalar_emits(self):
@@ -178,7 +173,7 @@ class Combinations_2_ary_scalar_emits(Test):
                 )
                 ORDER by x,y''')
         r = [(10.0, 100.0)]
-        r.extend([(i , i*i) for i in range(20,41)])
+        r.extend([(i, i * i) for i in range(20, 41)])
         self.assertRowsEqual(r, rows)
 
     @requires('SET_RETURNS')
@@ -218,7 +213,7 @@ class Combinations_2_ary_scalar_emits(Test):
                 SELECT fn1.set_emits(x * 10, y * 10)
                 FROM small
             )''')
-        r = ([(i , i*i) for i in range(10,21)])
+        r = ([(i, i * i) for i in range(10, 21)])
         self.assertRowsEqual(r, rows)
 
 
@@ -294,7 +289,7 @@ class Combinations_2_ary_set_emits(Test):
                     fn1.scalar_returns(y*10, x*10)
                 )
             FROM small''')
-        self.assertRowsEqual([(3,3,), (3,3,)], rows)
+        self.assertRowsEqual([(3, 3,), (3, 3,)], rows)
 
     @requires('SET_EMITS')
     @requires('SCALAR_EMITS')
@@ -306,7 +301,7 @@ class Combinations_2_ary_set_emits(Test):
                     FROM small
                 )
                 ORDER BY x, y;''')
-        self.assertRowsEqual([(10,10,), (40,20,)], rows)
+        self.assertRowsEqual([(10, 10,), (40, 20,)], rows)
 
     @requires('SET_EMITS')
     @requires('SET_RETURNS')
@@ -345,7 +340,7 @@ class Combinations_2_ary_set_emits(Test):
                     FROM small
                 )
                 ORDER BY x, y;''')
-        self.assertRowsEqual([(10,20,), (20,10,)], rows)
+        self.assertRowsEqual([(10, 20,), (20, 10,)], rows)
 
 
 class Combinations_3_ary(Test):
@@ -396,16 +391,17 @@ class Combinations_3_ary(Test):
 
 
 class Combinations_n_ary(Test):
-    @staticmethod 
+    @staticmethod
     def partial_sum(n, degree):
         def basic_range(n, d):
             if d == 0:
                 return range(n)
             else:
-                return sum([range(x) for x in basic_range(n+1, d-1)], [])
-        return len(basic_range(n, degree)) 
- 
-    @useData((i,) for i in range(10)) 
+                return sum([range(x) for x in basic_range(n + 1, d - 1)], [])
+
+        return len(basic_range(n, degree))
+
+    @useData((i,) for i in range(10))
     def test_n_scalar_emits(self, n):
         if 'BASIC_RANGE' not in udf.capabilities:
             raise SkipTest('requires: BASIC_RANGE')
@@ -415,8 +411,8 @@ class Combinations_n_ary(Test):
             'SELECT fn1.basic_range(5) FROM DUAL\n' +
             ')' * n)
         self.assertEquals(self.partial_sum(5, n), self.rowcount())
-            
-    @useData((i,) for i in range(10)) 
+
+    @useData((i,) for i in range(10))
     def test_set_returns_n_scalar_emits(self, n):
         if 'BASIC_RANGE' not in udf.capabilities:
             raise SkipTest('requires: BASIC_RANGE')
@@ -425,11 +421,9 @@ class Combinations_n_ary(Test):
             'SELECT max(n) FROM (' +
             'SELECT fn1.basic_range(n+1) FROM (\n' * n +
             'SELECT fn1.basic_range(5) FROM DUAL\n' +
-            ')' * (n+1))
+            ')' * (n + 1))
         self.assertEquals(4, rows[0][0])
-            
+
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent

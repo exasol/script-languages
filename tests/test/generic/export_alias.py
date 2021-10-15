@@ -1,17 +1,12 @@
 #!/usr/bin/env python2.7
 
-import os
-import sys
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
-import exatest
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
 
 # ATTENTION!
 # The logic for the tests had to be put in the export_alias.sql files for each language.
 # This was required because EXPORT INTO SCRIPT can only return a single integer.
+
 
 class ExportAliasTest(udf.TestCase):
     result_unknown = 0
@@ -75,6 +70,7 @@ class ExportAliasTest(udf.TestCase):
     def test_export_use_query(self):
         rows = self.executeStatement("EXPORT (select a as 'col1', \"z\" as 'col2' from fn2.\"tl\") INTO SCRIPT fn1.expal_use_query with foo='bar' bar='foo'")
         self.assertEqual(self.result_ok, rows)
+
 
 if __name__ == '__main__':
     udf.main()

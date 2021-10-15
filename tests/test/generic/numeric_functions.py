@@ -1,12 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
 
 class Test(udf.TestCase):
     @requires('PI')
@@ -27,7 +23,6 @@ class Test(udf.TestCase):
             ''')
         self.assertRowsEqual([(True,), (None,)], rows)
 
-
     @requires('DOUBLE_MULT')
     def test_select_into(self):
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
@@ -45,8 +40,6 @@ class Test(udf.TestCase):
                 WHERE diff != 0 AND diff IS NOT NULL
             ''')
         self.assertEqual(0, self.rowcount())
-
-
 
     @requires('DOUBLE_MULT')
     def test_subselect(self):
@@ -67,7 +60,7 @@ class Test(udf.TestCase):
                     fn1.double_mult(float1, float2) - float1 * float2 AS a
                 FROM test.enginetable
                 WHERE int_index = ?''',
-                row.I)
+                               row.I)
             self.assertEqual(row.A, rows2[0].A)
 
     @requires('ADD_TWO_DOUBLES')
@@ -125,10 +118,8 @@ class Test(udf.TestCase):
         rows = self.query('''
             SELECT fn1.split_integer_into_digits(123)
             FROM DUAL''')
-        self.assertRowsEqual([(3,),(2,),(1,)], rows)
+        self.assertRowsEqual([(3,), (2,), (1,)], rows)
+
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

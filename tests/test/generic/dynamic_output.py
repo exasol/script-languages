@@ -1,13 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
-import exatest
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
+from exasol_python_test_framework import exatest
 
 
 class Test(udf.TestCase):
@@ -584,7 +579,7 @@ class DynamicOutFromConnectionsAndViews(Test):
         self.query('''create schema spot4245_tmp''')
         self.query('''create table targetcreated as ''' + str(query))
         rows = self.query('''describe targetcreated''')
-        for i in xrange(len(expected_rows)):
+        for i in range(len(expected_rows)):
             self.assertRowEqual(expected_rows[i][0:2], rows[i][0:2])
         self.query('''drop schema spot4245_tmp cascade''')
         #('A', 'DECIMAL(20,0)', 'TRUE', 'FALSE'), rows[0])

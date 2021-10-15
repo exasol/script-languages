@@ -1,14 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
+from exasol_python_test_framework import exatest
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
-import exatest
-from exatest.testcase import skip
 
 class GetConnectionMemoryBug(udf.TestCase):
     def setUp(self):
@@ -268,7 +263,6 @@ class GetConnectionAccessControlWithViewsTest(udf.TestCase):
         foo_conn.commit()
         self.query('drop schema spot42542 cascade')
         self.commit()
-
 
 
 if __name__ == '__main__':
