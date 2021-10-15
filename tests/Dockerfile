@@ -2,10 +2,12 @@ FROM ubuntu:18.04
 
 COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
+#Need still python package because of udf_debug.py
 RUN apt-get -y update && \
     apt-get -y install \
         openjdk-11-jdk \
         locales \
+        python \
         python3 \
         python3-pip \
         unixodbc \
