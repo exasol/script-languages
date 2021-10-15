@@ -1,5 +1,6 @@
-pyodbc<=4.0.24
+pyodbc>=4.0.27
 pytz
 lxml
 docker
 scipy
+git+https://github.com/exasol/exasol-python-test-framework.git@test

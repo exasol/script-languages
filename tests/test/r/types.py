@@ -20,7 +20,7 @@ class RTypes(udf.TestCase):
                     "1.5"
                 }
                 ''')
-        with self.assertRaisesRegexp(Exception, r'Value for column RETURN is not of type double'):
+        with self.assertRaisesRegex(Exception, r'Value for column RETURN is not of type double'):
             self.query('''SELECT wrong_type() FROM DUAL''')
 
     def test_convert_int_to_double(self):
@@ -42,7 +42,7 @@ class RTypes(udf.TestCase):
                     "one point five"
                 }
                 ''')
-        with self.assertRaisesRegexp(Exception, r'Value for column RETURN is not of type double'):
+        with self.assertRaisesRegex(Exception, r'Value for column RETURN is not of type double'):
             self.query('''SELECT wrong_type() FROM DUAL''')
 
     def test_scalar_with_vector_and_ints(self):

@@ -45,7 +45,7 @@ class GetConnectionTest(udf.TestCase):
 
     @requires('PRINT_CONNECTION')
     def test_connection_not_found(self):
-        with self.assertRaisesRegexp(Exception, 'connection FOO does not exist'):
+        with self.assertRaisesRegex(Exception, 'connection FOO does not exist'):
             self.query('''
                 SELECT fn1.print_connection('FOO')
                 ''')
@@ -75,7 +75,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('grant execute on script fn1.print_connection to foo')
         self.commit()
         foo_conn = self.getConnection('foo', 'foo')
-        with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
+        with self.assertRaisesRegex(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
             foo_conn.query('''
                 SELECT fn1.print_connection('AC_FOOCONN')
             ''')
@@ -92,7 +92,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('grant execute on script fn1.print_connection to foo')
         self.commit()
         foo_conn = self.getConnection('foo', 'foo')
-        with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
+        with self.assertRaisesRegex(Exception, 'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
             foo_conn.query('''
                  select fn1.print_connection('AC_FOOCONN')
             ''')
@@ -124,7 +124,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.query('GRANT ACCESS ON CONNECTION ac_fooconn to foo')
         self.commit()
         foo_conn = self.getConnection('foo', 'foo')
-        with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection'):
+        with self.assertRaisesRegex(Exception, 'insufficient privileges for using connection'):
             foo_conn.query('''
                 import from fbv at ac_fooconn file 'foo'
             ''')

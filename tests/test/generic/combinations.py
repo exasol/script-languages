@@ -184,7 +184,7 @@ class Combinations_2_ary_scalar_emits(Test):
     @requires('SET_RETURNS')
     @requires('SCALAR_EMITS')
     def test_scalar_emits_set_returns_inline(self):
-        with self.assertRaisesRegexp(Exception, 'encapsulated set function'):
+        with self.assertRaisesRegex(Exception, 'encapsulated set function'):
             self.query('''
                     SELECT
                         fn1.scalar_emits(
@@ -248,7 +248,7 @@ class Combinations_2_ary_set_returns(Test):
 
     @requires('SET_RETURNS')
     def test_set_returns_set_returns_inline(self):
-        with self.assertRaisesRegexp(Exception, 'encapsulated set function'):
+        with self.assertRaisesRegex(Exception, 'encapsulated set function'):
             self.query('''
                 SELECT  
                     fn1.set_returns(
@@ -311,7 +311,7 @@ class Combinations_2_ary_set_emits(Test):
     @requires('SET_EMITS')
     @requires('SET_RETURNS')
     def test_set_emits_set_returns_inline(self):
-        with self.assertRaisesRegexp(Exception, 'encapsulated set function'):
+        with self.assertRaisesRegex(Exception, 'encapsulated set function'):
             self.query('''
                 SELECT
                     fn1.set_emits(

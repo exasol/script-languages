@@ -84,7 +84,7 @@ class ImportAliasTest(udf.TestCase):
         self.createUser('foo','foo')
         self.commit()
         foo_conn = self.getConnection('foo','foo')
-        with self.assertRaisesRegexp(Exception, 'aslkfhalsjfdhsa'):
+        with self.assertRaisesRegex(Exception, 'aslkfhalsjfdhsa'):
             foo_conn.query('IMPORT FROM SCRIPT fn1.impal_use_connection_fooconn')
         self.query('drop user foo cascade')
 
@@ -155,7 +155,7 @@ class ImportAliasTest(udf.TestCase):
 
     @requires('IMPAL_USE_ALL')
     def test_prepared_statement_params(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error, unexpected \'?\''):
+        with self.assertRaisesRegex(Exception, 'syntax error, unexpected \'?\''):
             rows = self.query(''' SELECT * FROM (
                 IMPORT INTO (a double, b varchar(3000)) FROM SCRIPT fn1.impal_use_all
                 at 'fooconn' user 'hans' identified by 'meiser' with foo=?)
@@ -163,7 +163,7 @@ class ImportAliasTest(udf.TestCase):
 
     @requires('IMPAL_USE_ALL')
     def test_prepared_statement_conn(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error, unexpected \'?\''):
+        with self.assertRaisesRegex(Exception, 'syntax error, unexpected \'?\''):
             rows = self.query(''' SELECT * FROM (
                 IMPORT INTO (a double, b varchar(3000)) FROM SCRIPT fn1.impal_use_all
                 at ? user ? identified by ? with foo='bar')

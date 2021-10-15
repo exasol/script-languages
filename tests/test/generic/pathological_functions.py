@@ -16,7 +16,7 @@ class Test(udf.TestCase):
     def test_query_timeout(self):
         self.query('ALTER SESSION SET QUERY_TIMEOUT = 10')
         try:
-            with self.assertRaisesRegexp(Exception, 'Successfully reconnected after query timeout'):
+            with self.assertRaisesRegex(Exception, 'Successfully reconnected after query timeout'):
                 self.query('SELECT fn1.sleep(100) FROM dual')
         finally:
             self.query('ALTER SESSION SET QUERY_TIMEOUT = 0')
@@ -36,7 +36,7 @@ class Test(udf.TestCase):
             }
         # This test requires at least 10 GB main memory otherwise the databases crashes and all subsequent tests will fail 
         mb = int(9.2 * 1024*1024)
-        with self.assertRaisesRegexp(Exception, err_text[udf.opts.lang]):
+        with self.assertRaisesRegex(Exception, err_text[udf.opts.lang]):
             if udf.opts.lang == "ext-python":
                 mb = mb*1024*1024
             self.query('SELECT fn1.mem_hog(%d) FROM dual' % mb)

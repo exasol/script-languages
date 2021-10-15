@@ -19,7 +19,7 @@ class NaNAndNOTNULL(udf.TestCase):
         self.query('CREATE OR REPLACE TABLE T(x DOUBLE CONSTRAINT nn NOT NULL)')
 
     def test_insert_nan_in_notnull_column(self):
-        with self.assertRaisesRegexp(Exception, 'constraint violation'):
+        with self.assertRaisesRegex(Exception, 'constraint violation'):
             self.query('''INSERT INTO T VALUES ?''', float('nan'))
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
@@ -39,84 +39,84 @@ class InsertNULLinNOTNULLColumn(udf.TestCase):
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(32768, rows[0][0])
         self.query('CREATE OR REPLACE TABLE T(x DECIMAL(9,0) CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'numeric value out of range'):
+        with self.assertRaisesRegex(Exception, 'numeric value out of range'):
             self.query('''INSERT INTO T VALUES ?''', '2147483648')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_int64(self):
         self.query('CREATE OR REPLACE TABLE T(x DECIMAL(18,0) CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'numeric value out of range'):
+        with self.assertRaisesRegex(Exception, 'numeric value out of range'):
             self.query('''INSERT INTO T VALUES ?''', '9223372036854775808')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
     
     def test_int128(self):
         self.query('CREATE OR REPLACE TABLE T(x DECIMAL(36,0) CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'numeric value out of range'):
+        with self.assertRaisesRegex(Exception, 'numeric value out of range'):
             self.query('''INSERT INTO T VALUES ?''', '170141183460469231731687303715884105728')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_date(self):
         self.query('CREATE OR REPLACE TABLE T(x DATE CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'year is out of range'):
+        with self.assertRaisesRegex(Exception, 'year is out of range'):
             self.query('''INSERT INTO T VALUES ?''', datetime.date(0,0,0))
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
     
     def test_timestamp(self):
         self.query('CREATE OR REPLACE TABLE T(x TIMESTAMP CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'year is out of range'):
+        with self.assertRaisesRegex(Exception, 'year is out of range'):
             self.query('''INSERT INTO T VALUES ?''', datetime.datetime(0,0,0,0,0,0,0))
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_interval_ym(self):
         self.query('CREATE OR REPLACE TABLE T(x INTERVAL YEAR(9) TO MONTH CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'leading precision of the interval is too small'):
+        with self.assertRaisesRegex(Exception, 'leading precision of the interval is too small'):
             self.query('''INSERT INTO T VALUES ?''', '768614336404564650-8')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_bool(self):
         self.query('CREATE OR REPLACE TABLE T(x BOOLEAN CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'Numeric value has to be 0 or 1'):
+        with self.assertRaisesRegex(Exception, 'Numeric value has to be 0 or 1'):
             self.query('''INSERT INTO T VALUES ?''', 128)
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_varchar_emptystring(self):
         self.query('CREATE OR REPLACE TABLE T(x VARCHAR(10) CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'constraint violation'):
+        with self.assertRaisesRegex(Exception, 'constraint violation'):
             self.query('''INSERT INTO T VALUES ?''', '')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_char_emptystring(self):
         self.query('CREATE OR REPLACE TABLE T(x CHAR(10) CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'constraint violation'):
+        with self.assertRaisesRegex(Exception, 'constraint violation'):
             self.query('''INSERT INTO T VALUES ?''', '')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_varchar_nullbyte(self):
         self.query('CREATE OR REPLACE TABLE T(x VARCHAR(10) CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'constraint violation'):
+        with self.assertRaisesRegex(Exception, 'constraint violation'):
             self.query('''INSERT INTO T VALUES ?''', '\x00')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_char_nullbyte(self):
         self.query('CREATE OR REPLACE TABLE T(x CHAR(10) CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'constraint violation'):
+        with self.assertRaisesRegex(Exception, 'constraint violation'):
             self.query('''INSERT INTO T VALUES ?''', '\x00')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
 
     def test_geo(self):
         self.query('CREATE OR REPLACE TABLE T(x GEOMETRY CONSTRAINT nn NOT NULL)')
-        with self.assertRaisesRegexp(Exception, 'constraint violation'):
+        with self.assertRaisesRegex(Exception, 'constraint violation'):
             self.query('''INSERT INTO T VALUES ?''', '')
         rows = self.query('''SELECT x FROM T''')
         self.assertEqual(0, self.rowcount())
@@ -137,7 +137,7 @@ class ImportNULLinNOTNULLColumn(udf.TestCase):
                         create connection ftpconnection to '%s'
                         ''' % url)
                 self.query(tableDefinition)
-                with self.assertRaisesRegexp(Exception, exception):
+                with self.assertRaisesRegex(Exception, exception):
                     self.query('''
                     import into t from csv at ftpConnection file 'data.csv';
                                ''')

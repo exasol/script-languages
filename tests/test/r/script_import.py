@@ -128,7 +128,7 @@ class ScriptImport(udf.TestCase):
             end
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'Error .* wrong language LUA'):
+        with self.assertRaisesRegex(Exception, 'Error .* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
 
     def test_import_fails_for_python_script(self):
@@ -153,7 +153,7 @@ class ScriptImport(udf.TestCase):
                 return 32
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'Error .* wrong language PYTHON'):
+        with self.assertRaisesRegex(Exception, 'Error .* wrong language PYTHON'):
             self.query('SELECT foo() FROM DUAL')
 
 

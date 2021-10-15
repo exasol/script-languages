@@ -1,13 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
-import os
-import sys
-import datetime
+from exasol_python_test_framework import udf
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
-
-import udf
 
 class EnvDirective(udf.TestCase):
     ### Basic Functionality Test of %env directive in Python3 UDF Scripts
@@ -31,7 +26,7 @@ class EnvDirective(udf.TestCase):
 
     # %env directive ends without semicolon. Parsing Error should occur.
     def test_env_set_env_var_without_semicolon(self):
-        with self.assertRaisesRegexp(Exception, r'Error while parsing %env option line'):
+        with self.assertRaisesRegex(Exception, r'Error while parsing %env option line'):
             self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT env_var_test() returns varchar(1000) AS
                 %env ENV_VAR="ENVIRONMENT_VARIABLE_VALUE"
@@ -51,7 +46,7 @@ class EnvDirective(udf.TestCase):
                 return os.environ["ENV_VAR"]
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'KeyError'):
+        with self.assertRaisesRegex(Exception, 'KeyError'):
             rows = self.query('''select EnvDirectiveSchema.env_var_test()''')
 
     # %env directive is commented out NOT in Python3 style. Python3 SyntaxError expected.
@@ -64,7 +59,7 @@ class EnvDirective(udf.TestCase):
                 return os.environ["ENV_VAR"]
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'invalid syntax'):
+        with self.assertRaisesRegex(Exception, 'invalid syntax'):
             rows = self.query('''select EnvDirectiveSchema.env_var_test()''')
 
     # %env directive is appended after a source code line. Python3 SyntaxError expected.
@@ -76,7 +71,7 @@ class EnvDirective(udf.TestCase):
                 return os.environ["ENV_VAR"]
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'invalid syntax'):
+        with self.assertRaisesRegex(Exception, 'invalid syntax'):
             rows = self.query('''select EnvDirectiveSchema.env_var_test()''')
 
     # %env directive is Python comment and appended after a source code line. KeyError expected.
@@ -88,10 +83,9 @@ class EnvDirective(udf.TestCase):
                 return os.environ["ENV_VAR"]
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'KeyError'):
+        with self.assertRaisesRegex(Exception, 'KeyError'):
             rows = self.query('''select EnvDirectiveSchema.env_var_test()''')
+
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent

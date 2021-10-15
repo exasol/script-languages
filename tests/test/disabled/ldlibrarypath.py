@@ -75,7 +75,7 @@ class LDLibraryPathPython(udf.TestCase):
 
     def test_pythonSimpleLdlibraryPath(self):
         if os.path.isfile("/usr/opt/environ/bin/nsexec_chroot"):
-            with self.assertRaisesRegexp(Exception, r"KeyError"):
+            with self.assertRaisesRegex(Exception, r"KeyError"):
                 rows = self.query('''select fn2.python_simple()''')
         else:
             rows = self.query('''select fn2.python_simple2()''')
@@ -87,7 +87,7 @@ class LDLibraryPathPython(udf.TestCase):
         self.assertRowsEqual([("/buckets/to/heaven",)],rows)
 
     def test_exceptionWhenNoEqualSign(self):
-        with self.assertRaisesRegexp(Exception, r"Script option %env does not have the form VAR=VALUE;"):
+        with self.assertRaisesRegex(Exception, r"Script option %env does not have the form VAR=VALUE;"):
             self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON SCALAR SCRIPT python_simple_error() returns varchar(1000) AS
                 %env LD_LIBRARY_PATH=/buckets/to/heaven;

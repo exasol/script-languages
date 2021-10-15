@@ -1,14 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
 import string
-import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData
-import exatest
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest import useData
 
 class ScriptImport(udf.TestCase):
 
@@ -62,7 +57,7 @@ class ScriptImport(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'script X not found'):
+        with self.assertRaisesRegex(Exception, 'script X not found'):
             rows = self.query('SELECT cannot_catch_import_exception() FROM dual')
 
     def test_preprocessed_Import_missing_script_name(self):
@@ -72,7 +67,7 @@ class ScriptImport(udf.TestCase):
                 RETURNS int AS
                 %import
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %import statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %import statement'):
             rows = self.query('SELECT missing_import_script_exception() FROM dual')
 
     def test_preprocessed_Import_missing_script_name2(self):
@@ -88,7 +83,7 @@ class ScriptImport(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'End of %import statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %import statement not found'):
             rows = self.query('SELECT missing_import_script_exception2() FROM dual')
 
     def test_preprocessed_Import_missing_script_name3(self):
@@ -104,7 +99,7 @@ class ScriptImport(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %import statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %import statement'):
             rows = self.query('SELECT missing_import_script_exception3() FROM dual')
 
     def test_preprocessed_Import_missing_import_end(self):
@@ -113,7 +108,7 @@ class ScriptImport(udf.TestCase):
                 missing_import_end_exception()
                 RETURNS int AS
                 %import X'''))
-        with self.assertRaisesRegexp(Exception, 'End of %import statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %import statement not found'):
             rows = self.query('SELECT missing_import_end_exception() FROM dual')
 
     def test_import_is_case_sensitive(self):
@@ -369,7 +364,7 @@ class ScriptImport(udf.TestCase):
                             return %d;
                     }
                 }
-                /''' % (name, name, sum(x in string.uppercase for x in name))
+                /''' % (name, name, sum(x.isupper() for x in name))
                 ))
 
         check("bar", "BAR", 3)
@@ -400,7 +395,7 @@ class ScriptImport(udf.TestCase):
             end
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:.* wrong language LUA'):
+        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
 
     def test_import_fails_for_r_script(self):
@@ -426,7 +421,7 @@ class ScriptImport(udf.TestCase):
             }
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:.* wrong language R'):
+        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language R'):
             self.query('SELECT foo() FROM DUAL')
 
     def test_import_fails_for_python_script(self):
@@ -451,7 +446,7 @@ class ScriptImport(udf.TestCase):
                 return 32
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:.* wrong language PYTHON'):
+        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language PYTHON'):
             self.query('SELECT foo() FROM DUAL')
 
     @useData([

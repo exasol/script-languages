@@ -1,33 +1,30 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
 import locale
 import os
 import string
 import subprocess
-import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
+from exasol_python_test_framework import udf
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
 
 class PythonUnicode(udf.TestCase):
     def test_unicode_umlaute(self):
         cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol
 		-no-config -autocommit ON -L -pipe''' % {
-			'exaplus': os.environ.get('EXAPLUS',
-				'/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
-			'conn': udf.opts.server
-			}
+            'exaplus': os.environ.get('EXAPLUS', '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
+            'conn': udf.opts.server
+        }
         env = os.environ.copy()
         env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
         env['LC_ALL'] = 'en_US.UTF-8'
-        exaplus = subprocess.Popen(cmd.split(), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, 
-                                stderr=subprocess.STDOUT)
+        exaplus = subprocess.Popen(cmd.split(), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
 
-        u = u'äöüß' + unichr(382) + unichr(65279) + unichr(63882) + unichr(64432)
+        u = u'äöüß' + chr(382) + chr(65279) + chr(63882) + chr(64432)
 
         sql = udf.fixindent('''
             DROP SCHEMA fn1 CASCADE;
@@ -47,7 +44,8 @@ class PythonUnicode(udf.TestCase):
         ''' % u)
         out, _err = exaplus.communicate(sql.encode('utf8'))
         expected = 'x%dx' % (len(string.ascii_letters) + len(u))
-        self.assertIn(expected, out)
+        self.assertIn(expected, out.decode("utf-8"))
+
 
 if __name__ == '__main__':
     udf.main()

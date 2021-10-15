@@ -1,19 +1,15 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import datetime
 import json
-import os
-import sys
-import urllib
 
 from textwrap import dedent
 
 import pytz
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import useData
 
-import udf
-from udf import useData
 
 class CJSON(udf.TestCase):
     def setUp(self):
@@ -59,7 +55,7 @@ class CJSON(udf.TestCase):
             {"a": "A", "b": "B"},
             [],
             {},
-            {"a": [1,2,3,4], "x": ["a", "b", "c"]},
+            {"a": [1, 2, 3, 4], "x": ["a", "b", "c"]},
             False,
             True,
             None,
@@ -137,8 +133,6 @@ class Pytz(udf.TestCase):
         converted = dt.replace(tzinfo=pytz.utc).astimezone(pytz.timezone(tz))
         self.assertRowsEqual([(converted.replace(tzinfo=None),)], rows)
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

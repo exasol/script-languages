@@ -1,12 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import useData
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData, expectedFailure
 
 class PythonInterpreter(udf.TestCase):
     def setUp(self):
@@ -69,7 +65,7 @@ class PythonInterpreter(udf.TestCase):
             def cleanup():
                 raise ValueError('4711')
             '''))
-        with self.assertRaisesRegexp(Exception, '4711'):
+        with self.assertRaisesRegex(Exception, '4711'):
             self.query('SELECT foo() FROM dual')
 
     def test_exception_in_run_and_cleanup_is_propagated(self):
@@ -84,7 +80,7 @@ class PythonInterpreter(udf.TestCase):
             def cleanup():
                 raise ValueError('YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY')
             '''))
-        with self.assertRaisesRegexp(Exception, 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.*YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'):
+        with self.assertRaisesRegex(Exception, 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.*YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'):
             self.query('SELECT foo() FROM dual')
 
     def test_cleanup_has_global_context(self):
@@ -103,9 +99,10 @@ class PythonInterpreter(udf.TestCase):
             def cleanup():
                 raise ValueError(flag)
             '''))
-        with self.assertRaisesRegexp(Exception, '4711'):
+        with self.assertRaisesRegex(Exception, '4711'):
             rows = self.query('SELECT foo() FROM dual')
             self.assertRowsEqual([(42,)], rows)
+
 
 class PythonImport(udf.TestCase):
     def setUp(self):
@@ -167,6 +164,7 @@ class PythonImport(udf.TestCase):
             pytz
             scipy
             '''.split()
+
     @useData((x,) for x in modules)
     def test_3rdparty_modules_are_importable(self, module):
         sql = udf.fixindent('''
@@ -229,7 +227,7 @@ class PythonImport(udf.TestCase):
                 import Unknown_Module
                 def run(ctx): pass
                 ''')
-        with self.assertRaisesRegexp(Exception, 'Unknown_Module'):
+        with self.assertRaisesRegex(Exception, 'Unknown_Module'):
             self.query(sql)
             self.query('SELECT import_error() FROM dual')
 
@@ -332,37 +330,36 @@ class PythonErrors(udf.TestCase):
         self.query('SELECT foo() FROM dual')
 
     def test_ZeroDivisionError(self):
-        with self.assertRaisesRegexp(Exception, 'ZeroDivisionError'):
+        with self.assertRaisesRegex(Exception, 'ZeroDivisionError'):
             self.create_and_execute('1/0')
 
     def test_AttributeError(self):
-        with self.assertRaisesRegexp(Exception, 'AttributeError'):
+        with self.assertRaisesRegex(Exception, 'AttributeError'):
             self.create_and_execute('int(4).append(3)')
 
     def test_TypeError(self):
-        with self.assertRaisesRegexp(Exception, 'TypeError'):
+        with self.assertRaisesRegex(Exception, 'TypeError'):
             self.create_and_execute('sorted(5)')
 
     def test_ImportError(self):
-        with self.assertRaisesRegexp(Exception, 'ImportError'):
+        with self.assertRaisesRegex(Exception, 'ImportError'):
             self.create_and_execute('import unknown_module')
 
     def test_NameError(self):
-        with self.assertRaisesRegexp(Exception, 'NameError'):
+        with self.assertRaisesRegex(Exception, 'NameError'):
             self.create_and_execute('unknown_thing')
 
     def test_IndexError(self):
-        with self.assertRaisesRegexp(Exception, 'IndexError'):
+        with self.assertRaisesRegex(Exception, 'IndexError'):
             self.create_and_execute('range(10)[14]')
 
     def test_KeyError(self):
-        with self.assertRaisesRegexp(Exception, 'KeyError'):
+        with self.assertRaisesRegex(Exception, 'KeyError'):
             self.create_and_execute('{}[5]')
 
     def test_SyntaxError(self):
-        with self.assertRaisesRegexp(Exception, 'SyntaxError'):
+        with self.assertRaisesRegex(Exception, 'SyntaxError'):
             self.create_and_execute('45 (;')
-
 
 
 class Robustness(udf.TestCase):
@@ -371,10 +368,10 @@ class Robustness(udf.TestCase):
         self.query('CREATE SCHEMA FN2')
 
     def test_repeated_failed_import(self):
-        '''
+        """
             internal server error after failed imports (DWA-13377)
             UDF: Python: no exception when importing unknown module + wrong result (DWA-13666)
-        '''
+        """
         sql = udf.fixindent('''
             CREATE OR REPLACE python SET SCRIPT
             foo(x double)
@@ -386,12 +383,10 @@ class Robustness(udf.TestCase):
                 return 42
             ''')
         for _ in range(100):
-            with self.assertRaisesRegexp(Exception, 'ImportError: No module named completely_unknown_module'):
+            with self.assertRaisesRegex(Exception, 'ImportError: No module named completely_unknown_module'):
                 self.query(sql)
                 self.query('SELECT foo(NULL) from DUAL')
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

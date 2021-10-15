@@ -1,20 +1,17 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import os
-import sys
-import urllib
+from urllib import request
 
 import lxml.etree as etree
 
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest import skipIf
+from exasol_python_test_framework.exatest.servers import HTTPServer, MessageBox
+from exasol_python_test_framework.exatest.utils import tempdir
+
 running_in_travis = 'TRAVIS' in os.environ
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-
-from exatest.servers import HTTPServer, MessageBox
-from exatest.utils import tempdir
-from exatest.testcase import skipIf
 
 class HTTPTest(udf.TestCase):
     def test_selftest(self):
@@ -22,14 +19,15 @@ class HTTPTest(udf.TestCase):
             with open(os.path.join(tmp, 'foo.xml'), 'w') as f:
                 f.write('''<foo/>\n''')
             with HTTPServer(tmp) as hs:
-                self.assertIn('<foo/>',
-                    urllib.urlopen('http://%s:%d/foo.xml' % hs.address).read())
+                self.assertIn(b'<foo/>',
+                              request.urlopen('http://%s:%d/foo.xml' % hs.address).read())
+
 
 class XMLProcessingTest(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA t1')
-   
+
     def xml(self):
         return udf.fixindent('''\
                 <?xml version='1.0' encoding='UTF-8'?>
@@ -69,13 +67,12 @@ class XMLProcessingTest(udf.TestCase):
                 ''')
 
     def test_dry_run(self):
-        tree = etree.XML(self.xml())
+        tree = etree.XML(self.xml().encode('utf-8'))
         result = []
         for u in tree.findall('user/[@active="1"]'):
             result.append((u.findtext('first_name'), u.findtext('family_name')))
         expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
         self.assertEqual(expected, sorted(result))
-        
 
     @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xml_processing(self):
@@ -97,11 +94,11 @@ class XMLProcessingTest(udf.TestCase):
                         ln = user.findtext('family_name')
                         ctx.emit(fn, ln)
                 '''))
-            
+
         with tempdir() as tmp:
             with open(os.path.join(tmp, 'keepers.xml'), 'w') as f:
                 f.write(self.xml())
-            
+
             with HTTPServer(tmp) as hs:
                 url = 'http://%s:%d/keepers.xml' % hs.address
                 rows = self.query('''
@@ -109,7 +106,7 @@ class XMLProcessingTest(udf.TestCase):
                         FROM DUAL
                         ORDER BY lastname
                         ''' % url)
-            
+
         expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
         self.assertRowsEqual(expected, rows)
 
@@ -132,11 +129,11 @@ class XMLProcessingTest(udf.TestCase):
                         ln = user.findtext('{http://foo/bar}family_name')
                         ctx.emit(fn, ln)
                 '''))
-            
+
         with tempdir() as tmp:
             with open(os.path.join(tmp, 'keepers.xml'), 'w') as f:
                 f.write(self.xmlns())
-            
+
             with HTTPServer(tmp) as hs:
                 url = 'http://%s:%d/keepers.xml' % hs.address
                 rows = self.query('''
@@ -144,9 +141,10 @@ class XMLProcessingTest(udf.TestCase):
                         FROM DUAL
                         ORDER BY lastname
                         ''' % url)
-            
+
         expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
         self.assertRowsEqual(expected, rows)
+
 
 class CleanupTest(udf.TestCase):
 
@@ -164,7 +162,7 @@ class CleanupTest(udf.TestCase):
                 RETURNS INT AS
 
                 import socket
-        
+
                 host = None
                 port = None
                 msg = None
@@ -173,7 +171,7 @@ class CleanupTest(udf.TestCase):
                     global host, port, msg
                     host = ctx.host
                     port = ctx.port
-                    msg = ctx.msg.encode('utf-8')
+                    msg = ctx.msg
                     return 0
 
                 def cleanup():
@@ -185,13 +183,11 @@ class CleanupTest(udf.TestCase):
             self.query('''SELECT sendmail('%s', %d, 'foobar') FROM DUAL''' %
                     (host, port))
 
-        self.assertIn('foobar', mb.data)
+        self.assertIn(b'foobar', mb.data)
 
     def test_cleanup_is_called_exactly_once_for_each_vm(self):
         with MessageBox() as mb:
             host, port = mb.address
-
-            print('test: host {}, port {}'.format(host, port))
 
             self.query(udf.fixindent('''
                 CREATE python SCALAR SCRIPT
@@ -220,15 +216,14 @@ class CleanupTest(udf.TestCase):
             self.query('''create or replace table ten as values 0,1,2,3,4,5,6,7,8,9 as p(x)''')
             self.query('''
                 SELECT max(sendmail(float1))
-                FROM test.enginetablebig1, ten, ten, ten, ten, ten''') 
+                FROM test.enginetablebig1, ten, ten, ten, ten, ten''')
 
         data = mb.data
         self.assertGreater(len(data), 0)
-        #for x in sorted(data): print('received: '+str(x))
-        init = sorted([x.split(':')[1] for x in data if x.startswith('init')])
-        cleanup = sorted([x.split(':')[1] for x in data if x.startswith('cleanup')])
-        self.assertEquals(init, cleanup)
-        self.assertEquals(sorted(set(init)), init)
+        init = sorted([x.split(b':')[1] for x in data if x.startswith(b'init')])
+        cleanup = sorted([x.split(b':')[1] for x in data if x.startswith(b'cleanup')])
+        self.assertEqual(init, cleanup)
+        self.assertEqual(sorted(set(init)), init)
 
     def test_cleanup_is_called_exactly_once_for_each_vm_with_crash_in_run(self):
         with MessageBox() as mb:
@@ -241,7 +236,7 @@ class CleanupTest(udf.TestCase):
 
                 import socket
                 import uuid
-        
+
                 msg = str(uuid.uuid4())
 
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -261,17 +256,15 @@ class CleanupTest(udf.TestCase):
             with self.assertRaises(Exception):
                 self.query('''
                     SELECT max(sendmail(float1))
-                    FROM test.enginetablebig1''') 
+                    FROM test.enginetablebig1''')
 
         data = mb.data
         self.assertGreater(len(data), 0)
-        init = sorted([x.split(':')[1] for x in data if x.startswith('init')])
-        cleanup = sorted([x.split(':')[1] for x in data if x.startswith('cleanup')])
-        self.assertEquals(init, cleanup)
-        self.assertEquals(sorted(set(init)), init)
+        init = sorted([x.split(b':')[1] for x in data if x.startswith(b'init')])
+        cleanup = sorted([x.split(b':')[1] for x in data if x.startswith(b'cleanup')])
+        self.assertEqual(init, cleanup)
+        self.assertEqual(sorted(set(init)), init)
+
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

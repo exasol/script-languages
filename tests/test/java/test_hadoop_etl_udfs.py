@@ -1,19 +1,16 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import time
 import os
-import sys
 import socket
 import subprocess
 import threading
 from io import BytesIO
 import tarfile
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
+from exasol_python_test_framework import udf
+from exasol_python_test_framework import docker_db_environment
 
-import udf
-from udf import useData, expectedFailure
-import docker_db_environment
 
 class JavaHive(udf.TestCase):
 
@@ -192,6 +189,8 @@ class JavaHive(udf.TestCase):
             self.query("ALTER SESSION SET SCRIPT_OUTPUT_ADDRESS='%s:3000';"%local_ip)
             return process
         else:
+            print(f"UDF debug std output '{process.stdout.readlines()}'")
+            print(f"UDF debug error output: '{process.stdout.readlines()}'")
             self.fail("Could start udf_debug.py")
 
     @udf.skipIfNot(docker_db_environment.is_available, reason="This test requires a docker-db environment")

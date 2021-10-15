@@ -1,12 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData, expectedFailure
 
 class JavaInterpreter(udf.TestCase):
     def setUp(self):
@@ -77,7 +72,7 @@ class JavaInterpreter(udf.TestCase):
                 }
             }
             '''))
-        with self.assertRaisesRegexp(Exception, '4711'):
+        with self.assertRaisesRegex(Exception, '4711'):
             self.query('SELECT foo() FROM dual')
 
     def test_init_has_global_context(self):
@@ -96,7 +91,7 @@ class JavaInterpreter(udf.TestCase):
                 }
             }
             '''))
-        with self.assertRaisesRegexp(Exception, '21'):
+        with self.assertRaisesRegex(Exception, '21'):
             self.query('SELECT foo() FROM dual')
 
     def test_exception_in_cleanup_is_propagated(self):
@@ -113,7 +108,7 @@ class JavaInterpreter(udf.TestCase):
                 }
             }
             '''))
-        with self.assertRaisesRegexp(Exception, '4711'):
+        with self.assertRaisesRegex(Exception, '4711'):
             self.query('SELECT foo() FROM dual')
             
     def test_exception_in_run_and_cleanup_is_propagated(self):
@@ -141,7 +136,8 @@ class JavaInterpreter(udf.TestCase):
         print()
         print()
         print(_err)
-        self.assertRegexpMatches(_err.replace("\n"," "),"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.*YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+        _err = _err.decode("utf-8")
+        self.assertRegexpMatches(_err.replace("\n"," "), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.*YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
 
     def test_cleanup_has_global_context(self):
         self.query(udf.fixindent('''
@@ -159,7 +155,7 @@ class JavaInterpreter(udf.TestCase):
                 }
             }
             '''))
-        with self.assertRaisesRegexp(Exception, '4711'):
+        with self.assertRaisesRegex(Exception, '4711'):
             rows = self.query('SELECT foo() FROM dual')
             self.assertRowsEqual([(42,)], rows)
 
@@ -176,7 +172,7 @@ class JavaJar(udf.TestCase):
                 RETURNS int AS
                 %jar
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %jar statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %jar statement'):
             rows = self.query('SELECT test_jar_path() FROM dual')
 
     def test_jar_path2(self):
@@ -192,7 +188,7 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'End of %jar statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %jar statement not found'):
             rows = self.query('SELECT test_jar_path2() FROM dual')
 
     def test_jar_path3(self):
@@ -208,7 +204,7 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %jar statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %jar statement'):
             rows = self.query('SELECT test_jar_path3() FROM dual')
 
     def test_jar_path_end(self):
@@ -217,7 +213,7 @@ class JavaJar(udf.TestCase):
                 test_jar_path_end()
                 RETURNS int AS
                 %jar /my/path/x.jar'''))
-        with self.assertRaisesRegexp(Exception, 'End of %jar statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %jar statement not found'):
             rows = self.query('SELECT test_jar_path_end() FROM dual')
 
     def test_jar_tab(self):
@@ -232,7 +228,7 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No such file or directory'):
+        with self.assertRaisesRegex(Exception, 'No such file or directory'):
             rows = self.query('SELECT jar_case_tab() FROM DUAL')
 
     def test_jar_tab_end(self):
@@ -247,7 +243,7 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No such file or directory'):
+        with self.assertRaisesRegex(Exception, 'No such file or directory'):
             rows = self.query('SELECT jar_case_tab_end() FROM DUAL')
 
     def test_jar_multiple_statements(self):
@@ -263,7 +259,7 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No such file or directory'):
+        with self.assertRaisesRegex(Exception, 'No such file or directory'):
             rows = self.query('SELECT jar_case_multi_statements() FROM DUAL')
 
     def test_jar_commented(self):
@@ -306,7 +302,7 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:'):
+        with self.assertRaisesRegex(Exception, 'VM error:'):
             rows = self.query('SELECT jar_case_after_code() FROM DUAL')
 
 
@@ -322,7 +318,7 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No such file or directory'):
+        with self.assertRaisesRegex(Exception, 'No such file or directory'):
             rows = self.query('SELECT jar_case_multi_jars() FROM DUAL')
 
 
@@ -344,7 +340,7 @@ class JavaSyntax(udf.TestCase):
                 }
             }
             '''))
-        with self.assertRaisesRegexp(Exception, 'ExaCompilationException'):
+        with self.assertRaisesRegex(Exception, 'ExaCompilationException'):
             rows = self.query('SELECT sql_comments() FROM dual')
 
     def test_java_comments_are_ignored_in_functions(self):
@@ -395,7 +391,7 @@ class JavaJvmOption(udf.TestCase):
                 RETURNS int AS
                 %jvmoption
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %jvmoption statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %jvmoption statement'):
             rows = self.query('SELECT test_jvm_opt() FROM dual')
 
     def test_jvm_opt2(self):
@@ -411,7 +407,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'End of %jvmoption statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %jvmoption statement not found'):
             rows = self.query('SELECT test_jvm_opt2() FROM dual')
 
     def test_jvm_opt3(self):
@@ -427,7 +423,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %jvmoption statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %jvmoption statement'):
             rows = self.query('SELECT test_jvm_opt3() FROM dual')
 
     def test_jvm_opt4(self):
@@ -436,7 +432,7 @@ class JavaJvmOption(udf.TestCase):
                 test_jvm_opt4()
                 RETURNS int AS
                 %jvmoption -Xmx512m'''))
-        with self.assertRaisesRegexp(Exception, 'End of %jvmoption statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %jvmoption statement not found'):
             rows = self.query('SELECT test_jvm_opt4() FROM dual')
 
     def test_jvm_opt_tab(self):
@@ -513,7 +509,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, '.*Cannot start the JVM: unknown error.*'):
+        with self.assertRaisesRegex(Exception, '.*Cannot start the JVM: unknown error.*'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt() FROM dual')
 
     def test_jvm_opt_invalid_opt2(self):
@@ -528,7 +524,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, '.*Cannot start the JVM: unknown error.*'):
+        with self.assertRaisesRegex(Exception, '.*Cannot start the JVM: unknown error.*'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt2() FROM dual')
 
     def test_jvm_opt_invalid_opt3(self):
@@ -544,7 +540,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, '.*Cannot start the JVM: unknown error.*'):
+        with self.assertRaisesRegex(Exception, '.*Cannot start the JVM: unknown error.*'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt3() FROM dual')
 
     def test_jvm_opt_invalid_opt4(self):
@@ -559,7 +555,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'invalid arguments'):
+        with self.assertRaisesRegex(Exception, 'invalid arguments'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt4() FROM dual')
 
     def test_jvm_opt_invalid_mem(self):
@@ -574,7 +570,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'VM crashed'):
+        with self.assertRaisesRegex(Exception, 'VM crashed'):
             rows = self.query('SELECT test_jvm_opt_invalid_mem() FROM dual')
 
     def test_jvm_opt_invalid_mem2(self):
@@ -589,7 +585,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:'):
+        with self.assertRaisesRegex(Exception, 'VM error:'):
             rows = self.query('SELECT test_jvm_opt_invalid_mem2() FROM dual')
 
     def test_jvm_opt_invalid_stack_size(self):
@@ -604,7 +600,7 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'unknown error'):
+        with self.assertRaisesRegex(Exception, 'unknown error'):
             rows = self.query('SELECT test_jvm_opt_invalid_stack_size() FROM dual')
 
 
@@ -652,7 +648,7 @@ class JavaScriptClass(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'The main script class .* cannot be found:'):
+        with self.assertRaisesRegex(Exception, 'The main script class .* cannot be found:'):
             self.query('''SELECT a()''')
 
     def test_set_invalid_script_class_2(self):
@@ -667,7 +663,7 @@ class JavaScriptClass(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'The main script class .* cannot be found:'):
+        with self.assertRaisesRegex(Exception, 'The main script class .* cannot be found:'):
             self.query('''SELECT a()''')
 
     def test_invalid_script_class(self):
@@ -680,7 +676,7 @@ class JavaScriptClass(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'The main script class .* cannot be found:'):
+        with self.assertRaisesRegex(Exception, 'The main script class .* cannot be found:'):
             self.query('''SELECT a()''')
 
 
