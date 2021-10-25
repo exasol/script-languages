@@ -26,12 +26,6 @@ from exasol_python_test_framework.exatest.testcase import skipIf
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 
-def utf8encoder(row):
-    return tuple(
-        (x.encode('utf-8') if isinstance(x, unicode) else x)
-        for x in row)
-
-
 def getPythonVersionInUDFs(server, script_languages):
     log = logging.getLogger('unicodedata')
     log.info("trying to figure out python version of python in UDFs")
@@ -61,9 +55,9 @@ def getPythonVersionInUDFs(server, script_languages):
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
-    out, _err = exaplus.communicate(sql)
+    out, _err = exaplus.communicate(sql.encode('utf-8'))
     pythonVersionInUdf = -1
-    for line in out.strip().split('\n'):
+    for line in out.strip().decode('utf-8').split(sep="\n"):
         m = re.search(r'Python=(\d)', line)
         if m:
             pythonVersionInUdf = int(m.group(1))
@@ -111,7 +105,7 @@ def setUpModule():
                    unicodedata.normalize('NFKC', u),  # VARCHAR(3) UNICODE
                    unicodedata.normalize('NFKD', u),  # VARCHAR(3) UNICODE
                    )
-            c.writerow(utf8encoder(row))
+            c.writerow(row)
         csvfile.flush()
 
         log.info('loading CSV')

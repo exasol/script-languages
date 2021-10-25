@@ -24,6 +24,7 @@ class Combinations_1_ary(Test):
                 FROM small''')
         self.assertEqual(round(0.6 / 2), round(rows[0][0] / 2))
 
+
     @requires('SCALAR_RETURNS')
     def test_scalar_returns(self):
         rows = self.query('''
@@ -395,9 +396,9 @@ class Combinations_n_ary(Test):
     def partial_sum(n, degree):
         def basic_range(n, d):
             if d == 0:
-                return range(n)
+                return list(range(n))
             else:
-                return sum([range(x) for x in basic_range(n + 1, d - 1)], [])
+                return sum([list(range(x)) for x in basic_range(n + 1, d - 1)], [])
 
         return len(basic_range(n, degree))
 

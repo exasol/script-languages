@@ -65,7 +65,7 @@ class Vectorsize(udf.TestCase):
     @requires('VECTORSIZE_SET')
     @requires('BASIC_RANGE')
     def test_vectorsize_set(self, a, b, c):
-        self.query('''
+        q = '''
                 SELECT max(o)
                 FROM (
                     SELECT fn1.vectorsize_set(%d, %d, n)
@@ -74,7 +74,8 @@ class Vectorsize(udf.TestCase):
                         FROM DUAL
                     )
                 )
-                ''' % (a, b, c))
+                ''' % (a, b, c)
+        self.query(q)
 
 
 if __name__ == '__main__':
