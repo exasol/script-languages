@@ -108,6 +108,3 @@ class HTTPXMLProcessingTest(udf.TestCase):
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

@@ -10,8 +10,6 @@ from exasol_python_test_framework.exatest import skipIf
 from exasol_python_test_framework.exatest.servers import HTTPServer, MessageBox
 from exasol_python_test_framework.exatest.utils import tempdir
 
-running_in_travis = 'TRAVIS' in os.environ
-
 
 class HTTPTest(udf.TestCase):
     def test_selftest(self):
@@ -74,7 +72,6 @@ class XMLProcessingTest(udf.TestCase):
         expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
         self.assertEqual(expected, sorted(result))
 
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xml_processing(self):
         self.query(udf.fixindent('''
                 CREATE python SCALAR SCRIPT
@@ -110,7 +107,6 @@ class XMLProcessingTest(udf.TestCase):
         expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
         self.assertRowsEqual(expected, rows)
 
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_xmlns_processing(self):
         self.query(udf.fixindent('''
                 CREATE python SCALAR SCRIPT

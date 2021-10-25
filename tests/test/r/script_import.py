@@ -1,13 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import string
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import useData
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData
 
 class ScriptImport(udf.TestCase):
 
@@ -46,7 +41,7 @@ class ScriptImport(udf.TestCase):
         self.assertRowsEqual([(42,)], rows)
 
     def test_import_is_semi_case_sensitive(self):
-        def check(name, n):
+        def check(script_name, n):
             self.query(udf.fixindent('''
                 CREATE OR REPLACE r SCALAR SCRIPT
                 foo()
@@ -56,9 +51,9 @@ class ScriptImport(udf.TestCase):
                     m <- exa$import_script(%s)
                     m$f()
                 }
-                /''' % name))
+                /''' % script_name))
             self.assertRowsEqual([(n,)],
-                self.query('SELECT foo() FROM DUAL'))
+                                 self.query('SELECT foo() FROM DUAL'))
 
         for name in 'bar', 'Bar', 'BAR':
             self.query(udf.fixindent('''
@@ -69,8 +64,8 @@ class ScriptImport(udf.TestCase):
                 f <- function() {
                     %d
                 }
-                /''' % (name, sum(x in string.uppercase for x in name))
-                ))
+                /''' % (name, sum(x.isupper() for x in name))
+                                     ))
 
         check("'bar'", 3)
         check("'Bar'", 3)
@@ -100,10 +95,10 @@ class ScriptImport(udf.TestCase):
             '''))
         rows = self.query('SELECT foo() FROM DUAL')
         self.assertRowsEqual([
-                    ('bottom', 0),
-                    ('bottom_value', 42),
-                    ('unknown_module', 1)],
-                sorted(rows))
+            ('bottom', 0),
+            ('bottom_value', 42),
+            ('unknown_module', 1)],
+            sorted(rows))
 
     def test_import_fails_for_lua_script(self):
         self.query(udf.fixindent('''
@@ -156,7 +151,6 @@ class ScriptImport(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'Error .* wrong language PYTHON'):
             self.query('SELECT foo() FROM DUAL')
 
-
     def test_imported_scripts_are_cached(self):
         self.query(udf.fixindent('''
             CREATE r SCALAR SCRIPT
@@ -179,7 +173,7 @@ class ScriptImport(udf.TestCase):
         ('fn2', 'exa_db.fn2.bottom'),
         ('fn3', 'fn2.bottom'),
         ('fn3', 'exa_db.fn2.bottom')
-        ])
+    ])
     def test_import_works_with_qualified_names(self, schema, name):
         self.query('OPEN SCHEMA %s' % schema)
         self.query(udf.fixindent('''
@@ -314,8 +308,6 @@ class ScriptImport(udf.TestCase):
         rows = foo_conn.query('''select * from FN2.spot42542_view''')
         self.assertRowsEqual([(42,)], rows)
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

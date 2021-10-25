@@ -1,11 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import os
-import sys
 
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-import udf
+from exasol_python_test_framework import udf
 
 
 class LinkerNamespaceBaseTest(udf.TestCase):
@@ -26,4 +23,3 @@ class LinkerNamespaceBaseTest(udf.TestCase):
         rows = self.query("SELECT linker_namespace_test(search_string) FROM "
                           "(SELECT search_string FROM (VALUES {0}) AS t(search_string))".format(lib_value_str))
         return rows
-

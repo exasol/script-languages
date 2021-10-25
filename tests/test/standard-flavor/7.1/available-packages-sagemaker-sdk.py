@@ -1,18 +1,13 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest.testcase import useData
 
-import udf
-from exatest.testcase import useData
 
 class AvailablePythonPackages(udf.TestCase):
     def setUp(self): 
-        self.query('create schema available_packages', ignore_errors=True) 
-
-
+        self.query('create schema available_packages', ignore_errors=True)
 
     data = [
             ("sagemaker",),
@@ -44,9 +39,5 @@ class AvailablePythonPackages(udf.TestCase):
                 raise
 
 
-
-
-
 if __name__ == '__main__':
     udf.main()
-

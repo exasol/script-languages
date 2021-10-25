@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-
-sys.path.append(os.path.realpath(__file__ + '/../../../linker-namespace-sanity'))
 
 from exasol_python_test_framework import udf
-import linker_namespace_base_test
+from ...linker_namespace_sanity import linker_namespace_base_test
 
 
 class LinkerNamespaceTest(linker_namespace_base_test.LinkerNamespaceBaseTest):

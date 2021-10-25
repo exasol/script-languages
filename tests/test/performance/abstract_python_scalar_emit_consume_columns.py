@@ -1,14 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
-import os
-import sys
-import time
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-sys.path.append(os.path.realpath(__file__ + '/..'))
-
-import udf
+from exasol_python_test_framework import udf
 from abstract_performance_test import AbstractPerformanceTest
 
 
@@ -40,11 +33,9 @@ class AbstractScalarEmitConsumeColumnsPythonPerformanceTest(AbstractPerformanceT
                     booleanVal = ctx.booleanVal
                     dateVal = ctx.dateVal
                     timestampVal = ctx.timestampVal
-                '''%(python_version)))
+                ''' % (python_version)))
         self.query("commit")
     
     def execute_consume_next(self):
-        self.run_test(15, 3, 2.0, "SELECT CONSUME_COLUMNS(intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T")
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-
+        self.run_test(15, 3, 2.0, "SELECT CONSUME_COLUMNS(intVal,longVal,bigdecimalVal,decimalVal,doubleVal,"
+                                  "doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T")

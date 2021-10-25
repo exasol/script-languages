@@ -1,18 +1,14 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
 import os
-import sys
-import time
 import tempfile
 import subprocess
 import threading
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-sys.path.append(os.path.realpath(__file__ + '/..'))
-
-import udf
+from exasol_python_test_framework import udf
 from abstract_performance_test import AbstractPerformanceTest
+
 
 class SetEmitConsumeLargeStringColumnPythonPeformanceTest(AbstractPerformanceTest):
 
@@ -61,14 +57,11 @@ class SetEmitConsumeLargeStringColumnPythonPeformanceTest(AbstractPerformanceTes
             self.query('''INSERT INTO T select * from BATCH;''')
         self.query("commit")
 
-
     def write_into_fifo(self, fifo_filename, column_values, rows):
         with open(fifo_filename,"w") as f:
             for i in range(rows):
                 f.write(column_values)
                 f.write("\n")
-
-
 
     def setUp(self):
         self.create_schema();
@@ -93,8 +86,6 @@ class SetEmitConsumeLargeStringColumnPythonPeformanceTest(AbstractPerformanceTes
         self.run_test(15, 3, 2.0, "SELECT CONSUME_NEXT_COLUMNS(%s) FROM T"%self.column_names)
         #self.run_test(2, 2.0, "SELECT %s FROM T"%self.column_names)
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

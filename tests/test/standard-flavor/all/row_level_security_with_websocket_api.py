@@ -1,11 +1,6 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
-
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
-
-import udf
+from exasol_python_test_framework import udf
 import os
 
 
@@ -82,8 +77,8 @@ class WebsocketAPIConnectionTest(udf.TestCase):
         with self.expectations():
             self.check_data_access_for_user("u1", "u1")
             self.check_data_access_for_user("u2", "u2")
-            self.check_row_level_security_for_user("u1", "u1", [("i", "j",True)])
-            self.check_row_level_security_for_user("u2", "u2", [("e", "f",True),("g", "h",False)])
+            self.check_row_level_security_for_user("u1", "u1", [("i", "j", True)])
+            self.check_row_level_security_for_user("u2", "u2", [("e", "f", True), ("g", "h", False)])
 
     def check_data_access_for_user(self, user, pwd):
         data_access_failure = False
@@ -97,7 +92,7 @@ class WebsocketAPIConnectionTest(udf.TestCase):
     def check_row_level_security_for_user(self, user, pwd, tuples):
         con = self.getConnection(user, pwd)
         rows = con.query("select * from row_level_security.t;")
-        expected = [(t[0],t[1],user.upper(),t[2]) for t in tuples]
+        expected = [(t[0], t[1], user.upper(), t[2]) for t in tuples]
         self.expectRowsEqualIgnoreOrder(rows, expected)
 
     def tearDown(self):

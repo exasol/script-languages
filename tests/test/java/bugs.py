@@ -2,6 +2,7 @@
 
 from exasol_python_test_framework import udf
 
+
 class JavaBugsTest(udf.TestCase):
     def setUp(self):
         self.schema=self.__class__.__name__

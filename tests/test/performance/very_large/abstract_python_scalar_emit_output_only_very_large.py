@@ -1,16 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
-import os
-import sys
-import time
+from exasol_python_test_framework import udf
+from ..abstract_performance_test import AbstractPerformanceTest
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
-sys.path.append(os.path.realpath(__file__ + '/..'))
-sys.path.append(os.path.realpath(__file__ + '/../..'))
-
-import udf
-from abstract_performance_test import AbstractPerformanceTest
 
 class AbstractScalarEmitOutputOnlyVeryLargePythonPerformanceTest(AbstractPerformanceTest):
 
@@ -75,7 +68,5 @@ class AbstractScalarEmitOutputOnlyVeryLargePythonPerformanceTest(AbstractPerform
     
     def execute_consume_next(self):
         emit_size=1000*10**4
-        self.run_test(1, 0, 2.0, "SELECT count(*) from (SELECT OUTPUT_ONLY(%s, intVal,longVal,bigdecimalVal,decimalVal,doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T) as q" % emit_size)
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-
+        self.run_test(1, 0, 2.0, "SELECT count(*) from (SELECT OUTPUT_ONLY(%s, intVal,longVal,bigdecimalVal,decimalVal,"
+                                 "doubleVal,doubleIntVal,stringVal,booleanVal,dateVal,timestampVal) FROM T) as q" % emit_size)

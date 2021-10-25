@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-import string
-
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.exatest import useData
+
 
 class ScriptImport(udf.TestCase):
 
@@ -113,10 +112,10 @@ class ScriptImport(udf.TestCase):
 
     def test_import_is_case_sensitive(self):
         scripts = [
-                ('my_module', 'my_module', 4711),
-                ('My_Module', 'My_Module', 42),
-                ('MY_MODULE', 'MY_MODULE', 1234),
-                ]
+            ('my_module', 'my_module', 4711),
+            ('My_Module', 'My_Module', 42),
+            ('MY_MODULE', 'MY_MODULE', 1234),
+        ]
         sql = '''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 "%s"()
@@ -150,10 +149,10 @@ class ScriptImport(udf.TestCase):
 
     def test_preprocessed_import_is_case_sensitive(self):
         scripts = [
-                ('my_module', 'my_module', 4711),
-                ('My_Module', 'My_Module', 42),
-                ('MY_MODULE', 'MY_MODULE', 1234),
-                ]
+            ('my_module', 'my_module', 4711),
+            ('My_Module', 'My_Module', 42),
+            ('MY_MODULE', 'MY_MODULE', 1234),
+        ]
         sql = '''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 "%s"()
@@ -235,10 +234,10 @@ class ScriptImport(udf.TestCase):
 
     def test_preprocessed_import_multiple(self):
         scripts = [
-                ('A', 'A', 1),
-                ('B', 'B', 2),
-                ('C', 'C', 3),
-                ]
+            ('A', 'A', 1),
+            ('B', 'B', 2),
+            ('C', 'C', 3),
+        ]
         sql = '''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 "%s"()
@@ -339,7 +338,7 @@ class ScriptImport(udf.TestCase):
         self.assertRowsEqual([(42,)], rows)
 
     def test_import_is_semi_case_sensitive(self):
-        def check(name, classname, n):
+        def check(import_name, classname, n):
             self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 foo()
@@ -350,9 +349,9 @@ class ScriptImport(udf.TestCase):
                         return %s.f();
                     }
                 }
-                /''' % (name, classname)))
+                /''' % (import_name, classname)))
             self.assertRowsEqual([(n,)],
-                self.query('SELECT foo() FROM DUAL'))
+                                 self.query('SELECT foo() FROM DUAL'))
 
         for name in 'bar', 'Bar', 'BAR':
             self.query(udf.fixindent('''
@@ -365,7 +364,7 @@ class ScriptImport(udf.TestCase):
                     }
                 }
                 /''' % (name, name, sum(x.isupper() for x in name))
-                ))
+                                     ))
 
         check("bar", "BAR", 3)
         check("Bar", "BAR", 3)
@@ -450,12 +449,12 @@ class ScriptImport(udf.TestCase):
             self.query('SELECT foo() FROM DUAL')
 
     @useData([
-            ('fn2', 'bottom', 'BOTTOM'),
-            ('fn2', 'fn2.bottom', 'BOTTOM'),
-            ('fn2', 'exa_db.fn2.bottom', 'BOTTOM'),
-            ('fn3', 'fn2.bottom', 'BOTTOM'),
-            ('fn3', 'exa_db.fn2.bottom', 'BOTTOM')
-            ])
+        ('fn2', 'bottom', 'BOTTOM'),
+        ('fn2', 'fn2.bottom', 'BOTTOM'),
+        ('fn2', 'exa_db.fn2.bottom', 'BOTTOM'),
+        ('fn3', 'fn2.bottom', 'BOTTOM'),
+        ('fn3', 'exa_db.fn2.bottom', 'BOTTOM')
+    ])
     def test_import_works_with_qualified_names(self, schema, name, classname):
         self.query('OPEN SCHEMA %s' % schema)
         self.query(udf.fixindent('''
@@ -472,7 +471,6 @@ class ScriptImport(udf.TestCase):
             ''' % (name, classname)))
         rows = self.query('SELECT foo() FROM DUAL')
         self.assertRowsEqual([(42,)], rows)
-
 
     def test_chained_import_works_via_function_call(self):
         self.query(udf.fixindent('''
@@ -566,6 +564,3 @@ class ScriptImport(udf.TestCase):
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

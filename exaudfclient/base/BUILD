@@ -130,7 +130,7 @@ cc_binary(
 ## so that the user can load it's own versions of those dependencies without any conflict.
 ## With this binary we simulate an error in our build system, that is a direct depedency to protobuf/zmq,
 ## which then must be detected with the linker namespace tests:
-## test/linker-namespace-sanity/linker_namespace_sanity.py checks the wrong configuration
+## test/linker_namespace_sanity/linker_namespace_sanity.py checks the wrong configuration
 ## Besides this the test under test/python3/all/linker_namespace.py checks the normal build, which expects
 ## not to find any occurence of the dependencies (protobuf/zmq) in the primary linker namespace.
 ##

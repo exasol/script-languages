@@ -1,11 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
+from exasol_python_test_framework import udf
 
-import udf
 
 class AvailablePythonPackages(udf.TestCase):
     def setUp(self): 
@@ -28,7 +25,7 @@ class AvailablePythonPackages(udf.TestCase):
             if fail:
                 return
             if alternative:
-                self.import_test(alternative,fail)
+                self.import_test(alternative, fail)
             else:
                 raise
 
@@ -50,7 +47,7 @@ class AvailablePythonPackages(udf.TestCase):
     def test_15(self): self.import_test('pykickstart')
     def test_16(self): self.import_test('pyodbc')
     def test_17(self): self.import_test('OpenSSL')
-    def test_18(self): self.import_test('pyPdf','PyPDF2')
+    def test_18(self): self.import_test('pyPdf', 'PyPDF2')
     def test_19(self): self.import_test('ldb')
     def test_20(self): self.import_test('ldap')
     def test_21(self): self.import_test('roman')
@@ -73,6 +70,7 @@ class AvailablePythonPackages(udf.TestCase):
     def test_38(self): self.import_test('boto3')
     def test_39(self): self.import_test('simplejson')
 
+
 class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
         self.query('create schema available_packages', ignore_errors=True) 
@@ -94,7 +92,7 @@ class AvailablePython3Packages(udf.TestCase):
             if fail:
                 return
             if alternative:
-                self.import_test(alternative,fail)
+                self.import_test(alternative, fail)
             else:
                 raise
 
@@ -135,10 +133,10 @@ class AvailablePython3Packages(udf.TestCase):
     def test_34(self): self.import_test('requests')
     def test_35(self): self.import_test('pyexasol')
     def test_36(self): self.import_test('EXASOL')
-    def test_36(self): self.import_test('paramiko')
-    def test_37(self): self.import_test('pysftp')
-    def test_38(self): self.import_test('boto3')
-    def test_39(self): self.import_test('simplejson')
+    def test_37(self): self.import_test('paramiko')
+    def test_38(self): self.import_test('pysftp')
+    def test_39(self): self.import_test('boto3')
+    def test_40(self): self.import_test('simplejson')
 
 
 class AvailableRPackages(udf.TestCase):

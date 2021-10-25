@@ -1,11 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
 
 class RInterpreter(udf.TestCase):
     def setUp(self):
@@ -36,8 +32,6 @@ class RInterpreter(udf.TestCase):
                 /
                 '''))
 
+
 if __name__ == '__main__':
     udf.main()
-	
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

@@ -50,5 +50,6 @@ class JavaUnicode(udf.TestCase):
         expected = 'x%dx' % (len(string.ascii_letters) + len(u))
         self.assertIn(expected, out.decode("utf-8"))
 
+
 if __name__ == '__main__':
     udf.main()
