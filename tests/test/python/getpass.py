@@ -23,7 +23,7 @@ class GetpassTest(udf.TestCase):
                 /
                 '''))
         rows = self.query("select get_user_from_passwd()")
-        expected = u"exadefusr"
+        expected = "exadefusr"
         self.assertEqual(expected, rows[0][0])
 
 

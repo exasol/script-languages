@@ -411,7 +411,7 @@ class Combinations_n_ary(Test):
             'SELECT fn1.basic_range(n+1) FROM (\n' * n +
             'SELECT fn1.basic_range(5) FROM DUAL\n' +
             ')' * n)
-        self.assertEquals(self.partial_sum(5, n), self.rowcount())
+        self.assertEqual(self.partial_sum(5, n), self.rowcount())
 
     @useData((i,) for i in range(10))
     def test_set_returns_n_scalar_emits(self, n):
@@ -423,7 +423,7 @@ class Combinations_n_ary(Test):
             'SELECT fn1.basic_range(n+1) FROM (\n' * n +
             'SELECT fn1.basic_range(5) FROM DUAL\n' +
             ')' * (n + 1))
-        self.assertEquals(4, rows[0][0])
+        self.assertEqual(4, rows[0][0])
 
 
 if __name__ == '__main__':

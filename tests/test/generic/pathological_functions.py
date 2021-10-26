@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
-import os
-
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import requires
-from exasol_python_test_framework.exatest.testcase import skipIf
-running_in_travis = 'TRAVIS' in os.environ
 
 
 class Test(udf.TestCase):
@@ -18,26 +14,6 @@ class Test(udf.TestCase):
                 self.query('SELECT fn1.sleep(100) FROM dual')
         finally:
             self.query('ALTER SESSION SET QUERY_TIMEOUT = 0')
-   
-    # TODO move test to the end of the sequence of tests to prevent a premature test failures 
-    @requires('MEM_HOG')
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
-    def test_kill_mem_hog(self):
-        self.query('SELECT fn1.mem_hog(100) FROM dual')
-        err_text = {
-            'lua': 'Connection lost after session running out of memory.',
-            'ext-python': 'MemoryError:',
-            'python': '(Connection lost after system running out of memory)|(Query terminated because system running out of memory)',
-            'python3': '(Connection lost after system running out of memory)|(Query terminated because system running out of memory)',
-            'r': 'Connection lost after system running out of memory.',
-            'java': 'java.lang.OutOfMemoryError: Java heap space',
-            }
-        # This test requires at least 10 GB main memory otherwise the databases crashes and all subsequent tests will fail 
-        mb = int(9.2 * 1024*1024)
-        with self.assertRaisesRegex(Exception, err_text[udf.opts.lang]):
-            if udf.opts.lang == "ext-python":
-                mb = mb*1024*1024
-            self.query('SELECT fn1.mem_hog(%d) FROM dual' % mb)
 
 
 if __name__ == '__main__':

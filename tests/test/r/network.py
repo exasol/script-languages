@@ -181,7 +181,7 @@ class CleanupTest(udf.TestCase):
         cleanup = sorted([x.split(b':')[1] for x in data if x.startswith(b'cleanup')])
         self.assertEqual(init, cleanup)
         # FIXME: math.random() is not thread-unique
-        #self.assertEquals(sorted(set(init)), init)
+        #self.assertEqual(sorted(set(init)), init)
 
 
 if __name__ == '__main__':

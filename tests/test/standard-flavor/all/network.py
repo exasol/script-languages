@@ -6,7 +6,6 @@ from urllib import request
 import lxml.etree as etree
 
 from exasol_python_test_framework import udf
-from exasol_python_test_framework.exatest import skipIf
 from exasol_python_test_framework.exatest.servers import HTTPServer, MessageBox
 from exasol_python_test_framework.exatest.utils import tempdir
 
@@ -17,7 +16,7 @@ class HTTPTest(udf.TestCase):
             with open(os.path.join(tmp, 'foo.xml'), 'w') as f:
                 f.write('''<foo/>\n''')
             with HTTPServer(tmp) as hs:
-                self.assertIn('<foo/>',
+                self.assertIn(b'<foo/>',
                               request.urlopen('http://%s:%d/foo.xml' % hs.address).read())
 
 
@@ -65,7 +64,7 @@ class XMLProcessingTest(udf.TestCase):
                 ''')
 
     def test_dry_run(self):
-        tree = etree.XML(self.xml().encode())
+        tree = etree.XML(self.xml().encode('utf-8'))
         result = []
         for u in tree.findall('user/[@active="1"]'):
             result.append((u.findtext('first_name'), u.findtext('family_name')))
@@ -189,6 +188,7 @@ class CleanupTest(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA t1')
+        self.commit()
 
     def test_cleanup_is_called_at_least_once(self):
         with MessageBox() as mb:
@@ -218,6 +218,7 @@ class CleanupTest(udf.TestCase):
                     sock.send(msg)
                     sock.close()
                 '''))
+            self.commit()
             self.query('''SELECT sendmail('%s', %d, 'foobar') FROM DUAL''' %
                        (host, port))
 
@@ -261,10 +262,10 @@ class CleanupTest(udf.TestCase):
         data = mb.data
         self.assertGreater(len(data), 0)
         # for x in sorted(data): print('received: '+str(x))
-        init = sorted([x.split(b':')[1] for x in data if x.startswith('init')])
-        cleanup = sorted([x.split(b':')[1] for x in data if x.startswith('cleanup')])
-        self.assertEquals(init, cleanup)
-        self.assertEquals(sorted(set(init)), init)
+        init = sorted([x.split(b':')[1] for x in data if x.startswith(b'init')])
+        cleanup = sorted([x.split(b':')[1] for x in data if x.startswith(b'cleanup')])
+        self.assertEqual(init, cleanup)
+        self.assertEqual(sorted(set(init)), init)
 
     def test_cleanup_is_called_exactly_once_for_each_vm_with_crash_in_run(self):
         with MessageBox() as mb:
@@ -301,11 +302,10 @@ class CleanupTest(udf.TestCase):
 
         data = mb.data
         self.assertGreater(len(data), 0)
-        init = sorted([x.split(':')[1] for x in data if x.startswith('init')])
-        cleanup = sorted([x.split(':')[1] for x in data if x.startswith('cleanup')])
-        self.assertEquals(init, cleanup)
-        self.assertEquals(sorted(set(init)), init)
-
+        init = sorted([x.split(b':')[1] for x in data if x.startswith(b'init')])
+        cleanup = sorted([x.split(b':')[1] for x in data if x.startswith(b'cleanup')])
+        self.assertEqual(init, cleanup)
+        self.assertEqual(sorted(set(init)), init)
 
 if __name__ == '__main__':
     udf.main()

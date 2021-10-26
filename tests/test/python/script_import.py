@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from exasol_python_test_framework import udf
-from exasol_python_test_framework.udf import useData
-from exasol_python_test_framework.exatest.testcase import skip
+from exasol_python_test_framework.udf import useData, get_supported_languages
+from exasol_python_test_framework.exatest.testcase import skipIf
 
 
 class ScriptImport(udf.TestCase):
@@ -110,7 +110,7 @@ class ScriptImport(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'ImportError:.* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
 
-    @skip("R is not necessarily available in python container")
+    @skipIf('R' not in get_supported_languages(), "UDF does not support R")
     def test_import_fails_for_r_script(self):
         self.query(udf.fixindent('''
             CREATE python SCALAR SCRIPT

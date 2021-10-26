@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import os
-from urllib import request
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import lxml.etree as etree
-
 from exasol_python_test_framework import udf
-from exasol_python_test_framework.exatest import skipIf
 from exasol_python_test_framework.exatest.servers import HTTPServer, MessageBox
 from exasol_python_test_framework.exatest.utils import tempdir
 
@@ -18,7 +18,7 @@ class HTTPTest(udf.TestCase):
                 f.write('''<foo/>\n''')
             with HTTPServer(tmp) as hs:
                 self.assertIn(b'<foo/>',
-                              request.urlopen('http://%s:%d/foo.xml' % hs.address).read())
+                              urllib.request.urlopen('http://%s:%d/foo.xml' % hs.address).read())
 
 
 class XMLProcessingTest(udf.TestCase):
@@ -177,7 +177,7 @@ class CleanupTest(udf.TestCase):
                     sock.close()
                 '''))
             self.query('''SELECT sendmail('%s', %d, 'foobar') FROM DUAL''' %
-                    (host, port))
+                       (host, port))
 
         self.assertIn(b'foobar', mb.data)
 

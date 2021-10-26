@@ -25,7 +25,7 @@ class PythonUnicode(udf.TestCase):
         exaplus = subprocess.Popen(cmd.split(), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
 
-        u = u'äöüß' + chr(382) + chr(65279) + chr(63882) + chr(64432)
+        u = 'äöüß' + chr(382) + chr(65279) + chr(63882) + chr(64432)
 
         sql = udf.fixindent('''
             DROP SCHEMA fn1 CASCADE;
@@ -43,9 +43,9 @@ class PythonUnicode(udf.TestCase):
             /
             SELECT 'x' || fn1.unicode_in_script_body() || 'x' FROM DUAL;
         ''' % u)
-        out, _err = exaplus.communicate(sql.encode('utf8'))
+        out, _err = exaplus.communicate(sql.encode('utf-8'))
         expected = 'x%dx' % (len(string.ascii_letters) + len(u))
-        self.assertIn(expected, out)
+        self.assertIn(expected, out.decode('utf-8'))
 
 
 if __name__ == '__main__':
