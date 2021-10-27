@@ -3,7 +3,7 @@ python-zmq|16.0.2-2build2
 gdb|8.1.1-0ubuntu1
 valgrind|1:3.13.0-2ubuntu2.3
 gdbserver|8.1.1-0ubuntu1
-binutils|2.30-21ubuntu1~18.04.5
+binutils|2.30-21ubuntu1~18.04.7
 patchelf|0.9-1
 chrpath|0.16-2
 strace|4.21-1ubuntu1
