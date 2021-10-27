@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from exasol_python_test_framework import udf
-from exasol_python_test_framework.udf import requires, expectedFailureIfLang
+from exasol_python_test_framework.udf import requires
 
 
 class TestEcho(udf.TestCase):
@@ -55,7 +55,7 @@ class TestEcho(udf.TestCase):
         self.assertRowsEqual([(True, True, True, True)], rows)
 
     @requires('ECHO_INTEGER')
-    @expectedFailureIfLang('r')
+    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_integer_limits(self):
         """DWA-13784 (R)"""
         rows = self.query('''
@@ -89,7 +89,7 @@ class TestEcho(udf.TestCase):
         self.assertRowsEqual([(True, True, True)], rows)
 
     @requires('ECHO_DECIMAL_36_0')
-    @expectedFailureIfLang('r')
+    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_decimal_36_0_limits(self):
         """DWA-13784 (R)"""
         rows = self.query('''
@@ -110,7 +110,7 @@ class TestEcho(udf.TestCase):
         self.assertRowsEqual([(True, True, True)], rows)
 
     @requires('ECHO_DECIMAL_36_36')
-    @expectedFailureIfLang('r')
+    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_decimal_36_36_limits(self):
         """DWA-13784 (R)"""
         rows = self.query('''

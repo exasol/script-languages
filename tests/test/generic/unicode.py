@@ -17,11 +17,11 @@ from exasol_python_test_framework import udf
 udf.pythonVersionInUdf = -1
 from exasol_python_test_framework.udf import (
     requires,
-    useData,
-    expectedFailureIfLang,
+    useData
 )
 
 from exasol_python_test_framework.exatest.testcase import skipIf
+
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
@@ -74,7 +74,8 @@ def setUpModule():
     log = logging.getLogger('unicodedata')
 
     log.info('generating unicodedata CSV')
-    with tempfile.NamedTemporaryFile(prefix='unicode-', suffix='.csv', encoding='utf-8', mode='w+', delete=False) as csvfile:
+    with tempfile.NamedTemporaryFile(prefix='unicode-', suffix='.csv', encoding='utf-8', mode='w+',
+                                     delete=False) as csvfile:
         c = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
         for i in range(sys.maxunicode + 1):
             if i >= 5024 and i <= 5119:
@@ -143,11 +144,11 @@ def setUpModule():
         env = os.environ.copy()
         env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
         exaplus = subprocess.Popen(
-                cmd.split(),
-                env=env,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT)
+            cmd.split(),
+            env=env,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
         out, _err = exaplus.communicate(sql.encode('utf-8'))
     if exaplus.returncode != 0 or _err is not None:
         log.critical('EXAplus error: %d', exaplus.returncode)
@@ -210,8 +211,8 @@ class Unicode(udf.TestCase):
 class UnicodeData(udf.TestCase):
 
     @requires('UNICODE_LOWER')
-    # @expectedFailureIfLang('java')
-    # @expectedFailureIfLang('r')
+    # @udf.TestCase.expectedFailureIfLang('java')
+    # @udf.TestCase.expectedFailureIfLang('r')
     def test_unicode_lower_is_subset_of_Unicode520_part1(self):
         if udf.pythonVersionInUdf == 2:
             rows = self.query('''
@@ -234,8 +235,8 @@ class UnicodeData(udf.TestCase):
             self.assertRowsEqual([], rows)
 
     @requires('UNICODE_LOWER')
-    # @expectedFailureIfLang('java')
-    # @expectedFailureIfLang('r')
+    # @udf.TestCase.expectedFailureIfLang('java')
+    # @udf.TestCase.expectedFailureIfLang('r')
     # @skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
     def test_unicode_lower_is_subset_of_Unicode520_part1_on_undefined_block(self):
         """DWA-19940 (R)"""
@@ -257,9 +258,9 @@ class UnicodeData(udf.TestCase):
             self.assertRowsEqual([], rows)
 
     @requires('UNICODE_LOWER')
-    # @expectedFailureIfLang('lua')
-    # @expectedFailureIfLang('java')
-    # @expectedFailureIfLang('python3')
+    # @udf.TestCase.expectedFailureIfLang('lua')
+    # @udf.TestCase.expectedFailureIfLang('java')
+    # @udf.TestCase.expectedFailureIfLang('python3')
     @skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
     def test_unicode_lower_is_subset_of_Unicode520_part2(self):
         """DWA-13702 (Lua)"""
@@ -280,8 +281,8 @@ class UnicodeData(udf.TestCase):
             self.assertRowsEqual([], rows)
 
     @requires('UNICODE_UPPER')
-    # @expectedFailureIfLang('java')
-    # @expectedFailureIfLang('r')
+    # @udf.TestCase.expectedFailureIfLang('java')
+    # @udf.TestCase.expectedFailureIfLang('r')
     # @skipIf(udf.pythonVersionInUdf == 3, 'Unicode tests do not work in Python3 ... investigate!')
     def test_unicode_upper_is_subset_of_Unicode520_part1(self):
         if udf.pythonVersionInUdf == 2:
@@ -308,8 +309,8 @@ class UnicodeData(udf.TestCase):
             self.assertRowsEqual([], rows)
 
     @requires('UNICODE_UPPER')
-    # @expectedFailureIfLang('java')
-    # @expectedFailureIfLang('r')
+    # @udf.TestCase.expectedFailureIfLang('java')
+    # @udf.TestCase.expectedFailureIfLang('r')
     #    @skipIf(udf.pythonVersionInUdf == 3, 'Unicode tests do not work in Python3 ... investigate!')
     def test_unicode_upper_is_subset_of_Unicode520_part1_on_undefined_block(self):
         """DWA-19940 (R)"""
@@ -331,7 +332,7 @@ class UnicodeData(udf.TestCase):
             self.assertRowsEqual([], rows)
 
     @requires('UNICODE_UPPER')
-    # @expectedFailureIfLang('lua')
+    # @udf.TestCase.expectedFailureIfLang('lua')
     def test_unicode_upper_is_subset_of_Unicode520_part2(self):
         """DWA-13388 (Lua); DWA-13702 (Lua)"""
         rows = self.query('''
@@ -350,7 +351,7 @@ class UnicodeData(udf.TestCase):
         self.assertRowsEqual([], rows)
 
     @requires('UNICODE_UPPER')
-    @expectedFailureIfLang('lua')
+    @udf.TestCase.expectedFailureIfLang('lua')
     def test_unicode_upper_is_subset_of_Unicode520_part3(self):
         """DWA-13388 (Lua); DWA-13702 (Lua); DWA-13782 (R)"""
         rows = self.query('''
@@ -381,7 +382,7 @@ class UnicodeData(udf.TestCase):
         self.assertRowsEqual([], rows)
 
     @requires('UNICODE_LEN')
-    # @expectedFailureIfLang('r')
+    # @udf.TestCase.expectedFailureIfLang('r')
     def test_unicode_len_on_undefined_block(self):
         """DWA-19940 (R)"""
         if udf.pythonVersionInUdf == 2:

@@ -6,7 +6,6 @@ import subprocess
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import (
-    expectedFailureIfLang,
     requires,
     SkipTest,
     timer,
@@ -167,7 +166,7 @@ class WordCount(udf.TestCase):
 
     @requires('PERFORMANCE_MAP_UNICODE_WORDS')
     @requires('PERFORMANCE_REDUCE_COUNTS')
-    @expectedFailureIfLang('lua')
+    @udf.TestCase.expectedFailureIfLang('lua')
     def test_word_unicode_count(self):
         """DWA-13860 (lua)"""
         sql = '''
