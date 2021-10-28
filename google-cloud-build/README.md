@@ -20,12 +20,13 @@ This setups a CI Builds with Google Cloud Build. It uses Triggers to automate di
     3. set config variables in .env/env.yaml
     4. ./setup.sh
 
+Please note that the setup needs to be done for each repository (e.g. script-languagges and script-languages-release)
 ## Usage
 
 The following Triggers get created:
 
 - `Build branch <flavor>`
-  - Builds and tests the flavor for branches with the prefix `^(feature|bug|enhancement|refactoring|ci)/.*`
+  - Builds and tests the flavor for branches with the prefix `^(feature|bug|enhancement|refactoring|ci|security)/.*`
   - Intended for branches created by maintainers
   - Provides secrets to the build to push images to the Docker Registry
   - Uses cached images if possible for faster builds
@@ -59,6 +60,7 @@ Additional commands:
 - `cancel_all_builds.sh`: Cancels all builds in the current project, not only the builds of this setup
 - `run_triggers.sh <commitSha> <file-pattern>`: Runs a trigger for a commit if its config file can be found by the file-pattern. The config files are stored under triggers/flavor-config
 - `setup.sh` can be also used for updating the setups
+- `update_triggers.sh` updates the triggers on Google Cloud.
 
 ## Additional Notes:
 - The trigger_ids and encrypted passwords are saved in .env, this directory is cruical for updating the setup. **Create a Backup**
