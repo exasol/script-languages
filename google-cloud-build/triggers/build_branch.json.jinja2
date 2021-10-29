@@ -17,7 +17,7 @@
     {% if build_mode == "rebuild"  %}
     "branchName": "^(develop|rebuild/.*)$"
     {% elif build_mode == "build" %}
-    "branchName": "^(feature|bug|enhancement|refactoring|ci)/.*"
+    "branchName": "^(feature|bug|enhancement|refactoring|ci|security)/.*"
     {% elif build_mode == "release" %} 
     "branchName": "^(master|ci-release-test/.*)$"
     {% endif %}
