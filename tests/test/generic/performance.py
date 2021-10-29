@@ -1,23 +1,19 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import locale
 import os
 import subprocess
-import sys
-import traceback
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import (
-        expectedFailureIfLang,
-        requires,
-        SkipTest,
-        timer,
-        skip,
-        )
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import (
+    requires,
+    SkipTest,
+    timer,
+    skip,
+)
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
 
 class WordCount(udf.TestCase):
 
@@ -39,7 +35,7 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count query:", t.duration, repr(ret)
+        print("test_word_count query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_WORDS')
@@ -57,7 +53,7 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count_fast0 query:", t.duration, repr(ret)
+        print("test_word_count_fast0 query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_WORDS')
@@ -75,7 +71,7 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count_fast7 query:", t.duration, repr(ret)
+        print("test_word_count_fast7 query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_WORDS')
@@ -93,7 +89,7 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count_fast77 query:", t.duration, repr(ret)
+        print("test_word_count_fast77 query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_WORDS')
@@ -111,7 +107,7 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count_fast777 query:", t.duration, repr(ret)
+        print("test_word_count_fast777 query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_WORDS')
@@ -129,7 +125,7 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count_fast7777 query:", t.duration, repr(ret)
+        print("test_word_count_fast7777 query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_WORDS')
@@ -147,7 +143,7 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count_fast777777 query:", t.duration, repr(ret)
+        print("test_word_count_fast777777 query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_WORDS')
@@ -165,14 +161,14 @@ class WordCount(udf.TestCase):
 
         with timer() as t:
             ret = self.query(sql)
-        print "test_word_count_fast77777777 query:", t.duration, repr(ret)
+        print("test_word_count_fast77777777 query:", t.duration, repr(ret))
         self.assertLessEqual(t.duration, 160)
 
     @requires('PERFORMANCE_MAP_UNICODE_WORDS')
     @requires('PERFORMANCE_REDUCE_COUNTS')
-    @expectedFailureIfLang('lua')
+    @udf.TestCase.expectedFailureIfLang('lua')
     def test_word_unicode_count(self):
-        '''DWA-13860 (lua)'''
+        """DWA-13860 (lua)"""
         sql = '''
             SELECT performance_reduce_counts(w, c)
             FROM (
@@ -186,9 +182,9 @@ class WordCount(udf.TestCase):
             self.query(sql)
         self.assertLessEqual(t.duration, 11)
 
+
 @skip('csv data for tables wiki_freq and wiki_names is currently not available')
 class FrequencyAnalysis(udf.TestCase):
-
     maxDiff = 1024 * 20
 
     def compare(self, old, new):
@@ -210,7 +206,7 @@ class FrequencyAnalysis(udf.TestCase):
             else:
                 self.log.info('diff is still to big')
                 self.fail("difference: +%d/-%d elements" %
-                        (len(only_new), len(only_old)))
+                          (len(only_new), len(only_old)))
 
     @classmethod
     def setUpClass(cls):
@@ -234,10 +230,10 @@ class FrequencyAnalysis(udf.TestCase):
 
         cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol
 		        -no-config -autocommit ON -L -pipe''' % {
-			        'exaplus': os.environ.get('EXAPLUS',
-				        '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
-			        'conn': udf.opts.server
-			        }
+            'exaplus': os.environ.get('EXAPLUS',
+                                      '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
+            'conn': udf.opts.server
+        }
         env = os.environ.copy()
         env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
         exaplus = subprocess.Popen(
@@ -247,7 +243,7 @@ class FrequencyAnalysis(udf.TestCase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 )
-        out, _err = exaplus.communicate(sql)
+        out, _err = exaplus.communicate(sql.encode('utf-8'))
         if exaplus.returncode != 0:
             cls.log.critical('EXAplus error: %d', exaplus.returncode)
             cls.log.error(out)
@@ -277,7 +273,7 @@ class FrequencyAnalysis(udf.TestCase):
 
         data = [tuple(x) for x in rows1]
         reference = [tuple(x) for x in rows2]
-        print "test_frequency_analysis query:", t1.duration, t2.duration
+        print("test_frequency_analysis query:", t1.duration, t2.duration)
         self.compare(reference, data)
 
     @requires('PERFORMANCE_REDUCE_CHARACTERS_FAST')
@@ -302,7 +298,7 @@ class FrequencyAnalysis(udf.TestCase):
 
         data = [tuple(x) for x in rows1]
         reference = [tuple(x) for x in rows2]
-        print "test_frequency_analysis_fast query:", t1.duration, t2.duration
+        print("test_frequency_analysis_fast query:", t1.duration, t2.duration)
         self.compare(reference, data)
 
     @requires('PERFORMANCE_REDUCE_CHARACTERS_FAST')
@@ -327,7 +323,7 @@ class FrequencyAnalysis(udf.TestCase):
 
         data = [tuple(x) for x in rows1]
         reference = [tuple(x) for x in rows2]
-        print "test_frequency_analysis_fast0 query:", t1.duration, t2.duration
+        print("test_frequency_analysis_fast0 query:", t1.duration, t2.duration)
         self.compare(reference, data)
 
     @requires('PERFORMANCE_REDUCE_CHARACTERS')
@@ -345,7 +341,6 @@ class FrequencyAnalysis(udf.TestCase):
             GROUP BY w
             ORDER BY c DESC, w ASC''')
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent

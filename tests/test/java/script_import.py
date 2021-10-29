@@ -1,14 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import string
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest import useData
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData
-import exatest
 
 class ScriptImport(udf.TestCase):
 
@@ -62,7 +56,7 @@ class ScriptImport(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'script X not found'):
+        with self.assertRaisesRegex(Exception, 'script X not found'):
             rows = self.query('SELECT cannot_catch_import_exception() FROM dual')
 
     def test_preprocessed_Import_missing_script_name(self):
@@ -72,7 +66,7 @@ class ScriptImport(udf.TestCase):
                 RETURNS int AS
                 %import
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %import statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %import statement'):
             rows = self.query('SELECT missing_import_script_exception() FROM dual')
 
     def test_preprocessed_Import_missing_script_name2(self):
@@ -88,7 +82,7 @@ class ScriptImport(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'End of %import statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %import statement not found'):
             rows = self.query('SELECT missing_import_script_exception2() FROM dual')
 
     def test_preprocessed_Import_missing_script_name3(self):
@@ -104,7 +98,7 @@ class ScriptImport(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'No values found for %import statement'):
+        with self.assertRaisesRegex(Exception, 'No values found for %import statement'):
             rows = self.query('SELECT missing_import_script_exception3() FROM dual')
 
     def test_preprocessed_Import_missing_import_end(self):
@@ -113,15 +107,15 @@ class ScriptImport(udf.TestCase):
                 missing_import_end_exception()
                 RETURNS int AS
                 %import X'''))
-        with self.assertRaisesRegexp(Exception, 'End of %import statement not found'):
+        with self.assertRaisesRegex(Exception, 'End of %import statement not found'):
             rows = self.query('SELECT missing_import_end_exception() FROM dual')
 
     def test_import_is_case_sensitive(self):
         scripts = [
-                ('my_module', 'my_module', 4711),
-                ('My_Module', 'My_Module', 42),
-                ('MY_MODULE', 'MY_MODULE', 1234),
-                ]
+            ('my_module', 'my_module', 4711),
+            ('My_Module', 'My_Module', 42),
+            ('MY_MODULE', 'MY_MODULE', 1234),
+        ]
         sql = '''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 "%s"()
@@ -155,10 +149,10 @@ class ScriptImport(udf.TestCase):
 
     def test_preprocessed_import_is_case_sensitive(self):
         scripts = [
-                ('my_module', 'my_module', 4711),
-                ('My_Module', 'My_Module', 42),
-                ('MY_MODULE', 'MY_MODULE', 1234),
-                ]
+            ('my_module', 'my_module', 4711),
+            ('My_Module', 'My_Module', 42),
+            ('MY_MODULE', 'MY_MODULE', 1234),
+        ]
         sql = '''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 "%s"()
@@ -240,10 +234,10 @@ class ScriptImport(udf.TestCase):
 
     def test_preprocessed_import_multiple(self):
         scripts = [
-                ('A', 'A', 1),
-                ('B', 'B', 2),
-                ('C', 'C', 3),
-                ]
+            ('A', 'A', 1),
+            ('B', 'B', 2),
+            ('C', 'C', 3),
+        ]
         sql = '''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 "%s"()
@@ -344,7 +338,7 @@ class ScriptImport(udf.TestCase):
         self.assertRowsEqual([(42,)], rows)
 
     def test_import_is_semi_case_sensitive(self):
-        def check(name, classname, n):
+        def check(import_name, classname, n):
             self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 foo()
@@ -355,9 +349,9 @@ class ScriptImport(udf.TestCase):
                         return %s.f();
                     }
                 }
-                /''' % (name, classname)))
+                /''' % (import_name, classname)))
             self.assertRowsEqual([(n,)],
-                self.query('SELECT foo() FROM DUAL'))
+                                 self.query('SELECT foo() FROM DUAL'))
 
         for name in 'bar', 'Bar', 'BAR':
             self.query(udf.fixindent('''
@@ -369,8 +363,8 @@ class ScriptImport(udf.TestCase):
                             return %d;
                     }
                 }
-                /''' % (name, name, sum(x in string.uppercase for x in name))
-                ))
+                /''' % (name, name, sum(x.isupper() for x in name))
+                                     ))
 
         check("bar", "BAR", 3)
         check("Bar", "BAR", 3)
@@ -400,7 +394,7 @@ class ScriptImport(udf.TestCase):
             end
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:.* wrong language LUA'):
+        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
 
     def test_import_fails_for_r_script(self):
@@ -426,7 +420,7 @@ class ScriptImport(udf.TestCase):
             }
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:.* wrong language R'):
+        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language R'):
             self.query('SELECT foo() FROM DUAL')
 
     def test_import_fails_for_python_script(self):
@@ -451,16 +445,16 @@ class ScriptImport(udf.TestCase):
                 return 32
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'VM error:.* wrong language PYTHON'):
+        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language PYTHON'):
             self.query('SELECT foo() FROM DUAL')
 
     @useData([
-            ('fn2', 'bottom', 'BOTTOM'),
-            ('fn2', 'fn2.bottom', 'BOTTOM'),
-            ('fn2', 'exa_db.fn2.bottom', 'BOTTOM'),
-            ('fn3', 'fn2.bottom', 'BOTTOM'),
-            ('fn3', 'exa_db.fn2.bottom', 'BOTTOM')
-            ])
+        ('fn2', 'bottom', 'BOTTOM'),
+        ('fn2', 'fn2.bottom', 'BOTTOM'),
+        ('fn2', 'exa_db.fn2.bottom', 'BOTTOM'),
+        ('fn3', 'fn2.bottom', 'BOTTOM'),
+        ('fn3', 'exa_db.fn2.bottom', 'BOTTOM')
+    ])
     def test_import_works_with_qualified_names(self, schema, name, classname):
         self.query('OPEN SCHEMA %s' % schema)
         self.query(udf.fixindent('''
@@ -477,7 +471,6 @@ class ScriptImport(udf.TestCase):
             ''' % (name, classname)))
         rows = self.query('SELECT foo() FROM DUAL')
         self.assertRowsEqual([(42,)], rows)
-
 
     def test_chained_import_works_via_function_call(self):
         self.query(udf.fixindent('''
@@ -571,6 +564,3 @@ class ScriptImport(udf.TestCase):
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

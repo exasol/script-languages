@@ -1,12 +1,6 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData, expectedFailure
+from exasol_python_test_framework import udf
 
 
 class GetConnectionMemoryBug(udf.TestCase):
@@ -87,9 +81,8 @@ class SPOT_XYZ(udf.TestCase):
                 '''))
 
     def test_large_exception_msg(self):
-        with self.assertRaisesRegexp(Exception, 'VM error:'):
+        with self.assertRaisesRegex(Exception, 'VM error:'):
             self.query('SELECT SPOT_XYZ.large_exception(300000) FROM dual')
-
 
 
 if __name__ == '__main__':

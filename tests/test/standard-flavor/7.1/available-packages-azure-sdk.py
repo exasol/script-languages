@@ -1,18 +1,13 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest.testcase import useData
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
-
-import udf
-from exatest.testcase import useData
 
 class AvailablePythonPackages(udf.TestCase):
+
     def setUp(self): 
-        self.query('create schema available_packages', ignore_errors=True) 
-
-
+        self.query('create schema available_packages', ignore_errors=True)
 
     data = [
             ("azure.batch",), 
@@ -37,7 +32,7 @@ class AvailablePythonPackages(udf.TestCase):
 
     @useData(data)
     def test_package_import(self, pkg, fail=False, alternative=None):
-        sql=udf.fixindent('''
+        sql = udf.fixindent('''
             CREATE OR REPLACE PYTHON3 SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
             import %s
             def run(ctx): return 1
@@ -60,9 +55,5 @@ class AvailablePythonPackages(udf.TestCase):
                 raise
 
 
-
-
-
 if __name__ == '__main__':
     udf.main()
-

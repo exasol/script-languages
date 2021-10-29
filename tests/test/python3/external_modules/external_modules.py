@@ -1,19 +1,15 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import datetime
 import json
-import os
-import sys
-import urllib
 
 from textwrap import dedent
 
 import pytz
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import useData
 
-import udf
-from udf import useData
 
 class ExternalModulesImportTest(udf.TestCase):
     def setUp(self):
@@ -27,6 +23,7 @@ class ExternalModulesImportTest(udf.TestCase):
             pytz
             scipy
             '''.split()
+
     @useData((x,) for x in modules)
     def test_3rdparty_modules_are_importable(self, module):
         sql = udf.fixindent('''
@@ -86,7 +83,7 @@ class UJSON(udf.TestCase):
             {"a": "A", "b": "B"},
             [],
             {},
-            {"a": [1,2,3,4], "x": ["a", "b", "c"]},
+            {"a": [1, 2, 3, 4], "x": ["a", "b", "c"]},
             False,
             True,
             None,
@@ -98,7 +95,7 @@ class UJSON(udf.TestCase):
         self.assertRowsEqual([(data,)], rows)
 
     def test_encode_structured_data(self):
-        data = json.dumps(self.nested()).replace(" ","")
+        data = json.dumps(self.nested()).replace(" ", "")
         rows = self.query('SELECT ujson_encode(?) FROM DUAL', data)
         self.assertRowsEqual([(data,)], rows)
 
@@ -164,8 +161,6 @@ class Pytz(udf.TestCase):
         converted = dt.replace(tzinfo=pytz.utc).astimezone(pytz.timezone(tz))
         self.assertRowsEqual([(converted.replace(tzinfo=None),)], rows)
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

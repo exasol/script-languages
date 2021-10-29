@@ -60,7 +60,7 @@ documentation applies here as well.
             print a[10]
 
         # check for exception texts:
-        with self.assertRaisesRegexp(Exception, 'FooBar.*Error'):
+        with self.assertRaisesRegex(Exception, 'FooBar.*Error'):
             raise ValueError('FooBarBazError')
 
     def test_case_with_comment(self):

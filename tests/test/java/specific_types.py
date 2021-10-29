@@ -1,12 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
-import os
-import sys
+from exasol_python_test_framework import udf
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
 
 class JavaTypesInteger(udf.TestCase):
     def setUp(self):
@@ -40,7 +36,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'column can only have maximum value of'):
+        with self.assertRaisesRegex(Exception, 'column can only have maximum value of'):
             rows = self.query('SELECT INT_LONG(longVal) FROM T')
 
     def test_integer_bigdecimal(self):
@@ -53,7 +49,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'java.lang.ArithmeticException: Overflow'):
+        with self.assertRaisesRegex(Exception, 'java.lang.ArithmeticException: Overflow'):
             rows = self.query('SELECT INT_BIGDEC(bigdecimalVal) FROM T')
 
     def test_integer_decimal(self):
@@ -66,7 +62,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'java.lang.ArithmeticException: Rounding necessary'):
+        with self.assertRaisesRegex(Exception, 'java.lang.ArithmeticException: Rounding necessary'):
             rows = self.query('SELECT INT_DECIMAL(decimalVal) FROM T')
 
     def test_integer_double(self):
@@ -79,7 +75,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'has a non-integer value of'):
+        with self.assertRaisesRegex(Exception, 'has a non-integer value of'):
             rows = self.query('SELECT INT_DOUBLE(doubleVal) FROM T')
 
     def test_integer_double_int(self):
@@ -105,7 +101,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getInteger cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getInteger cannot convert column'):
             rows = self.query('SELECT INT_STRING(stringVal) FROM T')
 
     def test_integer_boolean(self):
@@ -118,7 +114,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getInteger cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getInteger cannot convert column'):
             rows = self.query('SELECT INT_BOOL(booleanVal) FROM T')
 
     def test_integer_date(self):
@@ -131,7 +127,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getInteger cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getInteger cannot convert column'):
             rows = self.query('SELECT INT_DATE(dateVal) FROM T')
 
     def test_integer_timestamp(self):
@@ -144,7 +140,7 @@ class JavaTypesInteger(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getInteger cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getInteger cannot convert column'):
             rows = self.query('SELECT INT_TIMESTAMP(timestampVal) FROM T')
 
 class JavaTypesLong(udf.TestCase):
@@ -192,7 +188,7 @@ class JavaTypesLong(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'java.lang.ArithmeticException: Overflow'):
+        with self.assertRaisesRegex(Exception, 'java.lang.ArithmeticException: Overflow'):
             rows = self.query('SELECT LONG_BIGDEC(bigdecimalVal) FROM T')
 
     def test_long_decimal(self):
@@ -205,7 +201,7 @@ class JavaTypesLong(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'java.lang.ArithmeticException: Rounding necessary'):
+        with self.assertRaisesRegex(Exception, 'java.lang.ArithmeticException: Rounding necessary'):
             rows = self.query('SELECT LONG_DECIMAL(decimalVal) FROM T')
 
     def test_long_double(self):
@@ -218,7 +214,7 @@ class JavaTypesLong(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'has a non-integer value of'):
+        with self.assertRaisesRegex(Exception, 'has a non-integer value of'):
             rows = self.query('SELECT LONG_DOUBLE(doubleVal) FROM T')
 
     def test_long_double_int(self):
@@ -244,7 +240,7 @@ class JavaTypesLong(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getLong cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getLong cannot convert column'):
             rows = self.query('SELECT LONG_STRING(stringVal) FROM T')
 
     def test_long_boolean(self):
@@ -257,7 +253,7 @@ class JavaTypesLong(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getLong cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getLong cannot convert column'):
             rows = self.query('SELECT LONG_BOOL(booleanVal) FROM T')
 
     def test_long_date(self):
@@ -270,7 +266,7 @@ class JavaTypesLong(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getLong cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getLong cannot convert column'):
             rows = self.query('SELECT LONG_DATE(dateVal) FROM T')
 
     def test_long_timestamp(self):
@@ -283,7 +279,7 @@ class JavaTypesLong(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getLong cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getLong cannot convert column'):
             rows = self.query('SELECT LONG_TIMESTAMP(timestampVal) FROM T')
 
 class JavaTypesBigDecimal(udf.TestCase):
@@ -390,7 +386,7 @@ class JavaTypesBigDecimal(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBigDecimal cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBigDecimal cannot convert column'):
             rows = self.query('SELECT BIGDECIMAL_STRING(stringVal) FROM T')
 
     def test_bigdecimal_boolean(self):
@@ -404,7 +400,7 @@ class JavaTypesBigDecimal(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBigDecimal cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBigDecimal cannot convert column'):
             rows = self.query('SELECT BIGDECIMAL_BOOL(booleanVal) FROM T')
 
     def test_bigdecimal_date(self):
@@ -418,7 +414,7 @@ class JavaTypesBigDecimal(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBigDecimal cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBigDecimal cannot convert column'):
             rows = self.query('SELECT BIGDECIMAL_DATE(dateVal) FROM T')
 
     def test_bigdecimal_timestamp(self):
@@ -432,7 +428,7 @@ class JavaTypesBigDecimal(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBigDecimal cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBigDecimal cannot convert column'):
             rows = self.query('SELECT BIGDECIMAL_TIMESTAMP(timestampVal) FROM T')
 
 class JavaTypesDouble(udf.TestCase):
@@ -532,7 +528,7 @@ class JavaTypesDouble(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDouble cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDouble cannot convert column'):
             rows = self.query('SELECT DOUBLE_STRING(stringVal) FROM T')
 
     def test_double_boolean(self):
@@ -545,7 +541,7 @@ class JavaTypesDouble(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDouble cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDouble cannot convert column'):
             rows = self.query('SELECT DOUBLE_BOOL(booleanVal) FROM T')
 
     def test_double_date(self):
@@ -558,7 +554,7 @@ class JavaTypesDouble(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDouble cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDouble cannot convert column'):
             rows = self.query('SELECT DOUBLE_DATE(dateVal) FROM T')
 
     def test_double_timestamp(self):
@@ -571,7 +567,7 @@ class JavaTypesDouble(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDouble cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDouble cannot convert column'):
             rows = self.query('SELECT DOUBLE_TIMESTAMP(timestampVal) FROM T')
 
 class JavaTypesString(udf.TestCase):
@@ -732,7 +728,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('SELECT BOOLEAN_INT(intVal) FROM T')
 
     def test_boolean_long(self):
@@ -745,7 +741,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('''SELECT TO_CHAR(BOOLEAN_LONG(longVal), '9.99999999999999EEEE') FROM T''')
 
     def test_boolean_bigdecimal(self):
@@ -758,7 +754,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('''SELECT TO_CHAR(BOOLEAN_BIGDEC(bigdecimalVal), '9.99999999999999EEEE') FROM T''')
 
     def test_boolean_decimal(self):
@@ -771,7 +767,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('SELECT BOOLEAN_DECIMAL(decimalVal) FROM T')
 
     def test_boolean_double(self):
@@ -784,7 +780,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('SELECT BOOLEAN_DOUBLE(doubleVal) FROM T')
 
     def test_boolean_double_int(self):
@@ -797,7 +793,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('SELECT BOOLEAN_DOUBLE_INT(doubleIntVal) FROM T')
 
     def test_boolean_string(self):
@@ -810,7 +806,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('SELECT BOOLEAN_STRING(stringVal) FROM T')
 
     def test_boolean_boolean(self):
@@ -836,7 +832,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('SELECT BOOLEAN_DATE(dateVal) FROM T')
 
     def test_boolean_timestamp(self):
@@ -849,7 +845,7 @@ class JavaTypesBoolean(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getBoolean cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getBoolean cannot convert column'):
             rows = self.query('SELECT BOOLEAN_TIMESTAMP(timestampVal) FROM T')
 
 class JavaTypesDate(udf.TestCase):
@@ -872,7 +868,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_INT(intVal) FROM T')
 
     def test_date_long(self):
@@ -886,7 +882,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_LONG(longVal) FROM T')
 
     def test_date_bigdecimal(self):
@@ -900,7 +896,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_BIGDEC(bigdecimalVal) FROM T')
 
     def test_date_decimal(self):
@@ -914,7 +910,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_DECIMAL(decimalVal) FROM T')
 
     def test_date_double(self):
@@ -928,7 +924,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_DOUBLE(doubleVal) FROM T')
 
     def test_date_double_int(self):
@@ -942,7 +938,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_DOUBLE_INT(doubleIntVal) FROM T')
 
     def test_date_string(self):
@@ -956,7 +952,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_STRING(stringVal) FROM T')
 
     def test_date_boolean(self):
@@ -970,7 +966,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_BOOL(booleanVal) FROM T')
 
     def test_date_date(self):
@@ -998,7 +994,7 @@ class JavaTypesDate(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getDate cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getDate cannot convert column'):
             rows = self.query('SELECT DATE_TIMESTAMP(timestampVal) FROM T')
 
 class JavaTypesTimestamp(udf.TestCase):
@@ -1021,7 +1017,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_INT(intVal) FROM T')
 
     def test_timestamp_long(self):
@@ -1035,7 +1031,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_LONG(longVal) FROM T')
 
     def test_timestamp_bigdecimal(self):
@@ -1049,7 +1045,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_BIGDEC(bigdecimalVal) FROM T')
 
     def test_timestamp_decimal(self):
@@ -1063,7 +1059,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_DECIMAL(decimalVal) FROM T')
 
     def test_timestamp_double(self):
@@ -1077,7 +1073,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_DOUBLE(doubleVal) FROM T')
 
     def test_timestamp_double_int(self):
@@ -1091,7 +1087,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_DOUBLE_INT(doubleIntVal) FROM T')
 
     def test_timestamp_string(self):
@@ -1105,7 +1101,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_STRING(stringVal) FROM T')
 
     def test_timestamp_boolean(self):
@@ -1119,7 +1115,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_BOOL(booleanVal) FROM T')
 
     def test_timestamp_date(self):
@@ -1133,7 +1129,7 @@ class JavaTypesTimestamp(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegexp(Exception, 'getTimestamp cannot convert column'):
+        with self.assertRaisesRegex(Exception, 'getTimestamp cannot convert column'):
             rows = self.query('SELECT TIMESTAMP_DATE(dateVal) FROM T')
 
     def test_timestamp_timestamp(self):

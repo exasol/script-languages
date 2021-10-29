@@ -2,15 +2,18 @@ FROM ubuntu:18.04
 
 COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
+#Need still python package because of udf_debug.py
 RUN apt-get -y update && \
     apt-get -y install \
         openjdk-11-jdk \
         locales \
         python \
-        python-pip \
+        python3 \
+        python3-pip \
         unixodbc \
         unixodbc-dev \
-        curl && \
+        curl \
+        git && \
     locale-gen en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 && \
     apt-get -y clean && \
@@ -28,4 +31,4 @@ ENV EXAPLUS=/downloads/EXAplus/exaplus
 RUN curl -s -o udf_debug.py https://raw.githubusercontent.com/exasol/hadoop-etl-udfs/master/tools/udf_debug.py
 
 COPY requirements.txt requirements.txt
-RUN pip install -r "requirements.txt"
+RUN pip3 install -r "requirements.txt"

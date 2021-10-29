@@ -1,16 +1,11 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
 
 class MetaDataTest(udf.TestCase):
 
-   
     @requires('GET_DATABASE_NAME')
     def test_database_name(self):
         rows = self.query('''SELECT fn1.get_database_name() FROM DUAL''')
@@ -203,7 +198,6 @@ class MetaDataTest(udf.TestCase):
         rows = self.query('''select fn1.get_char_length('0123456789') from dual''')
         self.assertRowEqual((10,20,'9876543210          '), (int(rows[0][0]), int(rows[0][1]), rows[0][2]))
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent

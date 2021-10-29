@@ -1,17 +1,15 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
 import re
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-import udf
+from exasol_python_test_framework import udf
 
-from exatest.testcase import skipIf
-from udf import get_supported_languages
+from exasol_python_test_framework.exatest.testcase import skipIf
+from exasol_python_test_framework.udf import get_supported_languages
 
-from exatest.clients.odbc import getScriptLanguagesFromArgs
+from exasol_python_test_framework.exatest.clients.odbc import getScriptLanguagesFromArgs
 import linker_namespace_base_test
+
 
 '''
 Purpose of this test if to validate correctness of the other test "linker_namespace.py"
@@ -41,6 +39,7 @@ class LinkerNamespaceSanityTest(linker_namespace_base_test.LinkerNamespaceBaseTe
         self.assertGreater(len(rows), 0)
         for item in rows:
             self.assertGreater(len(item[0]), 0)
+
 
 if __name__ == '__main__':
     udf.main()

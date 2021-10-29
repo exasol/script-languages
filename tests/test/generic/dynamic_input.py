@@ -1,12 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
 
 
 class Test(udf.TestCase):
@@ -198,7 +193,7 @@ class DynamicInputErrors(Test):
             'ext-python': 'does not exist',
             'java': 'does not exist',
             }
-        with self.assertRaisesRegexp(Exception, err_text[udf.opts.lang]):
+        with self.assertRaisesRegex(Exception, err_text[udf.opts.lang]):
             self.query('''select fn1.wrong_arg('a') from dual''')
 
     @requires('WRONG_OPERATION')
@@ -211,17 +206,17 @@ class DynamicInputErrors(Test):
             'ext-python': 'multiply sequence by non-int of type',
             'java': 'bad operand types for binary operator',
             }
-        with self.assertRaisesRegexp(Exception, err_text[udf.opts.lang]):
+        with self.assertRaisesRegex(Exception, err_text[udf.opts.lang]):
             self.query('''select fn1.wrong_operation('a','b') from dual''')
 
     @requires('EMPTY_SET_RETURNS')
     def test_exception_empty_set_returns(self):
-        with self.assertRaisesRegexp(Exception, 'user defined set script has no arguments'):
+        with self.assertRaisesRegex(Exception, 'user defined set script has no arguments'):
             self.query('''select fn1.empty_set_returns() from groupt''')
 
     @requires('EMPTY_SET_EMITS')
     def test_exception_empty_set_emits(self):
-        with self.assertRaisesRegexp(Exception, 'user defined set script has no arguments'):
+        with self.assertRaisesRegex(Exception, 'user defined set script has no arguments'):
             self.query('''select fn1.empty_set_emits() from groupt''')
 
 class DynamicInputOptimizations(Test):

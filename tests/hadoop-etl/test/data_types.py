@@ -108,7 +108,7 @@ class TestBigintErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 
@@ -123,7 +123,7 @@ class TestDoubleErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 
@@ -162,7 +162,7 @@ class TestDateErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 
@@ -177,7 +177,7 @@ class TestTimestampErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 
@@ -234,7 +234,7 @@ class TestStringErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 
@@ -275,7 +275,7 @@ class TestBooleanErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 
@@ -290,7 +290,7 @@ class TestBinaryErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 
@@ -358,7 +358,7 @@ class TestArrayErr(utils.HiveTestCase):
         create_table = utils.get_create_table_query(self.hive_table, self.exa_col_types)
         self.query(udf.fixindent(create_table))
         create_as_import = utils.get_import_query(self.hive_table, self.exa_col_types, self.use_kerberos)
-        with self.assertRaisesRegexp(Exception, '.*ExaDataTypeException: emit column.*'):
+        with self.assertRaisesRegex(Exception, '.*ExaDataTypeException: emit column.*'):
             self.query(udf.fixindent(create_as_import))
 
 

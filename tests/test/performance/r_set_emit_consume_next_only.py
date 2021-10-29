@@ -1,14 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
-import os
-import sys
-import time
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-sys.path.append(os.path.realpath(__file__ + '/..'))
-
-import udf
+from exasol_python_test_framework import udf
 from abstract_performance_test import AbstractPerformanceTest
 
 

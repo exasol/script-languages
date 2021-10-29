@@ -1,14 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
-import os
-import sys
-import time
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-sys.path.append(os.path.realpath(__file__ + '/..'))
-
-import udf
+from exasol_python_test_framework import udf
 from abstract_performance_test import AbstractPerformanceTest
 
 
@@ -39,8 +32,6 @@ class SetEmitOutputOnlyPythonPerformanceTest(AbstractPerformanceTest):
     def test_consume_next(self):
         self.run_test(15, 3, 2.0, "SELECT count(*) FROM (SELECT OUTPUT_ONLY(300000)) as q")
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

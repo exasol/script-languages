@@ -1,14 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import string
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import useData, get_supported_languages
+from exasol_python_test_framework.exatest.testcase import skipIf
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData
-from exatest.testcase import skip
 
 class ScriptImport(udf.TestCase):
 
@@ -45,7 +40,7 @@ class ScriptImport(udf.TestCase):
         self.assertRowsEqual([(42,)], rows)
 
     def test_import_is_semi_case_sensitive(self):
-        def check(name, n):
+        def check(script_name, n):
             self.query(udf.fixindent('''
                 CREATE OR REPLACE python SCALAR SCRIPT
                 foo()
@@ -54,9 +49,8 @@ class ScriptImport(udf.TestCase):
                 def run(ctx):
                     m = exa.import_script(%s)
                     return m.f()
-                /''' % name))
-            self.assertRowsEqual([(n,)],
-                self.query('SELECT foo() FROM DUAL'))
+                /''' % script_name))
+            self.assertRowsEqual([(n,)], self.query('SELECT foo() FROM DUAL'))
 
         for name in 'bar', 'Bar', 'BAR':
             self.query(udf.fixindent('''
@@ -66,7 +60,7 @@ class ScriptImport(udf.TestCase):
 
                 def f():
                     return %d
-                /''' % (name, sum(x in string.uppercase for x in name))
+                /''' % (name, sum(x.isupper() for x in name))
                 ))
 
         check("'bar'", 3)
@@ -113,10 +107,10 @@ class ScriptImport(udf.TestCase):
             end
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'ImportError:.* wrong language LUA'):
+        with self.assertRaisesRegex(Exception, 'ImportError:.* wrong language LUA'):
             self.query('SELECT foo() FROM DUAL')
 
-    @skip("R is not necessarily available in python container")
+    @skipIf('R' not in get_supported_languages(), "UDF does not support R")
     def test_import_fails_for_r_script(self):
         self.query(udf.fixindent('''
             CREATE python SCALAR SCRIPT
@@ -139,9 +133,8 @@ class ScriptImport(udf.TestCase):
             }
             /
             '''))
-        with self.assertRaisesRegexp(Exception, 'ImportError:.* wrong language R'):
+        with self.assertRaisesRegex(Exception, 'ImportError:.* wrong language R'):
             self.query('SELECT foo() FROM DUAL')
-        
 
     def test_imported_scripts_are_cached(self):
         self.query(udf.fixindent('''
@@ -292,6 +285,3 @@ class ScriptImport(udf.TestCase):
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

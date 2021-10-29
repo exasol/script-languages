@@ -425,9 +425,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
     ####
 
     def test_scalar_returns_with_missing_and_no_default(self):
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into t2 select ScR(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into t1 select ScR(1),ScR(1)')
 
         self.run_query('insert into t2(s) select ScR(a) from s1',True)
@@ -437,9 +437,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_scalar_emits_with_missing_and_no_default(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into t2 select ScE1(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into t1 select ScE2(1)')
         #
         self.run_query('insert into t1 select ScE1(1)', True)
@@ -460,9 +460,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
         self.assertRowsEqual([(1,1,1,),(1,1,None,),(1,1,None,),(None,1,1)], self.query('select * from t3'))
 
     def test_set_returns_with_missing_and_no_default(self):
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into t2 select SeR(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into t1 select SeR(1),SeR(1)')
 
         self.run_query('insert into t2(s) select SeR(a) from s1',True)
@@ -472,9 +472,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_set_emits_with_missing_and_no_default(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into t2 select SeE1(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into t1 select SeE2(1)')
         #
         self.run_query('insert into t1 select SeE1(1)', True)
@@ -497,9 +497,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
         ####
 
     def test_scalar_returns_with_missing_and_default(self):
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into dt2 select ScR(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into dt1 select ScR(1),ScR(1)')
 
         self.run_query('insert into dt2(s) select ScR(a) from s1',True)
@@ -509,9 +509,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_scalar_emits_with_missing_and_default(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into dt2 select ScE1(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into dt1 select ScE2(1)')
         #
         self.run_query('insert into dt1 select ScE1(1)', True)
@@ -532,9 +532,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
         self.assertRowsEqual([(1,1,1,),(1,1,666,),(1,1,666,),(666,1,1)], self.query('select * from dt3'))
 
     def test_set_returns_with_missing_and_default(self):
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into dt2 select SeR(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into dt1 select SeR(1),SeR(1)')
 
         self.run_query('insert into dt2(s) select SeR(a) from s1',True)
@@ -544,9 +544,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_set_emits_with_missing_and_default(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into dt2 select SeE1(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into dt1 select SeE2(1)')
         #
         self.run_query('insert into dt1 select SeE1(1)', True)
@@ -579,9 +579,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
 
     def test_scalar_returns_with_missing_and_identity(self):
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into it2 select ScR(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into it1 select ScR(1),ScR(1)')
 
         self.run_query('insert into it2(s) select ScR(a) from s1',True)
@@ -600,9 +600,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_scalar_emits_with_missing_and_identity(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into it2 select ScE1(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into it1 select ScE2(1)')
         #
         self.run_query('insert into it1 select ScE1(1)', True)
@@ -623,9 +623,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
         self.assertRowsEqual([(1,1,1,),(1,1,666,),(1,1,667,),(666,1,1)], self.query('select * from it3'))
 
     def test_set_returns_with_missing_and_identity(self):
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into it2 select SeR(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into it1 select SeR(1),SeR(1)')
 
         self.run_query('insert into it2(s) select SeR(a) from s1',True)
@@ -640,9 +640,9 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_set_emits_with_missing_and_identity(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into it2 select SeE1(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into it1 select SeE2(1)')
         #
         self.run_query('insert into it1 select SeE1(1)', True)
@@ -714,12 +714,12 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
     ####
 
     def test_permuted_scalar_returns_with_missing_and_no_default(self): 
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into t2(t,s) select ScR(1)')
 
     def test_permuted_scalar_emits_with_missing_and_no_default(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into t2(t,s) select ScE1(1)')
         #
         self.run_query('insert into t3(t,s,u) select ScE3p(1)', False)
@@ -756,7 +756,7 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_permuted_scalar_emits_with_missing_and_default(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into dt2(t,s) select ScE1(1)')
         #
         self.run_query('insert into dt3(t,s,u) select ScE3p(1)', False)
@@ -791,7 +791,7 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
     def test_permuted_scalar_emits_with_missing_and_identity(self):
         #
-        with self.assertRaisesRegexp(Exception, 'not enough value'):
+        with self.assertRaisesRegex(Exception, 'not enough value'):
             self.query('insert into it2(t,s) select ScE1(1)')
         #
         self.run_query('insert into it3(t,s,u) select ScE3p(1)', False)
@@ -861,11 +861,11 @@ class TargetPredefinitionForInsertsWithUDFs(udf.TestCase):
 
 
     def test_too_many_values_exception(self):
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into t3(s) select ScE2(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into t3(s,t) select 2,ScE2(1)')
-        with self.assertRaisesRegexp(Exception, 'too many values'):
+        with self.assertRaisesRegex(Exception, 'too many values'):
             self.query('insert into t3(u,s,t) select 2,ScE2(1),2')
 
 

@@ -45,13 +45,13 @@ class Round(udf.TestCase):
         self.checkType('select round(val, digits) a from fn2.t where digits = 1', 'DOUBLE')
 
     def test_errors(self):
-        with self.assertRaisesRegexp(Exception, 'numeric value out of range'):
+        with self.assertRaisesRegex(Exception, 'numeric value out of range'):
             self.checkType('select round(4/3, 35) a from dual', 'DOUBLE')
-        with self.assertRaisesRegexp(Exception, 'Too many digits in ROUND for castRoundInputToDecimal'):
+        with self.assertRaisesRegex(Exception, 'Too many digits in ROUND for castRoundInputToDecimal'):
             self.checkType('select round(4/3, 36) a from dual', 'DOUBLE')
-        with self.assertRaisesRegexp(Exception, 'numeric value out of range'):
+        with self.assertRaisesRegex(Exception, 'numeric value out of range'):
             self.checkType('select round(val, 35) a from fn2.t where digits = 35', 'DOUBLE')
-        with self.assertRaisesRegexp(Exception, 'Too many digits in ROUND for castRoundInputToDecimal'):
+        with self.assertRaisesRegex(Exception, 'Too many digits in ROUND for castRoundInputToDecimal'):
             self.checkType('select round(val, 36) a from fn2.t where digits = 36', 'DOUBLE')
 
     def test_round_double_special_results(self):

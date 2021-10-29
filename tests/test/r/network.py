@@ -1,19 +1,15 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import os
-import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-running_in_travis = 'TRAVIS' in os.environ
+from exasol_python_test_framework import udf
 
+from exasol_python_test_framework.exatest.servers import MessageBox, HTTPServer, FTPServer
+from exasol_python_test_framework.exatest.utils import tempdir
 
-import udf
-
-from exatest.servers import MessageBox, HTTPServer, FTPServer
-from exatest.utils import tempdir
-from exatest.testcase import skipIf
 
 class ExternalResourceTest(udf.TestCase):
+
     def setUp(self):
         self.query('DROP SCHEMA t0 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA t0')
@@ -39,8 +35,9 @@ class ExternalResourceTest(udf.TestCase):
 
 #for (i in 1:length(tree$doc$children$users)) {if (tree$doc$children$users[i]$user$attributes['active']==1) {firstname <- tree$doc$children$users[i]$user$children$first_name$children$text; familyname <- tree$doc$children$users[i]$user$children$family_name$children$text; print(firstname); print(familyname);}}
 
+
 class XMLProcessingTest(ExternalResourceTest):
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
+
     def test_xml_processing(self):
         '''DWA-13842'''
         self.query(udf.fixindent('''
@@ -79,7 +76,7 @@ class XMLProcessingTest(ExternalResourceTest):
 
 
 class FTPServerTest(ExternalResourceTest):
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
+
     def test_xml_processing(self):
         '''DWA-13842'''
         self.query(udf.fixindent('''
@@ -117,13 +114,13 @@ class FTPServerTest(ExternalResourceTest):
         expected = [('Joe', 'Hart'), ('Manuel', 'Neuer')]
         self.assertRowsEqual(expected, rows)
 
+
 class CleanupTest(udf.TestCase):
 
     def setUp(self):
         self.query('DROP SCHEMA t1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA t1')
 
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")    
     def test_cleanup_is_called_at_least_once(self):
         with MessageBox() as mb:
             self.query(udf.fixindent('''
@@ -148,12 +145,10 @@ class CleanupTest(udf.TestCase):
                    close.socket(sock)
                 }
                 '''))
-            self.query('''SELECT sendmail('%s', '%d', 'foobar') FROM DUAL''' %
-                    mb.address)
+            self.query('''SELECT sendmail('%s', '%d', 'foobar') FROM DUAL''' % mb.address)
 
-        self.assertIn('foobar', mb.data)
+        self.assertIn(b'foobar', mb.data)
 
-    @skipIf(running_in_travis, reason="This test is not supported when running in travis")
     def test_cleanup_is_called_exactly_once_for_each_vm(self):
         with MessageBox() as mb:
             host, port = mb.address
@@ -182,14 +177,12 @@ class CleanupTest(udf.TestCase):
 
         data = mb.data
         self.assertGreater(len(data), 0)
-        init = sorted([x.split(':')[1] for x in data if x.startswith('init')])
-        cleanup = sorted([x.split(':')[1] for x in data if x.startswith('cleanup')])
-        self.assertEquals(init, cleanup)
+        init = sorted([x.split(b':')[1] for x in data if x.startswith(b'init')])
+        cleanup = sorted([x.split(b':')[1] for x in data if x.startswith(b'cleanup')])
+        self.assertEqual(init, cleanup)
         # FIXME: math.random() is not thread-unique
-        #self.assertEquals(sorted(set(init)), init)
+        #self.assertEqual(sorted(set(init)), init)
+
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

@@ -1,14 +1,11 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
 from decimal import Decimal
 from datetime import date
 from datetime import datetime
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
+from  exasol_python_test_framework import udf
 
-import udf
 
 class PandasDataFrame(udf.TestCase):
     def setUp(self):
@@ -263,7 +260,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'emit DataFrame is empty'):
+        with self.assertRaisesRegex(Exception, 'emit DataFrame is empty'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -282,7 +279,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 11 arguments \(0 given\)'):
+        with self.assertRaisesRegex(Exception, 'emit\(\) takes exactly 11 arguments \(0 given\)'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -301,7 +298,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 11 arguments \(10 given\)'):
+        with self.assertRaisesRegex(Exception, 'emit\(\) takes exactly 11 arguments \(10 given\)'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -414,7 +411,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'Iteration finished'):
+        with self.assertRaisesRegex(Exception, 'Iteration finished'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -527,7 +524,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'emit DataFrame is empty'):
+        with self.assertRaisesRegex(Exception, 'emit DataFrame is empty'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -546,7 +543,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 11 arguments \(0 given\)'):
+        with self.assertRaisesRegex(Exception, 'emit\(\) takes exactly 11 arguments \(0 given\)'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -565,7 +562,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'emit\(\) takes exactly 11 arguments \(10 given\)'):
+        with self.assertRaisesRegex(Exception, 'emit\(\) takes exactly 11 arguments \(10 given\)'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -583,7 +580,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'get_dataframe\(\) parameter'):
+        with self.assertRaisesRegex(Exception, 'get_dataframe\(\) parameter'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -601,7 +598,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'get_dataframe\(\) parameter'):
+        with self.assertRaisesRegex(Exception, 'get_dataframe\(\) parameter'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -619,7 +616,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, 'get_dataframe\(\) parameter'):
+        with self.assertRaisesRegex(Exception, 'get_dataframe\(\) parameter'):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -637,7 +634,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, "get_dataframe\(\) parameter"):
+        with self.assertRaisesRegex(Exception, "get_dataframe\(\) parameter"):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -727,7 +724,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, "must be an integer >= 0"):
+        with self.assertRaisesRegex(Exception, "must be an integer >= 0"):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST2' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -745,7 +742,7 @@ class PandasDataFrame(udf.TestCase):
             ''' % (self.col_defs_str, self.col_defs_str))
         print(udf_sql)
         self.query(udf_sql)
-        with self.assertRaisesRegexp(Exception, "is 100000, but there are only %d input columns" % len(self.col_names)):
+        with self.assertRaisesRegex(Exception, "is 100000, but there are only %d input columns" % len(self.col_names)):
             select_sql = 'SELECT foo(%s) FROM FN2.TEST2' % (self.col_names_str)
             print(select_sql)
             rows = self.query(select_sql)
@@ -841,7 +838,7 @@ class PandasDataFrame(udf.TestCase):
         self.query(udf_sql)
         select_sql = 'SELECT foo(1)'
         print(select_sql)
-        with self.assertRaisesRegexp(Exception, "F-UDF-CL-SL-PYTHON-1138"):
+        with self.assertRaisesRegex(Exception, "F-UDF-CL-SL-PYTHON-1138"):
             rows = self.query(select_sql)
 
     def test_dataframe_set_emits_pystring_only(self):
@@ -928,7 +925,7 @@ class PandasDataFrame(udf.TestCase):
         select_sql = 'SELECT foo(1)'
         print(select_sql)
         #TODO implement support
-        with self.assertRaisesRegexp(Exception, 'F-UDF-CL-SL-PYTHON-1056'):
+        with self.assertRaisesRegex(Exception, 'F-UDF-CL-SL-PYTHON-1056'):
             rows = self.query(select_sql)
 
     def test_dataframe_set_emits_double_npfloat32_only(self):
@@ -988,8 +985,7 @@ class PandasDataFrame(udf.TestCase):
         print(select_sql)
         rows = self.query(select_sql)
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
 

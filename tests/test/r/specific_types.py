@@ -1,13 +1,10 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
 
 class RTypes(udf.TestCase):
+
     def setUp(self):
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
@@ -20,7 +17,7 @@ class RTypes(udf.TestCase):
                     "1.5"
                 }
                 ''')
-        with self.assertRaisesRegexp(Exception, r'Value for column RETURN is not of type double'):
+        with self.assertRaisesRegex(Exception, r'Value for column RETURN is not of type double'):
             self.query('''SELECT wrong_type() FROM DUAL''')
 
     def test_convert_int_to_double(self):
@@ -42,7 +39,7 @@ class RTypes(udf.TestCase):
                     "one point five"
                 }
                 ''')
-        with self.assertRaisesRegexp(Exception, r'Value for column RETURN is not of type double'):
+        with self.assertRaisesRegex(Exception, r'Value for column RETURN is not of type double'):
             self.query('''SELECT wrong_type() FROM DUAL''')
 
     def test_scalar_with_vector_and_ints(self):
@@ -91,11 +88,10 @@ class RTypes(udf.TestCase):
                                                   FROM vector_and_ints_table
                 ''')
         self.query('''COMMIT''')
-        rows = self.query('''SELECT DISTINCT f = g FROM (SELECT vector_and_ints(a, b, c, d, a + b + c + d) FROM vector_and_ints_table GROUP BY a MOD 2)''')
+        rows = self.query('''SELECT DISTINCT f = g FROM (SELECT vector_and_ints(a, b, c, d, a + b + c + d) 
+                                FROM vector_and_ints_table GROUP BY a MOD 2)''')
         self.assertRowsEqual([(True,)], rows)
+
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-

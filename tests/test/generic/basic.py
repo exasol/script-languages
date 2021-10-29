@@ -1,12 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
 
 class BasicTest(udf.TestCase):
 
@@ -25,7 +21,6 @@ class BasicTest(udf.TestCase):
             FROM DUAL
             ''')
         self.assertRowsEqual([(3,)], rows)
-    
 
     @requires('BASIC_EMIT_TWO_INTS')
     def test_emit_two_ints(self):
@@ -48,7 +43,6 @@ class BasicTest(udf.TestCase):
                 )
             )''')
         self.assertRowsEqual([(165,)], rows)
-
 
     @requires('BASIC_SUM_GRP')
     @requires('BASIC_NTH_PARTIAL_SUM')
@@ -128,5 +122,3 @@ class SetWithEmptyInput(udf.TestCase):
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent

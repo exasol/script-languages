@@ -1,12 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires, expectedFailureIfLang
 
 class TestEcho(udf.TestCase):
 
@@ -59,9 +55,9 @@ class TestEcho(udf.TestCase):
         self.assertRowsEqual([(True, True, True, True)], rows)
 
     @requires('ECHO_INTEGER')
-    @expectedFailureIfLang('r')
+    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_integer_limits(self):
-        '''DWA-13784 (R)'''
+        """DWA-13784 (R)"""
         rows = self.query('''
             SELECT
                 fn1.echo_integer(-(1e18 - 1)) = -(1e18 - 1),
@@ -93,9 +89,9 @@ class TestEcho(udf.TestCase):
         self.assertRowsEqual([(True, True, True)], rows)
 
     @requires('ECHO_DECIMAL_36_0')
-    @expectedFailureIfLang('r')
+    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_decimal_36_0_limits(self):
-        '''DWA-13784 (R)'''
+        """DWA-13784 (R)"""
         rows = self.query('''
             SELECT
                 fn1.echo_decimal_36_0(-(1e35 - 1)) = -(1e35 - 1),
@@ -114,9 +110,9 @@ class TestEcho(udf.TestCase):
         self.assertRowsEqual([(True, True, True)], rows)
 
     @requires('ECHO_DECIMAL_36_36')
-    @expectedFailureIfLang('r')
+    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_decimal_36_36_limits(self):
-        '''DWA-13784 (R)'''
+        """DWA-13784 (R)"""
         rows = self.query('''
             SELECT
                 fn1.echo_decimal_36_36(-(1e-35 - 1)) = -(1e-35 - 1),
@@ -212,7 +208,6 @@ class BottleneckTest(udf.TestCase):
                 SELECT fn1.bottleneck_decimal5(%d)
                 FROM DUAL''' % (10 ** 5))
 
+
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent

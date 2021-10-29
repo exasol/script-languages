@@ -1,17 +1,15 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
 import locale
 import os
 import string
 import subprocess
-import sys
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
+from exasol_python_test_framework import udf
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
 
 class JavaUnicode(udf.TestCase):
     def test_unicode_umlaute(self):
@@ -27,8 +25,8 @@ class JavaUnicode(udf.TestCase):
         exaplus = subprocess.Popen(cmd.split(), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, 
                                 stderr=subprocess.STDOUT)
 
-        u = u'äöüß' + unichr(382) + unichr(65279) + unichr(63882) + unichr(64432)
-        str = u'äöüß'
+        u = 'äöüß' + chr(382) + chr(65279) + chr(63882) + chr(64432)
+        umlaute = 'äöüß'
 
         sql = udf.fixindent('''
             DROP SCHEMA fn1 CASCADE;
@@ -47,10 +45,10 @@ class JavaUnicode(udf.TestCase):
             }
             /
             SELECT 'x' || fn1.unicode_in_script_body() || 'x' FROM DUAL;
-        ''' % str)
+        ''' % umlaute)
         out, _err = exaplus.communicate(sql.encode('utf8'))
         expected = 'x%dx' % (len(string.ascii_letters) + len(u))
-        self.assertIn(expected, out)
+        self.assertIn(expected, out.decode('utf-8'))
 
 if __name__ == '__main__':
     udf.main()

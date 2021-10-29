@@ -1,13 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
+from exasol_python_test_framework import exatest
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
-import exatest
 
 class ImportAliasTest(udf.TestCase):
     def setUp(self):
@@ -84,7 +80,7 @@ class ImportAliasTest(udf.TestCase):
         self.createUser('foo','foo')
         self.commit()
         foo_conn = self.getConnection('foo','foo')
-        with self.assertRaisesRegexp(Exception, 'aslkfhalsjfdhsa'):
+        with self.assertRaisesRegex(Exception, 'aslkfhalsjfdhsa'):
             foo_conn.query('IMPORT FROM SCRIPT fn1.impal_use_connection_fooconn')
         self.query('drop user foo cascade')
 
@@ -155,7 +151,7 @@ class ImportAliasTest(udf.TestCase):
 
     @requires('IMPAL_USE_ALL')
     def test_prepared_statement_params(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error, unexpected \'?\''):
+        with self.assertRaisesRegex(Exception, 'syntax error, unexpected \'?\''):
             rows = self.query(''' SELECT * FROM (
                 IMPORT INTO (a double, b varchar(3000)) FROM SCRIPT fn1.impal_use_all
                 at 'fooconn' user 'hans' identified by 'meiser' with foo=?)
@@ -163,7 +159,7 @@ class ImportAliasTest(udf.TestCase):
 
     @requires('IMPAL_USE_ALL')
     def test_prepared_statement_conn(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error, unexpected \'?\''):
+        with self.assertRaisesRegex(Exception, 'syntax error, unexpected \'?\''):
             rows = self.query(''' SELECT * FROM (
                 IMPORT INTO (a double, b varchar(3000)) FROM SCRIPT fn1.impal_use_all
                 at ? user ? identified by ? with foo='bar')

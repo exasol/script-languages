@@ -1,12 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
+from exasol_python_test_framework import udf
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import useData, expectedFailure
 
 class JavaBugsTest(udf.TestCase):
     def setUp(self):

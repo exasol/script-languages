@@ -1,13 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
 import datetime
 
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
 
 
 class InputOutputMatchingTest(udf.TestCase):

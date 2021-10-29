@@ -1,13 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
-import os
-import sys
-
-sys.path.append(os.path.realpath(__file__ + '/../../../lib'))
-
-import udf
-from udf import requires
-import exatest
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import requires
+from exasol_python_test_framework import exatest
 
 
 class Test(udf.TestCase):
@@ -143,51 +138,51 @@ class DynamicOutputWrongUsage(Test):
 
     @requires('VAREMIT_GENERIC_EMIT')
     def test_error_emit_missing(self):
-        #with self.assertRaisesRegexp(Exception, 'The script has dynamic return arguments. Either specify the return arguments in the query via EMITS or implement the method (default_output_columns|getDefaultOutputColumns|defaultOutputColumns) in the UDF'):
-        with self.assertRaisesRegexp(Exception, 'The script has dynamic return arguments. Either specify the return arguments in the query via EMITS or implement the method'):
+        #with self.assertRaisesRegex(Exception, 'The script has dynamic return arguments. Either specify the return arguments in the query via EMITS or implement the method (default_output_columns|getDefaultOutputColumns|defaultOutputColumns) in the UDF'):
+        with self.assertRaisesRegex(Exception, 'The script has dynamic return arguments. Either specify the return arguments in the query via EMITS or implement the method'):
             self.query('''SELECT fn1.VAREMIT_GENERIC_EMIT(1)''')
 
     @requires('VAREMIT_GENERIC_EMIT')
     def test_error_empty_emit(self):
-        with self.assertRaisesRegexp(Exception, 'Empty return argument definition is not allowed'):
+        with self.assertRaisesRegex(Exception, 'Empty return argument definition is not allowed'):
             self.query('''SELECT fn1.VAREMIT_GENERIC_EMIT(1) EMITS ();''')
 
     @requires('VAREMIT_GENERIC_EMIT')
     def test_error_empty_emit_2(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error'):
+        with self.assertRaisesRegex(Exception, 'syntax error'):
             self.query('''SELECT fn1.VAREMIT_GENERIC_EMIT(1) EMITS (a);''')
             
     @requires('VAREMIT_GENERIC_EMIT')
     def test_error_wrong_emit(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error'):
+        with self.assertRaisesRegex(Exception, 'syntax error'):
             self.query('''SELECT fn1.VAREMIT_GENERIC_EMIT(1) EMITS (int);''')
 
     @requires('VAREMIT_GENERIC_EMIT')
     def test_error_redundant_name(self):
-        with self.assertRaisesRegexp(Exception, 'Return argument A is declared more than once'):
+        with self.assertRaisesRegex(Exception, 'Return argument A is declared more than once'):
             self.query('''SELECT fn1.VAREMIT_GENERIC_EMIT(1) EMITS (a int, b int, a int);''')
 
     @requires('VAREMIT_NON_VAR_EMIT')
     def test_error_non_var_emit(self):
-        with self.assertRaisesRegexp(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
+        with self.assertRaisesRegex(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
             self.query('''SELECT fn1.VAREMIT_NON_VAR_EMIT(1) EMITS (a double);''')
 
     @requires('VAREMIT_NON_VAR_EMIT')
     def test_error_non_var_emit_2(self):
-        with self.assertRaisesRegexp(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
+        with self.assertRaisesRegex(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
             self.query('''SELECT fn1.VAREMIT_NON_VAR_EMIT(1) EMITS ();''')
 
     @requires('VAREMIT_SIMPLE_RETURNS')
     def test_error_returns_not_supported(self):
-        with self.assertRaisesRegexp(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
+        with self.assertRaisesRegex(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
             self.query('''select fn1.VAREMIT_SIMPLE_RETURNS(1) EMITS (a INT);''')
 
     def test_error_built_in_set_not_supported(self):
-        with self.assertRaisesRegexp(Exception, 'emits specification is not allowed for built-in functions'):
+        with self.assertRaisesRegex(Exception, 'emits specification is not allowed for built-in functions'):
             self.query('''SELECT AVG(a) EMITS(a int) FROM VAREMITS;''')
 
     def test_error_built_in_scalar_not_supported(self):
-        with self.assertRaisesRegexp(Exception, 'emits specification is not allowed for built-in functions'):
+        with self.assertRaisesRegex(Exception, 'emits specification is not allowed for built-in functions'):
             self.query('''SELECT -ABS(a) EMITS(a int) FROM VAREMITS;''')
 
 
@@ -241,7 +236,7 @@ class DynamicOutputInsertInto(Test):
 
     @requires('VAREMIT_EMIT_INPUT')
     def test_insert_emits_not_allowed(self):
-        with self.assertRaisesRegexp(Exception, 'The return arguments for EMITS functions are inferred from the table to insert into. Specification of EMITS is not allowed in this case.'):
+        with self.assertRaisesRegex(Exception, 'The return arguments for EMITS functions are inferred from the table to insert into. Specification of EMITS is not allowed in this case.'):
             self.query('''insert into target select FN1.VAREMIT_EMIT_INPUT(1) emits (a int);''')
 
 
@@ -428,42 +423,42 @@ class DefaultDynamicOutputWrongUsage(Test):
 
     ## @requires('DEFAULT_VAREMIT_GENERIC_EMIT')
     ## def test_error_emit_missing(self):
-    ##     with self.assertRaisesRegexp(Exception, 'The script has dynamic return args, but EMITS specification is missing in the query'):
+    ##     with self.assertRaisesRegex(Exception, 'The script has dynamic return args, but EMITS specification is missing in the query'):
     ##         self.query('''SELECT fn1.DEFAULT_VAREMIT_GENERIC_EMIT(1)''')
 
     @requires('DEFAULT_VAREMIT_GENERIC_EMIT')
     def test_error_empty_emit(self):
-        with self.assertRaisesRegexp(Exception, 'Empty return argument definition is not allowed'):
+        with self.assertRaisesRegex(Exception, 'Empty return argument definition is not allowed'):
             self.query('''SELECT fn1.DEFAULT_VAREMIT_GENERIC_EMIT(1) EMITS ();''')
 
     @requires('DEFAULT_VAREMIT_GENERIC_EMIT')
     def test_error_empty_emit_2(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error'):
+        with self.assertRaisesRegex(Exception, 'syntax error'):
             self.query('''SELECT fn1.DEFAULT_VAREMIT_GENERIC_EMIT(1) EMITS (a);''')
             
     @requires('DEFAULT_VAREMIT_GENERIC_EMIT')
     def test_error_wrong_emit(self):
-        with self.assertRaisesRegexp(Exception, 'syntax error'):
+        with self.assertRaisesRegex(Exception, 'syntax error'):
             self.query('''SELECT fn1.DEFAULT_VAREMIT_GENERIC_EMIT(1) EMITS (int);''')
 
     @requires('DEFAULT_VAREMIT_GENERIC_EMIT')
     def test_error_redundant_name(self):
-        with self.assertRaisesRegexp(Exception, 'Return argument A is declared more than once'):
+        with self.assertRaisesRegex(Exception, 'Return argument A is declared more than once'):
             self.query('''SELECT fn1.DEFAULT_VAREMIT_GENERIC_EMIT(1) EMITS (a int, b int, a int);''')
 
     @requires('DEFAULT_VAREMIT_NON_VAR_EMIT')
     def test_error_non_var_emit(self):
-        with self.assertRaisesRegexp(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
+        with self.assertRaisesRegex(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
             self.query('''SELECT fn1.DEFAULT_VAREMIT_NON_VAR_EMIT(1) EMITS (a double);''')
 
     @requires('DEFAULT_VAREMIT_NON_VAR_EMIT')
     def test_error_non_var_emit_2(self):
-        with self.assertRaisesRegexp(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
+        with self.assertRaisesRegex(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
             self.query('''SELECT fn1.DEFAULT_VAREMIT_NON_VAR_EMIT(1) EMITS ();''')
 
     @requires('DEFAULT_VAREMIT_SIMPLE_RETURNS')
     def test_error_returns_not_supported(self):
-        with self.assertRaisesRegexp(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
+        with self.assertRaisesRegex(Exception, 'The script has a static return argument definition. Dynamic return arguments are not supported in this case'):
             self.query('''select fn1.DEFAULT_VAREMIT_SIMPLE_RETURNS(1) EMITS (a INT);''')
 
 
@@ -518,7 +513,7 @@ class DefaultDynamicOutputInsertInto(Test):
 
     @requires('DEFAULT_VAREMIT_EMIT_INPUT')
     def test_insert_emits_not_allowed(self):
-        with self.assertRaisesRegexp(Exception, 'The return arguments for EMITS functions are inferred from the table to insert into. Specification of EMITS is not allowed in this case.'):
+        with self.assertRaisesRegex(Exception, 'The return arguments for EMITS functions are inferred from the table to insert into. Specification of EMITS is not allowed in this case.'):
             self.query('''insert into target select FN1.DEFAULT_VAREMIT_EMIT_INPUT(1) emits (a int);''')
 
 
@@ -546,7 +541,7 @@ class DefaultDynamicOutputEmptyStringResult(Test):
 
     @requires('DEFAULT_VAREMIT_EMPTY_DEF')
     def test_empty_string_error(self):
-        with self.assertRaisesRegexp(Exception, 'Empty default output columns'):
+        with self.assertRaisesRegex(Exception, 'Empty default output columns'):
             self.query('''select fn1.DEFAULT_VAREMIT_EMPTY_DEF(42.42);''')
         rows = self.query('''select fn1.DEFAULT_VAREMIT_EMPTY_DEF(42.42) emits (x double);''')
         self.assertRowEqual((1.4,), rows[0])
@@ -584,7 +579,7 @@ class DynamicOutFromConnectionsAndViews(Test):
         self.query('''create schema spot4245_tmp''')
         self.query('''create table targetcreated as ''' + str(query))
         rows = self.query('''describe targetcreated''')
-        for i in xrange(len(expected_rows)):
+        for i in range(len(expected_rows)):
             self.assertRowEqual(expected_rows[i][0:2], rows[i][0:2])
         self.query('''drop schema spot4245_tmp cascade''')
         #('A', 'DECIMAL(20,0)', 'TRUE', 'FALSE'), rows[0])
@@ -605,7 +600,7 @@ class DynamicOutFromConnectionsAndViews(Test):
         self.commit()
         foo_conn = self.getConnection('foo','foo')
         expected_rows = [('PASSWORD', 'DOUBLE', 'TRUE', 'FALSE'), ('A', 'DOUBLE', 'TRUE', 'FALSE'), ('B', 'DOUBLE', 'TRUE', 'FALSE'), ('C', 'DOUBLE', 'TRUE', 'FALSE')]
-        with self.assertRaisesRegexp(Exception, 'insufficient privileges for using connection SPOT4245 in script OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245'):
+        with self.assertRaisesRegex(Exception, 'insufficient privileges for using connection SPOT4245 in script OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245'):
             foo_conn.query('''select fn1.OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245(1.0)''')
             self.assertEqual(["PASSWORD","A","B","C"], foo_conn.columnNames())
         self.query("drop user foo cascade")

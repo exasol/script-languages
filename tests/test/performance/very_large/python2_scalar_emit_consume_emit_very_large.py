@@ -1,15 +1,10 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # encoding: utf8
 
 import os
 import sys
-import time
 
-sys.path.append(os.path.realpath(__file__ + '/../../../../lib'))
-sys.path.append(os.path.realpath(__file__ + '/..'))
-sys.path.append(os.path.realpath(__file__ + '/../..'))
-
-import udf
+from exasol_python_test_framework import udf
 from abstract_python_scalar_emit_consume_emit_very_large import AbstractScalarEmitConsumeEmitVeryLargePythonPerformanceTest
 
 
@@ -27,6 +22,3 @@ class ScalarEmitConsumeEmitVeryLargePython2PerformanceTest(AbstractScalarEmitCon
 
 if __name__ == '__main__':
     udf.main()
-
-# vim: ts=4:sts=4:sw=4:et:fdm=indent
-
