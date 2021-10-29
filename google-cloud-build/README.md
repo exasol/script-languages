@@ -20,7 +20,7 @@ This setups a CI Builds with Google Cloud Build. It uses Triggers to automate di
     3. set config variables in .env/env.yaml
     4. ./setup.sh
 
-Please note that the setup needs to be done for each repository (e.g. script-languagges and script-languages-release)
+Please note that the setup needs to be done for each repository (e.g. script-languages and script-languages-release)
 ## Usage
 
 The following Triggers get created:
