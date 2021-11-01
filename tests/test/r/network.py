@@ -24,7 +24,6 @@ class ExternalResourceTest(udf.TestCase):
                 };
                 '''))
         rows = self.query(udf.fixindent(f"SELECT check_for_package('{pkg_name}') FROM DUAL"))
-        print(f'Rows:{rows}')
         return rows[0][0]
 
     def xml(self):
