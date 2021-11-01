@@ -19,7 +19,7 @@ def _get_includes_and_hdrs(config_binary,p_repository_ctx):
     includes = ",".join(['"%s"'%i for i in splitted_cleaned_includes] ) #example: ["\"/usr/include/python3.6m\"","\"/usr/include/python3.6m\""]
     print("python includes: %s"%includes)
 
-    hdrs = ",".join(['"%s/*.h"'%i for i in splitted_cleaned_includes] ) #example: ["\"/usr/include/python3.6m/*.h\"","\"/usr/include/python3.6m/*.h\""]
+    hdrs = ",".join(['"%s/**/*.h"'%i for i in splitted_cleaned_includes] ) #example: ["\"/usr/include/python3.6m/*.h\"","\"/usr/include/python3.6m/*.h\""]
     print("python hdrs: %s"%hdrs)
 
     return includes, hdrs
@@ -65,7 +65,7 @@ def _python_local_repository_impl(repository_ctx):
     build_file_content = """
 cc_library(
     name = "{name}",
-    srcs = glob(["{config_dir}/*.so"]),
+    srcs = glob(["{config_dir}/**/*.so"]),
     hdrs = glob([{hdrs}]),
     includes = [{includes}],
     defines = [{defines}],
