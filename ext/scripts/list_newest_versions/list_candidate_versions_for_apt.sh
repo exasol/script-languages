@@ -18,7 +18,14 @@ do
   then
     version="No version specified"
   fi
-  candidate=$(apt-cache policy $package | grep "Candidate" | sed -E "s/ +//g" | cut -f2 -d ":")
+  set +e
+  candidate=$( apt-cache policy "$package" | grep "Candidate" | sed -E "s/ +//g" | cut -f2 -d ":")
+  set -e
+  if [ -z "$candidate" ]
+  then
+    candidate="Package not available"
+  fi
+
   echo "$package|$version|$candidate"
   PACKAGE_LIST=( "${PACKAGE_LIST[@]:1}" )
   VERSION_LIST=( "${VERSION_LIST[@]:1}" )
