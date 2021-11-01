@@ -19,7 +19,7 @@ do
     version="No version specified"
   fi
   set +e
-  candidate=$( apt-cache policy "$package" | grep "Candidate" | sed -E "s/ +//g" | cut -f2 -d ":")
+  candidate=$( apt-cache policy "$package" | grep "Candidate" | sed -E "s/^ +//g" |  sed -E "s/ +/ /g"  | cut -f2 -d " ")
   set -e
   if [ -z "$candidate" ]
   then
