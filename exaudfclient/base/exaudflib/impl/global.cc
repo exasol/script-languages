@@ -1,14 +1,15 @@
 #include "exaudflib/impl/global.h"
+#include <string>
 
 namespace exaudflib {
-static string g_database_name;
-static string g_database_version;
-static string g_script_name;
-static string g_script_schema;
-static string g_current_user;
-static string g_scope_user;
-static string g_current_schema;
-static string g_source_code;
+static std::string g_database_name;
+static std::string g_database_version;
+static std::string g_script_name;
+static std::string g_script_schema;
+static std::string g_current_user;
+static std::string g_scope_user;
+static std::string g_current_schema;
+static std::string g_source_code;
 static unsigned long long g_session_id;
 static unsigned long g_statement_id;
 static unsigned int g_node_count;

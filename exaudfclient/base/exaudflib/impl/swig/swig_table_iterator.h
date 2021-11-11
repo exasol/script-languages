@@ -1,7 +1,8 @@
 #ifndef EXAUDFCLIENT_SWIGTABLEITERATOR_H
 #define EXAUDFCLIENT_SWIGTABLEITERATOR_H
 
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/swig/swig_common.h"
+#include "exaudflib/swig/swig_table_iterator.h"
 #include "exaudflib/impl/swig/swig_general_iterator.h"
 #include "exaudflib/impl/global.h"
 #include "exaudflib/impl/socket_low_level.h"

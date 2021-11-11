@@ -4,6 +4,8 @@
 #include "exaudflib/zmqcontainer.pb.h"
 #include "exaudflib/impl/msg_conversion.h"
 #include "exaudflib/impl/global.h"
+#include "exaudflib/swig/swig_common.h"
+#include "exaudflib/vm/swig_vm.h"
 #include <sys/resource.h>
 #include "debug_message.h"
 
@@ -17,7 +19,7 @@ namespace exaudflib {
 }
 
 
-bool send_init(zmq::socket_t &socket, const string client_name)
+bool send_init(zmq::socket_t &socket, const std::string client_name)
 {
     exaudflib::socket_high_level::request.Clear();
     exaudflib::socket_high_level::request.set_type(MT_CLIENT);
@@ -66,14 +68,14 @@ bool send_init(zmq::socket_t &socket, const string client_name)
     d.rlim_cur = d.rlim_max = rep.maximal_memory_limit();
     if (setrlimit(RLIMIT_RSS, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-        cerr << "W-UDF-CL-LIB-1006: Failed to set memory limit" << endl;
+        std::cerr << "W-UDF-CL-LIB-1006: Failed to set memory limit" << std::endl;
 #else
     throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1007: Failed to set memory limit");
 #endif
     d.rlim_cur = d.rlim_max = 0;    // 0 for no core dumps, RLIM_INFINITY to enable coredumps of any size
     if (setrlimit(RLIMIT_CORE, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-        cerr << "W-UDF-CL-LIB-1008: Failed to set core dump size limit" << endl;
+        std::cerr << "W-UDF-CL-LIB-1008: Failed to set core dump size limit" << std::endl;
 #else
     throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1009: Failed to set core dump size limit");
 #endif
@@ -82,24 +84,24 @@ bool send_init(zmq::socket_t &socket, const string client_name)
     if (d.rlim_max < 32768)
     {
         //#ifdef SWIGVM_LOG_CLIENT
-        std::cerr << "W-UDF-CL-LIB-1010: Reducing RLIMIT_NOFILE below 32768" << endl;
+        std::cerr << "W-UDF-CL-LIB-1010: Reducing RLIMIT_NOFILE below 32768" << std::endl;
         //#endif
     }
     d.rlim_cur = d.rlim_max = std::min(32768,(int)d.rlim_max);
     if (setrlimit(RLIMIT_NOFILE, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-        cerr << "W-UDF-CL-LIB-1011: Failed to set nofile limit" << endl;
+        std::cerr << "W-UDF-CL-LIB-1011: Failed to set nofile limit" << std::endl;
 #else
     throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1012: Failed to set nofile limit");
 #endif
     d.rlim_cur = d.rlim_max = 32768;
     if (setrlimit(RLIMIT_NPROC, &d) != 0)
     {
-        cerr << "W-UDF-CL-LIB-1013: Failed to set nproc limit to 32k trying 8k ..." << endl;
+        std::cerr << "W-UDF-CL-LIB-1013: Failed to set nproc limit to 32k trying 8k ..." << std::endl;
         d.rlim_cur = d.rlim_max = 8192;
         if (setrlimit(RLIMIT_NPROC, &d) != 0)
 #ifdef SWIGVM_LOG_CLIENT
-            cerr << "W-UDF-CL-LIB-1014: Failed to set nproc limit" << endl;
+            std::cerr << "W-UDF-CL-LIB-1014: Failed to set nproc limit" << std::endl;
 #else
         throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1015: Failed to set nproc limit");
 #endif
@@ -238,7 +240,7 @@ bool send_init(zmq::socket_t &socket, const string client_name)
     return true;
 }
 
-void send_close(zmq::socket_t &socket, const string &exmsg)
+void send_close(zmq::socket_t &socket, const std::string &exmsg)
 {
     exaudflib::socket_high_level::request.Clear();
     exaudflib::socket_high_level::request.set_type(MT_CLOSE);
@@ -371,7 +373,7 @@ bool send_run(zmq::socket_t &socket)
                     }
                     for (int i=0; i<es_proto.source_column_names_size(); i++)
                     {
-                        const string name = es_proto.source_column_names(i);
+                        const std::string name = es_proto.source_column_names(i);
                         exaudflib::global.singleCall_ExportSpecificationArg.addSourceColumnName(name);
                     }
                 }
