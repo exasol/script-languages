@@ -13,18 +13,6 @@
 using namespace std;
 
 
-void init_socket_name(const string socket_name);
-bool send_init(zmq::socket_t &socket, const string client_name);
-void send_close(zmq::socket_t &socket, const string &exmsg);
-bool send_run(zmq::socket_t &socket);
-//bool send_return(zmq::socket_t &socket, const char* result);
-void send_undefined_call(zmq::socket_t &socket, const std::string& fn);
-bool send_done(zmq::socket_t &socket);
-void send_finished(zmq::socket_t &socket);
-bool send_return(zmq::socket_t &socket, const char* result);
-
-
-
 
 extern void* handle;
 void* load_dynamic(const char* name);
