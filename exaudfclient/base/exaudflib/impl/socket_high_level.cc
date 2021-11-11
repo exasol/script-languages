@@ -1,4 +1,5 @@
-#include "../exaudflib.h"
+#include "exaudflib/socket_high_level.h"
+
 #include "exaudflib/impl/socket_low_level.h"
 #include "exaudflib/zmqcontainer.pb.h"
 #include "exaudflib/impl/msg_conversion.h"
