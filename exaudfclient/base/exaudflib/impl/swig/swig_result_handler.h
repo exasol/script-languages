@@ -1,7 +1,8 @@
 #ifndef EXAUDFCLIENT_SWIGRESULTHANDLER_H
 #define EXAUDFCLIENT_SWIGRESULTHANDLER_H
 
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/swig/swig_common.h"
+#include "exaudflib/swig/swig_result_handler.h"
 #include "exaudflib/impl/swig/swig_general_iterator.h"
 #include "exaudflib/impl/global.h"
 #include "exaudflib/impl/msg_conversion.h"

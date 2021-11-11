@@ -1,13 +1,15 @@
 #ifndef EXAUDFCLIENT_SWIGMETADATA_H
 #define EXAUDFCLIENT_SWIGMETADATA_H
 
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/swig/swig_common.h"
+#include "exaudflib/swig/swig_meta_data.h"
 #include "exaudflib/zmqcontainer.pb.h"
 #include "exaudflib/impl/socket_low_level.h"
 #include "exaudflib/impl/msg_conversion.h"
 #include "exaudflib/impl/global.h"
 #include <string>
 #include <vector>
+#include <sstream>
 
 namespace SWIGVMContainers {
 

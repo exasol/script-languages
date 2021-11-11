@@ -4,9 +4,11 @@
 #include <openssl/md5.h>
 #include <set>
 #include <jni.h>
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/vm/java_vm.h"
+#include "exaudflib/swig/swig_meta_data.h"
 #include "exascript_java_jni_decl.h"
 #include <unistd.h>
+#include <sstream>
 
 #include "debug_message.h"
 #include "exaudflib/scriptoptionlines.h"
