@@ -6,50 +6,56 @@
 #include <sys/resource.h>
 #include "debug_message.h"
 
-
-//static exascript_vmtype vm_type;
-static exascript_request request;
-static exascript_response response;
-static std::string output_buffer;
+namespace exaudflib {
+    namespace socket_high_level {
+        //static exascript_vmtype vm_type;
+        static exascript_request request;
+        static exascript_response response;
+        static std::string output_buffer;
+    }
+}
 
 
 bool send_init(zmq::socket_t &socket, const string client_name)
 {
-    request.Clear();
-    request.set_type(MT_CLIENT);
-    request.set_connection_id(0);
-    exascript_client *req = request.mutable_client();
+    exaudflib::socket_high_level::request.Clear();
+    exaudflib::socket_high_level::request.set_type(MT_CLIENT);
+    exaudflib::socket_high_level::request.set_connection_id(0);
+    exascript_client *req = exaudflib::socket_high_level::request.mutable_client();
     req->set_client_name(client_name);
-    if (!request.SerializeToString(&output_buffer)) {
+    if (!exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer)) {
         exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1002: Communication error: failed to serialize data");
         return false;
     }
-    zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+    zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                        exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
     exaudflib::socket_low_level::socket_send(socket, zmsg);
 
     zmq::message_t zmsgrecv;
-    response.Clear();
+    exaudflib::socket_high_level::response.Clear();
     if (!exaudflib::socket_low_level::socket_recv(socket, zmsgrecv, true))
         return false;
-    if (!response.ParseFromArray(zmsgrecv.data(), zmsgrecv.size())) {
+    if (!exaudflib::socket_high_level::response.ParseFromArray(zmsgrecv.data(), zmsgrecv.size())) {
         exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1003: Failed to parse data");
         return false;
     }
 
-    exaudflib::global.SWIGVM_params_ref->connection_id = response.connection_id();
-    DBG_STREAM_MSG(std::cerr,"### SWIGVM connected with id " << std::hex << exaudflib::global.SWIGVM_params_ref->connection_id);
-    if (response.type() == MT_CLOSE) {
-        if (response.close().has_exception_message())
-            exaudflib::global.exchandler.setException(response.close().exception_message().c_str());
+    exaudflib::global.SWIGVM_params_ref->connection_id = exaudflib::socket_high_level::response.connection_id();
+    DBG_STREAM_MSG(std::cerr,"### SWIGVM connected with id " << 
+        std::hex << exaudflib::global.SWIGVM_params_ref->connection_id);
+    if (exaudflib::socket_high_level::response.type() == MT_CLOSE) {
+        if (exaudflib::socket_high_level::response.close().has_exception_message())
+            exaudflib::global.exchandler.setException(
+                exaudflib::socket_high_level::response.close().exception_message().c_str());
         else exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1004: Connection closed by server");
         return false;
     }
-    if (response.type() != MT_INFO) {
+    if (exaudflib::socket_high_level::response.type() != MT_INFO) {
         exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1005: Wrong message type, should be MT_INFO got "+
-        exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
+        exaudflib::msg_conversion::convert_message_type_to_string(exaudflib::socket_high_level::response.type()));
         return false;
     }
-    const exascript_info &rep = response.info();
+    const exascript_info &rep = exaudflib::socket_high_level::response.info();
     exaudflib::global.writeScriptParams(rep);
     //vm_type = rep.vm_type();
 
@@ -99,35 +105,37 @@ bool send_init(zmq::socket_t &socket, const string client_name)
     }
 
     { /* send meta request */
-        request.Clear();
-        request.set_type(MT_META);
-        request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer)) {
+        exaudflib::socket_high_level::request.Clear();
+        exaudflib::socket_high_level::request.set_type(MT_META);
+        exaudflib::socket_high_level::request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
+        if (!exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer)) {
             exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1016: Communication error: failed to serialize data");
             return false;
         }
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+        zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                             exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
         exaudflib::socket_low_level::socket_send(socket, zmsg);
     } /* receive meta response */
     {   zmq::message_t zmsg;
         exaudflib::socket_low_level::socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size())) {
+        exaudflib::socket_high_level::response.Clear();
+        if (!exaudflib::socket_high_level::response.ParseFromArray(zmsg.data(), zmsg.size())) {
             exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1017: Communication error: failed to parse data");
             return false;
         }
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                exaudflib::global.exchandler.setException(response.close().exception_message().c_str());
+        if (exaudflib::socket_high_level::response.type() == MT_CLOSE) {
+            if (exaudflib::socket_high_level::response.close().has_exception_message())
+                exaudflib::global.exchandler.setException(
+                    exaudflib::socket_high_level::response.close().exception_message().c_str());
             else exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1018: Connection closed by server");
             return false;
         }
-        if (response.type() != MT_META) {
+        if (exaudflib::socket_high_level::response.type() != MT_META) {
             exaudflib::global.exchandler.setException("F-UDF-CL-LIB-1019: Wrong message type, should be META, got "+
-            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
+            exaudflib::msg_conversion::convert_message_type_to_string(exaudflib::socket_high_level::response.type()));
             return false;
         }
-        const exascript_metadata &rep = response.meta();
+        const exascript_metadata &rep = exaudflib::socket_high_level::response.meta();
         exaudflib::global.singleCallMode = rep.single_call_mode();
         exaudflib::global.SWIGVM_params_ref->inp_iter_type = (SWIGVMContainers::SWIGVM_itertype_e)(rep.input_iter_type());
         exaudflib::global.SWIGVM_params_ref->out_iter_type = (SWIGVMContainers::SWIGVM_itertype_e)(rep.output_iter_type());
@@ -231,27 +239,32 @@ bool send_init(zmq::socket_t &socket, const string client_name)
 
 void send_close(zmq::socket_t &socket, const string &exmsg)
 {
-    request.Clear();
-    request.set_type(MT_CLOSE);
-    request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
-    exascript_close *req = request.mutable_close();
+    exaudflib::socket_high_level::request.Clear();
+    exaudflib::socket_high_level::request.set_type(MT_CLOSE);
+    exaudflib::socket_high_level::request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
+    exascript_close *req = 
+        exaudflib::socket_high_level::request.mutable_close();
     if (exmsg != "") req->set_exception_message(exmsg);
-    request.SerializeToString(&output_buffer);
-    zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+    exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer);
+    zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                        exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
     exaudflib::socket_low_level::socket_send(socket, zmsg);
 
     { /* receive finished response, so we know that the DB knows that we are going to close and
          all potential exceptions have been received on DB side */
-    zmq::message_t zmsg;
-    exaudflib::socket_low_level::socket_recv(socket, zmsg);
-    response.Clear();
-    if(!response.ParseFromArray(zmsg.data(), zmsg.size())){
-        throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1024: Communication error: failed to parse data");
-    }
-    else if (response.type() != MT_FINISHED){
-        throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1025: Wrong response type, should be MT_FINISHED, got "+
-        exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
-    }
+        zmq::message_t zmsg;
+        exaudflib::socket_low_level::socket_recv(socket, zmsg);
+        exaudflib::socket_high_level::response.Clear();
+        if(!exaudflib::socket_high_level::response.ParseFromArray(zmsg.data(), zmsg.size())) {
+            throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1024: Communication error: failed to parse data");
+        }
+        else if (exaudflib::socket_high_level::response.type() != MT_FINISHED) {
+            throw 
+                SWIGVMContainers::SWIGVM::exception(
+                    "F-UDF-CL-LIB-1025: Wrong response type, should be MT_FINISHED, got "+
+                    exaudflib::msg_conversion::convert_message_type_to_string(
+                        exaudflib::socket_high_level::response.type()));
+        }
     }
 }
 
@@ -259,30 +272,32 @@ bool send_run(zmq::socket_t &socket)
 {
     {
         /* send done request */
-        request.Clear();
-        request.set_type(MT_RUN);
-        request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
+        exaudflib::socket_high_level::request.Clear();
+        exaudflib::socket_high_level::request.set_type(MT_RUN);
+        exaudflib::socket_high_level::request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
+        if (!exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer))
         {
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1026: Communication error: failed to serialize data");
         }
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+        zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                            exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
         exaudflib::socket_low_level::socket_send(socket, zmsg);
     } { /* receive done response */
         zmq::message_t zmsg;
         exaudflib::socket_low_level::socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
+        exaudflib::socket_high_level::response.Clear();
+        if (!exaudflib::socket_high_level::response.ParseFromArray(zmsg.data(), zmsg.size()))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1027: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVMContainers::SWIGVM::exception(response.close().exception_message().c_str());
+        if (exaudflib::socket_high_level::response.type() == MT_CLOSE) {
+            if (exaudflib::socket_high_level::response.close().has_exception_message())
+                throw SWIGVMContainers::SWIGVM::exception(
+                    exaudflib::socket_high_level::response.close().exception_message().c_str());
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1028: Wrong response type, got empty MT_CLOSE");
-        } else if (response.type() == MT_CLEANUP) {
+        } else if (exaudflib::socket_high_level::response.type() == MT_CLEANUP) {
             return false;
-        } else if (exaudflib::global.singleCallMode && response.type() == MT_CALL) {
+        } else if (exaudflib::global.singleCallMode && exaudflib::socket_high_level::response.type() == MT_CALL) {
             assert(exaudflib::global.singleCallMode);
-            exascript_single_call_rep sc = response.call();
+            exascript_single_call_rep sc = exaudflib::socket_high_level::response.call();
             exaudflib::global.singleCallFunction = static_cast<SWIGVMContainers::single_call_function_id_e>(sc.fn());
 
             switch (exaudflib::global.singleCallFunction)
@@ -371,9 +386,9 @@ bool send_run(zmq::socket_t &socket)
             }
 
             return true;
-        } else if (response.type() != MT_RUN) {
+        } else if (exaudflib::socket_high_level::response.type() != MT_RUN) {
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1032: Wrong response type, should be MT_RUN, got "+
-            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
+            exaudflib::msg_conversion::convert_message_type_to_string(exaudflib::socket_high_level::response.type()));
         }
     }
     return true;
@@ -383,31 +398,35 @@ bool send_return(zmq::socket_t &socket, const char* result)
 {
     assert(result != nullptr);
     {   /* send return request */
-        request.Clear();
-        request.set_type(MT_RETURN);
+        exaudflib::socket_high_level::request.Clear();
+        exaudflib::socket_high_level::request.set_type(MT_RETURN);
         ::exascript_return_req* rr = new ::exascript_return_req();
         rr->set_result(result);
-        request.set_allocated_call_result(rr);
-        request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
+        exaudflib::socket_high_level::request.set_allocated_call_result(rr);
+        exaudflib::socket_high_level::request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
+        if (!exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1033: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+        zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                            exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
         exaudflib::socket_low_level::socket_send(socket, zmsg);
     } { /* receive return response */
         zmq::message_t zmsg;
         exaudflib::socket_low_level::socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
+        exaudflib::socket_high_level::response.Clear();
+        if (!exaudflib::socket_high_level::response.ParseFromArray(zmsg.data(), zmsg.size()))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1034: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVMContainers::SWIGVM::exception(response.close().exception_message().c_str());
+        if (exaudflib::socket_high_level::response.type() == MT_CLOSE) {
+            if (exaudflib::socket_high_level::response.close().has_exception_message())
+                throw SWIGVMContainers::SWIGVM::exception(
+                    exaudflib::socket_high_level::response.close().exception_message().c_str());
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1035: Wrong response type, got empty close response");
-        } else if (response.type() == MT_CLEANUP) {
+        } else if (exaudflib::socket_high_level::response.type() == MT_CLEANUP) {
             return false;
-        } else if (response.type() != MT_RETURN) {
-            throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1036: Wrong response type, should be MT_RETURN, got "+
-            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
+        } else if (exaudflib::socket_high_level::response.type() != MT_RETURN) {
+            throw SWIGVMContainers::SWIGVM::exception(
+                "F-UDF-CL-LIB-1036: Wrong response type, should be MT_RETURN, got "+
+                    exaudflib::msg_conversion::convert_message_type_to_string(
+                        exaudflib::socket_high_level::response.type()));
         }
     }
     return true;
@@ -416,25 +435,28 @@ bool send_return(zmq::socket_t &socket, const char* result)
 void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
 {
     {   /* send return request */
-        request.Clear();
-        request.set_type(MT_UNDEFINED_CALL);
+        exaudflib::socket_high_level::request.Clear();
+        exaudflib::socket_high_level::request.set_type(MT_UNDEFINED_CALL);
         ::exascript_undefined_call_req* uc = new ::exascript_undefined_call_req();
         uc->set_remote_fn(fn);
-        request.set_allocated_undefined_call(uc);
-        request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
+        exaudflib::socket_high_level::request.set_allocated_undefined_call(uc);
+        exaudflib::socket_high_level::request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
+        if (!exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1037: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+        zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                            exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
         exaudflib::socket_low_level::socket_send(socket, zmsg);
     } { /* receive return response */
         zmq::message_t zmsg;
         exaudflib::socket_low_level::socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
+        exaudflib::socket_high_level::response.Clear();
+        if (!exaudflib::socket_high_level::response.ParseFromArray(zmsg.data(), zmsg.size()))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1038: Communication error: failed to parse data");
-        if (response.type() != MT_UNDEFINED_CALL) {
-            throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1039: Wrong response type, should be MT_UNDEFINED_CALL, got "+
-            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
+        if (exaudflib::socket_high_level::response.type() != MT_UNDEFINED_CALL) {
+            throw SWIGVMContainers::SWIGVM::exception(
+                "F-UDF-CL-LIB-1039: Wrong response type, should be MT_UNDEFINED_CALL, got "+
+                    exaudflib::msg_conversion::convert_message_type_to_string(
+                        exaudflib::socket_high_level::response.type()));
         }
     }
 }
@@ -443,29 +465,33 @@ void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
 bool send_done(zmq::socket_t &socket)
 {
     {   /* send done request */
-        request.Clear();
-        request.set_type(MT_DONE);
-        request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
+        exaudflib::socket_high_level::request.Clear();
+        exaudflib::socket_high_level::request.set_type(MT_DONE);
+        exaudflib::socket_high_level::request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
+        if (!exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1040: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+        zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                            exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
         exaudflib::socket_low_level::socket_send(socket, zmsg);
     }
     { /* receive done response */
         zmq::message_t zmsg;
         exaudflib::socket_low_level::socket_recv(socket, zmsg);
-        response.Clear();
-        if (!response.ParseFromArray(zmsg.data(), zmsg.size()))
+        exaudflib::socket_high_level::response.Clear();
+        if (!exaudflib::socket_high_level::response.ParseFromArray(zmsg.data(), zmsg.size()))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1041: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVMContainers::SWIGVM::exception(response.close().exception_message().c_str());
+        if (exaudflib::socket_high_level::response.type() == MT_CLOSE) {
+            if (exaudflib::socket_high_level::response.close().has_exception_message())
+                throw SWIGVMContainers::SWIGVM::exception(
+                    exaudflib::socket_high_level::response.close().exception_message().c_str());
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1042: Wrong response type, got empty close response");
-        } else if (response.type() == MT_CLEANUP) {
+        } else if (exaudflib::socket_high_level::response.type() == MT_CLEANUP) {
             return false;
-        } else if (response.type() != MT_DONE)
-            throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1043: Wrong response type, should be MT_DONE, got "+
-            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
+        } else if (exaudflib::socket_high_level::response.type() != MT_DONE)
+            throw SWIGVMContainers::SWIGVM::exception(
+                "F-UDF-CL-LIB-1043: Wrong response type, should be MT_DONE, got "+
+                    exaudflib::msg_conversion::convert_message_type_to_string(
+                        exaudflib::socket_high_level::response.type()));
     }
     return true;
 }
@@ -473,25 +499,28 @@ bool send_done(zmq::socket_t &socket)
 void send_finished(zmq::socket_t &socket)
 {
     {   /* send done request */
-        request.Clear();
-        request.set_type(MT_FINISHED);
-        request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
-        if (!request.SerializeToString(&output_buffer))
+        exaudflib::socket_high_level::request.Clear();
+        exaudflib::socket_high_level::request.set_type(MT_FINISHED);
+        exaudflib::socket_high_level::request.set_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id);
+        if (!exaudflib::socket_high_level::request.SerializeToString(&exaudflib::socket_high_level::output_buffer))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1044: Communication error: failed to serialize data");
-        zmq::message_t zmsg((void*)output_buffer.c_str(), output_buffer.length(), NULL, NULL);
+        zmq::message_t zmsg((void*)exaudflib::socket_high_level::output_buffer.c_str(),
+                            exaudflib::socket_high_level::output_buffer.length(), NULL, NULL);
         exaudflib::socket_low_level::socket_send(socket, zmsg);
     } { /* receive done response */
         zmq::message_t zmsg;
         exaudflib::socket_low_level::socket_recv(socket, zmsg);
-        response.Clear();
-        if(!response.ParseFromArray(zmsg.data(), zmsg.size()))
+        exaudflib::socket_high_level::response.Clear();
+        if(!exaudflib::socket_high_level::response.ParseFromArray(zmsg.data(), zmsg.size()))
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1045: Communication error: failed to parse data");
-        if (response.type() == MT_CLOSE) {
-            if (response.close().has_exception_message())
-                throw SWIGVMContainers::SWIGVM::exception(response.close().exception_message().c_str());
+        if (exaudflib::socket_high_level::response.type() == MT_CLOSE) {
+            if (exaudflib::socket_high_level::response.close().has_exception_message())
+                throw SWIGVMContainers::SWIGVM::exception(exaudflib::socket_high_level::response.close().exception_message().c_str());
             throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1046: Wrong response type, got empty MT_CLOSE");
-        } else if (response.type() != MT_FINISHED)
-            throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1047: Wrong response type, should be MT_FINISHED, got"+
-            exaudflib::msg_conversion::convert_message_type_to_string(response.type()));
+        } else if (exaudflib::socket_high_level::response.type() != MT_FINISHED)
+            throw SWIGVMContainers::SWIGVM::exception(
+                "F-UDF-CL-LIB-1047: Wrong response type, should be MT_FINISHED, got"+
+                exaudflib::msg_conversion::convert_message_type_to_string(
+                    exaudflib::socket_high_level::response.type()));
     }
 }
