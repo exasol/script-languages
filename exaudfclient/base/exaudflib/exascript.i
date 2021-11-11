@@ -3,7 +3,8 @@
 %}
 
 %{
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/swig/swig_result_handler.h"
+#include "exaudflib/swig/swig_meta_data.h"
 
 using namespace SWIGVMContainers;
 #include "exaudflib/script_data_transfer_objects_wrapper.h"

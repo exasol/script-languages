@@ -13,7 +13,7 @@
 #include <dlfcn.h>
 #endif
 #include <exception>
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/vm/swig_vm.h"
 #ifdef ENABLE_BENCHMARK_VM
 #include "benchmark_container/benchmark_container.h"
 #endif
@@ -32,6 +32,13 @@
 #endif
 #include <inttypes.h>
 
+#ifdef ENABLE_JAVA_VM
+#include "exaudflib/vm/java_vm.h"
+#endif ENABLE_JAVA_VM
+
+//#ifdef ENABLE_PYTHON_VM
+#include "exaudflib/vm/python_vm.h"
+//#endif ENABLE_PYTHON_VM
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
 #include "protegrityclient.h"
@@ -74,21 +81,21 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 int main(int argc, char **argv) {
 #ifndef PROTEGRITY_PLUGIN_CLIENT
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
-    string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
+    std::string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
-    string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
-    //string libexaudflibPath="libexaudflib_complete.so";
-    //string libexaudflibPath = string(argv[3]);
-    //string libexaudflibPath = string("/exaudf/libexaudflib_complete.so");
+    std::string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
+    //std::string libexaudflibPath="libexaudflib_complete.so";
+    //std::string libexaudflibPath = std::string(argv[3]);
+    //std::string libexaudflibPath = std::string("/exaudf/libexaudflib_complete.so");
 #endif
 #if 1
 
     Lmid_t  my_namespace_id;
-    // DBGMSG(cerr, "Load libprotobuf into new namespace");
-    // DBGVAR(cerr, libProtobufPath);
+    // DBGMSG(std::cerr, "Load libprotobuf into new namespace");
+    // DBGVAR(std::cerr, libProtobufPath);
     // handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
     // if (!handle) {
-    //     cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
+    //     std::cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
     //     exit(EXIT_FAILURE);
     // }
     // if(dlinfo(handle, RTLD_DI_LMID, &my_namespace_id) != 0) {
@@ -142,7 +149,7 @@ int main(int argc, char **argv) {
     }
     ::setlocale(LC_ALL, "en_US.utf8");
 
-    std::function<SWIGVM*()>vmMaker=[](){return nullptr;}; // the initial vm maker returns NULL
+    std::function<SWIGVMContainers::SWIGVM*()>vmMaker=[](){return nullptr;}; // the initial vm maker returns NULL
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
     vmMaker = [](){return new SWIGVMContainers::Protegrity(false);};
@@ -159,14 +166,14 @@ int main(int argc, char **argv) {
             }
         }
 
-        vmMaker = [](){return new PythonVM(false);};
+        vmMaker = [](){return new  SWIGVMContainers::PythonVM(false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Python support");
 #endif
     } else if (strcmp(argv[2], "lang=java")==0)
     {
 #ifdef ENABLE_JAVA_VM
-        vmMaker = [](){return new JavaVMach(false);};
+        vmMaker = [](){return new SWIGVMContainers::JavaVMach(false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Java support");
 #endif
