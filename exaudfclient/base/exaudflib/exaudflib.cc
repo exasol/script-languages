@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <sstream>
+#include <sstream>
 #include <zmq.hpp>
 #include <fcntl.h>
 #include <fstream>
@@ -31,6 +32,8 @@
 #include "exaudflib/impl/swig/swig_result_handler.h"
 #include "exaudflib/impl/swig/swig_table_iterator.h"
 
+#include "exaudflib/vm/swig_vm.h"
+
 
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
@@ -52,7 +55,7 @@ __thread SWIGVMContainers::SWIGVM_params_t* SWIGVMContainers::SWIGVM_params; // 
 void print_args(int argc,char**argv){
     for (int i = 0; i<argc; i++)
     {
-        cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << endl;
+        std::cerr << "zmqcontainerclient argv[" << i << "] = " << argv[i] << std::endl;
     }
 }
 
@@ -77,43 +80,43 @@ void stop_all(zmq::socket_t& socket){
 }
 
 unsigned int handle_error(zmq::socket_t& socket, std::string socket_name, SWIGVMContainers::SWIGVM* vm, std::string msg, bool shutdown_vm=false){
-    DBG_STREAM_MSG(cerr,"### handle error in '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << msg);
+    DBG_STREAM_MSG(std::cerr,"### handle error in '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << msg);
     try{
         if(vm!=nullptr && shutdown_vm){
             vm->exception_msg = "";
             vm->shutdown(); // Calls cleanup
             if (vm->exception_msg.size()>0) {
-                PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1110","### Caught error in vm->shutdown '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << vm->exception_msg);
+                PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1110","### Caught error in vm->shutdown '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << vm->exception_msg);
                 msg ="F-UDF-CL-LIB-1111: Caught exception\n\n"+msg+"\n\n and caught another exception during cleanup\n\n"+vm->exception_msg;
             }
         } 
         delete_vm(vm);
     }  catch (SWIGVMContainers::SWIGVM::exception &err) {
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1112","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1112","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(std::exception& err){
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1113","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1113","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(...){
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1114","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1114","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
     }
     try{
         send_close(socket, msg);
         ::sleep(1); // give me a chance to die with my parent process
     }  catch (SWIGVMContainers::SWIGVM::exception &err) {
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1115","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1115","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(std::exception& err){
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1116","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1116","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(...){
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1117","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ")");
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1117","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ")");
     }
 
     try{
         stop_all(socket);
     }  catch (SWIGVMContainers::SWIGVM::exception &err) {
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1118","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1118","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(std::exception& err){
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1119","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1119","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
     }catch(...){
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1120","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "):");
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1120","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "):");
     }
     return 1;
 }
@@ -137,9 +140,9 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
     assert(exaudflib::global.SWIGVM_params_ref != nullptr);
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
-    stringstream socket_name_ss;
+    std::stringstream socket_name_ss;
 #endif
-    string socket_name = argv[1];
+    std::string socket_name = argv[1];
     exaudflib::socket_info::set_socket_file_name(argv[1]);
     exaudflib::socket_info::set_socket_url(argv[1]);
 
@@ -147,7 +150,7 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
 
     zmq::context_t context(1);
 
-    DBG_COND_FUNC_CALL(cerr, print_args(argc,argv));
+    DBG_COND_FUNC_CALL(std::cerr, print_args(argc,argv));
 
     if (socket_name.length() > 4 ) {
 #ifdef PROTEGRITY_PLUGIN_CLIENT
@@ -159,12 +162,12 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
                || (strcmp(argv[2], "lang=streaming") == 0)
                || (strcmp(argv[2], "lang=benchmark") == 0)) )
         {
-            PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1121","Remote VM type '" << argv[2] << "' not supported.");
+            PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1121","Remote VM type '" << argv[2] << "' not supported.");
             return 2;
         }
 #endif
     } else {
-        PRINT_ERROR_MESSAGE(cerr,"F-UDF-CL-LIB-1122", "socket name '" << socket_name << "' is invalid." );
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1122", "socket name '" << socket_name << "' is invalid." );
         abort();
     }
 
@@ -189,7 +192,8 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
         exaudflib::socket_info::set_socket_file_name(&(exaudflib::socket_info::get_socket_file_name()[6]));
     }
 
-    DBG_STREAM_MSG(cerr,"### SWIGVM starting " << argv[0] << " with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): '" << argv[1] << '\'');
+    DBG_STREAM_MSG(std::cerr,"### SWIGVM starting " << argv[0] << " with name '" << socket_name <<
+                   " (" << ::getppid() << ',' << ::getpid() << "): '" << argv[1] << '\'');
 
     exaudflib::check::start_check_thread();
 
@@ -205,7 +209,7 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
 
 reinit:
 
-    DBGMSG(cerr,"Reinit");
+    DBGMSG(std::cerr,"Reinit");
     zmq::socket_t socket(context, ZMQ_REQ);
 
     socket.setsockopt(ZMQ_LINGER, &linger_timeout, sizeof(linger_timeout));
@@ -317,17 +321,17 @@ reinit:
         }
         send_finished(socket);
     }  catch (SWIGVMContainers::SWIGVM::exception &err) {
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        DBG_STREAM_MSG(std::cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
         return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1129: "+std::string(err.what()),shutdown_vm_in_case_of_error);
     } catch (std::exception &err) {
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
+        DBG_STREAM_MSG(std::cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
         return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1130: "+std::string(err.what()),shutdown_vm_in_case_of_error);
     } catch (...) {
-        DBG_STREAM_MSG(cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
+        DBG_STREAM_MSG(std::cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
         return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1131: Internal/Unknown error",shutdown_vm_in_case_of_error);
     }
 
-    DBG_STREAM_MSG(cerr,"### SWIGVM finishing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
+    DBG_STREAM_MSG(std::cerr,"### SWIGVM finishing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << ')');
 
     delete_vm(vm);
     stop_all(socket);
