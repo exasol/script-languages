@@ -1,4 +1,4 @@
-#include "exaudflib/vm/python_vm.h"
+#include "python_vm.h"
 #include "exaudflib/swig/swig_meta_data.h"
 #include <iostream>
 #ifdef _POSIX_C_SOURCE
