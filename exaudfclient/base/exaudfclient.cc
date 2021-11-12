@@ -37,7 +37,7 @@
 #endif ENABLE_JAVA_VM
 
 //#ifdef ENABLE_PYTHON_VM
-#include "exaudflib/vm/python_vm.h"
+#include "python/pythoncontainer.h"
 //#endif ENABLE_PYTHON_VM
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
