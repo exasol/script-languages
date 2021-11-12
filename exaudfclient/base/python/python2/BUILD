@@ -87,10 +87,11 @@ cc_library(
 
 cc_library(
     name = "pythoncontainer",
-    srcs = ["//python:pythoncontainer.cc", "//python:pythoncontainer.h",],
+    srcs = ["//python:pythoncontainer.cc"],
     data = [":extend_exascript_python_preset_py"], 
-    hdrs = [":pythoncontainer.h", ":exascript_python_int", ":filter_swig_code_exascript_python_h"],
+    hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
-    deps = ["@python2//:python2",":exascript_python","//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"],
+    deps = ["@python2//:python2",":exascript_python","//exaudflib:header",
+            "//:debug_message_h","//exaudflib:scriptoptionlines", "//python:pythoncontainer_header"],
     alwayslink=True,
 )
