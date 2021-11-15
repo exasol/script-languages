@@ -11,8 +11,8 @@
 #include <sstream>
 
 #include "debug_message.h"
-#include "exaudflib/scriptoptionlines.h"
 #include "javacontainer/javacontainer.h"
+#include "exaudflib/exascript/scriptoptionlines.h"
 
 using namespace SWIGVMContainers;
 using namespace std;
