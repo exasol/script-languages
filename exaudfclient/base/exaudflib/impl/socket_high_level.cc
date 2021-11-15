@@ -19,7 +19,7 @@ namespace exaudflib {
 }
 
 
-bool send_init(zmq::socket_t &socket, const std::string client_name)
+bool exaudflib::socket_high_level::send_init(zmq::socket_t &socket, const std::string client_name)
 {
     exaudflib::socket_high_level::request.Clear();
     exaudflib::socket_high_level::request.set_type(MT_CLIENT);
@@ -240,7 +240,7 @@ bool send_init(zmq::socket_t &socket, const std::string client_name)
     return true;
 }
 
-void send_close(zmq::socket_t &socket, const std::string &exmsg)
+void exaudflib::socket_high_level::send_close(zmq::socket_t &socket, const std::string &exmsg)
 {
     exaudflib::socket_high_level::request.Clear();
     exaudflib::socket_high_level::request.set_type(MT_CLOSE);
@@ -271,7 +271,7 @@ void send_close(zmq::socket_t &socket, const std::string &exmsg)
     }
 }
 
-bool send_run(zmq::socket_t &socket)
+bool exaudflib::socket_high_level::send_run(zmq::socket_t &socket)
 {
     {
         /* send done request */
@@ -397,7 +397,7 @@ bool send_run(zmq::socket_t &socket)
     return true;
 }
 
-bool send_return(zmq::socket_t &socket, const char* result)
+bool exaudflib::socket_high_level::send_return(zmq::socket_t &socket, const char* result)
 {
     assert(result != nullptr);
     {   /* send return request */
@@ -464,8 +464,7 @@ void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
     }
 }
 
-
-bool send_done(zmq::socket_t &socket)
+bool exaudflib::socket_high_level::send_done(zmq::socket_t &socket)
 {
     {   /* send done request */
         exaudflib::socket_high_level::request.Clear();
@@ -499,7 +498,7 @@ bool send_done(zmq::socket_t &socket)
     return true;
 }
 
-void send_finished(zmq::socket_t &socket)
+void exaudflib::socket_high_level::send_finished(zmq::socket_t &socket)
 {
     {   /* send done request */
         exaudflib::socket_high_level::request.Clear();
