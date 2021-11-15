@@ -46,7 +46,7 @@ cc_library(
 cc_library(
     name = "header",
     hdrs = [
-        "exaudflib.h", "vm/swig_vm.h",
+        "udf_plugin_interface.h", "load_dynamic.h", "vm/swig_vm.h",
         "swig/swig_common.h", "swig/swig_meta_data.h", "swig/swig_result_handler.h", "swig/swig_table_iterator.h"
     ],
     alwayslink=True,
@@ -85,13 +85,13 @@ cc_library(
 # Do not depend on this library in the langauge container or exaudfclient. 
 # The only target which must depend on it is //:libexaudflib-complete.so.
 # If you depend on this target you will load protobuf into your linker namespace
-# which might cause problems with tensorflow. If you need //exaudflib:exaudflib.h,
+# which might cause problems with tensorflow. If you need
 # "//exaudflib:scriptoptionlines","//exaudflib:script_data_transfer_objects" or
 # "//exaudflib:script_data_transfer_objects_wrapper" in the language container 
 # depend directly on them
 cc_library(
     name = "exaudflib",
-    srcs = ["exaudflib.cc",
+    srcs = ["exaudflib_main.cc",
             "vm/swig_vm.cc",
             "swig/swig_common.cc", "swig/swig_meta_data.cc", "swig/swig_result_handler.cc", "swig/swig_table_iterator.cc",
             "impl/msg_conversion.cc", "impl/msg_conversion.h",
@@ -100,11 +100,11 @@ cc_library(
             "impl/socket_low_level.cc", "impl/socket_low_level.h",
             "impl/global.cc", "impl/global.h",
             "impl/socket_high_level.cc", "socket_high_level.h",
+            "impl/swig/swig_factory.cc",
             "impl/swig/swig_table_iterator.h", "impl/swig/swig_table_iterator.cc",
             "impl/swig/swig_meta_data.h", "impl/swig/swig_meta_data.cc",
             "impl/swig/swig_result_handler.h", "impl/swig/swig_result_handler.cc",
             "impl/swig/swig_general_iterator.h", "impl/swig/swig_general_iterator.cc"],
-    hdrs = ["exaudflib.h"],
     linkstatic = 1,
     alwayslink = True,
     defines = VM_ENABLED_DEFINES,

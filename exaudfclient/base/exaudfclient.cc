@@ -9,8 +9,8 @@
 #include <fcntl.h>
 #include <fstream>
 #include <link.h>
-#ifndef PROTEGRITY_PLUGIN_CLIENT
-#include <dlfcn.h>
+#ifndef UDF_PLUGIN_CLIENT
+#include <dlfcn.h> //This is required for dynamic linking in new linker namespace, not required for plugins
 #endif
 #include <exception>
 #include "exaudflib/vm/swig_vm.h"
@@ -40,7 +40,7 @@
 #include "python/pythoncontainer.h"
 #endif //ENABLE_PYTHON_VM
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
 #include "protegrityclient.h"
 #endif
 
@@ -58,7 +58,7 @@ typedef int (*MAIN_FUN)(std::function<SWIGVM*()>vmMaker,int,char**);
 
 char* error;
 
-#ifndef PROTEGRITY_PLUGIN_CLIENT
+#ifndef UDF_PLUGIN_CLIENT
 void* load_dynamic(const char* name) {
     void* res = dlsym(handle, name);
     if ((error = dlerror()) != NULL)
@@ -71,7 +71,7 @@ void* load_dynamic(const char* name) {
 }
 #endif
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
 extern "C" {
 int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv);
 void set_SWIGVM_params(SWIGVM_params_t* p);
@@ -79,7 +79,7 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 #endif
 
 int main(int argc, char **argv) {
-#ifndef PROTEGRITY_PLUGIN_CLIENT
+#ifndef UDF_PLUGIN_CLIENT
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
     std::string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
@@ -129,9 +129,9 @@ int main(int argc, char **argv) {
     VOID_FUN_WITH_SWIGVM_PARAMS_P set_SWIGVM_params = (VOID_FUN_WITH_SWIGVM_PARAMS_P)load_dynamic("set_SWIGVM_params");
 
 
-#endif  // ifndef PROTEGRITY_PLUGIN_CLIENT
+#endif  // ifndef UDF_PLUGIN_CLIENT
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " <socket>" << endl;
         return 1;
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
 
     std::function<SWIGVMContainers::SWIGVM*()>vmMaker=[](){return nullptr;}; // the initial vm maker returns NULL
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
     vmMaker = [](){return new SWIGVMContainers::Protegrity(false);};
 #else
     if (strcmp(argv[2], "lang=python")==0)
