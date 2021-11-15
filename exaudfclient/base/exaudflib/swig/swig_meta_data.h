@@ -1,7 +1,7 @@
 #ifndef SWIG_META_DATA_H
 #define SWIG_META_DATA_H
 
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/load_dynamic.h"
 #include "exaudflib/swig/swig_common.h"
 #include "exaudflib/script_data_transfer_objects_wrapper.h"
 
@@ -13,7 +13,7 @@ class SWIGMetadata {
     public:
         SWIGMetadata()
         {
-#ifndef PROTEGRITY_PLUGIN_CLIENT
+#ifndef UDF_PLUGIN_CLIENT
             CREATE_METADATA_FUN create = (CREATE_METADATA_FUN)load_dynamic("create_SWIGMetaData");
             impl = create();
 #else
