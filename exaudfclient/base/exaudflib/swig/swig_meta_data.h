@@ -3,7 +3,7 @@
 
 #include "exaudflib/load_dynamic.h"
 #include "exaudflib/swig/swig_common.h"
-#include "exaudflib/script_data_transfer_objects_wrapper.h"
+#include "exaudflib/exascript/script_data_transfer_objects_wrapper.h"
 
 namespace SWIGVMContainers {
 

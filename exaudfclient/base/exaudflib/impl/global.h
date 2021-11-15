@@ -1,7 +1,7 @@
 #ifndef EXAUDFCLIENT_EXUDFLIB_GLOBAL_H
 #define EXAUDFCLIENT_EXUDFLIB_GLOBAL_H
 
-#include "exaudflib/script_data_transfer_objects.h"
+#include "exaudflib/exascript/script_data_transfer_objects.h"
 #include "exaudflib/zmqcontainer.pb.h"
 #include "exaudflib/swig/swig_common.h"
 
