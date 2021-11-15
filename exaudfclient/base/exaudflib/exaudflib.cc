@@ -99,7 +99,7 @@ unsigned int handle_error(zmq::socket_t& socket, std::string socket_name, SWIGVM
         PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1114","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): ");
     }
     try{
-        send_close(socket, msg);
+        exaudflib::socket_high_level::send_close(socket, msg);
         ::sleep(1); // give me a chance to die with my parent process
     }  catch (SWIGVMContainers::SWIGVM::exception &err) {
         PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1115","### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
@@ -224,7 +224,7 @@ reinit:
 
     SWIGVMContainers::SWIGVM* vm=nullptr;
 
-    if (!send_init(socket, socket_name)) {
+    if (!exaudflib::socket_high_level::send_init(socket, socket_name)) {
         if (!exaudflib::check::get_remote_client() && exaudflib::global.exchandler.exthrowed) {
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1123: " +
                                 exaudflib::global.exchandler.exmsg, false);
@@ -252,7 +252,7 @@ reinit:
                 // in single call mode, after MT_RUN from the client,
                 // EXASolution responds with a CALL message that specifies
                 // the single call function to be made
-                if (!send_run(socket)) {
+                if (!exaudflib::socket_high_level::send_run(socket)) {
                     break;
                 }
 
@@ -286,19 +286,19 @@ reinit:
                     }
 
                     if (vm->calledUndefinedSingleCall.size()>0) {
-                        send_undefined_call(socket, vm->calledUndefinedSingleCall);
+                        exaudflib::socket_high_level::send_undefined_call(socket, vm->calledUndefinedSingleCall);
                     } else {
-                        send_return(socket,result);
+                        exaudflib::socket_high_level::send_return(socket,result);
                     }
 
-                    if (!send_done(socket)) {
+                    if (!exaudflib::socket_high_level::send_done(socket)) {
                         break;
                     }
                 } catch(...) {}
             }
         } else {
             for(;;) {
-                if (!send_run(socket))
+                if (!exaudflib::socket_high_level::send_run(socket))
                     break;
                 exaudflib::global.SWIGVM_params_ref->inp_force_finish = false;
                 while(!vm->run_())
@@ -307,7 +307,7 @@ reinit:
                         return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1127: "+vm->exception_msg,true);
                     }
                 }
-                if (!send_done(socket))
+                if (!exaudflib::socket_high_level::send_done(socket))
                     break;
             }
         }
@@ -319,7 +319,7 @@ reinit:
                 return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1128: "+vm->exception_msg,false);
             }
         }
-        send_finished(socket);
+        exaudflib::socket_high_level::send_finished(socket);
     }  catch (SWIGVMContainers::SWIGVM::exception &err) {
         DBG_STREAM_MSG(std::cerr,"### SWIGVM crashing with name '" << socket_name << " (" << ::getppid() << ',' << ::getpid() << "): " << err.what());
         return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1129: "+std::string(err.what()),shutdown_vm_in_case_of_error);
