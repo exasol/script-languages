@@ -5,12 +5,12 @@ genrule(
     cmd = """
         INCLUDES=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION-config --includes`
         mkdir -p build_exascript_python_tmp_cc/exaudflib
-        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_python_tmp_cc/exaudflib
+        cp "$(location //exaudflib:exascript/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript/exascript.i)" build_exascript_python_tmp_cc/exaudflib
         cd build_exascript_python_tmp_cc
         swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -addextern -module exascript_python -o "../$(location exascript_python_tmp.cc)" exaudflib/exascript.i
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
-    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
+    srcs = ["//exaudflib:exascript/exascript.i","//exaudflib:exascript/script_data_transfer_objects_wrapper.h"]
 )
 
 genrule(
@@ -18,13 +18,13 @@ genrule(
     cmd = """
         INCLUDES=`$$PYTHON2_PREFIX/bin/$$PYTHON2_VERSION-config --includes`
         mkdir build_exascript_python_tmp_h
-        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_python_tmp_h
+        cp "$(location //exaudflib:exascript/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript/exascript.i)" build_exascript_python_tmp_h
         cp "$(location exascript_python_tmp.cc)"  "$(location exascript_python.py)" build_exascript_python_tmp_h
         cd build_exascript_python_tmp_h
         swig -v $$INCLUDES -DEXTERNAL_PROCESS -c++ -python -external-runtime "../$(location exascript_python_tmp.h)"
         """,
     outs = ["exascript_python_tmp.h"],
-    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_python_tmp.cc", "exascript_python.py"]
+    srcs = ["//exaudflib:exascript/exascript.i","//exaudflib:exascript/script_data_transfer_objects_wrapper.h", ":exascript_python_tmp.cc", "exascript_python.py"]
 )
 
 genrule(
