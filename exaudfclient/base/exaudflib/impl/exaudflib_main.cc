@@ -8,7 +8,7 @@
 #include <zmq.hpp>
 #include <fcntl.h>
 #include <fstream>
-#include "script_data_transfer_objects.h"
+#include "exaudflib/exascript/script_data_transfer_objects.h"
 #include <functional>
 
 #include "debug_message.h"
@@ -16,7 +16,7 @@
 // swig lib
 #include <limits>
 #include "exaudflib/zmqcontainer.pb.h"
-#include "script_data_transfer_objects_wrapper.h"
+#include "exaudflib/exascript/script_data_transfer_objects_wrapper.h"
 
 
 #include "exaudflib/impl/check.h"
@@ -25,10 +25,6 @@
 #include "exaudflib/impl/msg_conversion.h"
 #include "exaudflib/impl/global.h"
 #include "exaudflib/impl/socket_high_level.h"
-
-#include "exaudflib/impl/swig/swig_meta_data.h"
-#include "exaudflib/impl/swig/swig_result_handler.h"
-#include "exaudflib/impl/swig/swig_table_iterator.h"
 
 #include "exaudflib/vm/swig_vm.h"
 
