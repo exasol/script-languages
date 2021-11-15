@@ -1,8 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "exaudflib.h"
-
 #include <unistd.h>
 #include <iostream>
 #include <sstream>
@@ -35,12 +33,7 @@
 #include "exaudflib/vm/swig_vm.h"
 
 
-
-#ifdef PROTEGRITY_PLUGIN_CLIENT
-#include <protegrityclient.h>
-#endif
-
-#ifndef PROTEGRITY_PLUGIN_CLIENT
+#ifndef UDF_PLUGIN_CLIENT
 __thread SWIGVMContainers::SWIGVM_params_t* SWIGVMContainers::SWIGVM_params; // this is not used in the file, but defined to satisfy the "extern" requirement from exaudflib.h
 #endif
 
@@ -123,23 +116,11 @@ unsigned int handle_error(zmq::socket_t& socket, std::string socket_name, SWIGVM
 
 extern "C" {
 
-SWIGVMContainers::SWIGMetadata* create_SWIGMetaData() {
-    return new SWIGVMContainers::SWIGMetadata_Impl();
-}
-
-SWIGVMContainers::AbstractSWIGTableIterator* create_SWIGTableIterator() {
-    return new SWIGVMContainers::SWIGTableIterator_Impl();
-}
-
-SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator) {
-    return new SWIGVMContainers::SWIGResultHandler_Impl(table_iterator);
-}
-
 int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc,char**argv)
 {
     assert(exaudflib::global.SWIGVM_params_ref != nullptr);
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
     std::stringstream socket_name_ss;
 #endif
     std::string socket_name = argv[1];
@@ -153,7 +134,7 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
     DBG_COND_FUNC_CALL(std::cerr, print_args(argc,argv));
 
     if (socket_name.length() > 4 ) {
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
         // udf plugins might not have arguments
 #else
         if (! ((strcmp(argv[2], "lang=python") == 0)
@@ -177,7 +158,7 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
 
     if (socket_name.compare(0, 4, "ipc:") == 0)
     {        
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
 /*
     DO NOT REMOVE, required for Exasol 6.2
 */

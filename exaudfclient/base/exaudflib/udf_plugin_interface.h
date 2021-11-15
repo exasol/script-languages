@@ -1,10 +1,7 @@
-#ifndef EXAUDFLIB_H
-#define EXAUDFLIB_H
+#ifndef UDF_PLUGIN_INTERFACE_H
+#define UDF_PLUGIN_INTERFACE_H
 
-
-void* load_dynamic(const char* name);
-
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
 namespace SWIGVMContainers {
 class SWIGMetadata;
 class AbstractSWIGTableIterator;
@@ -17,7 +14,6 @@ SWIGVMContainers::SWIGMetadata* create_SWIGMetaData();
 SWIGVMContainers::AbstractSWIGTableIterator* create_SWIGTableIterator();
 SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator);
 }
-#endif
+#endif // UDF_PLUGIN_CLIENT
 
-
-#endif // EXAUDFLIB_H
+#endif // UDF_PLUGIN_INTERFACE_H
