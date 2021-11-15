@@ -46,7 +46,7 @@ cc_library(
 cc_library(
     name = "header",
     hdrs = [
-        "exaudflib.h", "vm/swig_vm.h", "vm/java_vm.h",
+        "exaudflib.h", "vm/swig_vm.h",
         "swig/swig_common.h", "swig/swig_meta_data.h", "swig/swig_result_handler.h", "swig/swig_table_iterator.h"
     ],
     alwayslink=True,
@@ -92,7 +92,7 @@ cc_library(
 cc_library(
     name = "exaudflib",
     srcs = ["exaudflib.cc",
-            "vm/swig_vm.cc", "vm/java_vm.cc",
+            "vm/swig_vm.cc",
             "swig/swig_common.cc", "swig/swig_meta_data.cc", "swig/swig_result_handler.cc", "swig/swig_table_iterator.cc",
             "impl/msg_conversion.cc", "impl/msg_conversion.h",
             "impl/check.cc", "impl/check.h",

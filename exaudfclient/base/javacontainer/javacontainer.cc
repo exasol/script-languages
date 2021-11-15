@@ -1,10 +1,10 @@
+#include "javacontainer.h"
 #include <iostream>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <openssl/md5.h>
 #include <set>
 #include <jni.h>
-#include "exaudflib/vm/java_vm.h"
 #include "exaudflib/swig/swig_meta_data.h"
 #include "exascript_java_jni_decl.h"
 #include <unistd.h>
