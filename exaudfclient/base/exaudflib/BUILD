@@ -99,7 +99,7 @@ cc_library(
             "impl/socket_info.cc", "impl/socket_info.h",
             "impl/socket_low_level.cc", "impl/socket_low_level.h",
             "impl/global.cc", "impl/global.h",
-            "impl/socket_high_level.cc", "socket_high_level.h",
+            "impl/socket_high_level.cc", "impl/socket_high_level.h",
             "impl/swig/swig_factory.cc",
             "impl/swig/swig_table_iterator.h", "impl/swig/swig_table_iterator.cc",
             "impl/swig/swig_meta_data.h", "impl/swig/swig_meta_data.cc",
