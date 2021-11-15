@@ -1,12 +1,12 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["exascript.i"])
+exports_files(["exascript/exascript.i"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
 
 cc_library(
     name = "scriptoptionlines",
-    hdrs = ["scriptoptionlines.h"],
-    srcs = ["scriptoptionlines.cc","scriptoptionlines.h"],
+    hdrs = ["exascript/scriptoptionlines.h"],
+    srcs = ["exascript/scriptoptionlines.cc","exascript/scriptoptionlines.h"],
     copts= ["-fno-lto"],
     # We deactivate link time optimization, because otherwise we get the following linker/compiler error while linking/compiling exaudfclient
     # function ExecutionGraph::extractOptionLine(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long&, std::function<void (char const*)>): error: undefined reference to 'std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)'
@@ -15,8 +15,8 @@ cc_library(
 
 cc_library(
     name = "script_data_transfer_objects",
-    srcs = ["script_data_transfer_objects.cc","script_data_transfer_objects.h"],
-    hdrs = ["script_data_transfer_objects.h"],
+    srcs = ["exascript/script_data_transfer_objects.cc","exascript/script_data_transfer_objects.h"],
+    hdrs = ["exascript/script_data_transfer_objects.h"],
     copts= select({
         "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
@@ -29,9 +29,9 @@ cc_library(
 
 cc_library(
     name = "script_data_transfer_objects_wrapper",
-    srcs = ["script_data_transfer_objects_wrapper.cc","script_data_transfer_objects_wrapper.h"],
+    srcs = ["exascript/script_data_transfer_objects_wrapper.cc","exascript/script_data_transfer_objects_wrapper.h"],
     deps = [":script_data_transfer_objects"],
-    hdrs = ["script_data_transfer_objects_wrapper.h"],
+    hdrs = ["exascript/script_data_transfer_objects_wrapper.h"],
     copts= select({
         "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
@@ -91,9 +91,9 @@ cc_library(
 # depend directly on them
 cc_library(
     name = "exaudflib",
-    srcs = ["exaudflib_main.cc",
-            "vm/swig_vm.cc",
+    srcs = ["vm/swig_vm.cc",
             "swig/swig_common.cc", "swig/swig_meta_data.cc", "swig/swig_result_handler.cc", "swig/swig_table_iterator.cc",
+            "impl/exaudflib_main.cc",
             "impl/msg_conversion.cc", "impl/msg_conversion.h",
             "impl/check.cc", "impl/check.h",
             "impl/socket_info.cc", "impl/socket_info.h",
