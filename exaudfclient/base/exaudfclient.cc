@@ -38,7 +38,7 @@
 
 #ifdef ENABLE_PYTHON_VM
 #include "python/pythoncontainer.h"
-#endif ENABLE_PYTHON_VM
+#endif //ENABLE_PYTHON_VM
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
 #include "protegrityclient.h"
