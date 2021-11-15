@@ -24,7 +24,7 @@
 #include "exaudflib/impl/socket_low_level.h"
 #include "exaudflib/impl/msg_conversion.h"
 #include "exaudflib/impl/global.h"
-#include "exaudflib/socket_high_level.h"
+#include "exaudflib/impl/socket_high_level.h"
 
 #include "exaudflib/impl/swig/swig_meta_data.h"
 #include "exaudflib/impl/swig/swig_result_handler.h"
