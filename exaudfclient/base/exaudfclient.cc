@@ -33,12 +33,12 @@
 #include <inttypes.h>
 
 #ifdef ENABLE_JAVA_VM
-#include "exaudflib/vm/java_vm.h"
-#endif ENABLE_JAVA_VM
+#include "javacontainer/javacontainer.h"
+#endif //ENABLE_JAVA_VM
 
-//#ifdef ENABLE_PYTHON_VM
+#ifdef ENABLE_PYTHON_VM
 #include "python/pythoncontainer.h"
-//#endif ENABLE_PYTHON_VM
+#endif ENABLE_PYTHON_VM
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
 #include "protegrityclient.h"
