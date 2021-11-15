@@ -435,7 +435,7 @@ bool exaudflib::socket_high_level::send_return(zmq::socket_t &socket, const char
     return true;
 }
 
-void send_undefined_call(zmq::socket_t &socket, const std::string& fn)
+void exaudflib::socket_high_level::send_undefined_call(zmq::socket_t &socket, const std::string& fn)
 {
     {   /* send return request */
         exaudflib::socket_high_level::request.Clear();
