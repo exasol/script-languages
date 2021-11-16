@@ -8,7 +8,8 @@
 #include <zmq.hpp>
 #include <fcntl.h>
 #include <fstream>
-#include "exaudflib/exascript/script_data_transfer_objects.h"
+#include "exaudflib/swig/script_data_transfer_objects.h"
+#include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
 #include <functional>
 
 #include "debug_message.h"
@@ -16,7 +17,6 @@
 // swig lib
 #include <limits>
 #include "exaudflib/zmqcontainer.pb.h"
-#include "exaudflib/exascript/script_data_transfer_objects_wrapper.h"
 
 
 #include "exaudflib/impl/check.h"
@@ -27,11 +27,6 @@
 #include "exaudflib/impl/socket_high_level.h"
 
 #include "exaudflib/vm/swig_vm.h"
-
-
-#ifndef UDF_PLUGIN_CLIENT
-__thread SWIGVMContainers::SWIGVM_params_t* SWIGVMContainers::SWIGVM_params; // this is not used in the file, but defined to satisfy the "extern" requirement from exaudflib.h
-#endif
 
 
 #ifndef NDEBUG
