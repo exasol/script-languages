@@ -8,15 +8,12 @@
 #include <zmq.hpp>
 #include <fcntl.h>
 #include <fstream>
-#include "exaudflib/swig/script_data_transfer_objects.h"
-#include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
 #include <functional>
 
 #include "debug_message.h"
 
 // swig lib
 #include <limits>
-#include "exaudflib/zmqcontainer.pb.h"
 
 
 #include "exaudflib/impl/check.h"
