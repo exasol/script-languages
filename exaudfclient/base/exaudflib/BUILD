@@ -1,12 +1,12 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["exascript/exascript.i"])
+exports_files(["exascript.i"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
 
 cc_library(
     name = "scriptoptionlines",
-    hdrs = ["exascript/scriptoptionlines.h"],
-    srcs = ["exascript/scriptoptionlines.cc","exascript/scriptoptionlines.h"],
+    hdrs = ["vm/scriptoptionlines.h"],
+    srcs = ["vm/scriptoptionlines.cc","vm/scriptoptionlines.h"],
     copts= ["-fno-lto"],
     # We deactivate link time optimization, because otherwise we get the following linker/compiler error while linking/compiling exaudfclient
     # function ExecutionGraph::extractOptionLine(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long&, std::function<void (char const*)>): error: undefined reference to 'std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)'
@@ -15,8 +15,8 @@ cc_library(
 
 cc_library(
     name = "script_data_transfer_objects",
-    srcs = ["exascript/script_data_transfer_objects.cc","exascript/script_data_transfer_objects.h"],
-    hdrs = ["exascript/script_data_transfer_objects.h"],
+    srcs = ["swig/script_data_transfer_objects.cc","swig/script_data_transfer_objects.h"],
+    hdrs = ["swig/script_data_transfer_objects.h"],
     copts= select({
         "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
@@ -29,9 +29,9 @@ cc_library(
 
 cc_library(
     name = "script_data_transfer_objects_wrapper",
-    srcs = ["exascript/script_data_transfer_objects_wrapper.cc","exascript/script_data_transfer_objects_wrapper.h"],
+    srcs = ["swig/script_data_transfer_objects_wrapper.cc","swig/script_data_transfer_objects_wrapper.h"],
     deps = [":script_data_transfer_objects"],
-    hdrs = ["exascript/script_data_transfer_objects_wrapper.h"],
+    hdrs = ["swig/script_data_transfer_objects_wrapper.h"],
     copts= select({
         "//:benchmark": ["-fno-lto"],
         "//conditions:default": []

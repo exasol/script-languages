@@ -6,7 +6,7 @@
 #include <mutex>
 #include <iostream>
 #include "exaudflib/swig/swig_common.h"
-#include "exaudflib/exascript/script_data_transfer_objects_wrapper.h"
+#include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
 
 namespace SWIGVMContainers {
 

@@ -11,9 +11,9 @@
 #include "exascript_python_int.h"
 #include "exascript_python.h"
 #include "debug_message.h"
-#include "exaudflib/exascript/scriptoptionlines.h"
+#include "exaudflib/vm/scriptoptionlines.h"
 
-#include "exaudflib/exascript/script_data_transfer_objects.h"
+#include "exaudflib/swig/script_data_transfer_objects.h"
 
 #include <sstream>
 

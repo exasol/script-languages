@@ -12,7 +12,7 @@
 
 #include "debug_message.h"
 #include "javacontainer/javacontainer.h"
-#include "exaudflib/exascript/scriptoptionlines.h"
+#include "exaudflib/vm/scriptoptionlines.h"
 
 using namespace SWIGVMContainers;
 using namespace std;
