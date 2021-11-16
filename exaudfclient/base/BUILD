@@ -107,7 +107,7 @@ VM_PYTHON3_DEPS=select({
 
 cc_binary(
     name = "exaudfclient_bin",
-    srcs = ["exaudfclient.cc"],
+    srcs = ["exaudfclient.cc", "load_dynamic.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
           ["//exaudflib:exaudflib-deps"],
@@ -117,7 +117,7 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_py3_bin",
-    srcs = ["exaudfclient.cc"],
+    srcs = ["exaudfclient.cc", "load_dynamic.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
             ["//exaudflib:exaudflib-deps"],
@@ -140,7 +140,7 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_py2_static_bin",
-    srcs = ["exaudfclient.cc"],
+    srcs = ["exaudfclient.cc", "load_dynamic.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
           ["//exaudflib:exaudflib-deps"] + [ "@zmq//:zmqlib", "@protobuf//:protobuf"],
@@ -150,7 +150,7 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_py3_static_bin",
-    srcs = ["exaudfclient.cc"],
+    srcs = ["exaudfclient.cc", "load_dynamic.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
             ["//exaudflib:exaudflib-deps"] + [ "@zmq//:zmqlib", "@protobuf//:protobuf"],

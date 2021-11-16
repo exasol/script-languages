@@ -3,4 +3,6 @@
 
 void* load_dynamic(const char* name);
 
+extern void* handle;
+
 #endif //EXAUDFLIB_LOAD_DYNAMIC
