@@ -7,7 +7,7 @@
 #include "exaudflib/swig/swig_meta_data.h"
 
 using namespace SWIGVMContainers;
-#include "exaudflib/exascript/script_data_transfer_objects_wrapper.h"
+#include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
 %}
 
 %ignore ExecutionGraph::ConnectionInformationWrapper::ConnectionInformationWrapper;
