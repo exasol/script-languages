@@ -14,6 +14,7 @@
 #endif
 #include <exception>
 #include "exaudflib/vm/swig_vm.h"
+#include "exaudflib/load_dynamic.h"
 #ifdef ENABLE_BENCHMARK_VM
 #include "benchmark_container/benchmark_container.h"
 #endif
@@ -31,6 +32,8 @@
 # define __STDC_FORMAT_MACROS
 #endif
 #include <inttypes.h>
+
+
 
 #ifdef ENABLE_JAVA_VM
 #include "javacontainer/javacontainer.h"
@@ -51,25 +54,8 @@ namespace SWIGVMContainers {
 __thread SWIGVM_params_t * SWIGVM_params = nullptr;
 }
 
-void* handle;
-
 typedef bool (*VOID_FUN_WITH_SWIGVM_PARAMS_P)(SWIGVM_params_t*);
 typedef int (*MAIN_FUN)(std::function<SWIGVM*()>vmMaker,int,char**);
-
-char* error;
-
-#ifndef UDF_PLUGIN_CLIENT
-void* load_dynamic(const char* name) {
-    void* res = dlsym(handle, name);
-    if ((error = dlerror()) != NULL)
-    {
-        std::stringstream sb;
-        sb << "Error when trying to load function '" << name << "': " << error;
-        throw SWIGVM::exception(sb.str().c_str());
-    }
-    return res;
-}
-#endif
 
 #ifdef UDF_PLUGIN_CLIENT
 extern "C" {
