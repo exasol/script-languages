@@ -1,8 +1,56 @@
+package com.exasol;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.MalformedParameterizedTypeException;
+import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Arrays;
 
 class ExaStackTraceCleaner {
 
-  private static void cleanExceptionChain(final Throwable src) {
+    public String cleanStackTrace(final Throwable src) {
+        final Throwable th = unpack(src);
+        cleanExceptionChain(th);
+        return format(th);
+    }
+
+    private Throwable unpack(final Throwable src) {
+        Throwable exc = src;
+        while (exc != null && (exc instanceof InvocationTargetException ||
+                    exc instanceof MalformedParameterizedTypeException ||
+                    exc instanceof UndeclaredThrowableException)) {
+            Throwable cause = exc.getCause();
+            if (cause == null)
+                break;
+            else
+                exc = cause;
+        }
+        return exc;
+    }
+
+    private String format(final Throwable src) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        src.printStackTrace(pw);
+        String stacktrace = sw.toString();
+        LinkedList<String> stacktrace_lines = new LinkedList<String>(Arrays.asList(stacktrace.split("\\r?\\n")));
+
+        ListIterator list_Iter = stacktrace_lines.listIterator(0);
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter writer = new PrintWriter(stringWriter, true);
+        while (list_Iter.hasNext()) {
+            String line = (String) list_Iter.next();
+            writer.println(line.replaceFirst("^\tat ", ""));
+        }
+        String cleanedStacktrace = stringWriter.toString();
+        return cleanedStacktrace;
+    }
+
+    private void cleanExceptionChain(final Throwable src) {
         StackTraceElement[] stackTraceElements = src.getStackTrace();
         Integer start_index = null;
         LinkedList<StackTraceElement> newStackTrace = new LinkedList<>();
@@ -11,7 +59,7 @@ class ExaStackTraceCleaner {
             for (int idxStackTraceElement = (stackTraceElements.length - 1); idxStackTraceElement >= 0; idxStackTraceElement--) {
                 StackTraceElement stackTraceElement = stackTraceElements[idxStackTraceElement];
                 boolean addStackTrace = true;
-                if (stackTraceElement.getClassName().startsWith("com.exasol.thomas.uebensee.testjava.Main")) {
+                if (stackTraceElement.getClassName().startsWith("com.exasol.Exa")) {
                     if (start_index == null) {
                         start_index = idxStackTraceElement;
                     }
