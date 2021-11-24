@@ -1,12 +1,12 @@
 package com.exasol;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-@RunWith(JUnitPlatform.class)
-class ExaStackTraceCleanerTest {
+public class ExaStackTraceCleanerTest {
 
     @Test
-    void runSimpleTest() {
+    public void runSimpleTest() {
         assertEquals(2, 1+1);
     }
 

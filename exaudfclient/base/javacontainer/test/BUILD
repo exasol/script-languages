@@ -1,6 +1,5 @@
 java_test(
-    name = "UnitTests",
+    name = "ExaStackTraceCleanerTest",
     srcs = ["java/com/exasol/ExaStackTraceCleanerTest.java"],
-    test_class = "java/com/exasol/ExaStackTraceCleanerTest.java",
     size = "small",
 )
