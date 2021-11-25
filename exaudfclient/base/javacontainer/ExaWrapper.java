@@ -229,7 +229,7 @@ class ExaWrapper {
             }
         }
         catch (InvocationTargetException ex) {
-            throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1080","Exception during1 run",ex);
+            throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1080","Exception during run",ex);
         }
 
         resultHandler.flush();
