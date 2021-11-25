@@ -12,6 +12,10 @@ import java.util.Arrays;
 
 class ExaStackTraceCleaner {
 
+    public ExaStackTraceCleaner(final String triggerClassName)  {
+        mTriggerClassName = triggerClassName;
+    }
+
     public String cleanStackTrace(final Throwable src) {
         final Throwable th = unpack(src);
         cleanExceptionChain(th);
@@ -59,7 +63,7 @@ class ExaStackTraceCleaner {
             for (int idxStackTraceElement = (stackTraceElements.length - 1); idxStackTraceElement >= 0; idxStackTraceElement--) {
                 StackTraceElement stackTraceElement = stackTraceElements[idxStackTraceElement];
                 boolean addStackTrace = true;
-                if (stackTraceElement.getClassName().startsWith("com.exasol.Exa")) {
+                if (stackTraceElement.getClassName().equals(mTriggerClassName)) {
                     if (start_index == null) {
                         start_index = idxStackTraceElement;
                     }
@@ -84,4 +88,6 @@ class ExaStackTraceCleaner {
             cleanExceptionChain(src.getCause());
         }
     }
+
+    private final String mTriggerClassName;
 }

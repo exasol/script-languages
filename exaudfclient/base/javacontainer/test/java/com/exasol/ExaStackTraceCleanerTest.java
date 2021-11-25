@@ -56,7 +56,7 @@ public class ExaStackTraceCleanerTest {
         } catch(final Exception ex) {
            th = ex;
         }
-        ExaStackTraceCleaner exaStackTraceCleaner = new ExaStackTraceCleaner();
+        ExaStackTraceCleaner exaStackTraceCleaner = new ExaStackTraceCleaner(this.getClass().getName());
         final String result = exaStackTraceCleaner.cleanStackTrace(th);
         String[] resultLines = result.split("\n");
         //Check that the

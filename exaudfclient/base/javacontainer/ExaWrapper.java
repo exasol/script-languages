@@ -264,7 +264,7 @@ class ExaWrapper {
     }
 
     private static Throwable convertReflectiveExceptionToCause(String error_code, String errorMessage, Throwable ex) {
-        ExaStackTraceCleaner exaStackTraceCleaner = new ExaStackTraceCleaner();
+        ExaStackTraceCleaner exaStackTraceCleaner = new ExaStackTraceCleaner(ExaWrapper.class.getName());
         String cleanedStacktrace = exaStackTraceCleaner.cleanStackTrace(ex);
         String error_message=error_code+": "+errorMessage+" \n"+cleanedStacktrace;
         System.out.println(error_message);
