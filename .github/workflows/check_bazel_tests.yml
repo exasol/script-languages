@@ -19,7 +19,7 @@ jobs:
         export ENV BAZEL_PACKAGE_VERSION="1.1.0"
         export ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
         export BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
-        apt-get -y update && \
+        sudo apt-get -y update && \
             curl -L --output "$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL" && \
             apt-get install -y "./$BAZEL_PACKAGE_FILE" && \
             rm "$BAZEL_PACKAGE_FILE" && \
