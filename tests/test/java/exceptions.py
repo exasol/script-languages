@@ -3,6 +3,7 @@
 from exasol_python_test_framework import udf
 from pyodbc import DataError
 
+
 class ExceptionTest(udf.TestCase):
 
     def setUp(self):
@@ -32,11 +33,17 @@ class ExceptionTest(udf.TestCase):
         except DataError as ex:
             exception = ex
         self._verify_exception(exception,
-                         "VM error",
-                         "com.exasol.ExaUDFException: F-UDF-CL-SL-JAVA-1068: Exception during singleCall getDefaultOutputColumns",
-                         "java.lang.RuntimeException: Error",
-                         "com.exasol.THROW_EXCEPTION_IN_SINGLECALL.getDefaultOutputColumns",
-                         "com.exasol.ExaWrapper.runSingleCall")
+                               expected_list=[
+                                   "VM error",
+                                   "com.exasol.ExaUDFException: F-UDF-CL-SL-JAVA-1068: "
+                                   "Exception during singleCall getDefaultOutputColumns",
+                                   "java.lang.RuntimeException: Error",
+                                   "com.exasol.THROW_EXCEPTION_IN_SINGLECALL.getDefaultOutputColumns",
+                                   "com.exasol.ExaWrapper.runSingleCall"],
+                               not_expected_strings=["jdk.internal.reflect",
+                                                     "InvocationTargetException",
+                                                     "MalformedParameterizedTypeException",
+                                                     "UndeclaredThrowableException"])
 
     def test_get_integer(self):
         exception = None
@@ -56,12 +63,18 @@ class ExceptionTest(udf.TestCase):
             exception = ex
 
         self._verify_exception(exception,
-                              "VM error",
-                              "com.exasol.ExaUDFException: ",
-                              "com.exasol.ExaIterationException: E-UDF-CL-SL-JAVA-1123: Column with name 'ABC' does not exist",
-                              "com.exasol.ExaIteratorImpl.getInteger",
-                              "com.exasol.ERROR_IN_GET_INTEGER.run",
-                              "com.exasol.ExaWrapper.run")
+                               expected_list=[
+                                   "VM error",
+                                   "com.exasol.ExaUDFException: ",
+                                   "com.exasol.ExaIterationException: E-UDF-CL-SL-JAVA-1123: "
+                                   "Column with name 'ABC' does not exist",
+                                   "com.exasol.ExaIteratorImpl.getInteger",
+                                   "com.exasol.ERROR_IN_GET_INTEGER.run",
+                                   "com.exasol.ExaWrapper.run"],
+                               not_expected_strings=["jdk.internal.reflect",
+                                                     "InvocationTargetException",
+                                                     "MalformedParameterizedTypeException",
+                                                     "UndeclaredThrowableException"])
 
     def test_get_connection(self):
         exception = None
@@ -81,12 +94,19 @@ class ExceptionTest(udf.TestCase):
             exception = ex
 
         self._verify_exception(exception,
-                              "VM error",
-                              "com.exasol.ExaUDFException: ",
-                              "com.exasol.ExaConnectionAccessException: E-UDF-CL-SL-JAVA-1099: connection ABC does not exist",
-                              "com.exasol.ExaMetadataImpl.getConnection",
-                              "com.exasol.ERROR_IN_GET_CONNECTION.run",
-                              "com.exasol.ExaWrapper.run")
+                               expected_list=[
+                                   "VM error",
+                                   "com.exasol.ExaUDFException: ",
+                                   "com.exasol.ExaConnectionAccessException: E-UDF-CL-SL-JAVA-1099: "
+                                   "connection ABC does not exist",
+                                   "com.exasol.ExaMetadataImpl.getConnection",
+                                   "com.exasol.ERROR_IN_GET_CONNECTION.run",
+                                   "com.exasol.ExaWrapper.run"],
+                               not_expected_strings=["jdk.internal.reflect",
+                                                     "InvocationTargetException",
+                                                     "MalformedParameterizedTypeException",
+                                                     "UndeclaredThrowableException"])
+
 
     def test_throw_exception(self):
         exception = None
@@ -110,14 +130,20 @@ class ExceptionTest(udf.TestCase):
         except DataError as ex:
             exception = ex
         self._verify_exception(exception,
-                               "VM error",
-                               "com.exasol.ExaUDFException: F-UDF-CL-SL-JAVA-1080:",
-                               "java.lang.RuntimeException: Got exception",
-                               "com.exasol.THROW_EXCEPTION.run",
-                               "com.exasol.ExaWrapper.run",
-                               "Caused by: java.lang.RuntimeException: Error",
-                               "com.exasol.THROW_EXCEPTION.run",
-                               "... 1 more")
+                               expected_list=[
+                                   "VM error",
+                                   "com.exasol.ExaUDFException: F-UDF-CL-SL-JAVA-1080:",
+                                   "java.lang.RuntimeException: Got exception",
+                                   "com.exasol.THROW_EXCEPTION.run",
+                                   "com.exasol.ExaWrapper.run",
+                                   "Caused by: java.lang.RuntimeException: Error",
+                                   "com.exasol.THROW_EXCEPTION.run",
+                                   "... 1 more"],
+                               not_expected_strings=["jdk.internal.reflect",
+                                                     "InvocationTargetException",
+                                                     "MalformedParameterizedTypeException",
+                                                     "UndeclaredThrowableException"])
+
 
     def test_get_integer(self):
         exception = None
@@ -137,12 +163,19 @@ class ExceptionTest(udf.TestCase):
             exception = ex
 
         self._verify_exception(exception,
-                              "VM error",
-                              "com.exasol.ExaUDFException: ",
-                              "com.exasol.ExaIterationException: E-UDF-CL-SL-JAVA-1123: Column with name 'ABC' does not exist",
-                              "com.exasol.ExaIteratorImpl.getInteger",
-                              "com.exasol.ERROR_IN_GET_INTEGER.run",
-                              "com.exasol.ExaWrapper.run")
+                               expected_list=[
+                                   "VM error",
+                                   "com.exasol.ExaUDFException: ",
+                                   "com.exasol.ExaIterationException: E-UDF-CL-SL-JAVA-1123: Column with name "
+                                   "'ABC' does not exist",
+                                   "com.exasol.ExaIteratorImpl.getInteger",
+                                   "com.exasol.ERROR_IN_GET_INTEGER.run",
+                                   "com.exasol.ExaWrapper.run"],
+                               not_expected_strings=["jdk.internal.reflect",
+                                                     "InvocationTargetException",
+                                                     "MalformedParameterizedTypeException",
+                                                     "UndeclaredThrowableException"])
+
 
     def test_do_not_filter_user_reflection(self):
         """
@@ -202,26 +235,30 @@ class ExceptionTest(udf.TestCase):
             exception = ex
 
         self._verify_exception(exception,
-                              "VM error",
-                              "com.exasol.ExaUDFException: ",
-                              "com.exasol.CustomTestException: ex3",
-                              "com.exasol.CustomTestClass.throwEx(THROW_EXCEPTION_IN_USER_CODE_WITHIN_REFLECTION.java:23)",
-                              "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
-                              "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke",
-                              "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke",
-                              "java.base/java.lang.reflect.Method.invoke",
-                              "com.exasol.THROW_EXCEPTION_IN_USER_CODE_WITHIN_REFLECTION.wrap_custom_test_class",
-                              "com.exasol.THROW_EXCEPTION_IN_USER_CODE_WITHIN_REFLECTION.run",
-                              "com.exasol.ExaWrapper.run" )
+                               expected_list=["VM error",
+                                              "com.exasol.ExaUDFException: ",
+                                              "com.exasol.CustomTestException: ex3",
+                                              "com.exasol.CustomTestClass.throwEx(THROW_EXCEPTION_IN_USER_CODE_WITHIN_REFLECTION.java:23)",
+                                              "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+                                              "java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke",
+                                              "java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke",
+                                              "java.base/java.lang.reflect.Method.invoke",
+                                              "com.exasol.THROW_EXCEPTION_IN_USER_CODE_WITHIN_REFLECTION.wrap_custom_test_class",
+                                              "com.exasol.THROW_EXCEPTION_IN_USER_CODE_WITHIN_REFLECTION.run",
+                                              "com.exasol.ExaWrapper.run"],
+                               not_expected_strings=["InvocationTargetException",
+                                                     "MalformedParameterizedTypeException",
+                                                     "UndeclaredThrowableException"])
 
-
-
-    def _verify_exception(self, exception, *args):
+    def _verify_exception(self, exception, expected_list, not_expected_strings):
         exception_str = str(exception)
         exception_str_lines = exception_str.split(sep="\\n")
-        for idx in range(len(args)):
-            if args[idx] not in exception_str_lines[idx]:
-                self.fail(f'"{args[idx]}" not in "{exception_str_lines[idx]}"')
+        for idx in range(len(expected_list)):
+            if expected_list[idx] not in exception_str_lines[idx]:
+                self.fail(f'"{expected_list[idx]}" not in "{exception_str_lines[idx]}"')
+        for not_expected_string in not_expected_strings:
+            if not_expected_string in exception_str:
+                self.fail(f'"{not_expected_string}" in "{exception_str}"')
 
 
 if __name__ == '__main__':
