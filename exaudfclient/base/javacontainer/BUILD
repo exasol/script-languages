@@ -31,7 +31,7 @@ genrule(
     cmd = """
         cp -r $(locations :exascript_java_tmp_cc) .
         FILES=`ls java_src/com/exasol/swig/*.java`
-        python2 $(location //:build_integrated.py) "$(location exascript_java_int.h)" $$FILES
+        python3 $(location //:build_integrated.py) "$(location exascript_java_int.h)" $$FILES
     """,
     outs = ["exascript_java_int.h"],
     srcs = [":exascript_java_tmp_cc"],
@@ -40,7 +40,7 @@ genrule(
 
 genrule(
     name = "filter_swig_code_exascript_java_h",
-    cmd = 'python2 $(location //:filter_swig_code.py) "$@" "$<"',
+    cmd = 'python3 $(location //:filter_swig_code.py) "$@" "$<"',
     outs = ["exascript_java.h"],
     srcs = [":exascript_java_tmp_h"],
     tools = ["//:filter_swig_code.py"]

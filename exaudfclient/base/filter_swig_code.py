@@ -1,10 +1,7 @@
 import os
-import tarfile
-import re
 import sys
 
 JAVA_SRC_PATH = 'java_src'
-
 
 
 def filter_swig_code(target, source):
@@ -19,21 +16,26 @@ def filter_swig_code(target, source):
     # except:
     #     RE = env['CURRENTTOOLCHAIN']
 
-    target = str(target[0]); source = str(source[0])
-    print "filter_swig_code: reading file ", str(source)
+    target = str(target[0])
+    source = str(source[0])
+    print("filter_swig_code: reading file ", str(source))
     output = []
     rofile = open(source)
     for line in rofile:
         line = line.rstrip()
         if source.endswith('_python_tmp.cc'):
             line = line.replace('SWIG_init(void)', 'init_exascript_python(void)')
-            if line == '  PyObject *m, *d, *md;': line = '  PyObject *m, *d;'
-            elif line == '  md = d = PyModule_GetDict(m);': line = '  d = PyModule_GetDict(m);'
-            elif line == '  (void)md;': line = ''
+            if line == '  PyObject *m, *d, *md;':
+                line = '  PyObject *m, *d;'
+            elif line == '  md = d = PyModule_GetDict(m);':
+                line = '  d = PyModule_GetDict(m);'
+            elif line == '  (void)md;':
+                line = ''
             elif line == '  PyDict_SetItemString(md, "__all__", public_interface);':
                 line = '  PyDict_SetItemString(d, "__all__", public_interface);'
         elif source.endswith('_r_tmp.cc') or source.endswith('_r_tmp.h'):
-            if line == '  const char *p = typeName;': output.append('#if 0')
+            if line == '  const char *p = typeName;':
+                output.append('#if 0')
             elif line == '     p = typeName + 1;':
                 output.append(line)
                 line = '#endif'
@@ -43,18 +45,18 @@ def filter_swig_code(target, source):
                 output.append('    {"RVM_next_block", (DL_FUNC) &RVM_next_block, 4},')
                 output.append('    {"RVM_emit_block", (DL_FUNC) &RVM_emit_block, 2},')
             elif line == 'SWIGINTERN R_CallMethodDef CallEntries[] = {':
-                output.append('extern "C" SEXP RVM_next_block(SEXP dataexp);');
-                output.append('extern "C" SEXP RVM_emit_block(SEXP dataexp);');
+                output.append('extern "C" SEXP RVM_next_block(SEXP dataexp);')
+                output.append('extern "C" SEXP RVM_emit_block(SEXP dataexp);')
         elif source.endswith('_java_tmp.cc'):
             if line == 'SWIGEXPORT jstring JNICALL Java_com_exasol_swig_exascript_1javaJNI_TableIterator_1getString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {':
                 output.append('SWIGEXPORT jbyteArray JNICALL Java_com_exasol_swig_exascript_1javaJNI_TableIterator_1getStringByteArray(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {')
-                line = rofile.next().rstrip()
+                line = next(rofile).rstrip()
                 if line == '  jstring jresult = 0 ;':
                     output.append('  jbyteArray jresult = 0 ;')
-                    line = rofile.next().rstrip()
+                    line = next(rofile).rstrip()
                 while line != '  if (result) jresult = jenv->NewStringUTF((const char *)result);':
                     output.append(line)
-                    line = rofile.next().rstrip()
+                    line = next(rofile).rstrip()
                 if line == '  if (result) jresult = jenv->NewStringUTF((const char *)result);':
                     output.append('  if (result) {')
                     output.append('    jsize len = strlen(result);')
@@ -63,13 +65,13 @@ def filter_swig_code(target, source):
                     output.append('  }')
                     output.append('  return jresult;')
                     while line != '}':
-                        line = rofile.next().rstrip()
+                        line = next(rofile).rstrip()
             if line == 'SWIGEXPORT void JNICALL Java_com_exasol_swig_exascript_1javaJNI_ResultHandler_1setString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jstring jarg3, jlong jarg4) {':
                 output.append('SWIGEXPORT void JNICALL Java_com_exasol_swig_exascript_1javaJNI_ResultHandler_1setStringByteArray(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jbyteArray jarg3, jlong jarg4) {')
-                line = rofile.next().rstrip()
+                line = next(rofile).rstrip()
                 while line != '  if (jarg3) {':
                     output.append(line)
-                    line = rofile.next().rstrip()
+                    line = next(rofile).rstrip()
                 if line == '  if (jarg3) {':
                     output.append('  arg4 = (size_t)jarg4;')
                     output.append('  if (jarg3) {')
@@ -81,20 +83,22 @@ def filter_swig_code(target, source):
                     output.append('  (arg1)->setString(arg2,arg3,arg4);')
                     output.append('  if (arg3) delete [] arg3;')
                     while line != '}':
-                        line = rofile.next().rstrip()
+                        line = next(rofile).rstrip()
         output.append(line)
     fd = open(str(target), 'w')
     fd.write('\n'.join(output))
     fd.write('\n')
-    fd.close();
-    print "filter_swig_code: wrote file ", str(target)
+    fd.close()
+    print("filter_swig_code: wrote file ", str(target))
     # piggyback on exascript_java.cc target to patch *.java files (avoids error from multiple ways to build target)
     if source.endswith('_java_tmp.cc'):
         filter_java_swig_code(builddir)
     return 0
 
-def filter_java_swig_code( builddir='' ):
-    files = map(lambda s: os.path.join(builddir+'%s/com/exasol/swig' % JAVA_SRC_PATH, s), ['TableIterator.java', 'ResultHandler.java', 'exascript_javaJNI.java'])
+
+def filter_java_swig_code(builddir=''):
+    files = map(lambda s: os.path.join(builddir+f'{JAVA_SRC_PATH}/com/exasol/swig', s),
+                ['TableIterator.java', 'ResultHandler.java', 'exascript_javaJNI.java'])
     for target in files:
         output = []
         for line in open(target):
@@ -118,14 +122,13 @@ def filter_java_swig_code( builddir='' ):
         fd = open(str(target), 'w')
         fd.write('\n'.join(output))
         fd.write('\n')
-        fd.close();
+        fd.close()
     return 0
-
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print 'Usage: filter_swig_code.py target source'
+        print('Usage: filter_swig_code.py target source')
         sys.exit(1)
-    print "filtering swig code ", str([sys.argv[1]]), str([sys.argv[2]])
+    print("filtering swig code ", str([sys.argv[1]]), str([sys.argv[2]]))
     filter_swig_code([sys.argv[1]], [sys.argv[2]])

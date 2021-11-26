@@ -1,7 +1,5 @@
-import os
-import tarfile
-import re
 import sys
+
 
 def build_integrated(target, source):
     assert(len(target) == 1 and len(source) > 0)
@@ -23,7 +21,7 @@ def build_integrated(target, source):
             line = line.replace('\n', r'\n')
             line = line.replace('RUNTIME_PATH', RE)
             flines.append(line)
-        output.append('static const char *' + fvar + ' = "' + ''.join(flines) + '";\n');
+        output.append('static const char *' + fvar + ' = "' + ''.join(flines) + '";\n')
     fd = open(str(target[0]), 'w')
     fd.write(''.join(output))
     fd.close()
@@ -32,6 +30,6 @@ def build_integrated(target, source):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print 'Usage: build_integrated.py target source_1 source_2 ...'
+        print('Usage: build_integrated.py target source_1 source_2 ...')
         sys.exit(1)
     build_integrated(sys.argv[1:2], sys.argv[2:])
