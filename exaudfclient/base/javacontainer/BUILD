@@ -120,6 +120,7 @@ genrule(
 java_library(
     name = "exaudf",
     srcs = glob(["*.java"])+
+                #The following are generated classes
                 [
                 "ConnectionInformationWrapper.java",
                 "exascript_java.java",
@@ -154,3 +155,6 @@ java_library(
     deps = [":exaudf"]
 )
 
+exports_files([
+    "ExaStackTraceCleaner.java",
+    ])

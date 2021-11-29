@@ -1,0 +1,32 @@
+name: Check Bazel Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Search for duplicated error codes
+      run: bash find_duplicate_error_codes.sh
+
+    - name: Install bazel
+      run: |
+        export ENV BAZEL_PACKAGE_VERSION="1.1.0"
+        export ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
+        export BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
+        sudo apt-get -y update && \
+            curl -L --output "$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL" && \
+            sudo apt-get install -y "./$BAZEL_PACKAGE_FILE" && \
+            rm "$BAZEL_PACKAGE_FILE" && \
+            sudo apt-get -y clean && \
+            sudo apt-get -y autoremove
+
+    - name: Test
+      run: |
+        bazel test //javacontainer/test/...
+      working-directory: ./exaudfclient/base

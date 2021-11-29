@@ -19,6 +19,7 @@ import com.exasol.swig.TableIterator;
 import com.exasol.swig.ImportSpecificationWrapper;
 import com.exasol.swig.ExportSpecificationWrapper;
 import com.exasol.swig.ConnectionInformationWrapper;
+import com.exasol.ExaStackTraceCleaner;
 
 class ExaWrapper {
     static byte[] runSingleCall(String fn, Object args) throws Throwable {
@@ -262,63 +263,9 @@ class ExaWrapper {
         }
     }
 
-    private static String cleanStackTrace(Throwable ex){
-        Throwable exc = ex;
-        while (exc != null && (exc instanceof InvocationTargetException ||
-                    exc instanceof MalformedParameterizedTypeException ||
-                    exc instanceof UndeclaredThrowableException)) {
-            Throwable cause = exc.getCause();
-            if (cause == null)
-                break;
-            else
-                exc = cause;
-        }
-
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        exc.printStackTrace(pw);
-        String stacktrace = sw.toString();
-            LinkedList<String> stacktrace_lines = new LinkedList<String>(Arrays.asList(stacktrace.split("\\r?\\n")));
-
-        ListIterator list_Iter = stacktrace_lines.listIterator(0);
-        while (list_Iter.hasNext()) {
-            String line = (String) list_Iter.next();
-            list_Iter.set(line.replaceFirst("^\tat ", ""));
-        }
-        list_Iter = stacktrace_lines.listIterator(stacktrace_lines.size());
-        Integer start_index = null;
-
-        while (list_Iter.hasPrevious()) {
-            Integer index = list_Iter.previousIndex();
-            String line = (String) list_Iter.previous();
-            if (line.startsWith("com.exasol.Exa")) {
-                if (start_index == null) {
-                    start_index = index;
-                }
-            } else if (line.startsWith("java.base/")) {
-                if (start_index != null &&
-                        (line.startsWith("java.base/jdk.internal.reflect") ||
-                                line.startsWith("java.base/java.lang.reflect"))) {
-                    list_Iter.remove();
-                }
-            } else {
-                start_index = null;
-            }
-        }
-
-        list_Iter = stacktrace_lines.listIterator(0);
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter writer = new PrintWriter(stringWriter, true);
-        while (list_Iter.hasNext()) {
-            String line = (String) list_Iter.next();
-            writer.println(line);
-        }
-        String cleanedStacktrace = stringWriter.toString();
-        return cleanedStacktrace;
-    }
-
     private static Throwable convertReflectiveExceptionToCause(String error_code, String errorMessage, Throwable ex) {
-        String cleanedStacktrace = cleanStackTrace(ex); 
+        ExaStackTraceCleaner exaStackTraceCleaner = new ExaStackTraceCleaner(ExaWrapper.class.getName());
+        String cleanedStacktrace = exaStackTraceCleaner.cleanStackTrace(ex);
         String error_message=error_code+": "+errorMessage+" \n"+cleanedStacktrace;
         System.out.println(error_message);
         return new ExaUDFException(error_message);
