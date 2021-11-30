@@ -52,7 +52,7 @@ genrule(
             TMPDIR=`mktemp -d`
             cp -r -L $(location //:filter_swig_code.py) $(locations :exascript_java_tmp_cc) $$TMPDIR
             (cd $$TMPDIR &&
-            python filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
+            python3 filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
             cp $$TMPDIR/exascript_java.cc "$(location exascript_java.cc)"
             cp -r $$TMPDIR/java_src/com/exasol/swig/ConnectionInformationWrapper.java "$(location ConnectionInformationWrapper.java)"
             cp -r $$TMPDIR/java_src/com/exasol/swig/exascript_java.java "$(location exascript_java.java)"
