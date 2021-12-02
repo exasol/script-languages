@@ -9,8 +9,8 @@ fi
 
 output_path=$1
 
-trivy rootfs --no-progress --format json --output "$output_path/trivy_report.json" /
+trivy rootfs --no-progress --format json --output "$output_path/trivy_report.json" / > /dev/null
 #run with format table and print to stdout
-trivy rootfs --no-progress --format table --output "$output_path/trivy_report.txt" /
+trivy rootfs --no-progress --format table --output "$output_path/trivy_report.txt" / > /dev/null
 #Force script to return with error if a high or critical issue is found
 trivy rootfs --no-progress --severity "HIGH,CRITICAL" --exit-code 1 /
