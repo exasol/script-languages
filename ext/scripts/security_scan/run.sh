@@ -8,6 +8,7 @@ if [ $# -lt 1 ]; then
 fi
 
 output_path=$1
+mkdir -p "$output_path"
 
 echo $SECURITY_SCANNERS
 
