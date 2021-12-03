@@ -22,10 +22,13 @@ fi
 function _run_security_scanners() {
 
   for current_scanner in $@; do
-    echo current_scanner is $current_scanner
+
     case "$current_scanner" in
       trivy)
         "$SCRIPT_DIR/run_trivy.sh" "$output_path"
+        ;;
+      oyster)
+        "$SCRIPT_DIR/run_oyster.sh" "$output_path"
         ;;
       *)
         echo "Unknown scanner: $current_scanner"
@@ -35,6 +38,6 @@ function _run_security_scanners() {
   done
 }
 
-security_scanners=($SECURITY_SCANNERS)
+security_scanners=$SECURITY_SCANNERS
 _run_security_scanners $security_scanners
 
