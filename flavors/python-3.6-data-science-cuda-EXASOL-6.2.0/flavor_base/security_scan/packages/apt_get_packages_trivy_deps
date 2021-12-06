@@ -1,3 +1,2 @@
-wget
 apt-transport-https
 gnupg
