@@ -3,14 +3,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 FLAVOR=$1
-BUILD_PARAMETER="--no-shortcut-build"
 SYSTEM_PARAMETER="--workers 7"
 if [ -f /workspace/build-status.txt ]
 then
   rm /workspace/build-status.txt
 fi
 touch /workspace/build-status.txt
-COMMAND="./exaslct security-scan --flavor-path "flavors/$FLAVOR" $BUILD_PARAMETER $SYSTEM_PARAMETER"
+COMMAND="./exaslct security-scan --flavor-path "flavors/$FLAVOR" $SYSTEM_PARAMETER"
 echo "Executing Command: $COMMAND"
 $COMMAND || echo "fail" >> /workspace/build-status.txt
 echo
