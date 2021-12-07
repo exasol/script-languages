@@ -2,7 +2,6 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-REBUILD=$2
 FLAVOR=$1
 BUILD_PARAMETER="--no-shortcut-build"
 SYSTEM_PARAMETER="--workers 7"
