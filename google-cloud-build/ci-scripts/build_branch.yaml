@@ -53,6 +53,22 @@ steps:
           '${_FLAVOR}', 
           '$BUILD_ID'
           ]
+- id: 'Run security scan'
+  name: 'exasol/script-languages:build-container'
+  args: [
+          'bash',
+          'google-cloud-build/ci-scripts/scripts/security_scan.sh',
+          '${_FLAVOR}'
+          ]
+- id: 'Check security scan'
+  name: 'gcr.io/cloud-builders/gsutil'
+  entrypoint: "bash"
+  args: [
+          'google-cloud-build/ci-scripts/scripts/check_build.sh',
+          '${_LOG_BUCKET}',
+          '${_FLAVOR}',
+          '$BUILD_ID'
+          ]
 - id: 'Push images to internal build cache with commit hash'
   name: 'exasol/script-languages:build-container'
   args: [

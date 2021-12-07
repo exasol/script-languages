@@ -2,21 +2,14 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-REBUILD=$2
 FLAVOR=$1
-ADDITIONAL_ARGUMENTS=""
-if [ "$REBUILD" == "True" ]
-then
-  ADDITIONAL_ARGUMENTS="--force-rebuild"
-fi
-BUILD_PARAMETER="--no-shortcut-build"
 SYSTEM_PARAMETER="--workers 7"
 if [ -f /workspace/build-status.txt ]
 then
   rm /workspace/build-status.txt
 fi
 touch /workspace/build-status.txt
-COMMAND="./exaslct security-scan --flavor-path "flavors/$FLAVOR" $BUILD_PARAMETER $ADDITIONAL_ARGUMENTS $SYSTEM_PARAMETER"
+COMMAND="./exaslct security-scan --flavor-path "flavors/$FLAVOR" $SYSTEM_PARAMETER"
 echo "Executing Command: $COMMAND"
 $COMMAND || echo "fail" >> /workspace/build-status.txt
 echo
