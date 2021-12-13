@@ -12,7 +12,7 @@ then
 fi
 DATETIME=$(cat $DATETIME_FILE)
 BUCKET="$LOG_BUCKET/$FLAVOR/${DATETIME}_${BUILD_ID}/"
-BUILD_OUTPUT_PATH=".build_output/jobs"
+BUILD_OUTPUT_PATH=".build_output"
 echo
 echo "=========================================================="
 echo "Copy $BUILD_OUTPUT_PATH to $BUCKET"
