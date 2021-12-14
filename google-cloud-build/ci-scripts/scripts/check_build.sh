@@ -22,11 +22,13 @@ echo
 gsutil -m rsync -C -x exports -r "$BUILD_OUTPUT_PATH" "$BUCKET" 2>&1 | tee rync.log || echo "fail" > /workspace/build-status.txt 
 echo
 echo
-echo "=========================================================="
-echo "Copy $BUILD_SECURITY_REPORT_PATH to $BUCKET"
-echo "=========================================================="
-echo
-gsutil -m rsync -C -x exports -r "$BUILD_SECURITY_REPORT_PATH" "$BUCKET" 2>&1 | tee -a rync.log || echo "rsync security scan report fail" >> /workspace/build-status.txt
+if [[ -d "$BUILD_SECURITY_REPORT_PATH"]]; then
+  echo "=========================================================="
+  echo "Copy $BUILD_SECURITY_REPORT_PATH to $BUCKET"
+  echo "=========================================================="
+  echo
+  gsutil -m rsync -C -x exports -r "$BUILD_SECURITY_REPORT_PATH" "$BUCKET" 2>&1 | tee -a rync.log || echo "rsync security scan report fail" >> /workspace/build-status.txt
+fi
 echo
 echo "=========================================================="
 echo "Copy rsync.log to $BUCKET/rsync.log"
