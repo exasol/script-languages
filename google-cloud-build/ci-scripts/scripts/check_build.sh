@@ -22,7 +22,8 @@ echo
 gsutil -m rsync -C -x exports -r "$BUILD_OUTPUT_PATH" "$BUCKET" 2>&1 | tee rync.log || echo "fail" > /workspace/build-status.txt 
 echo
 echo
-if [[ -d "$BUILD_SECURITY_REPORT_PATH"]]; then
+if [ -d "$BUILD_SECURITY_REPORT_PATH"]
+then
   echo "=========================================================="
   echo "Copy $BUILD_SECURITY_REPORT_PATH to $BUCKET"
   echo "=========================================================="
