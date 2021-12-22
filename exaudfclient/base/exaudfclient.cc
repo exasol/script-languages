@@ -72,6 +72,8 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 #endif
 
 int main(int argc, char **argv) {
+    std::cerr << "Starting Udf client." << std::endl << std::flush;
+    abdfff
 #ifndef PROTEGRITY_PLUGIN_CLIENT
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
     string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);

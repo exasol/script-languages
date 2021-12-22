@@ -143,6 +143,7 @@ void JavaVMImpl::shutdown() {
 }
 
 bool JavaVMImpl::run() {
+    DBG_PROFILE(std::cout, "BEGIN JavaVM-run");
     if (m_checkOnly)
         throwException("F-UDF-CL-SL-JAVA-1008: Java VM in check only mode");
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
@@ -154,8 +155,10 @@ bool JavaVMImpl::run() {
     check("F-UDF-CL-SL-JAVA-1011",calledUndefinedSingleCall);
     if (!mid)
         throwException("F-UDF-CL-SL-JAVA-1012: GetStaticMethodID for run failed");
+    DBG_PROFILE(std::cout, "JavaVM-run - call");
     m_env->CallStaticVoidMethod(cls, mid);
     check("F-UDF-CL-SL-JAVA-1013",calledUndefinedSingleCall);
+    DBG_PROFILE(std::cout, "END JavaVM-run");
     return true;
 }
 
@@ -253,6 +256,7 @@ void JavaVMImpl::addPackageToScript() {
 }
 
 void JavaVMImpl::createJvm() {
+    DBG_PROFILE(std::cout, "BEGIN createJvm");
     unsigned int numJvmOptions = m_jvmOptions.size();
     JavaVMOption *options = new JavaVMOption[numJvmOptions];
     for (size_t i = 0; i < numJvmOptions; ++i) {
@@ -287,9 +291,11 @@ void JavaVMImpl::createJvm() {
         throwException(ss.str().c_str());
     }
     delete [] options;
+    DBG_PROFILE(std::cout, "END createJvm");
 }
 
 void JavaVMImpl::compileScript() {
+    DBG_PROFILE(std::cout, "BEGIN compileScript");
     string calledUndefinedSingleCall;
     jstring classnameStr = m_env->NewStringUTF(SWIGVM_params->script_name);
     check("F-UDF-CL-SL-JAVA-1029",calledUndefinedSingleCall);
@@ -309,9 +315,11 @@ void JavaVMImpl::compileScript() {
         throwException("F-UDF-CL-SL-JAVA-1036: GetStaticMethodID for compile failed");
     m_env->CallStaticVoidMethod(cls, mid, classnameStr, codeStr, classpathStr);
     check("F-UDF-CL-SL-JAVA-1037",calledUndefinedSingleCall);
+    DBG_PROFILE(std::cout, "END compileScript");
 }
 
 void JavaVMImpl::addExternalJarPaths() {
+    DBG_PROFILE(std::cout, "BEGIN addExternalJarPaths");
     const string jarKeyword = "%jar";
     const string whitespace = " \t\f\v";
     const string lineEnd = ";";
@@ -338,6 +346,7 @@ void JavaVMImpl::addExternalJarPaths() {
     for (set<string>::iterator it = m_jarPaths.begin(); it != m_jarPaths.end(); ++it) {
         addJarToClasspath(*it);
     }
+    DBG_PROFILE(std::cout, "END addExternalJarPaths");
 }
 
 void JavaVMImpl::getScriptClassName() {

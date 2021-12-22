@@ -62,7 +62,7 @@ config_setting(
 cc_library(
     name = "debug_message_h",
     hdrs = [
-        "debug_message.h"
+        "debug_message.h", "date.h"
     ],
     alwayslink = True,
 )

@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import com.exasol.swig.ResultHandler;
 import com.exasol.swig.TableIterator;
 import com.exasol.swig.ImportSpecificationWrapper;
@@ -147,8 +149,16 @@ class ExaWrapper {
         return exaMetadata;
     }
 
+    static void profile(final String msg) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        String forDate = localDateTime.format(dateTimeFormatter);
+        System.out.println("PROFILE[" + msg + "] " + forDate);
+    }
+
     static void run() throws Throwable {
         ExaMetadataImpl exaMetadata = null;
+        profile("Begin ExaWrapper-run");
         try{
             exaMetadata = getMetaData();
         }catch(ExaIterationException ex){
@@ -233,6 +243,7 @@ class ExaWrapper {
         }
 
         resultHandler.flush();
+        profile("End ExaWrapper-run");
     }
 
     static void cleanup() throws Throwable {

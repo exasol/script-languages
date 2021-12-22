@@ -1,6 +1,15 @@
 #ifndef DEBUG_MESSAGE_H
 #define DEBUG_MESSAGE_H
 
+#include "date.h"
+
+
+inline std::string time_stamp() {
+        using namespace std::chrono;
+        auto now = time_point_cast<milliseconds>(system_clock::now());
+        return date::format("%T", now);
+}
+
 #define PRINT_EXCEPTION( os, error_code, ex ) \
   (os) << (error_code) << ":" << " Caught Exception: " << (ex.what()) << std::endl
 
@@ -8,6 +17,9 @@
   (os) << (error_code) << ":" << error_message << std::endl
 
 #ifndef NDEBUG
+
+#define DBG_PROFILE( os, msg) \
+    (os) << "PROFILING[" << msg << "] " << time_stamp() << std::endl
 
 #define DBG_EXCEPTION( os, ex ) \
   (os) << "DBG: " << __FILE__ << "(" << __LINE__ << ") in " << __func__ << " " \
@@ -65,6 +77,9 @@
 #define DBG_FUNC_CALL( os, call ) call
 
 #define DBG_COND_FUNC_CALL( os, call )
+
+#define DBG_PROFILE( os, msg) \
+    (os) << "PROFILING[" << msg << "] " << time_stamp() << std::endl
 
 #endif
 
