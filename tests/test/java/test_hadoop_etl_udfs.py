@@ -7,7 +7,7 @@ import tarfile
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework import docker_db_environment
-from exasol_python_test_framework.udf.udf_debug import UdfDebuggerFromDockerHost
+from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 
 
 class JavaHive(udf.TestCase):
@@ -208,7 +208,7 @@ class JavaHive(udf.TestCase):
                 );
                 """)
 
-            with UdfDebuggerFromDockerHost(test_case=self):
+            with UdfDebugger(test_case=self):
                 try:
                     self.query("""
                         IMPORT INTO SALES_POSITIONS
