@@ -2,14 +2,12 @@
 
 import time
 import os
-import socket
-import subprocess
-import threading
 from io import BytesIO
 import tarfile
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework import docker_db_environment
+from exasol_python_test_framework.udf.udf_debug import UdfDebuggerFromDockerHost
 
 
 class JavaHive(udf.TestCase):
@@ -171,32 +169,6 @@ class JavaHive(udf.TestCase):
                 /
                 """))
 
-    def start_udf_output_redirect_consumer(self):
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
-        print("local_ip", local_ip)
-
-        process = subprocess.Popen(["python2", "/udf_debug.py"], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-
-        def print_stdout():
-            process.poll()
-            while process.returncode is None:
-                print("UDF DEBUG", process.stdout.readline())
-                process.poll()
-                if process.returncode is not None and not process.stdout.closed:
-                    print("UDF DEBUG", process.stdout.readline())
-
-        stdout_thread = threading.Thread(target=print_stdout)
-        stdout_thread.start()
-        time.sleep(10)
-        if process.returncode is None:
-            self.query("ALTER SESSION SET SCRIPT_OUTPUT_ADDRESS='%s:3000';" % local_ip)
-            return process
-        else:
-            print(f"UDF debug std output '{process.stdout.readlines()}'")
-            print(f"UDF debug error output: '{process.stdout.readlines()}'")
-            self.fail("Could start udf_debug.py")
-
     @udf.skipIfNot(docker_db_environment.is_available, reason="This test requires a docker-db environment")
     def test_java_hive(self):
         env = docker_db_environment.DockerDBEnvironment("JAVA_HIVE")
@@ -225,43 +197,41 @@ class JavaHive(udf.TestCase):
             self.create_hadoop_etl_udfs()
 
             self.query("""
-	            CREATE OR REPLACE TABLE SALES_POSITIONS (
-  	              SALES_ID    INTEGER,
-  	              POSITION_ID SMALLINT,
-  	              ARTICLE_ID  SMALLINT,
-  	              AMOUNT      SMALLINT,
-  	              PRICE       DECIMAL(9,2),
-  	              VOUCHER_ID  SMALLINT,
-  	              CANCELED    BOOLEAN
-	            );
-	            """)
+                CREATE OR REPLACE TABLE SALES_POSITIONS (
+                  SALES_ID    INTEGER,
+                  POSITION_ID SMALLINT,
+                  ARTICLE_ID  SMALLINT,
+                  AMOUNT      SMALLINT,
+                  PRICE       DECIMAL(9,2),
+                  VOUCHER_ID  SMALLINT,
+                  CANCELED    BOOLEAN
+                );
+                """)
 
-            process = self.start_udf_output_redirect_consumer()
-
-            try:
-                self.query("""
-                    IMPORT INTO SALES_POSITIONS
-                    FROM SCRIPT IMPORT_HCAT_TABLE WITH
-                      HCAT_DB         = 'retail'
-                      HCAT_TABLE      = 'sales_positions'
-                      HCAT_ADDRESS    = 'thrift://%s:9083'
-                      HCAT_USER       = 'hive'
-                      HDFS_USER       = 'hdfs'
-                      PARALLELISM     = 'nproc()';
-                    """ % hive_metastore.name)
-            finally:
-                print("namenode")
-                print(namenode.logs())
-                print("datanode")
-                print(datanode.logs())
-                print("hive_metastore_postgresql")
-                print(hive_metastore_postgresql.logs())
-                print("hive_metastore")
-                print(hive_metastore.logs())
-                print(hive_server)
-                print(hive_server.logs())
-                time.sleep(10)
-                process.terminate()
+            with UdfDebuggerFromDockerHost(test_case=self):
+                try:
+                    self.query("""
+                        IMPORT INTO SALES_POSITIONS
+                        FROM SCRIPT IMPORT_HCAT_TABLE WITH
+                          HCAT_DB         = 'retail'
+                          HCAT_TABLE      = 'sales_positions'
+                          HCAT_ADDRESS    = 'thrift://%s:9083'
+                          HCAT_USER       = 'hive'
+                          HDFS_USER       = 'hdfs'
+                          PARALLELISM     = 'nproc()';
+                        """ % hive_metastore.name)
+                finally:
+                    print("namenode")
+                    print(namenode.logs())
+                    print("datanode")
+                    print(datanode.logs())
+                    print("hive_metastore_postgresql")
+                    print(hive_metastore_postgresql.logs())
+                    print("hive_metastore")
+                    print(hive_metastore.logs())
+                    print(hive_server)
+                    print(hive_server.logs())
+                    time.sleep(10)
         finally:
             del env
 
