@@ -3,4 +3,4 @@ pytz
 lxml
 docker
 scipy
-https://github.com/exasol/exasol-python-test-framework/releases/download/0.1.0/exasol_python_test_framework-0.1.0-py3-none-any.whl
+https://github.com/exasol/exasol-python-test-framework/releases/download/0.3.0/exasol_python_test_framework-0.3.0-py3-none-any.whl

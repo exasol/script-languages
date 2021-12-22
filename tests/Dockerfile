@@ -2,12 +2,10 @@ FROM ubuntu:18.04
 
 COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
-#Need still python package because of udf_debug.py
 RUN apt-get -y update && \
     apt-get -y install \
         openjdk-11-jdk \
         locales \
-        python \
         python3 \
         python3-pip \
         unixodbc \
@@ -28,7 +26,6 @@ RUN curl -s https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6
 RUN curl -s https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
 COPY ext/virtualschema-jdbc-adapter.jar downloads/virtualschema-jdbc-adapter
 ENV EXAPLUS=/downloads/EXAplus/exaplus
-RUN curl -s -o udf_debug.py https://raw.githubusercontent.com/exasol/hadoop-etl-udfs/master/tools/udf_debug.py
 
 COPY requirements.txt requirements.txt
 RUN pip3 install -r "requirements.txt"
