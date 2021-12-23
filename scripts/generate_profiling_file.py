@@ -97,3 +97,4 @@ if __name__ == "__main__":
 ## For example create the input file:
 ## python3 generate_profiling_file.py .build_output/jobs/job1/outputs/TestContainer_1/test_output > flame_chart_input.txt
 ## ./flamegraph.pl -flamechart -title "My title" flame_chart_input.txt > result.svg
+## Note: Needs to be with option -flamechart; otherwise the script might switch order of invocation
