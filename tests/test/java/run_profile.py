@@ -16,6 +16,7 @@ class SimpleJavaTest(udf.TestCase):
                 simple()
                 RETURNS int AS
                 import java.time.LocalDateTime;
+                import java.time.ZoneOffset;
                 import java.time.format.DateTimeFormatter;
                 class SIMPLE {
                     static void main(String[] args) {
@@ -23,10 +24,10 @@ class SimpleJavaTest(udf.TestCase):
                     }
 
                     static int run(ExaMetadata exa, ExaIterator ctx) {
-                        LocalDateTime localDateTime = LocalDateTime.now();
-                        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                        LocalDateTime localDateTime = LocalDateTime.now(ZoneOffset.UTC);
+                        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
                         String forDate = localDateTime.format(dateTimeFormatter);
-                        System.out.println("PROFILE[UDF] " + forDate);
+                        System.out.println("PROFILING[UDF] " + forDate);
                         return 0;
                     }
                 }
@@ -34,8 +35,9 @@ class SimpleJavaTest(udf.TestCase):
                 '''))
         with UdfDebugger(test_case=self):
             ct = datetime.datetime.now()
-            print(f"PROFILING[START SQL QUERY] {ct.strftime('%H:%M:%S.%f')}")
+            print(f"PROFILING[BEGIN SQL QUERY] {ct.hour}:{ct.minute}:{ct.second}.{round(ct.microsecond/1000)}")
             row = self.query('SELECT simple() FROM DUAL')[0]
+            print(f"PROFILING[END SQL QUERY] {ct.hour}:{ct.minute}:{ct.second}.{round(ct.microsecond / 1000)}")
 
 
 if __name__ == '__main__':

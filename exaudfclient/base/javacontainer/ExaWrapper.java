@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import com.exasol.swig.ResultHandler;
 import com.exasol.swig.TableIterator;
@@ -150,15 +151,15 @@ class ExaWrapper {
     }
 
     static void profile(final String msg) {
-        LocalDateTime localDateTime = LocalDateTime.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneOffset.UTC);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
         String forDate = localDateTime.format(dateTimeFormatter);
-        System.out.println("PROFILE[" + msg + "] " + forDate);
+        System.out.println("PROFILING[" + msg + "] " + forDate);
     }
 
     static void run() throws Throwable {
         ExaMetadataImpl exaMetadata = null;
-        profile("Begin ExaWrapper-run");
+        profile("BEGIN ExaWrapper-run");
         try{
             exaMetadata = getMetaData();
         }catch(ExaIterationException ex){
@@ -243,7 +244,7 @@ class ExaWrapper {
         }
 
         resultHandler.flush();
-        profile("End ExaWrapper-run");
+        profile("END ExaWrapper-run");
     }
 
     static void cleanup() throws Throwable {

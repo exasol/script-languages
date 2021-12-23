@@ -108,6 +108,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""
                                         m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL) {
 
     stringstream ss;
+    DBG_PROFILE(std::cout, "BEGIN JavaVMImpl-ctor");
     m_exaJavaPath = "/exaudf/javacontainer"; // TODO hardcoded path
     DBG_FUNC_CALL(cerr,setClasspath());
     DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
@@ -119,9 +120,11 @@ JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""
     DBG_FUNC_CALL(cerr,createJvm());
     DBG_FUNC_CALL(cerr,registerFunctions());
     DBG_FUNC_CALL(cerr,compileScript());
+    DBG_PROFILE(std::cout, "END JavaVMImpl-ctor");
 }
 
 void JavaVMImpl::shutdown() {
+    DBG_PROFILE(std::cout, "BEGIN JavaVMImpl-shutdown");
     if (m_checkOnly)
         throwException("F-UDF.CL.SL.JAVA-1159: Java VM in check only mode");
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
@@ -140,6 +143,7 @@ void JavaVMImpl::shutdown() {
     } catch(...) { 
     
     }
+    DBG_PROFILE(std::cout, "END JavaVMImpl-shutdown");
 }
 
 bool JavaVMImpl::run() {
@@ -319,7 +323,6 @@ void JavaVMImpl::compileScript() {
 }
 
 void JavaVMImpl::addExternalJarPaths() {
-    DBG_PROFILE(std::cout, "BEGIN addExternalJarPaths");
     const string jarKeyword = "%jar";
     const string whitespace = " \t\f\v";
     const string lineEnd = ";";
@@ -346,7 +349,6 @@ void JavaVMImpl::addExternalJarPaths() {
     for (set<string>::iterator it = m_jarPaths.begin(); it != m_jarPaths.end(); ++it) {
         addJarToClasspath(*it);
     }
-    DBG_PROFILE(std::cout, "END addExternalJarPaths");
 }
 
 void JavaVMImpl::getScriptClassName() {

@@ -29,3 +29,6 @@ ENV EXAPLUS=/downloads/EXAplus/exaplus
 
 COPY requirements.txt requirements.txt
 RUN pip3 install -r "requirements.txt"
+
+
+COPY ext/ProfilingUdf-1.0-SNAPSHOT.jar ProfilingUdf-1.0-SNAPSHOT.jar

@@ -1750,6 +1750,7 @@ SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMCon
 
 int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv)
 {
+    DBG_PROFILE(std::cout, "BEGIN UDF-LIB MAIN");
     assert(SWIGVM_params_ref != nullptr);
 
 #ifdef PROTEGRITY_PLUGIN_CLIENT
@@ -1923,6 +1924,7 @@ reinit:
             }
         } else {
             for(;;) {
+                DBG_PROFILE(std::cout, "UDF-LIB SEND-RUN");
                 if (!send_run(socket))
                     break;
                 SWIGVM_params_ref->inp_force_finish = false;
@@ -1960,6 +1962,7 @@ reinit:
 
     delete_vm(vm);
     stop_all(socket);
+    DBG_PROFILE(std::cout, "END UDF-LIB MAIN");
     return 0;
 }
 
