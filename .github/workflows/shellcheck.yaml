@@ -8,4 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run shellcheck
-        run: ./scripts/build/shellcheck.sh
+        run: ./scripts/shellcheck.sh
