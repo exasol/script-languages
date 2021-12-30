@@ -1,1 +1,3 @@
-bazel run $*
+#!/bin/bash
+
+bazel run "$@"

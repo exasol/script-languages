@@ -5,12 +5,15 @@ set -o nounset
 set -o pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+#shellcheck source=./google-cloud-build/ci-scripts/scripts/generate_source_target_docker_options.sh
 source "$SCRIPT_DIR/generate_source_target_docker_options.sh"
+
+#shellcheck source=./google-cloud-build/ci-scripts/scripts/generate_flavor_options.sh
 source "$SCRIPT_DIR/generate_flavor_options.sh"
 
 generate_flavor_options "$1"
 shift 1
-generate_source_target_docker_options $SCRIPT_DIR $*
+generate_source_target_docker_options "$SCRIPT_DIR" "$@"
 
 touch /workspace/build-status.txt
 

@@ -1,3 +1,6 @@
+#!/bin/bash
+
+#shellcheck disable=SC1091
 source .env
 DEPS=""
 for I in $1
@@ -11,7 +14,7 @@ do
 done
 DEPS="($DEPS)"
 shift 1
-bazel query $* --noimplicit_deps "$DEPS except (filter('@bazel_tools', $DEPS) union filter('@local_config',$DEPS))" --output graph | sed -e "s/label/xlabel/g" > graph.in
+bazel query "$@" --noimplicit_deps "$DEPS except (filter('@bazel_tools', $DEPS) union filter('@local_config',$DEPS))" --output graph | sed -e "s/label/xlabel/g" > graph.in
 
 dot -Grank=max   -Gsplines=ortho  -Goverlap=false -Granksep=4 -Gnodesep=2  -Tpng < graph.in > graph.png
 

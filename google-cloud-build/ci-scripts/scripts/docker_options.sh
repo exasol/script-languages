@@ -19,4 +19,4 @@ if [ -n "$TAG_PREFIX" ] && [ "$TAG_PREFIX" != '""' ]
 then
   DOCKER_OPTIONS="$DOCKER_OPTIONS --$TYPE-docker-tag-prefix $TAG_PREFIX"
 fi
-echo $DOCKER_OPTIONS
+echo "$DOCKER_OPTIONS"

@@ -7,7 +7,6 @@ function parse_single_line_package_list_with_comments(){
     #   optional: end with a group of 1 or more whitespace followed by a # and than a sequence of any character
     #       -> comment in the end
     line="$1"
-    regex=""
     package=$(echo "$line" | sed -r 's/^[ \t]*([^ \ŧ]+)([ \t]+#.*)?$/\1/')
     if [[ $package ]]
     then

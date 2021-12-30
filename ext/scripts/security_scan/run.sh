@@ -10,7 +10,8 @@ fi
 output_path=$1
 mkdir -p "$output_path"
 
-echo $SECURITY_SCANNERS
+#shellcheck disable=SC2153
+echo "$SECURITY_SCANNERS"
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
@@ -21,7 +22,7 @@ fi
 
 function _run_security_scanners() {
 
-  for current_scanner in $@; do
+  for current_scanner in "$@"; do
 
     case "$current_scanner" in
       trivy)
@@ -39,5 +40,6 @@ function _run_security_scanners() {
 }
 
 security_scanners=$SECURITY_SCANNERS
+#shellcheck disable=SC2086
 _run_security_scanners $security_scanners
 
