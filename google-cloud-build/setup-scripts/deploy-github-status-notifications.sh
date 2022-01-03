@@ -5,16 +5,15 @@ set -o pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 echo "Setup githubBuildStatusNotification"
-triggers=triggers
-$SCRIPT_DIR/create_encrypted_github_token.sh
+"$SCRIPT_DIR/create_encrypted_github_token.sh"
 env_file=".env/env.yaml"
 encrypted_github_token_file=".env/encrypted_github_token.yaml"
-ENCRYPTED_GITHUB_TOKEN=$(cat "$encrypted_github_token_file" | yq -r .github_token)
-KEY_RING_NAME=$(cat "$env_file" | yq -r .key_ring_name)
-KEY_NAME=$(cat "$env_file" | yq -r .key_name)
+ENCRYPTED_GITHUB_TOKEN=$(yq -r .github_token < "$encrypted_github_token_file")
+KEY_RING_NAME=$(yq -r .key_ring_name < "$env_file")
+KEY_NAME=$(yq -r .key_name < "$env_file")
 
-PROJECT_NAME=$(cat "$env_file" | yq -r .gcloud_project_name)
+PROJECT_NAME=$(yq -r .gcloud_project_name < "$env_file")
 cd github-status-notifications 
-gcloud functions deploy githubBuildStatusNotification --runtime nodejs8 --trigger-topic cloud-builds --set-env-vars ENCRYPTED_GITHUB_TOKEN=$ENCRYPTED_GITHUB_TOKEN --set-env-vars KEY_RING_NAME=$KEY_RING_NAME --set-env-vars KEY_NAME=$KEY_NAME --service-account build-cloud-functions@$PROJECT_NAME.iam.gserviceaccount.com
+gcloud functions deploy githubBuildStatusNotification --runtime nodejs8 --trigger-topic cloud-builds --set-env-vars ENCRYPTED_GITHUB_TOKEN="$ENCRYPTED_GITHUB_TOKEN" --set-env-vars KEY_RING_NAME="$KEY_RING_NAME" --set-env-vars KEY_NAME="$KEY_NAME" --service-account "build-cloud-functions@$PROJECT_NAME.iam.gserviceaccount.com"
 echo "Done with setup of the githubBuildStatusNotification"
 

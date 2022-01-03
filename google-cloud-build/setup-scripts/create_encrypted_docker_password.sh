@@ -7,6 +7,6 @@ OUTPUT_FILE=".env/encrypted_docker_password.yaml"
 if [ ! -f "$OUTPUT_FILE" ]
 then
         echo "Enter the Docker Passowrd"
-        echo "docker_password: \"$($SCRIPT_DIR/encrypt.sh)\"" > "$OUTPUT_FILE"
-        echo "Stored encryped Docker password in $OUTPUT_FILE"
+        echo "docker_password: \"$("$SCRIPT_DIR/encrypt.sh")\"" > "$OUTPUT_FILE"
+        echo "Stored encrypted Docker password in $OUTPUT_FILE"
 fi
