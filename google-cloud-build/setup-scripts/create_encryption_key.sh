@@ -10,7 +10,7 @@ function check_output(){
     echo "===================================="
     echo "$OUTPUT"
     echo "===================================="
-    exit -1
+    exit 1
   fi
 }
 
