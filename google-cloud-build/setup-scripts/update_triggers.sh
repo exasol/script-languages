@@ -71,6 +71,7 @@ function main(){
 	ENV_FILE=".env/env.yaml"
 	ENCRYPTED_DOCKER_PASSWORD_FILE=".env/encrypted_docker_password.yaml"
 	ENCRYPTED_GITHUB_TOKEN_FILE=".env/encrypted_github_token.yaml"
+#Ignore shellcheck rule, alternatives recommended by shellcheck are worse
 #shellcheck disable=SC2044
 	for TRIGGER_CONFIG_PATH in $(find $TRIGGERS/flavor-config -name '*.yaml')
   do

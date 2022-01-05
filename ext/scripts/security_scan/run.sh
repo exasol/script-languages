@@ -10,6 +10,7 @@ fi
 output_path=$1
 mkdir -p "$output_path"
 
+#Ignore shellcheck rule. SECURITY_SCANNERS is an environment variable
 #shellcheck disable=SC2153
 echo "$SECURITY_SCANNERS"
 
@@ -40,6 +41,7 @@ function _run_security_scanners() {
 }
 
 security_scanners=$SECURITY_SCANNERS
+#Ignore shellcheck rule. As security_scanners we can't convert it to an array other than passing it without quotes to _run_security_scanners
 #shellcheck disable=SC2086
 _run_security_scanners $security_scanners
 

@@ -11,6 +11,8 @@ function update(){
 
 function main(){
 	triggers=triggers
+
+#Ignore shellcheck rule, alternatives recommended by shellcheck are worse
 #shellcheck disable=SC2044
 	for I in $(find $triggers/flavor-config -name '*.yaml')
 	do

@@ -11,6 +11,7 @@ touch "$CLIENT_WRAPPER"
 cat "$WRAPPER_TEMPLATE"
 echo
 echo 'NAME="$1"'
+#Ignore shellcheck rule, change is too risky.
 #shellcheck disable=SC2001
 echo 'MASSIF_FILE="/tmp/$(echo "$NAME" | sed s#[/:]##g)"'
 echo valgrind --tool=massif --massif-out-file='"$MASSIF_FILE"' "./$(basename "$CLIENT_BINARY")" '"$@"'

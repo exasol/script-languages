@@ -9,7 +9,7 @@ then
   TAG_NAME="ci/${COMMIT:0:10}"
 fi
 BUILD_DIR=.build_output/cache/exports
-find "$BUILD_DIR" -type f -size +1900M | xargs -0 rm
+find "$BUILD_DIR" -type f -print0 -size +1900M | xargs -0 rm
 EXPORTED_CONTAINERS="$BUILD_DIR/*.tar.gz*"
 GITHUB_USER="$3"
 GITHUB_TOKEN="$(cat secrets/GITHUB_TOKEN)"

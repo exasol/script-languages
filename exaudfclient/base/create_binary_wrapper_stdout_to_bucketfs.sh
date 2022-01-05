@@ -12,6 +12,7 @@ touch "$CLIENT_WRAPPER"
 cat "$WRAPPER_TEMPLATE"
 echo
 echo 'NAME="$1"'
+#Ignore shellcheck rule, change is too risky.
 #shellcheck disable=SC2001
 echo 'OUTPUT_FILE="/tmp/$(echo "$NAME" | sed s#[/:]##g)"'
 echo "./$(basename "$CLIENT_BINARY")" '"$@"' '&> "$OUTPUT_FILE"'
