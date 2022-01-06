@@ -4,9 +4,9 @@ set -o nounset
 set -o pipefail
 
 function check_output(){
-  if [[ "$OUTPUT" =~ ".*Exception.*" ]]
+  if [[ "$OUTPUT" =~ .*Exception.* ]]
   then
-    if ! [[ "$OUTPUT" =~ ".*already exists.*" ]]
+    if ! [[ "$OUTPUT" =~ .*already\ exists.* ]]
     then
       echo "$OUTPUT"
       exit 1
@@ -19,16 +19,16 @@ function check_output(){
 }
 
 env_file=".env/env.yaml"
-LOG_BUCKET=$(cat "$env_file" | yq -r .log_bucket)
-CONTAINER_BUCKET=$(cat "$env_file" | yq -r .container_bucket)
-CONFIG_BUCKET=$(cat "$env_file" | yq -r .config_bucket)
+LOG_BUCKET=$(yq -r .log_bucket < "$env_file")
+CONTAINER_BUCKET=$(yq -r .container_bucket < "$env_file")
+CONFIG_BUCKET=$(yq -r .config_bucket < "$env_file")
 
 echo "Create Log Bucket $LOG_BUCKET"
-OUTPUT=$(gsutil mb $LOG_BUCKET 2>&1 || true)
+OUTPUT=$(gsutil mb "$LOG_BUCKET" 2>&1 || true)
 check_output
 echo "Create Container Bucket $CONTAINER_BUCKET"
-OUTPUT=$(gsutil mb $CONTAINER_BUCKET 2>&1 || true)
+OUTPUT=$(gsutil mb "$CONTAINER_BUCKET" 2>&1 || true)
 check_output
 echo "Create Config Bucket $CONFIG_BUCKET"
-OUTPUT=$(gsutil mb $CONFIG_BUCKET 2>&1 || true)
+OUTPUT=$(gsutil mb "$CONFIG_BUCKET" 2>&1 || true)
 check_output

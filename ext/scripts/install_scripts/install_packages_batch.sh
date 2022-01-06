@@ -6,6 +6,8 @@ set -o nounset
 set -x
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+#shellcheck source=ext/scripts/install_scripts/parse_single_line_package_list_with_comments.sh
 source "$SCRIPT_DIR/parse_single_line_package_list_with_comments.sh"
 
 # This script installs a list of packages given by a file with a given command template

@@ -3,11 +3,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
 REPO_DIR=$(git rev-parse --show-toplevel)
 REPO_DIR="$(readlink -f "${REPO_DIR}")"
 
-pushd $REPO_DIR &> /dev/null
+pushd "$REPO_DIR" &> /dev/null
 echo
 echo "Install hook for $REPO_DIR"
 echo "=================================================================="

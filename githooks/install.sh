@@ -26,7 +26,8 @@ GITHOOKS_PATH="$(readlink -f "${GITHOOKS_PATH}")"
 copy_hook() {
     local SCRIPT_PATH="$SCRIPT_DIR/$1"
     local GITHOOK_PATH="$GITHOOKS_PATH/$2"
-    local RELATIVE_PATH=$(realpath --relative-to="$GITHOOKS_PATH" "$SCRIPT_PATH")
+    local RELATIVE_PATH=""
+    RELATIVE_PATH=$(realpath --relative-to="$GITHOOKS_PATH" "$SCRIPT_PATH")
     pushd "$GITHOOKS_PATH" > /dev/null
     if [ -e "$GITHOOK_PATH" ] || [ -L "$GITHOOK_PATH" ]
     then

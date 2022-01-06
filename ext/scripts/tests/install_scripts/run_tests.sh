@@ -8,7 +8,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 PATH_TO_INSTALL_SCRIPTS="$SCRIPT_DIR/../../install_scripts"
 
 echo install_batch.pl
-$PATH_TO_INSTALL_SCRIPTS/install_batch.pl --file test_files/install_batch_test_file --element-separator ";;" --combining-template "echo 'install(c(<<<<0>>>>),c(<<<<1>>>>))'" --templates '"<<<<0>>>>"' ',' '"<<<<1>>>>"' ','
+"$PATH_TO_INSTALL_SCRIPTS/install_batch.pl" --file test_files/install_batch_test_file --element-separator ";;" --combining-template "echo 'install(c(<<<<0>>>>),c(<<<<1>>>>))'" --templates '"<<<<0>>>>"' ',' '"<<<<1>>>>"' ','
 echo
 
 echo Run Apt Tests

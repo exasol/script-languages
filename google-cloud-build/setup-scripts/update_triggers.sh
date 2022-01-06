@@ -4,10 +4,10 @@ set -o nounset
 set -o pipefail
 
 function generate_build_json(){
-	cat "$ENV_FILE" "$ENCRYPTED_DOCKER_PASSWORD_FILE" "$ENCRYPTED_GITHUB_TOKEN_FILE" $* > data.yaml
+	cat "$ENV_FILE" "$ENCRYPTED_DOCKER_PASSWORD_FILE" "$ENCRYPTED_GITHUB_TOKEN_FILE" "$@" > data.yaml
   echo "job_id: \"${TRIGGER_CONFIG_PATH##*$TRIGGERS/flavor-config/}\""  >> data.yaml
-	TRIGGER_FILE=$(cat "$TRIGGER_CONFIG_PATH" | yq -r .trigger_template_file)
-	jinja2 $TRIGGERS/$TRIGGER_FILE data.yaml > build.json
+	TRIGGER_FILE=$(yq -r .trigger_template_file < "$TRIGGER_CONFIG_PATH")
+	jinja2 "$TRIGGERS/$TRIGGER_FILE" data.yaml > build.json
 	rm data.yaml
 }
 
@@ -20,7 +20,7 @@ function check_output(){
     echo "Got error"
     echo "$OUTPUT" | jq .
     echo "for trigger config:"
-    cat build.json | jq .
+    jq . < build.json
     echo "==============================================================================================="
     echo "==============================================================================================="
   else
@@ -34,21 +34,21 @@ function check_output(){
 }
 
 function create(){
-	echo "creating" $TRIGGER_CONFIG_PATH
+	echo "creating" "$TRIGGER_CONFIG_PATH"
 	generate_build_json "$TRIGGER_CONFIG_PATH"
-	OUTPUT=$($SCRIPT_DIR/create_build_trigger.sh build.json)
+	OUTPUT=$("$SCRIPT_DIR/create_build_trigger.sh" build.json)
   check_output
   rm build.json
 	echo "$OUTPUT"
 	TRIGGER_ID=$(echo "$OUTPUT" | jq .id)
-	mkdir -p $(dirname "$ENV_FLAVOR_CONFIG_PATH")
+	mkdir -p "$(dirname "$ENV_FLAVOR_CONFIG_PATH")"
 	echo "trigger_id: $TRIGGER_ID"  > "$ENV_FLAVOR_CONFIG_PATH"
 }
 
 function update(){
-	echo "updating" $TRIGGER_CONFIG_PATH
+	echo "updating" "$TRIGGER_CONFIG_PATH"
   generate_build_json "$ENV_FLAVOR_CONFIG_PATH" "$TRIGGER_CONFIG_PATH"
-  OUTPUT=$($SCRIPT_DIR/update_build_trigger.sh build.json)
+  OUTPUT=$("$SCRIPT_DIR/update_build_trigger.sh" build.json)
   check_output
 	rm build.json
 }
@@ -66,11 +66,13 @@ function create_or_update(){
 
 function main(){
 	TRIGGERS=triggers
-	$SCRIPT_DIR/create_encrypted_docker_password.sh
-	$SCRIPT_DIR/create_encrypted_github_token.sh
+	"$SCRIPT_DIR/create_encrypted_docker_password.sh"
+	"$SCRIPT_DIR/create_encrypted_github_token.sh"
 	ENV_FILE=".env/env.yaml"
 	ENCRYPTED_DOCKER_PASSWORD_FILE=".env/encrypted_docker_password.yaml"
 	ENCRYPTED_GITHUB_TOKEN_FILE=".env/encrypted_github_token.yaml"
+#Ignore shellcheck rule, alternatives recommended by shellcheck are worse
+#shellcheck disable=SC2044
 	for TRIGGER_CONFIG_PATH in $(find $TRIGGERS/flavor-config -name '*.yaml')
   do
 	  create_or_update

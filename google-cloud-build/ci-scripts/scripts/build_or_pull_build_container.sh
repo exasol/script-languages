@@ -9,7 +9,7 @@ echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdi
 #set -x
 
 DOCKER_REPOSITORY=$1
-DOCKERFILE_HASH=$(cat google-cloud-build/ci-scripts/scripts/Dockerfile | shasum | cut -f 1 -d " ")
+DOCKERFILE_HASH=$(shasum < google-cloud-build/ci-scripts/scripts/Dockerfile | cut -f 1 -d " ")
 TAG_NAME="build-container-$DOCKERFILE_HASH"
 TAG_NAME_SHORT="${TAG_NAME:0:127}"
 IMAGE_NAME="$DOCKER_REPOSITORY:$TAG_NAME_SHORT"

@@ -7,6 +7,6 @@ OUTPUT_FILE=".env/encrypted_github_token.yaml"
 if [ ! -f "$OUTPUT_FILE" ]
 then
         echo "Enter the Github Token"
-        echo "github_token: \"$($SCRIPT_DIR/encrypt.sh)\"" > "$OUTPUT_FILE"
+        echo "github_token: \"$("$SCRIPT_DIR/encrypt.sh")\"" > "$OUTPUT_FILE"
         echo "Stored encryped Github Token in $OUTPUT_FILE"
 fi

@@ -4,11 +4,15 @@ set -e
 set -u
 set -o pipefail
 
-PACKAGE_LIST_FILE=$1
+PACKAGE_LIST_FILE="$1"
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-PACKAGE_LIST=( $($SCRIPT_DIR/extract_columns_from_package_lisl.pl --file $PACKAGE_LIST_FILE --columns 0) )
-VERSION_LIST=( $($SCRIPT_DIR/extract_columns_from_package_lisl.pl --file $PACKAGE_LIST_FILE --columns 1) )
+#Ignore shellcheck rule, perl script enforces correct formatting, no issues here.
+#shellcheck disable=SC2207
+PACKAGE_LIST=( $("$SCRIPT_DIR/extract_columns_from_package_lisl.pl" --file "$PACKAGE_LIST_FILE" --columns 0) )
+#Ignore shellcheck rule, perl script enforces correct formatting, no issues here.
+#shellcheck disable=SC2207
+VERSION_LIST=( $("$SCRIPT_DIR/extract_columns_from_package_lisl.pl" --file "$PACKAGE_LIST_FILE" --columns 1) )
 echo "Package|Requested Version|Candidate Version"
 while (( ${#PACKAGE_LIST[@]} ))
 do

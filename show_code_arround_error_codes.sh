@@ -10,14 +10,14 @@ set -o pipefail
 
 if [ $# -gt 0 ]
 then
-  args="($(echo $* | tr " " "|"))"
+  args="($(echo "$@" | tr " " "|"))"
 else
   args=".*"
 fi
-echo $args
+echo "$args"
 error_codes=$(bash find_error_codes.sh | awk '{print $1 "|" $2 "-" $3 "-" $4}' | grep -E "$args")
 
-echo $error_codes \
+echo "$error_codes" \
   | tr " " "\n" \
   | tr "|" " " \
   | tr ":" " " \

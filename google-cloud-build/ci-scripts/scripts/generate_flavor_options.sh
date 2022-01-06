@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function generate_flavor_options(){
   FLAVORS="$1"
   echo "FLAVORS: $FLAVORS"
@@ -6,7 +8,7 @@ function generate_flavor_options(){
   do
     FLAVOR_OPTIONS="$FLAVOR_OPTIONS --flavor-path 'flavors/$FLAVOR'"
   done
-  if [ -z "$FLAVOR_OPTIONS=" ]
+  if [ -z "$FLAVOR_OPTIONS" ]
   then
     echo "No flavors specified"
     exit 1

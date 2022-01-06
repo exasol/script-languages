@@ -4,7 +4,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 REPO_DIR=$(git rev-parse --show-toplevel)
 REPO_DIR="$(readlink -f "${REPO_DIR}")"
 
@@ -32,9 +31,9 @@ do
       echo "Hash HEAD:          $HASH_HEAD"
       echo "Hash origin/master: $HASH_ORIGIN_MASTER"
       echo "Log Line HEAD:"
-      echo "$(git log --oneline -n 1 HEAD)"
+      git log --oneline -n 1 HEAD
       echo "Log Line origin/master:"
-      echo "$(git log --oneline -n 1 refs/remotes/origin/master)"
+      git log --oneline -n 1 refs/remotes/origin/master
       EXIT_CODE=1
     fi
     popd &> /dev/null

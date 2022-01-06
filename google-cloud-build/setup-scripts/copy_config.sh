@@ -4,5 +4,5 @@ set -o nounset
 set -o pipefail
 
 env_file=".env/env.yaml"
-CONFIG_BUCKET=$(cat "$env_file" | yq -r .config_bucket)
-gsutil -m rsync $* -r "file://.env" "$CONFIG_BUCKET"
+CONFIG_BUCKET=$(yq -r .config_bucket < "$env_file")
+gsutil -m rsync "$@" -r "file://.env" "$CONFIG_BUCKET"

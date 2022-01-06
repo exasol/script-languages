@@ -10,7 +10,9 @@ fi
 output_path=$1
 mkdir -p "$output_path"
 
-echo $SECURITY_SCANNERS
+#Ignore shellcheck rule. SECURITY_SCANNERS is an environment variable
+#shellcheck disable=SC2153
+echo "$SECURITY_SCANNERS"
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
@@ -21,7 +23,7 @@ fi
 
 function _run_security_scanners() {
 
-  for current_scanner in $@; do
+  for current_scanner in "$@"; do
 
     case "$current_scanner" in
       trivy)
@@ -39,5 +41,7 @@ function _run_security_scanners() {
 }
 
 security_scanners=$SECURITY_SCANNERS
+#Ignore shellcheck rule. As security_scanners we can't convert it to an array other than passing it without quotes to _run_security_scanners
+#shellcheck disable=SC2086
 _run_security_scanners $security_scanners
 
