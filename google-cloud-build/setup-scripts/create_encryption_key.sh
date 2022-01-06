@@ -35,7 +35,7 @@ echo "PROJECT_NUMBER: $PROJECT_NUMBER"
 
 
 echo "Grant key to Cloud Build"
-OUTPUT=$(gcloud kms keys add-iam-policy-binding "$KEY_NAME" --location=global --keyring="$KEY_RING_NAME" --member="serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com" --role=roles/cloudkms.cryptoKeyDecrypter 2>&1 || true)
+OUTPUT=$(gcloud kms keys add-iam-policy-binding "$KEY_NAME" --location=global "--keyring=$KEY_RING_NAME" "--member=serviceAccount:$PROJECT_NUMBER@cloudbuild.gserviceaccount.com" --role=roles/cloudkms.cryptoKeyDecrypter 2>&1 || true)
 check_output
 
 echo "Create service account for Build Cloud Functions"
@@ -43,5 +43,5 @@ OUTPUT=$(gcloud beta iam service-accounts create build-cloud-functions --display
 check_output
 
 echo "Grant key to Cloud Functions"
-OUTPUT=$(gcloud kms keys add-iam-policy-binding "$KEY_NAME" --location=global --keyring="$KEY_RING_NAME" --member="serviceAccount:build-cloud-functions@$PROJECT_NAME.iam.gserviceaccount.com"  --role=roles/cloudkms.cryptoKeyDecrypter 2>&1 || true)
+OUTPUT=$(gcloud kms keys add-iam-policy-binding "$KEY_NAME" --location=global "--keyring=$KEY_RING_NAME" "--member=serviceAccount:build-cloud-functions@$PROJECT_NAME.iam.gserviceaccount.com"  --role=roles/cloudkms.cryptoKeyDecrypter 2>&1 || true)
 check_output

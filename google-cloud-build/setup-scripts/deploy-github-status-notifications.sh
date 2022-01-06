@@ -14,6 +14,6 @@ KEY_NAME=$(yq -r .key_name < "$env_file")
 
 PROJECT_NAME=$(yq -r .gcloud_project_name < "$env_file")
 cd github-status-notifications 
-gcloud functions deploy githubBuildStatusNotification --runtime nodejs8 --trigger-topic cloud-builds --set-env-vars ENCRYPTED_GITHUB_TOKEN="$ENCRYPTED_GITHUB_TOKEN" --set-env-vars KEY_RING_NAME="$KEY_RING_NAME" --set-env-vars KEY_NAME="$KEY_NAME" --service-account "build-cloud-functions@$PROJECT_NAME.iam.gserviceaccount.com"
+gcloud functions deploy githubBuildStatusNotification --runtime nodejs8 --trigger-topic cloud-builds --set-env-vars "ENCRYPTED_GITHUB_TOKEN=$ENCRYPTED_GITHUB_TOKEN" --set-env-vars "KEY_RING_NAME=$KEY_RING_NAME" --set-env-vars "KEY_NAME=$KEY_NAME" --service-account "build-cloud-functions@$PROJECT_NAME.iam.gserviceaccount.com"
 echo "Done with setup of the githubBuildStatusNotification"
 

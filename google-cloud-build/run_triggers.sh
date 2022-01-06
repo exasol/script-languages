@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 function generate_run_json(){
-  cat "$env_file" "$@" > data.yaml
+  cat "$env_file" > data.yaml
   echo "commitSha: $commitSha" >> data.yaml
   jinja2 "$triggers/run.json" data.yaml > run.json
   rm data.yaml
@@ -13,10 +13,10 @@ function generate_run_json(){
 function run(){
   echo "running" "$I"
   TRIGGER_ID=$(yq -r .trigger_id < "$env_flavor_config_path")
-  generate_run_json "$@"
+  generate_run_json
   cat run.json
   "$SCRIPT_DIR/setup-scripts/run_build_trigger.sh" "$TRIGGER_ID" run.json
-  rm run.json "$@"
+  rm run.json
 }
 
 function main(){
@@ -29,7 +29,7 @@ function main(){
 		env_flavor_config_path=".env/$I"
 		if [ -f "$env_flavor_config_path" ]
 		then
-			run "$@"
+			run
 		fi
 	done
 }
