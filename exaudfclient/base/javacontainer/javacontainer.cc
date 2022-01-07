@@ -112,13 +112,16 @@ JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""
     DBG_FUNC_CALL(cerr,setClasspath());
     DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
     DBG_FUNC_CALL(cerr,importScripts());
-    DBG_FUNC_CALL(cerr,addPackageToScript());
     DBG_FUNC_CALL(cerr,addExternalJarPaths());
     DBG_FUNC_CALL(cerr,getExternalJvmOptions());
     DBG_FUNC_CALL(cerr,setJvmOptions());
     DBG_FUNC_CALL(cerr,createJvm());
     DBG_FUNC_CALL(cerr,registerFunctions());
-    DBG_FUNC_CALL(cerr,compileScript());
+//    ss << "ScriptCode: '" << m_scriptCode << "'";
+//    DBG_PROFILE(std::cout, ss.str());
+//    DBG_FUNC_CALL(cerr,addPackageToScript());
+//    DBG_FUNC_CALL(cerr,compileScript());
+    DBG_PROFILE(std::cout, "END JavaVMImpl-ctor");
 }
 
 void JavaVMImpl::shutdown() {
@@ -290,25 +293,30 @@ void JavaVMImpl::createJvm() {
 }
 
 void JavaVMImpl::compileScript() {
-    string calledUndefinedSingleCall;
-    jstring classnameStr = m_env->NewStringUTF(SWIGVM_params->script_name);
-    check("F-UDF-CL-SL-JAVA-1029",calledUndefinedSingleCall);
-    jstring codeStr = m_env->NewStringUTF(m_scriptCode.c_str());
-    check("F-UDF-CL-SL-JAVA-1030",calledUndefinedSingleCall);
-    jstring classpathStr = m_env->NewStringUTF(m_localClasspath.c_str());
-    check("F-UDF-CL-SL-JAVA-1031",calledUndefinedSingleCall);
-    if (!classnameStr || !codeStr || !classpathStr)
-        throwException("F-UDF-CL-SL-JAVA-1032: NewStringUTF for compile failed");
-    jclass cls = m_env->FindClass("com/exasol/ExaCompiler");
-    check("F-UDF-CL-SL-JAVA-1033",calledUndefinedSingleCall);
-    if (!cls)
-        throwException("F-UDF-CL-SL-JAVA-1034: FindClass for ExaCompiler failed");
-    jmethodID mid = m_env->GetStaticMethodID(cls, "compile", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
-    check("F-UDF-CL-SL-JAVA-1035",calledUndefinedSingleCall);
-    if (!mid)
-        throwException("F-UDF-CL-SL-JAVA-1036: GetStaticMethodID for compile failed");
-    m_env->CallStaticVoidMethod(cls, mid, classnameStr, codeStr, classpathStr);
-    check("F-UDF-CL-SL-JAVA-1037",calledUndefinedSingleCall);
+    std::string trimmedScriptCode = trim(m_scriptCode);
+    //if(0 == trimmedScriptCode.compare("package com.exasol;")) {
+        string calledUndefinedSingleCall;
+        jstring classnameStr = m_env->NewStringUTF(SWIGVM_params->script_name);
+        check("F-UDF-CL-SL-JAVA-1029",calledUndefinedSingleCall);
+        jstring codeStr = m_env->NewStringUTF(m_scriptCode.c_str());
+        check("F-UDF-CL-SL-JAVA-1030",calledUndefinedSingleCall);
+        jstring classpathStr = m_env->NewStringUTF(m_localClasspath.c_str());
+        check("F-UDF-CL-SL-JAVA-1031",calledUndefinedSingleCall);
+        if (!classnameStr || !codeStr || !classpathStr)
+            throwException("F-UDF-CL-SL-JAVA-1032: NewStringUTF for compile failed");
+        jclass cls = m_env->FindClass("com/exasol/ExaCompiler");
+        check("F-UDF-CL-SL-JAVA-1033",calledUndefinedSingleCall);
+        if (!cls)
+            throwException("F-UDF-CL-SL-JAVA-1034: FindClass for ExaCompiler failed");
+        jmethodID mid = m_env->GetStaticMethodID(cls, "compile", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+        check("F-UDF-CL-SL-JAVA-1035",calledUndefinedSingleCall);
+        if (!mid)
+            throwException("F-UDF-CL-SL-JAVA-1036: GetStaticMethodID for compile failed");
+        m_env->CallStaticVoidMethod(cls, mid, classnameStr, codeStr, classpathStr);
+        check("F-UDF-CL-SL-JAVA-1037",calledUndefinedSingleCall);
+//    } else {
+//        DBGMSG(std::cout, "Skipping compilation of script.");
+//    }
 }
 
 void JavaVMImpl::addExternalJarPaths() {
@@ -512,7 +520,7 @@ void JavaVMImpl::registerFunctions() {
 
 void JavaVMImpl::setClasspath() {
     m_exaJarPath = m_exaJavaPath + "/libexaudf.jar";
-    m_classpath = m_localClasspath + ":" + m_exaJarPath;
+    m_classpath = m_exaJarPath;
 }
 
 vector<unsigned char> JavaVMImpl::scriptToMd5(const char *script) {

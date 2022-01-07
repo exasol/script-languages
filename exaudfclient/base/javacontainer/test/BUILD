@@ -9,3 +9,13 @@ java_test(
     size = "small",
     deps = [":ExaStackTraceCleaner"]
 )
+
+
+cc_test(
+    name = "javacontainer-test",
+    srcs = ["cpp/javacontainer_test.cc"],
+    deps = [
+        "//javacontainer:javacontainer",
+        "@googletest//:gtest_main",
+    ],
+)
