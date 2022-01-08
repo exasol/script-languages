@@ -18,4 +18,5 @@ cc_test(
         "//javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
+    data = ["test.jar"]
 )
