@@ -25,7 +25,11 @@ jobs:
             rm "$BAZEL_PACKAGE_FILE" && \
             sudo apt-get -y clean && \
             sudo apt-get -y autoremove
-
+    - name: Install JDK
+      run: |
+        sudo apt-get install -y openjdk-11-jdk
+        sudo apt-get -y clean && \
+        sudo apt-get -y autoremove
     - name: Test
       run: |
         bazel test //javacontainer/test/...
