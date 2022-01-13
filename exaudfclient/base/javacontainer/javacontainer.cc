@@ -77,7 +77,10 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
     DBG_FUNC_CALL(cerr,setClasspath());
     DBG_FUNC_CALL(cerr,addExternalJarPaths());
     m_needsCompilation = checkNeedsCompilation();
-    addLocalClasspath();
+    if (m_needsCompilation) {
+        DBG_FUNC_CALL(cerr,addPackageToScript());
+        DBG_FUNC_CALL(cerr,addLocalClasspath());
+    }
     DBG_FUNC_CALL(cerr,setJvmOptions());
     if(false == noJNI) {
         DBG_FUNC_CALL(cerr,createJvm());
@@ -486,9 +489,7 @@ void JavaVMImpl::setClasspath() {
 }
 
 void JavaVMImpl::addLocalClasspath() {
-    if (m_needsCompilation) {
-        m_classpath = m_localClasspath + ":" + m_classpath;
-    }
+    m_classpath = m_localClasspath + ":" + m_classpath;
 }
 
 bool JavaVMImpl::checkNeedsCompilation() {

@@ -40,7 +40,8 @@ TEST(JavaContainer, basic_inline) {
     JavaVMTest vm(script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
-    EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, script_code);
+    const std::string expected_script_code = std::string("package com.exasol;\r\n") + script_code;
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, expected_script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/javacontainer/libexaudf.jar");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/tmp:/exaudf/javacontainer/libexaudf.jar");
     const std::vector<std::string> expectedJarPaths;
