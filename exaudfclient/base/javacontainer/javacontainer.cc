@@ -67,20 +67,24 @@ const char* JavaVMach::singleCall(single_call_function_id_e fn, const ExecutionG
 }
 
 JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"), // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
-                                        m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL) {
+                                        m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL), m_needsCompilation(true) {
 
     stringstream ss;
     m_exaJavaPath = "/exaudf/javacontainer"; // TODO hardcoded path
-    DBG_FUNC_CALL(cerr,setClasspath());
     DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
     DBG_FUNC_CALL(cerr,importScripts());
-    DBG_FUNC_CALL(cerr,addExternalJarPaths());
     DBG_FUNC_CALL(cerr,getExternalJvmOptions());
+    DBG_FUNC_CALL(cerr,setClasspath());
+    DBG_FUNC_CALL(cerr,addExternalJarPaths());
+    m_needsCompilation = checkNeedsCompilation();
+    addLocalClasspath();
     DBG_FUNC_CALL(cerr,setJvmOptions());
     if(false == noJNI) {
         DBG_FUNC_CALL(cerr,createJvm());
         DBG_FUNC_CALL(cerr,registerFunctions());
-        DBG_FUNC_CALL(cerr,compileScript());
+        if (m_needsCompilation) {
+            DBG_FUNC_CALL(cerr,compileScript());
+        }
     }
 }
 
@@ -479,6 +483,19 @@ void JavaVMImpl::registerFunctions() {
 void JavaVMImpl::setClasspath() {
     m_exaJarPath = m_exaJavaPath + "/libexaudf.jar";
     m_classpath = m_exaJarPath;
+}
+
+void JavaVMImpl::addLocalClasspath() {
+    if (m_needsCompilation) {
+        m_classpath = m_localClasspath + ":" + m_classpath;
+    }
+}
+
+bool JavaVMImpl::checkNeedsCompilation() {
+    std::string trimmedScriptCode = m_scriptCode;
+    trimmedScriptCode.erase(0, trimmedScriptCode.find_first_not_of("\t\n\r ")); // left trim
+    trimmedScriptCode.erase(trimmedScriptCode.find_last_not_of("\t\n\r ") + 1); // right trim
+    return false == trimmedScriptCode.empty();
 }
 
 vector<unsigned char> JavaVMImpl::scriptToMd5(const char *script) {

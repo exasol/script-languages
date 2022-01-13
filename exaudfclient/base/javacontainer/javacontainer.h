@@ -22,6 +22,8 @@ class SWIGVMContainers::JavaVMImpl {
         void compileScript();
         bool check(const std::string& errorCode, std::string& calledUndefinedSingleCall); // returns 0 if the check failed
         void registerFunctions();
+        void addLocalClasspath();
+        bool checkNeedsCompilation();
         void setClasspath();
         void throwException(const char *message);
         void throwException(const std::exception& ex);
@@ -46,4 +48,5 @@ class SWIGVMContainers::JavaVMImpl {
         std::vector<std::string> m_jvmOptions;
         JavaVM *m_jvm;
         JNIEnv *m_env;
+        bool m_needsCompilation;
 };

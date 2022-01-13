@@ -11,7 +11,8 @@ struct JavaVMInternalStatus {
     std::string m_scriptCode;
     std::string m_exaJarPath;
     std::string m_classpath;
-    std::set<std::string> m_jarPaths;
+    bool m_needsCompilation;
+    std::vector<std::string> m_jarPaths;
     std::vector<std::string> m_jvmOptions;
 };
 
