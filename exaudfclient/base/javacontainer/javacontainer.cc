@@ -279,9 +279,6 @@ void JavaVMImpl::compileScript() {
         throwException("F-UDF-CL-SL-JAVA-1036: GetStaticMethodID for compile failed");
     m_env->CallStaticVoidMethod(cls, mid, classnameStr, codeStr, classpathStr);
     check("F-UDF-CL-SL-JAVA-1037",calledUndefinedSingleCall);
-//    } else {
-//        DBGMSG(std::cout, "Skipping compilation of script.");
-//    }
 }
 
 void JavaVMImpl::addExternalJarPaths() {
