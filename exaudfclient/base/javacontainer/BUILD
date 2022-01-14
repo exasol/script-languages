@@ -102,7 +102,7 @@ cc_library(
 
 cc_library(
     name = "javacontainer",
-    srcs = [":javacontainer.cc", ":dummy"],
+    srcs = [":javacontainer.cc", ":javacontainer.h", ":dummy"],
     hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h"],
     deps = ["@ssl//:ssl","@java//:java", ":exascript_java", "//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"],
 #    copts= ["-O0","-fno-lto"],

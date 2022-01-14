@@ -1,28 +1,34 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 skylib_version = "0.8.0"
+
 http_archive(
     name = "bazel_skylib",
-    type = "tar.gz",
-    url = "https://github.com/bazelbuild/bazel-skylib/releases/download/{}/bazel-skylib.{}.tar.gz".format (skylib_version, skylib_version),
     sha256 = "2ef429f5d7ce7111263289644d233707dba35e39696377ebab8b0bc701f7818e",
+    type = "tar.gz",
+    url = "https://github.com/bazelbuild/bazel-skylib/releases/download/{}/bazel-skylib.{}.tar.gz".format(skylib_version, skylib_version),
 )
 
 load("//:python_repository.bzl", "python_local_repository")
+
 python_local_repository(name = "python3")
+
 python_local_repository(name = "python2")
 
 load("//:python_repository.bzl", "numpy_local_repository")
+
 numpy_local_repository(name = "numpy")
 
 load("//:java_repository.bzl", "java_local_repository")
+
 java_local_repository(name = "java")
 
 load("//:protobuf_repository.bzl", "protobuf_local_repository")
+
 protobuf_local_repository(name = "protobuf")
 
 new_local_repository(
     name = "zmq",
-    path = "/",
     build_file_content = """
 cc_library(
     name = "zmqlib",
@@ -31,12 +37,12 @@ cc_library(
     includes = ["usr/include/"],
     visibility = ["//visibility:public"]
 )
-    """
+    """,
+    path = "/",
 )
 
 new_local_repository(
     name = "ssl",
-    path = "/",
     build_file_content = """
 cc_library(
     name = "ssl",
@@ -45,5 +51,14 @@ cc_library(
     includes = ["usr/include/openssl"],
     visibility = ["//visibility:public"]
 )
-    """
+    """,
+    path = "/",
+)
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "googletest",
+    remote = "https://github.com/google/googletest",
+    tag = "release-1.11.0",
 )

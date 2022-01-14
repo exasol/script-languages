@@ -25,7 +25,11 @@ jobs:
             rm "$BAZEL_PACKAGE_FILE" && \
             sudo apt-get -y clean && \
             sudo apt-get -y autoremove
-
+    - name: Install JDK and ZMQ
+      run: |
+        sudo apt-get install -y openjdk-11-jdk libzmq3-dev
+        sudo apt-get -y clean && \
+        sudo apt-get -y autoremove
     - name: Test
       run: |
         bazel test //javacontainer/test/...

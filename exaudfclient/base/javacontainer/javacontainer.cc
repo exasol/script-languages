@@ -10,52 +10,14 @@
 
 #include "debug_message.h"
 #include "exaudflib/scriptoptionlines.h"
+#include "javacontainer/javacontainer.h"
 
 using namespace SWIGVMContainers;
 using namespace std;
 
-class SWIGVMContainers::JavaVMImpl {
-    public:
-        JavaVMImpl(bool checkOnly);
-        ~JavaVMImpl() {}
-        void shutdown();
-        bool run();
-        const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall);
-    private:
-        void createJvm();
-        void addPackageToScript();
-        void compileScript();
-        bool check(const string& errorCode, string& calledUndefinedSingleCall); // returns 0 if the check failed
-        void registerFunctions();
-        void setClasspath();
-        void throwException(const char *message);
-        void throwException(const std::exception& ex);
-        void throwException(const std::string& ex);
-        //void throwException(swig_undefined_single_call_exception& ex);
-        void importScripts();
-        void addExternalJarPaths();
-        void getExternalJvmOptions();
-        void getScriptClassName();
-        void setJvmOptions();
-        void addJarToClasspath(const string& path);
-        vector<unsigned char> scriptToMd5(const char *script);
-        bool m_checkOnly;
-        string m_exaJavaPath;
-        string m_localClasspath;
-        string m_scriptCode;
-        string m_exaJarPath;
-        string m_classpath;
-        set<string> m_jarPaths;
-        set< vector<unsigned char> > m_importedScriptChecksums;
-        bool m_exceptionThrown;
-        vector<string> m_jvmOptions;
-        JavaVM *m_jvm;
-        JNIEnv *m_env;
-};
-
 JavaVMach::JavaVMach(bool checkOnly) {
     try {
-        m_impl = new JavaVMImpl(checkOnly);
+        m_impl = new JavaVMImpl(checkOnly, false);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF-CL-SL-JAVA-1000: "+std::string(err.what());
@@ -104,21 +66,29 @@ const char* JavaVMach::singleCall(single_call_function_id_e fn, const ExecutionG
     return strdup("<this is an error>");
 }
 
-JavaVMImpl::JavaVMImpl(bool checkOnly): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"), // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
-                                        m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL) {
+JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"), // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
+                                        m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL), m_needsCompilation(true) {
 
     stringstream ss;
     m_exaJavaPath = "/exaudf/javacontainer"; // TODO hardcoded path
-    DBG_FUNC_CALL(cerr,setClasspath());
     DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
     DBG_FUNC_CALL(cerr,importScripts());
-    DBG_FUNC_CALL(cerr,addPackageToScript());
-    DBG_FUNC_CALL(cerr,addExternalJarPaths());
     DBG_FUNC_CALL(cerr,getExternalJvmOptions());
+    DBG_FUNC_CALL(cerr,setClasspath());
+    DBG_FUNC_CALL(cerr,addExternalJarPaths());
+    m_needsCompilation = checkNeedsCompilation();
+    if (m_needsCompilation) {
+        DBG_FUNC_CALL(cerr,addPackageToScript());
+        DBG_FUNC_CALL(cerr,addLocalClasspath());
+    }
     DBG_FUNC_CALL(cerr,setJvmOptions());
-    DBG_FUNC_CALL(cerr,createJvm());
-    DBG_FUNC_CALL(cerr,registerFunctions());
-    DBG_FUNC_CALL(cerr,compileScript());
+    if(false == noJNI) {
+        DBG_FUNC_CALL(cerr,createJvm());
+        DBG_FUNC_CALL(cerr,registerFunctions());
+        if (m_needsCompilation) {
+            DBG_FUNC_CALL(cerr,compileScript());
+        }
+    }
 }
 
 void JavaVMImpl::shutdown() {
@@ -512,7 +482,18 @@ void JavaVMImpl::registerFunctions() {
 
 void JavaVMImpl::setClasspath() {
     m_exaJarPath = m_exaJavaPath + "/libexaudf.jar";
-    m_classpath = m_localClasspath + ":" + m_exaJarPath;
+    m_classpath = m_exaJarPath;
+}
+
+void JavaVMImpl::addLocalClasspath() {
+    m_classpath = m_localClasspath + ":" + m_classpath;
+}
+
+bool JavaVMImpl::checkNeedsCompilation() {
+    std::string trimmedScriptCode = m_scriptCode;
+    trimmedScriptCode.erase(0, trimmedScriptCode.find_first_not_of("\t\n\r ")); // left trim
+    trimmedScriptCode.erase(trimmedScriptCode.find_last_not_of("\t\n\r ") + 1); // right trim
+    return false == trimmedScriptCode.empty();
 }
 
 vector<unsigned char> JavaVMImpl::scriptToMd5(const char *script) {
