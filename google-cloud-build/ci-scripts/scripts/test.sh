@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 FLAVOR=$1
 LOG_MESSAGE=$(git log --oneline -1)
-if [[ "$LOG_MESSAGE" =~ [skip\ tests] ]]
+if [[ "$LOG_MESSAGE" =~ \[skip\ tests\] ]]
 then
   echo "Found [skip tests] in \"$LOG_MESSAGE\". Going to skip tests."
 else
