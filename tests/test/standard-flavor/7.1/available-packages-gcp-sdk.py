@@ -28,29 +28,23 @@ class AvailablePythonPackages(udf.TestCase):
         ]
 
     @useData(data)
-    def test_package_import(self, pkg, fail=False, alternative=None):
+    def test_package_import(self, pkg):
         sql=udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT available_packages.test_import_of_package() returns VARCHAR(2000000) AS
             
-            %s
-            def run(ctx): return 1
+            def run(ctx):
+                import traceback
+                try:
+                    %s
+                    return None
+                except Exception as e:
+                    return traceback.format_exc()
             /
             ''' % (pkg))
         print(sql)
         self.query(sql)
-        try:
-            rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
-            if not fail:
-                self.assertRowsEqual([(1,)], rows)
-            else:
-                assert 'Expected Failure' == 'not found'
-        except:
-            if fail:
-                return
-            if alternative:
-                self.import_test(alternative,fail)
-            else:
-                raise
+        rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
+        self.assertRowsEqual([(None,)], rows)
 
 
 if __name__ == '__main__':
