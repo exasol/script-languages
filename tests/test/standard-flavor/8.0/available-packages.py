@@ -2,22 +2,52 @@
 
 
 from exasol_python_test_framework import udf
-from exasol_python_test_framework.exatest.testcase import useData
 
-
-class AvailablePythonPackages(udf.TestCase):
+class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
         self.query('create schema available_packages', ignore_errors=True)
 
     data = [
-            ("pybase64",),
+            ("cffi",),
+            ("cryptography",),
+            ("enum",),
+            ("idna",),
+            ("ipaddress",),
+            ("jinja2",),
+            ("martian",),
+            ("google.protobuf",),
+            ("pyasn1",),
+            ("pyftpdlib",),
+            ("pyodbc",),
+            ("OpenSSL",),
+            ("ldap",),
+            ("roman",),
+            ("sklearn",),
+            ("ujson",),
+            ("lxml",),
+            ("numpy",),
+            ("setuptools",),
+            ("pandas",),
+            ("redis",),
+            ("scipy",),
+            ("boto3",),
+            ("pycurl",),
+            ("requests",),
+            ("pyexasol",),
+            ("EXASOL",),
+            ("paramiko",),
+            ("pysftp",),
+            ("simplejson",),
             ("simdjson",),
-            ("numba",),
-            ("pyarrow",),
-            ("bitarray",),
-            ("pybloomfilter",),
-            ("bitsets",),
+            ("pybase64",),
+            ("xgboost",),
+            ("exasol_bucketfs_utils_python",),
             ("yaml",),
+            ("bitsets",),
+            ("pybloomfilter",),
+            ("bitarray",),
+            ("pyarrow",),
+            ('unknown_package',True,),
         ]
 
     @useData(data)
@@ -45,6 +75,83 @@ class AvailablePythonPackages(udf.TestCase):
             else:
                 raise
 
+class AvailableRPackages(udf.TestCase):
+    def setUp(self): 
+        self.query('create schema available_packages', ignore_errors=True)
+
+    data = [
+            ("cffi",),
+            ("acepack",),
+            ("BradleyTerry2",),
+            ("brglm",),
+            ("caret",),
+            ("chron",),
+            ("data.table",),
+            ("digest",),
+            ("e1071",),
+            ("fastcluster",),
+            ("flashClust",),
+            ("foreach",),
+            ("Formula",),
+            ("gbm",),
+            ("gtools",),
+            ("htmltools",),
+            ("iterators",),
+            ("lme4",),
+            ("magrittr",),
+            ("minqa",),
+            ("nloptr",),
+            ("plyr",),
+            ("profileModel",),
+            ("proto",),
+            ("randomForest",),
+            ("Rcpp",),
+            ("RcppEigen",),
+            ("RCurl",),
+            ("reshape2",),
+            ("RODBC",),
+            ("redux",),
+            ("scales",),
+            ("stringr",),
+            ("XML",),
+            ("dplyr",),
+            ("jsonlite",),
+            ("purrr",),
+            ("rjson",),
+            ("tidyr",),
+            ("tibble",),
+            ("yaml",),
+            ("httr",),
+            ("glue",),
+            ("oysteR",),
+            ("SparseM",),
+            ("caretEnsemble",),
+            ('unknown_package',True,),
+        ]
+
+    @useData(data)
+    def test_package_import(self, pkg, fail=False, alternative=None):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE R SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
+            library(%s)
+            run <- function(ctx) { return(1) }
+            /
+            ''' % (pkg)))
+        try:
+            rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
+            if not fail:
+                self.assertRowsEqual([(1,)], rows)
+            else:
+                assert 'Expected Failure' == 'not found'
+        except:
+            if fail:
+                return
+            if alternative:
+                self.import_test(alternative,fail)
+            else:
+                raise
+
 
 if __name__ == '__main__':
     udf.main()
+
