@@ -6,6 +6,7 @@ set -o pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
+# shellcheck source=./ext/scripts/tests/install_scripts/assert.sh
 source "$SCRIPT_DIR/assert.sh"
 
 PATH_TO_INSTALL_SCRIPTS="$SCRIPT_DIR/../../install_scripts"
