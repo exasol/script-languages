@@ -2,6 +2,7 @@
 
 
 from exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest.testcase import useData
 
 class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
@@ -47,7 +48,6 @@ class AvailablePython3Packages(udf.TestCase):
             ("pybloomfilter",),
             ("bitarray",),
             ("pyarrow",),
-            ('unknown_package',True,),
         ]
 
     @useData(data)
@@ -80,7 +80,6 @@ class AvailableRPackages(udf.TestCase):
         self.query('create schema available_packages', ignore_errors=True)
 
     data = [
-            ("cffi",),
             ("acepack",),
             ("BradleyTerry2",),
             ("brglm",),
@@ -126,7 +125,6 @@ class AvailableRPackages(udf.TestCase):
             ("oysteR",),
             ("SparseM",),
             ("caretEnsemble",),
-            ('unknown_package',True,),
         ]
 
     @useData(data)
