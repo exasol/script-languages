@@ -44,6 +44,7 @@ class AvailablePythonPackages(udf.TestCase):
         print(sql)
         self.query(sql)
         rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
+        print(rows)
         self.assertRowsEqual([(None,)], rows)
 
 
