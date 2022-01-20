@@ -1,6 +1,7 @@
 import sys
 import os
 isPython3 = False
+pyextdataframe_imported = False
 
 if sys.version_info[0] == 3:
     unicode = str
@@ -22,7 +23,6 @@ if isPython3:
         #print("sys.path append",path_to_pyexadataframe)
         sys.path.append(path_to_pyexadataframe)
 
-pyextdataframe_imported = False
 
 
 class exaiter(object):
@@ -123,6 +123,7 @@ class exaiter(object):
                 DATE: "datetime.date",
                 TIMESTAMP: "datetime.datetime" }
         if len(output) == 1 and output[0].__class__.__name__ == 'DataFrame':
+            global pyextdataframe_imported
             if not pyextdataframe_imported:
                 import pyextdataframe
                 pyextdataframe_imported = True
@@ -211,6 +212,7 @@ class exaiter(object):
             self.__finished = True
         return val
     def get_dataframe(self, num_rows=1, start_col=0):
+        global pyextdataframe_imported
         if not pyextdataframe_imported:
             import pyextdataframe
             pyextdataframe_imported = True
