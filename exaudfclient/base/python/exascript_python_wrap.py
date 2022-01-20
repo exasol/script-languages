@@ -234,7 +234,7 @@ class exaiter(object):
             self.__dataframe_finished = True
             return None
         self.__cache = [None] * len(self.__cache)
-        df = pyextdataframe.get_dataframe(self, num_rows, start_col)
+        df = pyextdataframe_pkg.get_dataframe(self, num_rows, start_col)
         return df 
     def reset(self):
         self.__dataframe_finished = False
