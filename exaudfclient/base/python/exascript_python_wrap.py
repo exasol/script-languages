@@ -21,8 +21,8 @@ if isPython3:
         path_to_pyexadataframe="/exaudf/python/python3"
         #print("sys.path append",path_to_pyexadataframe)
         sys.path.append(path_to_pyexadataframe)
-    import pyextdataframe
 
+pyextdataframe_imported = False
 
 
 class exaiter(object):
@@ -123,7 +123,9 @@ class exaiter(object):
                 DATE: "datetime.date",
                 TIMESTAMP: "datetime.datetime" }
         if len(output) == 1 and output[0].__class__.__name__ == 'DataFrame':
-            import pandas as pd
+            if not pyextdataframe_imported:
+                import pyextdataframe
+                pyextdataframe_imported = True
             v = output[0]
             if v.shape[0] == 0:
                 raise RuntimeError("E-UDF-CL-SL-PYTHON-1087: emit DataFrame is empty")
@@ -209,7 +211,10 @@ class exaiter(object):
             self.__finished = True
         return val
     def get_dataframe(self, num_rows=1, start_col=0):
-        import pandas
+        if not pyextdataframe_imported:
+            import pyextdataframe
+            pyextdataframe_imported = True
+
         if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
             raise RuntimeError("E-UDF-CL-SL-PYTHON-1103: get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
         if (type(start_col) not in (int, long) or start_col < 0):
