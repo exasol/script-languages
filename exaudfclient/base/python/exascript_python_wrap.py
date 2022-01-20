@@ -1,7 +1,7 @@
 import sys
 import os
 isPython3 = False
-pyextdataframe_imported = False
+pyextdataframe_pkg = None
 
 if sys.version_info[0] == 3:
     unicode = str
@@ -123,17 +123,18 @@ class exaiter(object):
                 DATE: "datetime.date",
                 TIMESTAMP: "datetime.datetime" }
         if len(output) == 1 and output[0].__class__.__name__ == 'DataFrame':
-            global pyextdataframe_imported
-            if not pyextdataframe_imported:
+            global pyextdataframe_pkg
+            if pyextdataframe_pkg is None:
                 import pyextdataframe
-                pyextdataframe_imported = True
+                pyextdataframe_pkg = pyextdataframe
+
             v = output[0]
             if v.shape[0] == 0:
                 raise RuntimeError("E-UDF-CL-SL-PYTHON-1087: emit DataFrame is empty")
             if v.shape[1] != len(self.__outcoltypes):
                 exp_num_out = len(self.__outcoltypes)
                 raise TypeError("E-UDF-CL-SL-PYTHON-1088: emit() takes exactly %d argument%s (%d given)" % (exp_num_out, 's' if exp_num_out > 1 else '', v.shape[1]))
-            pyextdataframe.emit_dataframe(self, v)
+            pyextdataframe_pkg.emit_dataframe(self, v)
             return
         if len(output) != len(self.__outcoltypes):
             if len(self.__outcoltypes) > 1:
@@ -212,10 +213,10 @@ class exaiter(object):
             self.__finished = True
         return val
     def get_dataframe(self, num_rows=1, start_col=0):
-        global pyextdataframe_imported
-        if not pyextdataframe_imported:
+        global pyextdataframe_pkg
+        if pyextdataframe_pkg is None:
             import pyextdataframe
-            pyextdataframe_imported = True
+            pyextdataframe_pkg = pyextdataframe
 
         if not (num_rows == "all" or (type(num_rows) in (int, long) and num_rows > 0)):
             raise RuntimeError("E-UDF-CL-SL-PYTHON-1103: get_dataframe() parameter 'num_rows' must be 'all' or an integer > 0")
