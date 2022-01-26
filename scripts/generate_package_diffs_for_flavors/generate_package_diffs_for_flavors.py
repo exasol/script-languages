@@ -263,6 +263,7 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
                 diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
                                        relative_flavor_path, working_copy_2_root, working_copy_2_name)
             else:
+               # This is useful for new flavors to compare them to flavors they are based on. However, new flavors might have a different set of build steps, such that we need to compare specific build_steps.
                 print(f"Please enter the path to the flavor to which we should compare '{relative_flavor_path}':")
                 relative_flavor_path_2 = Path(input())
                 if Path(working_copy_2_root).joinpath(relative_flavor_path_2).exists():
