@@ -47,6 +47,7 @@ class AvailablePython3Packages(udf.TestCase):
             ("pybloomfilter",),
             ("bitarray",),
             ("pyarrow",),
+            ("smbc",),
         ]
 
     @useData(data)
