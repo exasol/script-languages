@@ -258,11 +258,22 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
     for flavor_path in Path(working_copy_1_root, "flavors").iterdir():
         if flavor_path.is_dir():
             relative_flavor_path = flavor_path.relative_to(working_copy_1_root)
-            diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
-                                   relative_flavor_path, working_copy_2_root, working_copy_2_name)
+            relative_flavor_path_2 = relative_flavor_path
+            if Path(working_copy_2_root).joinpath(relative_flavor_path).exists():
+                diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
+                                       relative_flavor_path, working_copy_2_root, working_copy_2_name)
+            else:
+               # This is useful for new flavors to compare them to flavors they are based on. However, new flavors might have a different set of build steps, such that we need to compare specific build_steps.
+                print(f"Please enter the path to the flavor to which we should compare '{relative_flavor_path}':")
+                relative_flavor_path_2 = Path(input())
+                if Path(working_copy_2_root).joinpath(relative_flavor_path_2).exists():
+                    diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
+                                           relative_flavor_path_2, working_copy_2_root, working_copy_2_name)
+                else:
+                    raise Exception(f"Could not find flavor {relative_flavor_path_2}")
             if len(diffs) > 0:
-                flavor_1 = flavor_path.name
-                flavor_2 = flavor_path.name
+                flavor_1 = relative_flavor_path.name
+                flavor_2 = relative_flavor_path_2.name
                 if flavor_1 == flavor_2:
                     flavor_relative_output_directory = Path(flavor_1)
                 else:
@@ -282,17 +293,39 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
 @click.option('--current-working-copy-name', required=True, help="Name of the current git working copy. "
                                                                  "For example, the version of a new release.",
               type=str)
-def main(output_directory:str, current_working_copy_name:str):
+@click.option(
+        '--build-step-path-1', required=False, 
+        help="If this is set we only compare this build step with --build-step-path-2.",
+            type=click.Path(exists=True))
+@click.option(
+        '--build-step-path-2', required=False, 
+        help="If this is set we only compare this build step with --build-step-path-1.",
+        type=click.Path(exists=True))
+def main(output_directory:str, current_working_copy_name:str, build_step_path_1:str, build_step_path_2:str):
     last_tag = get_last_git_tag()
     with TemporaryDirectory() as working_copy_2_root:
         checkout_git_tag_as_worktree(working_copy_2_root, last_tag)
         working_copy_root = Path(".")
         working_copy_1_name = current_working_copy_name
         working_copy_2_name = last_tag
-        generate_dependency_diff_report_for_all_flavors(working_copy_root, working_copy_1_name,
-                                                        working_copy_2_root, working_copy_2_name,
-                                                        Path(output_directory))
-
+        if build_step_path_1 is None and build_step_path_2 is None:
+            generate_dependency_diff_report_for_all_flavors(working_copy_root, working_copy_1_name,
+                                                            working_copy_2_root, working_copy_2_name,
+                                                            Path(output_directory))
+        else:
+            if build_step_path_2 is None or build_step_path_2 is None:
+                raise Exception("You need to specifiy --build-step-path-1 and --build-step-path-2.")
+            else:
+                diffs = compare_build_step(
+                            Path(build_step_path_1), Path(working_copy_root), working_copy_1_name,
+                            Path(build_step_path_2), Path(working_copy_2_root), working_copy_2_name
+                        )
+                relative_output_directory = "__".join(Path(build_step_path_1,build_step_path_2,).parts)
+                result = generate_dependency_diff_report_for_build_step(
+                    (Path(build_step_path_1).name,Path(build_step_path_2).name),
+                    diffs,
+                    Path(output_directory),
+                    relative_output_directory)
 
 if __name__ == '__main__':
     main()
