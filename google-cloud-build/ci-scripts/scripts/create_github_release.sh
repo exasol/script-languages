@@ -9,15 +9,12 @@ then
   TAG_NAME="ci/${COMMIT:0:10}"
 fi
 BUILD_DIR=.build_output/cache/exports
-ls -la "$BUILD_DIR"
 find "$BUILD_DIR" -type f -size +1900M -print0 | xargs -0 rm
-ls -la "$BUILD_DIR"
 EXPORTED_CONTAINERS="$BUILD_DIR/*.tar.gz*"
-echo EXPORTED_CONTAINERS: "$EXPORTED_CONTAINERS"
 GITHUB_USER="$3"
 GITHUB_TOKEN="$(cat secrets/GITHUB_TOKEN)"
 GITHUB_REPOSITORY="$4"
-#Disable shellcheck verification as we need word splitting here
+#Disable shellcheck verification as we need word splitting here for EXPORTED_CONTAINERS
 #shellcheck disable=SC2086
 github-release "$TAG_NAME" $EXPORTED_CONTAINERS --commit "$COMMIT" \
                                      --tag "$TAG_NAME" \
