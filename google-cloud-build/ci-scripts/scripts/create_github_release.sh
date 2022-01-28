@@ -17,7 +17,9 @@ echo EXPORTED_CONTAINERS: "$EXPORTED_CONTAINERS"
 GITHUB_USER="$3"
 GITHUB_TOKEN="$(cat secrets/GITHUB_TOKEN)"
 GITHUB_REPOSITORY="$4"
-github-release "$TAG_NAME" "$EXPORTED_CONTAINERS" --commit "$COMMIT" \
+#Disable shellcheck verification as we need word splitting here
+#shellcheck disable=SC2086
+github-release "$TAG_NAME" $EXPORTED_CONTAINERS --commit "$COMMIT" \
                                      --tag "$TAG_NAME" \
                                      --draft \
                                      --github-repository "$GITHUB_USER/$GITHUB_REPOSITORY" \
