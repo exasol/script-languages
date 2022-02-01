@@ -3,8 +3,7 @@ audit <- audit_installed_r_pkgs()
 
 install.packages("knitr")
 
-library(tidyr)
-audit_vuln <- drop_na(audit, vulnerabilities)
+audit_vuln <- audit[audit$no_of_vulnerabilities > 0,]
 
 library(jsonlite)
 args = commandArgs(trailingOnly=TRUE)
@@ -20,7 +19,7 @@ if(n_vulnerabilities > 0) {
     library(knitr)
     write(kable(audit_vuln), paste0(args[1], "/oyster.md"))
     kable(audit_vuln, format="simple")
-    print(paste(n_vulnerabilities), "vulnerabilities found!")
+    print(paste(n_vulnerabilities, "vulnerabilities found!"))
 } else {
     write("No vulnerabilities found!", paste0(args[1], "/oyster.md"))
 }
