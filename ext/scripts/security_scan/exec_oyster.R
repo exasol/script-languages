@@ -3,8 +3,7 @@ audit <- audit_installed_r_pkgs()
 
 install.packages("knitr")
 
-library(tidyr)
-audit_vuln <- drop_na(audit, vulnerabilities)
+audit_vuln <- audit[audit$no_of_vulnerabilities > 0,]
 
 library(jsonlite)
 args = commandArgs(trailingOnly=TRUE)
