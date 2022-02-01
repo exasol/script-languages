@@ -19,7 +19,7 @@ if(n_vulnerabilities > 0) {
     library(knitr)
     write(kable(audit_vuln), paste0(args[1], "/oyster.md"))
     kable(audit_vuln, format="simple")
-    print(paste(n_vulnerabilities), "vulnerabilities found!")
+    print(paste(n_vulnerabilities, "vulnerabilities found!"))
 } else {
     write("No vulnerabilities found!", paste0(args[1], "/oyster.md"))
 }
