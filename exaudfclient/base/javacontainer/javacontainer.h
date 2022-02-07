@@ -1,5 +1,6 @@
-#ifndef JAVAVM_H
-#define JAVAVM_H
+#ifndef JAVACONTAINER_H
+#define JAVACONTAINER_H
+
 
 #include "exaudflib/vm/swig_vm.h"
 
@@ -22,7 +23,8 @@ class JavaVMach: public SWIGVM {
 
 } //namespace SWIGVMContainers
 
+
 #endif //ENABLE_JAVA_VM
 
 
-#endif //JAVAVM_H
+#endif //JAVACONTAINER_H
