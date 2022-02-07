@@ -9,5 +9,6 @@ RUN curl -s https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key a
 RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/security_scan/apt_get_packages
 
 ENV SECURITY_SCANNERS="trivy"
+COPY /security_scan/.trivyignore /.trivyignore
 
 ENTRYPOINT ["/scripts/security_scan/run.sh"]
