@@ -1,4 +1,4 @@
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/swig/swig_common.h"
 
 //Dummy implementation to calm down the linker
 void* load_dynamic(const char* name) {
