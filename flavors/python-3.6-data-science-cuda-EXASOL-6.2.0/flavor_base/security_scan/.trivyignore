@@ -467,3 +467,5 @@ CVE-2021-29601
 CVE-2021-29603
 CVE-2021-29606
 CVE-2021-43816
+#issue in cgroups, but no threat for ScriptLanguageContainer
+CVE-2022-0492
