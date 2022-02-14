@@ -11,3 +11,4 @@ emulator/zmqcontainer_pb2.py
 .build_output/
 luigi.cfg
 *.iml
+exaudfclient/base/file.txt
