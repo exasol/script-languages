@@ -1,4 +1,2 @@
 #bug in trivy, no idea when a new debian package will be released (https://github.com/aquasecurity/trivy/issues/1680)
 CVE-2021-43816
-#issue in cgroups, but no threat for ScriptLanguageContainer
-CVE-2022-0492
