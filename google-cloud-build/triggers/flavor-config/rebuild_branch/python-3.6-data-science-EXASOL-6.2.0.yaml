@@ -1,3 +1,0 @@
-flavor: "python-3.6-data-science-EXASOL-6.2.0"
-trigger_template_file: "build_branch.json.jinja2"
-build_mode: "rebuild"
