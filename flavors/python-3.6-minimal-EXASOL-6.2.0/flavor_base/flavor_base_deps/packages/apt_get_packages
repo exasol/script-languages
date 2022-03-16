@@ -5,5 +5,5 @@ wget|1.19.4-1ubuntu2.2
 git|1:2.17.1-1ubuntu0.9
 python3-tk|3.6.9-1~18.04
 libcurl4-openssl-dev|7.58.0-2ubuntu3.16
-libssl-dev|1.1.1-1ubuntu2.1~18.04.14
+libssl-dev|1.1.1-1ubuntu2.1~18.04.15
 build-essential|12.4ubuntu1
