@@ -7,8 +7,8 @@ if [[ "$LOG_MESSAGE" =~ \[skip\ tests\] ]]
 then
   echo "Found [skip tests] in \"$LOG_MESSAGE\". Going to skip tests."
 else
-  ./exaslct run-db-test --flavor-path "flavors/$FLAVOR"  --workers 7
-  ./exaslct run-db-test --flavor-path "flavors/$FLAVOR"  --workers 7 --test-folder test/linker_namespace_sanity --release-goal base_test_build_run
+  python3 -m exasol_script_languages_container_tool.main  run-db-test --flavor-path "flavors/$FLAVOR"  --workers 7
+  python3 -m exasol_script_languages_container_tool.main  run-db-test --flavor-path "flavors/$FLAVOR"  --workers 7 --test-folder test/linker_namespace_sanity --release-goal base_test_build_run
 echo
 echo "=========================================================="
 echo "Printing docker images"

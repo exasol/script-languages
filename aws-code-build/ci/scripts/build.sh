@@ -1,8 +1,7 @@
 #!/bin/bash
-set -o errexit
-set -o nounset
-set -o pipefail
+set -euo pipefail
 
+echo Step One
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 REBUILD=$2
 FLAVOR=$1
@@ -14,6 +13,7 @@ fi
 BUILD_PARAMETER="--no-shortcut-build"
 SYSTEM_PARAMETER="--workers 7"
 
+echo Step Two
 #shellcheck source=./google-cloud-build/ci-scripts/scripts/generate_source_target_docker_options.sh
 source "$SCRIPT_DIR/generate_source_target_docker_options.sh"
 
