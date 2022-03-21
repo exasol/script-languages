@@ -20,7 +20,7 @@ phases:
         - echo CODEBUILD_SOURCE_VERSION is $CODEBUILD_SOURCE_VERSION #supposed to be the SHA
         - echo CODEBUILD_WEBHOOK_HEAD_REF is $CODEBUILD_WEBHOOK_HEAD_REF #supposed to the branch name
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
-        - echo "$DOCKER_PASSWORD" > "secrets/DOCKER_PASSWORD"
+        - mkdir -p /secrets && echo "$DOCKER_PASSWORD" > "/secrets/DOCKER_PASSWORD"
   #      - bash aws-code-build/scripts/build_or_pull_build_container.sh $_BUILD_DOCKER_REPOSITORY $_DOCKER_USER
   build:
       commands:
