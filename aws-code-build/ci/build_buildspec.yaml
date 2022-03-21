@@ -31,5 +31,5 @@ artifacts:
       - 'security_scan/**/*'
   name: build_output_$(date +%Y-%m-%d-%Hh-%Mm-%Ss)
   base-directory: .build_output
-  s3-prefix: flavor_$_FLAVOR
+  s3-prefix: flavor_$FLAVOR
 
