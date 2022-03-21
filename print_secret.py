@@ -6,5 +6,5 @@ def print_secret(secret :str):
     print(f"Secret is: {secret}")
 
 
-for secrets in sys.argv[1:]:
+for secret in sys.argv[1:]:
     print_secret(secret)
