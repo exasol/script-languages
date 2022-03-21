@@ -7,7 +7,7 @@ batch:
       env:
         variables:
           FLAVOR: python-3.6-minimal-EXASOL-6.2.0
-          BUILD_DOCKER_REPOSITORY: exatk/script-languages-build-cache
+          BUILD_DOCKER_REPOSITORY: thomasuben/script-languages-build-cache
           RELEASE_DOCKER_REPOSITORY: exasol/script-language-container
       buildspec: aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
@@ -16,7 +16,7 @@ batch:
       env:
         variables:
           FLAVOR: python-3.6-data-science-cuda-EXASOL-6.2.0
-          BUILD_DOCKER_REPOSITORY: exatk/script-languages-build-cache
+          BUILD_DOCKER_REPOSITORY: thomasuben/script-languages-build-cache
           RELEASE_DOCKER_REPOSITORY: exasol/script-language-container
       buildspec: aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
@@ -25,7 +25,7 @@ batch:
       env:
         variables:
           FLAVOR: python-3.8-minimal-EXASOL-6.2.0
-          BUILD_DOCKER_REPOSITORY: exatk/script-languages-build-cache
+          BUILD_DOCKER_REPOSITORY: thomasuben/script-languages-build-cache
           RELEASE_DOCKER_REPOSITORY: exasol/script-language-container
       buildspec: aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
@@ -34,7 +34,7 @@ batch:
       env:
         variables:
           FLAVOR: python-3.7-minimal-EXASOL-6.2.0
-          BUILD_DOCKER_REPOSITORY: exatk/script-languages-build-cache
+          BUILD_DOCKER_REPOSITORY: thomasuben/script-languages-build-cache
           RELEASE_DOCKER_REPOSITORY: exasol/script-language-container
       buildspec: aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
