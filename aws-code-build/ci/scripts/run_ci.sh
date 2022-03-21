@@ -14,9 +14,6 @@ COMMIT_SHA=$6
 
 echo Running CI build for flavor: "$FLAVOR" , branch "$BRANCH_NAME" , with docker use "$DOCKER_USER" , build_docker_repository "$BUILD_DOCKER_REPOSITORY" , release_docker_repository "$RELEASE_DOCKER_REPOSITORY" , commit_sha "$COMMIT_SHA"
 
-test=$DOCKER_USER
-echo "TestBla: $test"
-
 REBUILD=False
 PUSH_TO_PUBLIC_CACHE=False
 
