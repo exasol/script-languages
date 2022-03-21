@@ -16,6 +16,7 @@ generate_source_target_docker_options "$SCRIPT_DIR" "$@"
 PUSH_PARAMETER="--push-all --force-push"
 SYSTEM_PARAMETER="--workers 7"
 
+
 COMMAND="python3 -m exasol_script_languages_container_tool.main push --flavor-path "flavors/$FLAVOR" $SOURCE_OPTIONS $TARGET_OPTIONS $PUSH_PARAMETER $SYSTEM_PARAMETER"
 echo "Executing Command: $COMMAND"
 bash -c "$COMMAND"
