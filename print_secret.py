@@ -1,4 +1,4 @@
-
+import sys
 
 def print_secret(secret :str):
     if secret == "***":
