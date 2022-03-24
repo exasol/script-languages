@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "script-languages"
+version = "0.1.0"
+description = "Script Languages"
+
+license = "MIT"
+
+authors = [
+    "Torsten Kilias <torsten.kilias@exasol.com>"
+]
+
+readme = 'README.md'  # Markdown files are supported
+
+repository = "https://github.com/exasol/script-languages"
+homepage = "https://github.com/exasol/script-languages"
+
+keywords = ['exasol', 'udf', 'script-languages']
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4"
+exasol-script-languages-container-tool = {git = "https://github.com/exasol/script-languages-container-tool.git", branch="feature/121_install_starter_scripts_via_python"}
+
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dev-dependencies]
+toml = ">=0.10.2"
