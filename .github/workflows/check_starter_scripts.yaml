@@ -18,5 +18,14 @@ jobs:
     - name: Init submodules
       run: git submodule update --init --recursive
 
+    - name: Install Poetry
+      uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: 1.1.6
+
+    - name: Install poetry
+      run:  poetry install
     - name: Run check_if_starter_scripts_are_up_to_date.sh
-      run: bash scripts/check_if_starter_scripts_are_up_to_date.sh
+      run: bash githooks/update_exaslct_starter_scripts.sh
+    - name: Check git status
+      run: bash scripts/check_git_status.sh
