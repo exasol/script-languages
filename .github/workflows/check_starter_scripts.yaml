@@ -1,4 +1,4 @@
-name: Check if submodules heads are ancestors of origin/master
+name: Check starter scripts
 
 on:
   push:
