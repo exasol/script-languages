@@ -102,7 +102,7 @@ exasol-integration-test-docker-environment = "0.9.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-tool.git"
 reference = "feature/121_install_starter_scripts_via_python"
-resolved_reference = "6cf457b62589f89991df178bb8be2ef8a883ee9d"
+resolved_reference = "fea31f21ce334981dcb3987c8482f78cd307e5ae"
 
 [[package]]
 name = "gitdb"
@@ -394,7 +394,7 @@ test = ["websockets"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4"
-content-hash = "1e2f49f5d48d1cbd8a017d510f32cdccca57b5dff52657248f42d26b883c6b20"
+content-hash = "8cc755c7a6f0958d409448df94c12a138da6c342416fc7e15a9c94d187c651f7"
 
 [metadata.files]
 certifi = [

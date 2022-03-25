@@ -1,0 +1,22 @@
+name: Check if submodules heads are ancestors of origin/master
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches: 
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Init submodules
+      run: git submodule update --init --recursive
+
+    - name: Run check_if_starter_scripts_are_up_to_date.sh
+      run: bash scripts/check_if_starter_scripts_are_up_to_date.sh
