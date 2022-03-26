@@ -1,12 +1,6 @@
 name: Test package management scripts
 
-on:
-  push:
-    branches:
-      - "*"
-  pull_request:
-    branches: 
-      - "*"
+on: [push, pull_request]
 
 jobs:
   test_package_management_scripts:

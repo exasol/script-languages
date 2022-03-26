@@ -22,7 +22,6 @@ You will find a script under ./aws-code-build/run_local/get.sh which runs the in
 
 
 
-
 ## AWS Run
 
 - AWS CodeBuild has registered a WebHook in [script-languages](https://github.com/exasol/script-languages) and [script-languages-release](https://github.com/exasol/script-languages-release), which will trigger AWS builds automatically

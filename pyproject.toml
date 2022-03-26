@@ -19,10 +19,9 @@ keywords = ['exasol', 'udf', 'script-languages']
 [tool.poetry.dependencies]
 python = ">=3.8,<4"
 exasol-script-languages-container-tool = {git = "https://github.com/exasol/script-languages-container-tool.git", branch="feature/121_install_starter_scripts_via_python"}
+script-languages-container-ci = {git = "https://github.com/exasol/script-languages-container-ci.git", branch="feature/1_add_initial_implementation_of_slc_ci_project"}
+script-languages-container-ci-setup = {git = "https://github.com/exasol/script-languages-container-ci-setup.git", branch="feature/1_implement_codebuild_deployment_and_buildspec_generation"}
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.dev-dependencies]
-toml = ">=0.10.2"
