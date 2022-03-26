@@ -1,0 +1,32 @@
+name: Check AWS buidlspec
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Init submodules
+      run: git submodule update --init --recursive
+
+    - name: Setup Python 3.8 for integration-test-docker-environment
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install Poetry
+      uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: 1.1.13
+
+    - name: Setup poetry env
+      run:  bash scripts/setup_poetry_env.sh "python3.8"
+
+    - name: Run check_if_starter_scripts_are_up_to_date.sh
+      run: bash githooks/update_aws_buildspec.sh
+
+    - name: Check git status
+      run: bash scripts/check_git_status.sh
