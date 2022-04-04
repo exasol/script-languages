@@ -1,8 +1,9 @@
 #bug in trivy, no idea when a new debian package will be released (https://github.com/aquasecurity/trivy/issues/1680)
 CVE-2021-43816
-#CVE-2022-0847, CVE-2022-0001, CVE-2022-0002 affect kernel, no issue for container
+#CVE-2022-0847, CVE-2022-0001, CVE-2022-0002, CVE-2022-1015 affect kernel, no issue for container
 CVE-2022-0847
 CVE-2022-0001
 CVE-2022-0002
+CVE-2022-1015
 #issue in cgroups, but no threat for ScriptLanguageContainer
 CVE-2022-0492
