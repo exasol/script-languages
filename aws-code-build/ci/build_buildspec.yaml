@@ -12,19 +12,19 @@ phases:
       python: 3.8
     commands:
       - git submodule update --init --recursive
-      - pip3 install --upgrade pip
-      - pip3 install "git+https://github.com/exasol/script-languages-container-ci.git@feature/1_add_initial_implementation_of_slc_ci_project"
+      - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+      - export PATH=$PATH:$HOME/.poetry/bin
+      - poetry env use $(command -v "python3.8")
+      - poetry install
 
   pre_build:
       commands:
         - echo CODEBUILD_SOURCE_VERSION is $CODEBUILD_SOURCE_VERSION #supposed to be the SHA
         - echo CODEBUILD_WEBHOOK_HEAD_REF is $CODEBUILD_WEBHOOK_HEAD_REF #supposed to the branch name
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
-        - mkdir -p /secrets && echo "$DOCKER_PASSWORD" > "/secrets/DOCKER_PASSWORD"
-  #      - bash aws-code-build/scripts/build_or_pull_build_container.sh $_BUILD_DOCKER_REPOSITORY $_DOCKER_USER
   build:
       commands:
-        - python3 -m script_languages_container_ci.main run_ci --flavor $FLAVOR --branch-name "$CODEBUILD_WEBHOOK_HEAD_REF" --docker-user "$DOCKER_USER" --docker-build-repository "$BUILD_DOCKER_REPOSITORY" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --commit-sha "$CODEBUILD_SOURCE_VERSION"
+        - poetry run python3 -m script_languages_container_ci.main run_ci --flavor $FLAVOR --branch-name "$CODEBUILD_WEBHOOK_HEAD_REF" --docker-user "$DOCKER_USER" --docker-build-repository "$BUILD_DOCKER_REPOSITORY" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --commit-sha "$CODEBUILD_SOURCE_VERSION" --config-file aws-code-build/build_config.json
 
 artifacts:
   files:
