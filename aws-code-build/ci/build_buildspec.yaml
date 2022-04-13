@@ -2,9 +2,9 @@ version: 0.2
 
 env:
   shell: bash
-    variables:
-      BUILD_DOCKER_REPOSITORY: "exatk/script-languages-build-cache"
-      RELEASE_DOCKER_REPOSITORY: "exasol/script-language-container"
+  variables:
+    BUILD_DOCKER_REPOSITORY: "exatk/script-languages-build-cache"
+    RELEASE_DOCKER_REPOSITORY: "exasol/script-language-container"
   secrets-manager:
     DOCKER_USER: "Dockerhub:User"
     DOCKER_PASSWORD: "Dockerhub:AccessToken"
