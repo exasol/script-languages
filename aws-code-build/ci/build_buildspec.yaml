@@ -2,6 +2,9 @@ version: 0.2
 
 env:
   shell: bash
+    variables:
+      BUILD_DOCKER_REPOSITORY: "exatk/script-languages-build-cache"
+      RELEASE_DOCKER_REPOSITORY: "exasol/script-language-container"
   secrets-manager:
     DOCKER_USER: "Dockerhub:User"
     DOCKER_PASSWORD: "Dockerhub:AccessToken"
@@ -24,7 +27,7 @@ phases:
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
   build:
       commands:
-        - poetry run python3 -m exasol_script_languages_container_ci.main run_ci --flavor $FLAVOR --branch-name "$CODEBUILD_WEBHOOK_HEAD_REF" --docker-user "$DOCKER_USER" --docker-build-repository "$BUILD_DOCKER_REPOSITORY" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --commit-sha "$CODEBUILD_SOURCE_VERSION" --config-file aws-code-build/build_config.json
+        - poetry run python3 -m exasol_script_languages_container_ci.main run-ci --flavor $FLAVOR --branch-name "$CODEBUILD_WEBHOOK_HEAD_REF" --docker-user "$DOCKER_USER" --docker-build-repository "$BUILD_DOCKER_REPOSITORY" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --commit-sha "$CODEBUILD_SOURCE_VERSION" --config-file aws-code-build/build_config.json
 
 artifacts:
   files:

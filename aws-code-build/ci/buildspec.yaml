@@ -3,6 +3,13 @@ version: 0.2
 batch:
   fast-fail: false
   build-graph:
+    - identifier: build_python_36_data_science_cuda_EXASOL_620
+      env:
+        variables:
+          FLAVOR: python-3.6-data-science-cuda-EXASOL-6.2.0
+      buildspec: ./aws-code-build/ci/build_buildspec.yaml
+      privileged-mode: true
+      type: BUILD_GENERAL1_MEDIUM
     - identifier: build_python_36_minimal_EXASOL_620
       env:
         variables:
@@ -14,13 +21,6 @@ batch:
       env:
         variables:
           FLAVOR: python-3.8-minimal-EXASOL-6.2.0
-      buildspec: ./aws-code-build/ci/build_buildspec.yaml
-      privileged-mode: true
-      type: BUILD_GENERAL1_MEDIUM
-    - identifier: build_python_36_data_science_cuda_EXASOL_620
-      env:
-        variables:
-          FLAVOR: python-3.6-data-science-cuda-EXASOL-6.2.0
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM
