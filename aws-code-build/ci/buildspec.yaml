@@ -10,10 +10,10 @@ batch:
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM
-    - identifier: build_python_36_minimal_EXASOL_620
+    - identifier: build_python_37_minimal_EXASOL_620
       env:
         variables:
-          FLAVOR: python-3.6-minimal-EXASOL-6.2.0
+          FLAVOR: python-3.7-minimal-EXASOL-6.2.0
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM
@@ -24,10 +24,10 @@ batch:
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM
-    - identifier: build_python_37_minimal_EXASOL_620
+    - identifier: build_python_36_minimal_EXASOL_620
       env:
         variables:
-          FLAVOR: python-3.7-minimal-EXASOL-6.2.0
+          FLAVOR: python-3.6-minimal-EXASOL-6.2.0
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM

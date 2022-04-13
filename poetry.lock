@@ -189,7 +189,7 @@ jsonschema = "^3.2.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "feature/1_implement_codebuild_deployment_and_buildspec_generation"
-resolved_reference = "f09c700287a55a087c385905a9d9aba9e25cdcce"
+resolved_reference = "0add58a82204371ef1a26ad2eb6c84a9f31ac849"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
