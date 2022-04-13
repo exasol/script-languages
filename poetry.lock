@@ -166,7 +166,7 @@ GitPython = ">=3.1.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci.git"
 reference = "feature/5_added_skipping_builds_for_unaffected_folders"
-resolved_reference = "5d079e9b75c7bcba4c6c8b095643d9ff9e1d7634"
+resolved_reference = "816abfce580c8218685933281f7cd7bae54028e8"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
