@@ -11,3 +11,5 @@ CVE-2022-25636
 CVE-2022-23648
 #issue in cgroups, but no threat for ScriptLanguageContainer
 CVE-2022-0492
+# CVE-2022-27191 is an issue in Go. Which will be installed only together with Trivy.
+CVE-2022-27191
