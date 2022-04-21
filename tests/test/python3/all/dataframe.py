@@ -938,6 +938,36 @@ class PandasDataFrame(udf.TestCase):
                 import numpy as np
                 import datetime
 
+                c1=np.empty(shape=(2),dtype=np.float32)
+
+                c1[:]=234.5
+
+                df=pd.DataFrame({0:c1})
+
+                ctx.emit(df)
+            /
+            ''')
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertRowsEqual(
+                [
+                    (234.5,),
+                    (234.5,)
+                ], rows)
+
+    def test_dataframe_set_emits_double_npfloat64_only(self):
+        import datetime
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts double) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                import datetime
+
                 c1=np.empty(shape=(2),dtype=np.float64)
 
                 c1[:]=234.5

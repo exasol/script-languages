@@ -1143,7 +1143,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                     }
                     case NPY_FLOAT32:
                     {
-                        handleEmitNpyFloat64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+                        handleEmitNpyFloat32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
                     case NPY_FLOAT16:
