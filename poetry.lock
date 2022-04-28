@@ -14,14 +14,14 @@ dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", 
 
 [[package]]
 name = "boto3"
-version = "1.21.40"
+version = "1.22.2"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.6"
 
 [package.dependencies]
-botocore = ">=1.24.40,<1.25.0"
+botocore = ">=1.25.2,<1.26.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.5.0,<0.6.0"
 
@@ -30,7 +30,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.24.40"
+version = "1.25.2"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -123,7 +123,7 @@ resolved_reference = "e21f181502b32f18d09660dde84cc20159c27b29"
 
 [[package]]
 name = "exasol-integration-test-docker-environment"
-version = "0.9.0"
+version = "0.10.0"
 description = "Integration Test Docker Environment for Exasol"
 category = "main"
 optional = false
@@ -146,8 +146,7 @@ simplejson = ">=3.16.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/exasol/integration-test-docker-environment/releases/download/0.9.0/exasol_integration_test_docker_environment-0.9.0-py3-none-any.whl"
-
+url = "https://github.com/exasol/integration-test-docker-environment/releases/download/0.10.0/exasol_integration_test_docker_environment-0.10.0-py3-none-any.whl"
 [[package]]
 name = "exasol-script-languages-container-ci"
 version = "0.1.0"
@@ -159,14 +158,15 @@ develop = false
 
 [package.dependencies]
 click = "^8.0.3"
-exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.10.0/exasol_script_languages_container_tool-0.10.0-py3-none-any.whl"}
+exasol-integration-test-docker-environment = {url = "https://github.com/exasol/integration-test-docker-environment/releases/download/0.10.0/exasol_integration_test_docker_environment-0.10.0-py3-none-any.whl"}
+exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.12.0/exasol_script_languages_container_tool-0.12.0-py3-none-any.whl"}
 GitPython = ">=3.1.0"
 
 [package.source]
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci.git"
 reference = "feature/5_added_skipping_builds_for_unaffected_folders"
-resolved_reference = "3aa2a9b56be50bd83d5812ba63e0acff33a73fe4"
+resolved_reference = "37da7a521f7b3640f79eb3ae3826bf042a8292c4"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
@@ -181,7 +181,7 @@ develop = false
 boto3 = "^1.21.34"
 click = "^8.0.3"
 exasol_error_reporting_python = {git = "https://github.com/exasol/error-reporting-python.git", branch = "main"}
-exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.10.0/exasol_script_languages_container_tool-0.10.0-py3-none-any.whl"}
+exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.12.0/exasol_script_languages_container_tool-0.12.0-py3-none-any.whl"}
 jinja2 = ">=3.0.0"
 jsonschema = "^3.2.0"
 
@@ -189,23 +189,23 @@ jsonschema = "^3.2.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "feature/1_implement_codebuild_deployment_and_buildspec_generation"
-resolved_reference = "ff7de3d9e8d76138e04d5b68cc3f8c9a72c7b26f"
+resolved_reference = "9b3c93a64b374c7b1ee8ce125997b8967a88a165"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
-version = "0.10.0"
+version = "0.12.0"
 description = "Script Languages Container Tool"
 category = "main"
 optional = false
 python-versions = ">=3.6,<4"
 
 [package.dependencies]
-exasol-integration-test-docker-environment = {url = "https://github.com/exasol/integration-test-docker-environment/releases/download/0.9.0/exasol_integration_test_docker_environment-0.9.0-py3-none-any.whl"}
+exasol-integration-test-docker-environment = {url = "https://github.com/exasol/integration-test-docker-environment/releases/download/0.10.0/exasol_integration_test_docker_environment-0.10.0-py3-none-any.whl"}
 importlib_metadata = ">=4.6.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.10.0/exasol_script_languages_container_tool-0.10.0-py3-none-any.whl"
+url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.12.0/exasol_script_languages_container_tool-0.12.0-py3-none-any.whl"
 [[package]]
 name = "gitdb"
 version = "4.0.9"
@@ -563,7 +563,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4"
-content-hash = "c8b98a7aeb4926ebe16c7104e25356ea6fd9fe355522a3a6e4c84408c5a9981b"
+content-hash = "a0f9b98070cc86c5fe07fd7c83db96a2bdad0fb3cf60b83f43b0a8f7ced04fe1"
 
 [metadata.files]
 attrs = [
@@ -571,12 +571,12 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 boto3 = [
-    {file = "boto3-1.21.40-py3-none-any.whl", hash = "sha256:f99417fb53d0af357eb91152b30686c40dd22381499bfab0d61830eee72d5a0b"},
-    {file = "boto3-1.21.40.tar.gz", hash = "sha256:03fe95333a51e3a14d7ab9644ae702f9feb008a4f5d308724eaa9ab8fd4c7d71"},
+    {file = "boto3-1.22.2-py3-none-any.whl", hash = "sha256:1d0c9cf30c5c93ce4628b22f7dff21f80efd104706967be2afb47ea93dcbceb8"},
+    {file = "boto3-1.22.2.tar.gz", hash = "sha256:fb9a66722a15b0a8edb4f29d63f013877c4c528eff1225bb31dab723c3e5a9ed"},
 ]
 botocore = [
-    {file = "botocore-1.24.40-py3-none-any.whl", hash = "sha256:fbf7ad87581a888600e5f0f39b19ded2dd668f6cf6abe29a172ac23ba7f39dd6"},
-    {file = "botocore-1.24.40.tar.gz", hash = "sha256:06badf7bbddadc404b5df10e7fd5bd351caccebd151bda29155a94dde789af5c"},
+    {file = "botocore-1.25.2-py3-none-any.whl", hash = "sha256:dff4aaf03c2b8ee4a861405fd35c83b585a661a541d520f51e863a31bb18e0f8"},
+    {file = "botocore-1.25.2.tar.gz", hash = "sha256:78363cd023c6123a65d90080e14a9fb625a9639d970ab03471c6fe95258ab8c0"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
