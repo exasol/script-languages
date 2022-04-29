@@ -8,6 +8,10 @@ echo -e "Updating starter scripts."
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 ROOT_DIR="$SCRIPT_DIR/.."
 
-poetry run python3 -m exasol_script_languages_container_tool.main install-starter-scripts --install-path "$ROOT_DIR" --force-install
-git add "$ROOT_DIR/exaslct"
-git add "$ROOT_DIR/exaslct_scripts"
+pushd "$ROOT_DIR" > /dev/null
+
+poetry run python3 -m exasol_script_languages_container_tool.main install-starter-scripts --install-path "." --force-install
+git add "./exaslct"
+git add "./exaslct_scripts"
+
+popd > /dev/null

@@ -14,14 +14,14 @@ dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", 
 
 [[package]]
 name = "boto3"
-version = "1.22.2"
+version = "1.22.3"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.6"
 
 [package.dependencies]
-botocore = ">=1.25.2,<1.26.0"
+botocore = ">=1.25.3,<1.26.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.5.0,<0.6.0"
 
@@ -30,7 +30,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.25.2"
+version = "1.25.3"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -165,8 +165,8 @@ GitPython = ">=3.1.0"
 [package.source]
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci.git"
-reference = "feature/5_added_skipping_builds_for_unaffected_folders"
-resolved_reference = "37da7a521f7b3640f79eb3ae3826bf042a8292c4"
+reference = "main"
+resolved_reference = "f376a6cf9cd392c04e9130c08485561a133acdbb"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
@@ -262,6 +262,21 @@ zipp = ">=0.5"
 docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "packaging", "pyfakefs", "flufl.flake8", "pytest-perf (>=0.9.2)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)", "importlib-resources (>=1.3)"]
 perf = ["ipython"]
+
+[[package]]
+name = "importlib-resources"
+version = "5.7.1"
+description = "Read resources from Python packages"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
+
+[package.extras]
+docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [[package]]
 name = "jinja2"
@@ -563,7 +578,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4"
-content-hash = "a0f9b98070cc86c5fe07fd7c83db96a2bdad0fb3cf60b83f43b0a8f7ced04fe1"
+content-hash = "7c079a02e97daa829a41f5d61b59b5bb13955e77a5b1c60ca9456fe4ce11c317"
 
 [metadata.files]
 attrs = [
@@ -571,12 +586,12 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 boto3 = [
-    {file = "boto3-1.22.2-py3-none-any.whl", hash = "sha256:1d0c9cf30c5c93ce4628b22f7dff21f80efd104706967be2afb47ea93dcbceb8"},
-    {file = "boto3-1.22.2.tar.gz", hash = "sha256:fb9a66722a15b0a8edb4f29d63f013877c4c528eff1225bb31dab723c3e5a9ed"},
+    {file = "boto3-1.22.3-py3-none-any.whl", hash = "sha256:b291e9b8057158c4ee75a7df8ab22079b4ab915f032af59bcae22677f2a6ceda"},
+    {file = "boto3-1.22.3.tar.gz", hash = "sha256:ef66e2e4f05f0d20aab20b1b655dc670db5c9324d33db6754b576c6867c2ffe9"},
 ]
 botocore = [
-    {file = "botocore-1.25.2-py3-none-any.whl", hash = "sha256:dff4aaf03c2b8ee4a861405fd35c83b585a661a541d520f51e863a31bb18e0f8"},
-    {file = "botocore-1.25.2.tar.gz", hash = "sha256:78363cd023c6123a65d90080e14a9fb625a9639d970ab03471c6fe95258ab8c0"},
+    {file = "botocore-1.25.3-py3-none-any.whl", hash = "sha256:b63343736f1e778f9a658736afd9773ea38b3605d96556fb5585fc0c04a0d1e1"},
+    {file = "botocore-1.25.3.tar.gz", hash = "sha256:c807e14b956b4b11d6872e84d1d947d1da5ffeedf8aac569a6401063e1752abd"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
@@ -626,6 +641,10 @@ idna = [
 importlib-metadata = [
     {file = "importlib_metadata-4.11.3-py3-none-any.whl", hash = "sha256:1208431ca90a8cca1a6b8af391bb53c1a2db74e5d1cef6ddced95d4b2062edc6"},
     {file = "importlib_metadata-4.11.3.tar.gz", hash = "sha256:ea4c597ebf37142f827b8f39299579e31685c31d3a438b59f469406afd0f2539"},
+]
+importlib-resources = [
+    {file = "importlib_resources-5.7.1-py3-none-any.whl", hash = "sha256:e447dc01619b1e951286f3929be820029d48c75eb25d265c28b92a16548212b8"},
+    {file = "importlib_resources-5.7.1.tar.gz", hash = "sha256:b6062987dfc51f0fcb809187cffbd60f35df7acb4589091f154214af6d0d49d3"},
 ]
 jinja2 = [
     {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
