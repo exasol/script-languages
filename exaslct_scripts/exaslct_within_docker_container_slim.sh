@@ -38,7 +38,7 @@ for argument in "${@}"; do
   quoted_arguments="$quoted_arguments \"${argument//\"/\\\"}\""
 done
 
-RUN_COMMAND="/script-languages-container-tool/starter_scripts/exaslct_without_poetry.sh $quoted_arguments; RETURN_CODE=\$?; chown -R $(id -u):$(id -g) .build_output &> /dev/null; exit \$RETURN_CODE"
+RUN_COMMAND="/docker_runner/exaslct_without_poetry.sh $quoted_arguments; RETURN_CODE=\$?; chown -R $(id -u):$(id -g) .build_output &> /dev/null; exit \$RETURN_CODE"
 
 HOST_DOCKER_SOCKER_PATH="/var/run/docker.sock"
 CONTAINER_DOCKER_SOCKER_PATH="/var/run/docker.sock"
@@ -75,6 +75,8 @@ tmpfile_env=$(mktemp)
 trap 'rm -f -- "$tmpfile_env"' INT TERM HUP EXIT
 
 create_env_file_debug_protected "$tmpfile_env"
+# Ignore shellcheck rule because we want to $terminal_parameter as is
+# shellcheck disable=SC2086
 docker run --network host --env-file "$tmpfile_env" --rm $terminal_parameter -v "$PWD:$PWD" -v "$DOCKER_SOCKET_MOUNT" -w "$PWD" "$RUNNER_IMAGE_NAME" bash -c "$RUN_COMMAND"
 
 umask "$old_umask"

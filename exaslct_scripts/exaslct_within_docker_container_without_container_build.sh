@@ -28,8 +28,12 @@ if [ -z "$FIND_IMAGE_LOCALLY" ]; then
   docker pull "$RUNNER_IMAGE_NAME"
 fi
 
+BASH_MAJOR_VERSION=$(echo "${BASH_VERSION}" | cut -f1 -d".")
+
 EXEC_SCRIPT=exaslct_within_docker_container.sh
-if [[ "$(uname)" = Darwin ]]; then
+# Bash versions before 4.0 didn't support associative arrays which are used in mount_point_parsing.sh. https://tldp.org/LDP/abs/html/bashver4.html
+# MaxOSX uses per default Bash version 3.*. 
+if [[ "$(uname)" = Darwin ]] || [[ $BASH_MAJOR_VERSION -lt 4 ]]; then
   EXEC_SCRIPT=exaslct_within_docker_container_slim.sh
 fi
 

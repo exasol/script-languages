@@ -88,44 +88,53 @@ function _get_mount_point_path() {
   esac
 }
 
-function _get_mount_point_paths() {
-  local lenArgs="$#"
-  for ((idxArg = 1; idxArg < lenArgs; idxArg++)); do
-    current_arg=${!idxArg}
-    next_arg_idx=$((idxArg + 1))
-    next_arg=${!next_arg_idx}
-    #Better way to test if the argument is in $relevant_mount_point_arguments
-    #would be to use [[ -v ...]], however this does not work correctly with bash 4.2
-    if [[ -n "${relevant_mount_point_arguments[${current_arg}]-}" ]]; then
-      _get_mount_point_path $current_arg $next_arg "${relevant_mount_point_arguments[${current_arg}]}"
-    fi
-  done
-}
-
-function _format_parameters() {
-  result=""
-  for param in "${@}"; do
-    local found=0
+function _is_param_relevant_mount_point(){
+    param=$1
     for check_param in "${!relevant_mount_point_arguments[@]}"; do
       if [[ $param == "${check_param}"=* ]]; then
-        first_part="$(echo $param | cut -d= -f 1)"
-        second_part="$(echo $param | cut -d= -f 2-)"
-        result="$result $first_part $second_part"
-        found=1
-        break
+        first_part="$(echo "$param" | cut -d= -f 1)"
+        echo "$first_part"
+        return 0
+      elif [[ "$param" == "${check_param}" ]]; then
+        echo "$param"
+        return 0
       fi
     done
-    if [[ $found -eq 0 ]]; then
-      result="$result $param"
-    fi
-  done
-  echo "$result"
+    echo ""
+    return 0
 }
 
-declare -a mount_point_paths
-formatted_params=$(_format_parameters "${@}")
-# Ignore shellcheck rule as we want to split parameters by space intentionally
-# shellcheck disable=SC2086
-_get_mount_point_paths $formatted_params
+function _add_mount_point_paths() {
+  local lenArgs="$#"
+  for ((idxArg = 1; idxArg <= lenArgs; idxArg++)); do
+    current_arg=${!idxArg}
+    first_part="$(_is_param_relevant_mount_point "$current_arg")"
+    if [[ -n "$first_part" ]]; then
+      if [[ "$first_part" == "$current_arg" ]]; then
+        next_arg_idx=$((idxArg + 1))
+        next_arg=${!next_arg_idx}
+        second_part="$next_arg"
+        idxArg=$next_arg_idx
+      else 
+        second_part="$(echo "$current_arg" | cut -d= -f 2-)"
+      fi
+      _get_mount_point_path "$first_part" "$second_part" "${relevant_mount_point_arguments[${first_part}]}"
+    fi
+  done
+}
 
-echo "${mount_point_paths[@]}"
+function get_mount_point_paths() {
+  unset mount_point_paths
+  declare -g -a mount_point_paths
+  # Ignore shellcheck rule as we want to split parameters by space intentionally
+  # shellcheck disable=SC2086
+  _add_mount_point_paths "${@}"
+
+  #Unfortunately for GNU Bash 4.2 we need to add a dummy empty element to mount_point_paths
+  mount_point_paths+=("")
+}
+
+function print_mount_point_paths(){
+  get_mount_point_paths "${@}"
+  echo "${mount_point_paths[@]}"
+}
