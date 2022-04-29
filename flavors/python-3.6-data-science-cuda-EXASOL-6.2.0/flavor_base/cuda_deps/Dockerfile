@@ -84,6 +84,7 @@ RUN cd /tmp && \
 ################################################### Install CUDA SDK ###############################################
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg curl ca-certificates && \
+    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub | apt-key add - && \
     curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
     echo "deb [arch=amd64] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" >> /etc/apt/sources.list.d/cuda.list && \
     echo "deb [arch=amd64] https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" >> /etc/apt/sources.list.d/nvidia-ml.list && \
