@@ -100,6 +100,10 @@ class AvailablePython3Packages(udf.TestCase):
             ("pyPdf",False,"PyPDF2"),
         ]
 
+    @useData(data)
+    def test_package_import(self, pkg, fail=False, alternative=None):
+        run_python_package_import_test(self, pkg, "PYTHON", fail, alternative)
+
 class AvailableRPackages(udf.TestCase):
     def setUp(self): 
         self.query('create schema available_packages', ignore_errors=True) 

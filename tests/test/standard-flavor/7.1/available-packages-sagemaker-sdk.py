@@ -6,7 +6,7 @@ from exasol_python_test_framework.exatest.testcase import useData
 from exasol_python_test_framework.udf.available_python_packages_utils import run_python_package_import_test
 
 
-class AvailablePytho3Packages(udf.TestCase):
+class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
         self.query('create schema available_packages', ignore_errors=True)
 
