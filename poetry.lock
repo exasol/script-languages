@@ -212,8 +212,10 @@ jinja2 = ">=3.0.0"
 jsonschema = "^3.2.0"
 
 [package.source]
-type = "directory"
-url = "../script-languages-container-ci-setup"
+type = "git"
+url = "https://github.com/exasol/script-languages-container-ci-setup.git"
+reference = "feature/3_addess_release_code_build_and_command"
+resolved_reference = "e2c8f410962dc3e42341dd3df13e97281e958f41"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
@@ -664,7 +666,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4"
-content-hash = "189c1d5bd0e2650013052d02a8d59bd03efee4dec8854bd8a3034acd17b526e5"
+content-hash = "c2aa502716be4eaf0114e1fd1e68ed175b24de65b878424269da60e92e0cd5b3"
 
 [metadata.files]
 attrs = [
