@@ -10,8 +10,10 @@ ROOT_DIR="$SCRIPT_DIR/.."
 
 pushd $ROOT_DIR > /dev/null
 poetry run python -m exasol_script_languages_container_ci_setup.main generate-buildspecs --flavor-root-path "$ROOT_DIR/flavors" --config-file aws-code-build/build_config.json
+poetry run python -m exasol_script_languages_container_ci_setup.main generate-release-buildspecs --flavor-root-path "$ROOT_DIR/flavors" --config-file aws-code-build/build_config.json
 
 git add "aws-code-build/ci"
+git add "aws-code-build/release"
 
 popd > /dev/null
 

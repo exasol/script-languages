@@ -1,0 +1,40 @@
+version: 0.2
+
+# ---- AUTOMATICALLY GENERATED FILE --------
+# ---- DO NOT EDIT MANUALLY, BUT USE PYTHON MODULE "script-languages-container-ci-setup" TO UPDATE ---
+env:
+  shell: bash
+  variables:
+    RELEASE_DOCKER_REPOSITORY: "exasol/script-language-container"
+    UPLOAD_URL: ""
+    DRY_RUN: "--no-dry-run"
+
+
+  secrets-manager:
+    DOCKER_USER: "Dockerhub:User"
+    DOCKER_PASSWORD: "Dockerhub:AccessToken"
+phases:
+
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - git submodule update --init --recursive
+      - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+      - export PATH=$PATH:$HOME/.poetry/bin
+      - poetry env use $(command -v "python3.8")
+      - poetry install
+
+  pre_build:
+      commands:
+        - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
+  build:
+      commands:
+        - poetry run python3 -m exasol_script_languages_container_ci.main run-release --flavor $FLAVOR --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --upload-url "$UPLOAD_URL" "$DRY_RUN" --config-file aws-code-build/build_config.json
+
+artifacts:
+  files:
+      - 'jobs/**/*'
+  name: release_build_output_$(date +%Y-%m-%d-%Hh-%Mm-%Ss)
+  base-directory: .build_output
+  s3-prefix: flavor_$FLAVOR
