@@ -20,17 +20,17 @@ batch:
       buildspec: ./aws-code-build/release/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM
-    - identifier: build_python_36_data_science_cuda_EXASOL_620
-      env:
-        variables:
-          FLAVOR: python-3.6-data-science-cuda-EXASOL-6.2.0
-      buildspec: ./aws-code-build/release/build_buildspec.yaml
-      privileged-mode: true
-      type: BUILD_GENERAL1_MEDIUM
     - identifier: build_python_37_minimal_EXASOL_620
       env:
         variables:
           FLAVOR: python-3.7-minimal-EXASOL-6.2.0
+      buildspec: ./aws-code-build/release/build_buildspec.yaml
+      privileged-mode: true
+      type: BUILD_GENERAL1_MEDIUM
+    - identifier: build_python_36_data_science_cuda_EXASOL_620
+      env:
+        variables:
+          FLAVOR: python-3.6-data-science-cuda-EXASOL-6.2.0
       buildspec: ./aws-code-build/release/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM

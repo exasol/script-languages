@@ -1,0 +1,39 @@
+name: Run a test for the AWS release build + asset upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_release_tag:
+        description: 'The existing tag for the release test. The Github release for this tag must already exist!'
+        required: true
+
+jobs:
+
+  build_and_upload:
+    environment: AWS
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Init submodules
+      run: git submodule update --init --recursive
+
+    - name: Setup Python 3.8 for integration-test-docker-environment
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install Poetry
+      uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: 1.1.13
+
+    - name: Setup poetry env
+      run:  bash scripts/setup_poetry_env.sh "python3.8"
+
+    - name: Start test release
+      run: poetry run python -m exasol_script_languages_container_ci_setup.main start-test-release-build --log-level info --project ScriptLanguages --release-tag ${{ github.event.inputs.test_release_tag }}
+      env: # Set the secret as an env variable
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}

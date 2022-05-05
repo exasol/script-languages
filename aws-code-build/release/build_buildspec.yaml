@@ -6,7 +6,7 @@ env:
   shell: bash
   variables:
     RELEASE_DOCKER_REPOSITORY: "exasol/script-language-container"
-    UPLOAD_URL: ""
+    RELEASE_KEY: "Tag:latest"
     DRY_RUN: "--no-dry-run"
 
 
@@ -30,7 +30,7 @@ phases:
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
   build:
       commands:
-        - poetry run python3 -m exasol_script_languages_container_ci.main run-release --flavor $FLAVOR --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --upload-url "$UPLOAD_URL" "$DRY_RUN" --config-file aws-code-build/build_config.json
+        - poetry run python3 -m exasol_script_languages_container_ci.main run-release --flavor $FLAVOR --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --source_repo_url "$CODEBUILD_SOURCE_REPO_URL" --release-key "$RELEASE_KEY" "$DRY_RUN" --config-file aws-code-build/build_config.json
 
 artifacts:
   files:

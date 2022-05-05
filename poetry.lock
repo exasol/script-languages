@@ -192,7 +192,7 @@ PyGithub = "^1.55.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci.git"
 reference = "feature/9_implement_run-release_command"
-resolved_reference = "41eac785d3a4d0139c2e46fba318e8a8ca604d05"
+resolved_reference = "b7fbc9c667df4c61b308acdb899515e73ef202dc"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
@@ -215,7 +215,7 @@ jsonschema = "^3.2.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "feature/3_addess_release_code_build_and_command"
-resolved_reference = "e2c8f410962dc3e42341dd3df13e97281e958f41"
+resolved_reference = "e240b4d415aa979504ee20b12edad67d4a003e16"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
