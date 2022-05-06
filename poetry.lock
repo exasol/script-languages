@@ -192,7 +192,7 @@ PyGithub = "^1.55.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci.git"
 reference = "feature/9_implement_run-release_command"
-resolved_reference = "a7d812ddcaaae6b7229476d6f7602a9f96c4392a"
+resolved_reference = "61bf4de87cc8c722eb1bb9ab560fa3b1ff2f2bf7"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
