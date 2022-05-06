@@ -30,7 +30,7 @@ phases:
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
   build:
       commands:
-        - poetry run python3 -m exasol_script_languages_container_ci.main run-release --flavor $FLAVOR --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --source_repo_url "$CODEBUILD_SOURCE_REPO_URL" --release-id "$RELEASE_ID" "$DRY_RUN" --config-file aws-code-build/build_config.json
+        - poetry run python3 -m exasol_script_languages_container_ci.main run-release --flavor $FLAVOR --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --source-repo-url "$CODEBUILD_SOURCE_REPO_URL" --release-id "$RELEASE_ID" "$DRY_RUN" --config-file aws-code-build/build_config.json
 
 artifacts:
   files:
