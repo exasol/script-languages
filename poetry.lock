@@ -14,14 +14,14 @@ dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", 
 
 [[package]]
 name = "boto3"
-version = "1.22.7"
+version = "1.22.8"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.6"
 
 [package.dependencies]
-botocore = ">=1.25.7,<1.26.0"
+botocore = ">=1.25.8,<1.26.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.5.0,<0.6.0"
 
@@ -30,7 +30,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.25.7"
+version = "1.25.8"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -192,7 +192,7 @@ PyGithub = "^1.55.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci.git"
 reference = "feature/9_implement_run-release_command"
-resolved_reference = "b7fbc9c667df4c61b308acdb899515e73ef202dc"
+resolved_reference = "a7d812ddcaaae6b7229476d6f7602a9f96c4392a"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
@@ -204,18 +204,20 @@ python-versions = ">=3.8.0,<4.0"
 develop = false
 
 [package.dependencies]
-boto3 = "^1.21.34"
-click = "^8.0.3"
+boto3 = "^1.22.0"
+click = "^8.1.3"
 exasol_error_reporting_python = {git = "https://github.com/exasol/error-reporting-python.git", branch = "main"}
+exasol-script-languages-container-ci = {git = "https://github.com/exasol/script-languages-container-ci.git", branch = "feature/9_implement_run-release_command"}
 exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.12.0/exasol_script_languages_container_tool-0.12.0-py3-none-any.whl"}
-jinja2 = ">=3.0.0"
+jinja2 = ">=3.1.0"
 jsonschema = "^3.2.0"
+PyGithub = "^1.55.0"
 
 [package.source]
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "feature/3_addess_release_code_build_and_command"
-resolved_reference = "e240b4d415aa979504ee20b12edad67d4a003e16"
+resolved_reference = "c0d8cb9bcfe1aadde4e3609c5edddb11fbafa647"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
@@ -674,12 +676,12 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 boto3 = [
-    {file = "boto3-1.22.7-py3-none-any.whl", hash = "sha256:de4fa49ca1cbc93313144e93e6d0997cbb61c8cca91f3418b4e3646dc215f441"},
-    {file = "boto3-1.22.7.tar.gz", hash = "sha256:4dc0df36c3465ff0d586017da68b0152123695f38f30ad98fed7185e59298d2c"},
+    {file = "boto3-1.22.8-py3-none-any.whl", hash = "sha256:a6925fe88cc9cd6aab35ea950cdb1678a88210ece5271bb64c1593a46ed6de6c"},
+    {file = "boto3-1.22.8.tar.gz", hash = "sha256:222cfb68bd4f46f4beae7770f1f6b066786254462f289027ca123fe77eb50ff9"},
 ]
 botocore = [
-    {file = "botocore-1.25.7-py3-none-any.whl", hash = "sha256:83da857c12fff5cf4c1a64afaa72a28ff5bef929a2834ec4ed5b0b674f88fd0e"},
-    {file = "botocore-1.25.7.tar.gz", hash = "sha256:190361776d96323ff401b976175f76172acf7ebbe3efbb19c4c6f9800a9ad6b6"},
+    {file = "botocore-1.25.8-py3-none-any.whl", hash = "sha256:5b342da3487e5669801f5589cc15e379fc9f7803a426584d08a6329575644da3"},
+    {file = "botocore-1.25.8.tar.gz", hash = "sha256:f0a7e9fb6000a6cfc7ca63971d8d1ab4ed3c38514ded439bcf1fc8bca162dc1b"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
