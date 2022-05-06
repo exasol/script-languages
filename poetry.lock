@@ -217,7 +217,7 @@ PyGithub = "^1.55.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "feature/3_addess_release_code_build_and_command"
-resolved_reference = "c5587ac2ab105f6363beda65e070f222306e107d"
+resolved_reference = "20cde9d1e3f43be9779f2a0fb820d566f7bc3a16"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
