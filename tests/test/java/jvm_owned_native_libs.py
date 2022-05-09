@@ -27,6 +27,7 @@ class JVMOwnedNativeLibsTest(udf.TestCase):
         rows = self.query('''
             SELECT JAVA_LIBMANAGEMENT('');
             ''')
+        self.assertGreater(len(rows[0][0]), 0)
 
     def test_libnet(self):
         self.query(udf.fixindent('''
@@ -35,14 +36,15 @@ class JVMOwnedNativeLibsTest(udf.TestCase):
 
                 class JAVA_LIBNET {
                   static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    final String jvmName = NetworkInterface.getNetworkInterfaces().nextElement().getName();
-                    ctx.emit(jvmName);
+                    final String networkInterface = NetworkInterface.getNetworkInterfaces().nextElement().getName();
+                    ctx.emit(networkInterface);
                   }
                 }
                 '''))
         rows = self.query('''
             SELECT JAVA_LIBNET('');
             ''')
+        self.assertGreater(len(rows[0][0]), 0)
 
     def test_libzip(self):
         self.query(udf.fixindent('''
@@ -78,6 +80,7 @@ class JVMOwnedNativeLibsTest(udf.TestCase):
         rows = self.query('''
             SELECT JAVA_LIBZIP('');
             ''')
+        self.assertEqual(rows[0][0], "SUCCESS")
 
     def test_libnio(self):
         self.query(udf.fixindent('''
@@ -105,6 +108,8 @@ class JVMOwnedNativeLibsTest(udf.TestCase):
         rows = self.query('''
             SELECT JAVA_LIBNIO('');
             ''')
+        self.assertEqual(rows[0][0], "SUCCESS")
+
 
 if __name__ == '__main__':
     udf.main()
