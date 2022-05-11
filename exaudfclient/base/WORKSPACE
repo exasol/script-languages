@@ -27,19 +27,8 @@ load("//:protobuf_repository.bzl", "protobuf_local_repository")
 
 protobuf_local_repository(name = "protobuf")
 
-new_local_repository(
-    name = "zmq",
-    build_file_content = """
-cc_library(
-    name = "zmqlib",
-    srcs = ["usr/lib/x86_64-linux-gnu/libzmq.so"],
-    hdrs = glob(["usr/include/zmq*"]),
-    includes = ["usr/include/"],
-    visibility = ["//visibility:public"]
-)
-    """,
-    path = "/",
-)
+load("//:zmq_repository.bzl", "zmq_local_repository")
+zmq_local_repository(name = "zmq")
 
 new_local_repository(
     name = "ssl",

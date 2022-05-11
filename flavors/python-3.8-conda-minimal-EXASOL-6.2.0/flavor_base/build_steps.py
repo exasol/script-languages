@@ -22,6 +22,9 @@ class AnalyzeUDFClientDeps(DockerFlavorAnalyzeImageTask):
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"scripts": "ext/scripts"}
 
+    def requires_tasks(self):
+        return {"conda_deps": AnalyzeCondatDeps}
+
     def get_path_in_flavor(self):
         return "flavor_base"
 
@@ -49,6 +52,9 @@ class AnalyzeBuildDeps(DockerFlavorAnalyzeImageTask):
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
 
+    def requires_tasks(self):
+        return {"language_deps": AnalyzeLanguageDeps}
+
     def get_path_in_flavor(self):
         return "flavor_base"
 
@@ -59,8 +65,7 @@ class AnalyzeBuildRun(DockerFlavorAnalyzeImageTask):
         return "build_run"
 
     def requires_tasks(self):
-        return {"build_deps": AnalyzeBuildDeps,
-                "language_deps": AnalyzeLanguageDeps}
+        return {"build_deps": AnalyzeBuildDeps}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"exaudfclient/base": "exaudfclient/base"}
