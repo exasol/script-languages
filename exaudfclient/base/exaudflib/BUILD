@@ -108,5 +108,5 @@ cc_library(
     linkstatic = 1,
     alwayslink = True,
     defines = VM_ENABLED_DEFINES,
-    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmqlib", ":header", "//:debug_message_h"],
+    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//:debug_message_h"],
 )

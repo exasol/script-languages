@@ -28,14 +28,6 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 SHELL ["/bin/bash", "-l", "-c"]
 RUN /scripts/install_scripts/install_micromamba.sh
 
-RUN echo "zeromq|4.3.3" > /tmp/test1 && \
-    /scripts/install_scripts/install_via_conda.pl --file /tmp/test1 --with-versions --dry-run && \
-    /scripts/install_scripts/install_via_conda.pl --file /tmp/test1 --with-versions
-
-RUN echo "cppzmq|4.8.1" > /tmp/test2 && \
-    /scripts/install_scripts/install_via_conda.pl --file /tmp/test2 --with-versions --dry-run && \
-    /scripts/install_scripts/install_via_conda.pl --file /tmp/test2 --with-versions
-
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
