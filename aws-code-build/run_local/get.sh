@@ -3,7 +3,7 @@ set -euo pipefail
 
 pushd "../.." &>/dev/null
 
-echo Pulling codebuild skript...
+echo Pulling codebuild script...
 wget https://raw.githubusercontent.com/aws/aws-codebuild-docker-images/master/local_builds/codebuild_build.sh
 if [[ ! $(docker image ls aws/codebuild/ubuntu/standard:5.0 --format="true") ]] ;
 then
