@@ -13,7 +13,7 @@ def _protobuf_local_repository_impl(repository_ctx):
     build_file_content = """
 cc_library(
     name = "{name}",
-    srcs = glob(["protobuf/lib/libprotobuf*.so"]),
+    srcs = glob(["protobuf/lib/**/libprotobuf*.so"]),
     hdrs = glob(["protobuf/include/**"]),
     includes = ["protobuf/include/"],
     visibility = ["//visibility:public"]

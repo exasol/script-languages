@@ -5,7 +5,7 @@ set -u
 set -o pipefail
 
 
-curl -L https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj "bin/micromamba"
+curl -L "https://micromamba.snakepit.net/api/micromamba/linux-64/$1" | tar -xvj "bin/micromamba"
 mkdir -p "$MAMBA_ROOT_PREFIX/conda-meta" && \
 chmod -R a+rwx "$MAMBA_ROOT_PREFIX" && \
 echo "source /usr/local/bin/_activate_current_env.sh" >> ~/.bashrc && \
