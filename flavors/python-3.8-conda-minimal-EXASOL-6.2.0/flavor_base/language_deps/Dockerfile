@@ -7,6 +7,4 @@ RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/la
 
 ENV PYTHON3_PREFIX /opt/conda
 ENV PYTHON3_VERSION python3.8
-ENV PROTOBUF_LIBRARY_PREFIX=/opt/conda/lib
-ENV PROTOBUF_INCLUDE_PREFIX=/opt/conda/include/
 
