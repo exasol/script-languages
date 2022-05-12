@@ -13,7 +13,7 @@ def _zmq_local_repository_impl(repository_ctx):
     build_file_content = """
 cc_library(
     name = "{name}",
-    srcs = glob(["zmq/lib/libzmq.so"]),
+    srcs = glob(["zmq/lib/**/libzmq.so"]),
     hdrs = glob(["zmq/include/zmq*"]),
     includes = ["zmq/include/"],
     visibility = ["//visibility:public"]

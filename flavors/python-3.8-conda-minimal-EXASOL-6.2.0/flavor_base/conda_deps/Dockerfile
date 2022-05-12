@@ -26,7 +26,7 @@ RUN adduser --disabled-login --uid 500 --gid 500 exadefusr --gecos "First Last,R
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 SHELL ["/bin/bash", "-l", "-c"]
-RUN /scripts/install_scripts/install_micromamba.sh
+RUN /scripts/install_scripts/install_micromamba.sh 0.23.0
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

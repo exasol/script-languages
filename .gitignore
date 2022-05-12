@@ -14,3 +14,4 @@ luigi.cfg
 /codebuild_build.sh
 exaudfclient/base/file.txt
 dist
+*.swp
