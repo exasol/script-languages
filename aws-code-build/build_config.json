@@ -1,6 +1,6 @@
 {"build_ignore":
   {"ignored_paths":
-    ["google-cloud-build", "python_client", ".gitignore", "contributing.md", ".dockerignore", "LICENSE",
+    ["google-cloud-build", "python_client", ".gitignore", ".dockerignore", "LICENSE",
       "README.md", "find_duplicate_error_codes.sh", "find_error_codes.sh",
       "find_highest_error_codes_per_module.sh", "find_incomplete_error_codes.sh", "find_next_error_code_per_module.sh",
       "show_code_arround_error_codes.sh", "visualize_task_dependencies.sh", "udf-script-signature-generator",
