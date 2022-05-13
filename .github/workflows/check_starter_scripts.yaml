@@ -1,6 +1,10 @@
 name: Check starter scripts
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   build:
@@ -12,7 +16,7 @@ jobs:
     - name: Init submodules
       run: git submodule update --init --recursive
 
-    - name: Setup Python 3.8 for integration-test-docker-environment
+    - name: Setup Python 3.8
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
