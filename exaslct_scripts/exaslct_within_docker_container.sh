@@ -66,12 +66,14 @@ DOCKER_SOCKET_MOUNT="$HOST_DOCKER_SOCKER_PATH:$CONTAINER_DOCKER_SOCKER_PATH"
 
 function create_env_file() {
   touch "$tmpfile_env"
+  chmod 600 "$tmpfile_env"
   if [ -n "${TARGET_DOCKER_PASSWORD-}" ]; then
     echo "TARGET_DOCKER_PASSWORD=$TARGET_DOCKER_PASSWORD" >> "$tmpfile_env"
   fi
   if [ -n "${SOURCE_DOCKER_PASSWORD-}" ]; then
     echo "SOURCE_DOCKER_PASSWORD=$SOURCE_DOCKER_PASSWORD" >> "$tmpfile_env"
   fi
+  chmod -w "$tmpfile_env"
 }
 
 function create_env_file_debug_protected() {
@@ -89,8 +91,6 @@ function create_env_file_debug_protected() {
   esac
 }
 
-old_umask=$(umask)
-umask 277
 tmpfile_env=$(mktemp)
 trap 'rm -f -- "$tmpfile_env"' INT TERM HUP EXIT
 
@@ -98,5 +98,3 @@ create_env_file_debug_protected "$tmpfile_env"
 # Ignore shellcheck rule as we need to split elements of array by space (they are in form "-v %MOUNT_POINT")
 # shellcheck disable=SC2068
 docker run --network host --env-file "$tmpfile_env" --rm $terminal_parameter -v "$PWD:$PWD" -v "$DOCKER_SOCKET_MOUNT" -w "$PWD" ${mount_point_parameter[@]} "$RUNNER_IMAGE_NAME" bash -c "$RUN_COMMAND"
-
-umask "$old_umask"
