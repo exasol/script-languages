@@ -4,6 +4,7 @@
 #include "exaudflib/swig/script_data_transfer_objects.h"
 #include "exaudflib/zmqcontainer.pb.h"
 #include "exaudflib/swig/swig_common.h"
+#include "exaudflib/impl/swig/swig_parameter.h"
 
 namespace exaudflib {
     struct Global {

@@ -3,6 +3,7 @@
 
 #include "exaudflib/swig/swig_common.h"
 #include "exaudflib/swig/swig_meta_data.h"
+#include "exaudflib/impl/swig/swig_parameter.h"
 #include "exaudflib/zmqcontainer.pb.h"
 #include "exaudflib/impl/socket_low_level.h"
 #include "exaudflib/impl/msg_conversion.h"

@@ -22,6 +22,7 @@
 #include "exaudflib/impl/msg_conversion.h"
 #include "exaudflib/impl/global.h"
 #include "exaudflib/impl/socket_high_level.h"
+#include "exaudflib/impl/swig/swig_parameter.h"
 
 #include "exaudflib/vm/swig_vm.h"
 

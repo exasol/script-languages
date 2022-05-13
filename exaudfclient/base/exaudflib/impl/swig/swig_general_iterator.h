@@ -3,6 +3,7 @@
 
 #include "exaudflib/swig/swig_common.h"
 #include "exaudflib/impl/global.h"
+#include "exaudflib/impl/swig/swig_parameter.h"
 
 namespace SWIGVMContainers {
 
