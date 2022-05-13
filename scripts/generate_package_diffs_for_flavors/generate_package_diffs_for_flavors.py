@@ -20,10 +20,17 @@ def parse_package_list_file(file_path: Path) -> str:
     return result_string
 
 
+def check_for_duplicated_packages(df: pd.DataFrame):
+    duplicates = df.duplicated(subset=["Package"])
+    if any(duplicates):
+        raise ValueError(f"Found duplicated packages, see package list {df}")
+
+
 def compare_package_lists(package_list_1: str, package_list_2: str) -> pd.DataFrame:
     package_list_1_df = pd.read_csv(StringIO(package_list_1), delimiter="|", names=["Package", "Version1"])
     package_list_1_df["Version1"] = package_list_1_df["Version1"].replace("<<<<1>>>>", "No version specified")
     package_list_2_df = pd.read_csv(StringIO(package_list_2), delimiter="|", names=["Package", "Version2"])
+    check_for_duplicated_packages(package_list_2_df)
     package_list_2_df["Version2"] = package_list_2_df["Version2"].replace("<<<<1>>>>", "No version specified")
     diff_df = pd.merge(package_list_1_df, package_list_2_df, how='outer', on='Package', sort=False)
     new = diff_df["Version1"].isnull() & ~diff_df["Version2"].isnull()
@@ -35,7 +42,7 @@ def compare_package_lists(package_list_1: str, package_list_2: str) -> pd.DataFr
     diff_df["Status"].values[removed] = "REMOVED"
     diff_df["Status"].values[updated] = "UPDATED"
     diff_df = diff_df.fillna("")
-    diff_df = diff_df.sort_values("Status", ascending=False)
+    diff_df = diff_df.sort_values(["Status", "Package"], ascending=[False, True])
     diff_df = diff_df.reset_index(drop=True)
     return diff_df
 
@@ -96,7 +103,8 @@ def compare_build_step(build_step_path_1: Path, working_copy_1: Path, working_co
     if packages_path_1.is_dir():
         for package_list_file_1 in packages_path_1.iterdir():
             package_list_file_name_1 = package_list_file_1.name
-            package_list_working_copy_str_1 = parse_package_list_file(Path(working_copy_1, package_list_file_1))
+            package_list_file_1 = Path(working_copy_1, package_list_file_1)
+            package_list_working_copy_str_1 = parse_package_list_file(package_list_file_1)
             package_list_file_name_2 = find_package_file_or_alternative(working_copy_2,
                                                                         build_step_path_2,
                                                                         package_list_file_name_1,
@@ -108,7 +116,10 @@ def compare_build_step(build_step_path_1: Path, working_copy_1: Path, working_co
                 package_list_file_2 = Path(build_step_path_2, "packages", package_list_file_name_2)
                 package_list_working_copy_str_2 = load_package_file_or_alternative(working_copy_2,
                                                                                    package_list_file_2)
-            diff_df = compare_package_lists(package_list_working_copy_str_2, package_list_working_copy_str_1)
+            try:
+                diff_df = compare_package_lists(package_list_working_copy_str_2, package_list_working_copy_str_1)
+            except ValueError as ve:
+                raise ValueError(f"Error comparing package lists for file '{package_list_file_1}'", ve)
             new_version1_name = f"Version in {working_copy_2_name}"
             new_version2_name = f"Version in {working_copy_1_name}"
 
