@@ -81,7 +81,7 @@ cc_library(
     name = "exascript_python",
     srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
     hdrs = [":filter_swig_code_exascript_python_h"],
-    deps = ["@python3//:python3","//exaudflib:exaudflib-deps","//exaudflib:header", "@zmq//:zmq"],
+    deps = ["@python3//:python3","//exaudflib:exaudflib-deps","//exaudflib:header"],
     alwayslink=True,
 )
 
@@ -108,7 +108,7 @@ cc_library(
     name = "pyextdataframe",
     srcs = [":python_ext_dataframe.cc"],
     deps = ["@python3//:python3","@numpy//:numpy","//exaudflib:exaudflib-deps",
-           "//exaudflib:header", "//:debug_message_h", "@zmq//:zmq"],
+           "//exaudflib:header", "//:debug_message_h"],
     alwayslink=True,
 )
 
