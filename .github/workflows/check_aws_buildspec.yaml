@@ -1,4 +1,4 @@
-name: Check AWS buidlspec
+name: Check AWS buildspec
 
 on:
   push:
