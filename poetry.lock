@@ -14,14 +14,14 @@ dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", 
 
 [[package]]
 name = "boto3"
-version = "1.23.0"
+version = "1.23.1"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.6"
 
 [package.dependencies]
-botocore = ">=1.26.0,<1.27.0"
+botocore = ">=1.26.1,<1.27.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.5.0,<0.6.0"
 
@@ -30,7 +30,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.26.0"
+version = "1.26.1"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -217,7 +217,7 @@ PyGithub = "^1.55.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "bug/7_fix_awscodebuild_artifacts"
-resolved_reference = "dabd1af831bb1119dc3dde8b5aca1f54f8f3ccb5"
+resolved_reference = "7f04c93645895388076f5622fd303f1be1d7f983"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
@@ -676,12 +676,12 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 boto3 = [
-    {file = "boto3-1.23.0-py3-none-any.whl", hash = "sha256:a5b7cce2473cb7f61a9684a68799f80b049236de62e63e7b4cd2bb0d1e9c58ad"},
-    {file = "boto3-1.23.0.tar.gz", hash = "sha256:07c4d128cb625f9459af8b6dff65ad9c3475e3b186f81c0e57af3d563d933cbd"},
+    {file = "boto3-1.23.1-py3-none-any.whl", hash = "sha256:4e3ef99d211266175a97b35d78103c31e3d01af31fd02bf599185421e5873fc0"},
+    {file = "boto3-1.23.1.tar.gz", hash = "sha256:3b50b49c5c0d3f19406cfbcefa32467c199cd6537d80f6fd04f18588670bdeeb"},
 ]
 botocore = [
-    {file = "botocore-1.26.0-py3-none-any.whl", hash = "sha256:25c43b8a7950d785daf3840bb10277378f36d41b208be3e01614537bdb419fe7"},
-    {file = "botocore-1.26.0.tar.gz", hash = "sha256:4c7ae9198ffbe1a834fd3928d2e6a4c68250c0d9f82e70c32b652d3525bec9c3"},
+    {file = "botocore-1.26.1-py3-none-any.whl", hash = "sha256:598304f20df607944c6db3870e005f2775230ec4558c8280d870f861a8003632"},
+    {file = "botocore-1.26.1.tar.gz", hash = "sha256:a805cbd8e79b64da0f719869b6b4c698cf5db7991b1aa412b086b25fb2892795"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
