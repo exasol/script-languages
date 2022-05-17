@@ -24,16 +24,20 @@ phases:
 
   pre_build:
       commands:
-        - echo CODEBUILD_SOURCE_VERSION is $CODEBUILD_SOURCE_VERSION #supposed to be the SHA
-        - echo CODEBUILD_WEBHOOK_HEAD_REF is $CODEBUILD_WEBHOOK_HEAD_REF #supposed to the branch name
+        - echo CODEBUILD_RESOLVED_SOURCE_VERSION is "$CODEBUILD_RESOLVED_SOURCE_VERSION" #supposed to be the SHA
+        - echo CODEBUILD_SOURCE_VERSION is "$CODEBUILD_SOURCE_VERSION" #supposed to be the SHA
+        - echo CODEBUILD_INITIATOR is "$CODEBUILD_INITIATOR" #IAM User or Webhook
+        - export CURRENT_BRANCH=$(git symbolic-ref --quiet HEAD)
+        - echo CURRENT_BRANCH is "$CURRENT_BRANCH"
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
         - mkdir -p ".build_output/jobs" ".build_output/security_scan" ".build_output/metadata" #Create output directory here. Otherwise artifacts phase might fail.
         - echo "$(date)" > .build_output/metadata/start_date
         - echo "$CODEBUILD_SOURCE_VERSION" > .build_output/metadata/commit_sha
-        - echo "$CODEBUILD_WEBHOOK_HEAD_REF" > .build_output/metadata/branch
+        - echo "$CURRENT_BRANCH" > .build_output/metadata/branch
+        - echo "$CODEBUILD_INITIATOR" > .build_output/metadata/initiator
   build:
       commands:
-        - poetry run python3 -m exasol_script_languages_container_ci.main run-ci --flavor $FLAVOR --branch-name "$CODEBUILD_WEBHOOK_HEAD_REF" --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-build-repository "$BUILD_DOCKER_REPOSITORY" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --commit-sha "$CODEBUILD_SOURCE_VERSION" --config-file aws-code-build/build_config.json
+        - poetry run python3 -m exasol_script_languages_container_ci.main run-ci --flavor $FLAVOR --branch-name "$CURRENT_BRANCH" --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-build-repository "$BUILD_DOCKER_REPOSITORY" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --commit-sha "$CODEBUILD_SOURCE_VERSION" --config-file aws-code-build/build_config.json
 
 artifacts:
   files:
