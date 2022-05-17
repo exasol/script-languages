@@ -217,7 +217,7 @@ PyGithub = "^1.55.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "bug/7_fix_awscodebuild_artifacts"
-resolved_reference = "f47deef84eb371639ca1ac0f8b83c9e249aeb2bc"
+resolved_reference = "4db7679b5d75c00851592c3c75f12ecc724476d8"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
