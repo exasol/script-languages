@@ -21,7 +21,7 @@ python = ">=3.8,<4"
 importlib-resources = ">=5.4.0"
 exasol_script_languages_container_tool = { url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.12.0/exasol_script_languages_container_tool-0.12.0-py3-none-any.whl" }
 exasol-script-languages-container-ci = {git = "https://github.com/exasol/script-languages-container-ci.git", branch="main"}
-exasol-script-languages-container-ci-setup = {git = "https://github.com/exasol/script-languages-container-ci-setup.git", branch="bug/7_fix_awscodebuild_artifacts"}
+exasol-script-languages-container-ci-setup = {git = "https://github.com/exasol/script-languages-container-ci-setup.git", branch="main"}
 [build-system]
 requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
