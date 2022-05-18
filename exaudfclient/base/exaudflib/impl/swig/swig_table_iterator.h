@@ -147,7 +147,7 @@ public:
 
     SWIGTableIterator_Impl():
         m_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id),
-        m_socket(*(exaudflib::global.SWIGVM_params_ref->sock)),
+        m_socket(*(exaudflib::global.sock)),
         m_column_count(exaudflib::global.SWIGVM_params_ref->inp_types->size()),
         m_col_offsets(exaudflib::global.SWIGVM_params_ref->inp_types->size()),
         m_current_row((uint64_t)-1),

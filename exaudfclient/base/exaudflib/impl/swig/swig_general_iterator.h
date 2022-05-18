@@ -12,7 +12,7 @@ protected:
 public:
     //        SWIGGeneralIterator(SWIGVMExceptionHandler *exch): m_exch(exch) { }
     SWIGGeneralIterator()
-    : m_exch(exaudflib::global.SWIGVM_params_ref->exch)
+    : m_exch(&exaudflib::global.exchandler)
     {}
     virtual ~SWIGGeneralIterator() { }
     inline const char* checkException() {

@@ -3,6 +3,7 @@
 
 
 #include "exaudflib/vm/swig_vm.h"
+#include <string.h>
 
 #ifdef ENABLE_JAVA_VM
 
