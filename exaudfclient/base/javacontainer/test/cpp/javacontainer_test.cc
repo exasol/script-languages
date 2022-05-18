@@ -2,6 +2,7 @@
 #include "include/gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "javacontainer/test/cpp/javavm_test.h"
+#include <string.h>
 
 
 TEST(JavaContainer, basic_jar) {
