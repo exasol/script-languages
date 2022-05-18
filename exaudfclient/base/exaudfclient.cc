@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <fstream>
 #include <link.h>
+#include <string.h>
+
 #ifndef UDF_PLUGIN_CLIENT
 #include <dlfcn.h> //This is required for dynamic linking in new linker namespace, not required for plugins
 #endif

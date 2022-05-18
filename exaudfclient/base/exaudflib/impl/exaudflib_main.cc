@@ -188,8 +188,7 @@ reinit:
     if (exaudflib::check::get_remote_client()) socket.bind(socket_name.c_str());
     else socket.connect(socket_name.c_str());
 
-    exaudflib::global.SWIGVM_params_ref->sock = &socket;
-    exaudflib::global.SWIGVM_params_ref->exch = &exaudflib::global.exchandler;
+    exaudflib::global.sock = &socket;
 
     SWIGVMContainers::SWIGVM* vm=nullptr;
 

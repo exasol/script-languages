@@ -20,7 +20,7 @@ Global global;
 }
 
 exaudflib::Global::Global()
-: SWIGVM_params_ref(nullptr) {}
+: SWIGVM_params_ref(nullptr), sock(nullptr) {}
 
 void exaudflib::Global::initSwigParams() {
     /**

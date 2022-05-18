@@ -16,6 +16,7 @@
 #include "exaudflib/swig/script_data_transfer_objects.h"
 
 #include <sstream>
+#include <string.h>
 
 #define DISABLE_PYTHON_SUBINTERP
 
