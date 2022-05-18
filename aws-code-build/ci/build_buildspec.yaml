@@ -27,7 +27,7 @@ phases:
       commands:
         - echo CODEBUILD_RESOLVED_SOURCE_VERSION is "$CODEBUILD_RESOLVED_SOURCE_VERSION" #supposed to be the SHA
         - echo CODEBUILD_SOURCE_VERSION is "$CODEBUILD_SOURCE_VERSION" #supposed to be the SHA
-        - [[ -z "${ CODEBUILD_WEBHOOK_HEAD_REF }" ]] && export CURRENT_BRANCH="$CUSTOM_BRANCH" || export CURRENT_BRANCH="$CODEBUILD_WEBHOOK_HEAD_REF"
+        - eval "[[ -z \"${CODEBUILD_WEBHOOK_HEAD_REF}\" ]] && export CURRENT_BRANCH=\"$CUSTOM_BRANCH\" || export CURRENT_BRANCH=\"$CODEBUILD_WEBHOOK_HEAD_REF\""
         - echo CURRENT_BRANCH is "$CURRENT_BRANCH"
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USER" --password-stdin
         - mkdir -p ".build_output/jobs" ".build_output/security_scan" ".build_output/metadata" #Create output directory here. Otherwise artifacts phase might fail.
