@@ -18,8 +18,8 @@ public:
     SWIGMetadata_Impl():
         SWIGMetadata(false),
         m_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id),
-        m_socket(*(exaudflib::global.SWIGVM_params_ref->sock)),
-        m_exch(exaudflib::global.SWIGVM_params_ref->exch),
+        m_socket(*(exaudflib::global.sock)),
+        m_exch(&exaudflib::global.exchandler),
         m_db_name(exaudflib::global.SWIGVM_params_ref->dbname),
         m_db_version(exaudflib::global.SWIGVM_params_ref->dbversion),
         m_script_name(exaudflib::global.SWIGVM_params_ref->script_name),

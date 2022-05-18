@@ -4,6 +4,7 @@
 #include "exaudflib/swig/script_data_transfer_objects.h"
 #include "exaudflib/zmqcontainer.pb.h"
 #include "exaudflib/swig/swig_common.h"
+#include <zmq.hpp>
 
 namespace exaudflib {
     struct Global {
@@ -11,6 +12,7 @@ namespace exaudflib {
         void initSwigParams();
         void writeScriptParams(const exascript_info &rep);
         SWIGVMContainers::SWIGVM_params_t * SWIGVM_params_ref;
+        zmq::socket_t *sock;
         ExecutionGraph::StringDTO singleCall_StringArg;
         bool singleCallMode;
         SWIGVMContainers::single_call_function_id_e singleCallFunction;
