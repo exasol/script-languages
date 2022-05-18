@@ -20,6 +20,6 @@ fi
 
 echo Ready.
 echo Now you can run the AWS code build locally with:
-echo "'./aws-code-build/run_local/run_local.sh in the root folder (where buildspec.yml exists)"
+echo "'./aws-code-build/run_local/run_local_prebuilt.sh <buildspec> <aws-profile> in the root folder"
 
 popd &> /dev/null

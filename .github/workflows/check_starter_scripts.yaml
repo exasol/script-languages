@@ -29,7 +29,7 @@ jobs:
     - name: Setup poetry env
       run:  bash scripts/setup_poetry_env.sh "python3.8"
 
-    - name: Run check_if_starter_scripts_are_up_to_date.sh
+    - name: Run githooks/update_exaslct_starter_scripts.sh
       run: bash githooks/update_exaslct_starter_scripts.sh
 
     - name: Check git status
