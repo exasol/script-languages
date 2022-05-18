@@ -4,7 +4,6 @@
 #include "javacontainer/test/cpp/javavm_test.h"
 #include <string.h>
 
-
 TEST(JavaContainer, basic_jar) {
     const std::string script_code = "%scriptclass com.exasol.udf_profiling.UdfProfiler;\n"
                                     "%jar javacontainer/test/test.jar;";
