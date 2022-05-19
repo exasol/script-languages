@@ -79,6 +79,7 @@ struct SWIGVM_columntype_t {
 
 struct SWIGVM_params_t {
     uint64_t connection_id;
+    SWIGVMExceptionHandler *exch;
     char *dbname;
     char *dbversion;
     char *script_name;
@@ -108,7 +109,7 @@ struct SWIGVM_params_t {
     std::string pluginURI;
     std::string outputAddress;
     SWIGVM_params_t():
-        connection_id(0), dbname(NULL), dbversion(NULL), script_name(NULL), script_schema(NULL), current_user(NULL),
+        connection_id(0), exch(NULL), dbname(NULL), dbversion(NULL), script_name(NULL), script_schema(NULL), current_user(NULL),
         current_schema(NULL), scope_user(NULL), script_code(NULL),
         session_id(0), statement_id(0), node_count(0), node_id(0), vm_id(0),
         vm_type(VM_UNSUPPORTED), maximal_memory_limit(0),
@@ -118,7 +119,7 @@ struct SWIGVM_params_t {
         is_emitted(NULL), singleCallMode(false), pluginName(""), pluginURI(""), outputAddress("")
     { }
     SWIGVM_params_t(const bool allocate_params):
-        connection_id(0), dbname(NULL), dbversion(NULL), script_name(NULL), script_schema(NULL), current_user(NULL),
+        connection_id(0), exch(NULL), dbname(NULL), dbversion(NULL), script_name(NULL), script_schema(NULL), current_user(NULL),
         current_schema(NULL), scope_user(NULL), script_code(NULL),
         session_id(0), statement_id(0), node_count(0), node_id(0), vm_id(0),
         vm_type(VM_UNSUPPORTED), maximal_memory_limit(0),
