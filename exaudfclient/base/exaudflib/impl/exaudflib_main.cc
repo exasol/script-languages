@@ -189,6 +189,7 @@ reinit:
     else socket.connect(socket_name.c_str());
 
     exaudflib::global.sock = &socket;
+    exaudflib::global.SWIGVM_params_ref->exch = &exaudflib::global.exchandler;
 
     SWIGVMContainers::SWIGVM* vm=nullptr;
 
