@@ -3,10 +3,9 @@ name: Check error codes
 on:
   push:
     branches:
-      - "*"
+      - master
   pull_request:
-    branches: 
-      - "*"
+
 
 jobs:
   build:
@@ -20,4 +19,3 @@ jobs:
 
     - name: Search for duplicated error codes
       run: bash find_duplicate_error_codes.sh
-

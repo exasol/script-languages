@@ -3,10 +3,8 @@ name: Test package management scripts
 on:
   push:
     branches:
-      - "*"
+      - master
   pull_request:
-    branches: 
-      - "*"
 
 jobs:
   test_package_management_scripts:
