@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import os
 import time
 
 from exasol_python_test_framework import udf
@@ -19,6 +19,10 @@ class PysftpConnectionTest(udf.TestCase):
     def pysftp_connect(self, python_version):
         schema = "test_pysftp_connect" + python_version
         env = docker_db_environment.DockerDBEnvironment(schema)
+        docker_user = os.getenv("DOCKER_USERNAME")
+        docker_password = os.getenv("DOCKER_PASSWORD")
+        if docker_user is not None and docker_password is not None:
+            env.get_client().login(username=docker_user, password=docker_password)
         try:
             self.query(udf.fixindent("DROP SCHEMA %s CASCADE" % schema), ignore_errors=True)
             self.query(udf.fixindent("CREATE SCHEMA %s" % schema))
