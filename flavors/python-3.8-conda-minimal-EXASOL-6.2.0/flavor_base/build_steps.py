@@ -92,8 +92,7 @@ class AnalyzeBaseTestBuildRun(DockerFlavorAnalyzeImageTask):
         return "base_test_build_run"
 
     def requires_tasks(self):
-        return {"base_test_deps": AnalyzeBaseTestDeps,
-                "language_deps": AnalyzeLanguageDeps}
+        return {"base_test_deps": AnalyzeBaseTestDeps}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
         return {"exaudfclient/base": "exaudfclient/base", "emulator": "emulator"}
