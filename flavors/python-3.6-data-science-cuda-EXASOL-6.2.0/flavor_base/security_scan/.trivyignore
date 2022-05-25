@@ -5,6 +5,7 @@ CVE-2022-0847
 CVE-2022-0778
 CVE-2022-1015
 CVE-2022-1116
+CVE-2022-29581
 #CVE-2022-23648 is a bug in containerd, not issue for containers
 CVE-2022-23648
 # CVE-2022-27191 is an issue in Go. Which will be installed only together with Trivy.
