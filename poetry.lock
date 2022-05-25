@@ -7,21 +7,21 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.extras]
+dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "zope.interface", "furo", "sphinx", "sphinx-notfound-page", "pre-commit", "cloudpickle"]
 docs = ["furo", "sphinx", "zope.interface", "sphinx-notfound-page"]
 tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "zope.interface", "cloudpickle"]
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "cloudpickle"]
-dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "zope.interface", "furo", "sphinx", "sphinx-notfound-page", "pre-commit", "cloudpickle"]
 
 [[package]]
 name = "boto3"
-version = "1.23.2"
+version = "1.23.7"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.6"
 
 [package.dependencies]
-botocore = ">=1.26.2,<1.27.0"
+botocore = ">=1.26.7,<1.27.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.5.0,<0.6.0"
 
@@ -30,7 +30,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.26.2"
+version = "1.26.7"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -46,11 +46,11 @@ crt = ["awscrt (==0.13.8)"]
 
 [[package]]
 name = "certifi"
-version = "2021.10.8"
+version = "2022.5.18.1"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 
 [[package]]
 name = "cffi"
@@ -120,8 +120,8 @@ requests = ">=2.14.2,<2.18.0 || >2.18.0"
 websocket-client = ">=0.32.0"
 
 [package.extras]
-tls = ["pyOpenSSL (>=17.5.0)", "cryptography (>=3.4.7)", "idna (>=2.0.0)"]
 ssh = ["paramiko (>=2.4.2)"]
+tls = ["pyOpenSSL (>=17.5.0)", "cryptography (>=3.4.7)", "idna (>=2.0.0)"]
 
 [[package]]
 name = "docutils"
@@ -175,7 +175,7 @@ url = "https://github.com/exasol/integration-test-docker-environment/releases/do
 
 [[package]]
 name = "exasol-script-languages-container-ci"
-version = "0.1.0"
+version = "0.2.0"
 description = "Implements CI builds for script-language-container."
 category = "main"
 optional = false
@@ -184,16 +184,16 @@ python-versions = ">=3.8.0,<4.0"
 [package.dependencies]
 click = ">=8.0.3,<9.0.0"
 exasol-integration-test-docker-environment = {url = "https://github.com/exasol/integration-test-docker-environment/releases/download/0.11.0/exasol_integration_test_docker_environment-0.11.0-py3-none-any.whl"}
-exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.13.0/exasol_script_languages_container_tool-0.13.0-py3-none-any.whl"}
+exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.14.0/exasol_script_languages_container_tool-0.14.0-py3-none-any.whl"}
 GitPython = ">=3.1.0"
 PyGithub = ">=1.55.0,<2.0.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.1.0/exasol_script_languages_container_ci-0.1.0-py3-none-any.whl"
+url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.2.0/exasol_script_languages_container_ci-0.2.0-py3-none-any.whl"
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "0.1.0"
+version = "0.2.0"
 description = "Manages AWS cloud CI build infrastructure."
 category = "main"
 optional = false
@@ -203,18 +203,18 @@ python-versions = ">=3.8.0,<4.0"
 boto3 = ">=1.22.0,<2.0.0"
 click = ">=8.1.3,<9.0.0"
 exasol_error_reporting_python = {git = "https://github.com/exasol/error-reporting-python.git", rev = "0.2.0"}
-exasol-script-languages-container-ci = {url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.1.0/exasol_script_languages_container_ci-0.1.0-py3-none-any.whl"}
-exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.13.0/exasol_script_languages_container_tool-0.13.0-py3-none-any.whl"}
+exasol-script-languages-container-ci = {url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.2.0/exasol_script_languages_container_ci-0.2.0-py3-none-any.whl"}
+exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.14.0/exasol_script_languages_container_tool-0.14.0-py3-none-any.whl"}
 jinja2 = ">=3.1.0"
 jsonschema = ">=3.2.0,<4.0.0"
 PyGithub = ">=1.55.0,<2.0.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/exasol/script-languages-container-ci-setup/releases/download/0.1.0/exasol_script_languages_container_ci_setup-0.1.0-py3-none-any.whl"
+url = "https://github.com/exasol/script-languages-container-ci-setup/releases/download/0.2.0/exasol_script_languages_container_ci_setup-0.2.0-py3-none-any.whl"
 [[package]]
 name = "exasol-script-languages-container-tool"
-version = "0.13.0"
+version = "0.14.0"
 description = "Script Languages Container Tool"
 category = "main"
 optional = false
@@ -227,7 +227,7 @@ importlib-resources = ">=5.4.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.13.0/exasol_script_languages_container_tool-0.13.0-py3-none-any.whl"
+url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.14.0/exasol_script_languages_container_tool-0.14.0-py3-none-any.whl"
 [[package]]
 name = "gitdb"
 version = "4.0.9"
@@ -271,7 +271,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "importlib-metadata"
-version = "4.11.3"
+version = "4.11.4"
 description = "Read metadata from Python packages"
 category = "main"
 optional = false
@@ -282,8 +282,8 @@ zipp = ">=0.5"
 
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
-testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "packaging", "pyfakefs", "flufl.flake8", "pytest-perf (>=0.9.2)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)", "importlib-resources (>=1.3)"]
 perf = ["ipython"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "packaging", "pyfakefs", "flufl.flake8", "pytest-perf (>=0.9.2)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)", "importlib-resources (>=1.3)"]
 
 [[package]]
 name = "importlib-resources"
@@ -332,8 +332,8 @@ python-versions = ">=2.7"
 
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
-"testing.libs" = ["simplejson", "ujson", "yajl"]
 testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-black-multipy", "pytest-cov", "ecdsa", "feedparser", "numpy", "pandas", "pymongo", "scikit-learn", "sqlalchemy", "pytest-flake8 (<1.1.0)", "enum34", "jsonlib", "pytest-flake8 (>=1.1.1)"]
+"testing.libs" = ["simplejson", "ujson", "yajl"]
 
 [[package]]
 name = "jsonschema"
@@ -349,8 +349,8 @@ pyrsistent = ">=0.14.0"
 six = ">=1.11.0"
 
 [package.extras]
-format_nongpl = ["idna", "jsonpointer (>1.13)", "webcolors", "rfc3986-validator (>0.1.0)", "rfc3339-validator"]
 format = ["idna", "jsonpointer (>1.13)", "rfc3987", "strict-rfc3339", "webcolors"]
+format_nongpl = ["idna", "jsonpointer (>1.13)", "webcolors", "rfc3986-validator (>0.1.0)", "rfc3339-validator"]
 
 [[package]]
 name = "lockfile"
@@ -396,7 +396,7 @@ python-versions = "*"
 
 [[package]]
 name = "networkx"
-version = "2.8"
+version = "2.8.2"
 description = "Python package for creating and manipulating graphs and networks"
 category = "main"
 optional = false
@@ -404,10 +404,10 @@ python-versions = ">=3.8"
 
 [package.extras]
 default = ["numpy (>=1.19)", "scipy (>=1.8)", "matplotlib (>=3.4)", "pandas (>=1.3)"]
-doc = ["sphinx (>=4.5)", "pydata-sphinx-theme (>=0.8.1)", "sphinx-gallery (>=0.10)", "numpydoc (>=1.2)", "pillow (>=9.1)", "nb2plots (>=0.6)", "texext (>=0.6.6)"]
-test = ["pytest (>=7.1)", "pytest-cov (>=3.0)", "codecov (>=2.1)"]
 developer = ["pre-commit (>=2.18)", "mypy (>=0.942)"]
+doc = ["sphinx (>=4.5)", "pydata-sphinx-theme (>=0.8.1)", "sphinx-gallery (>=0.10)", "numpydoc (>=1.3)", "pillow (>=9.1)", "nb2plots (>=0.6)", "texext (>=0.6.6)"]
 extra = ["lxml (>=4.6)", "pygraphviz (>=1.9)", "pydot (>=1.4.2)", "sympy (>=1.10)"]
+test = ["pytest (>=7.1)", "pytest-cov (>=3.0)", "codecov (>=2.1)"]
 
 [[package]]
 name = "pycparser"
@@ -454,10 +454,10 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
-tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 crypto = ["cryptography (>=3.3.1)"]
 dev = ["sphinx", "sphinx-rtd-theme", "zope.interface", "cryptography (>=3.3.1)", "pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)", "mypy", "pre-commit"]
+docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
+tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 
 [[package]]
 name = "pynacl"
@@ -542,8 +542,8 @@ idna = {version = ">=2.5,<4", markers = "python_version >= \"3\""}
 urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
-use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
 socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
+use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
 
 [[package]]
 name = "s3transfer"
@@ -635,9 +635,9 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-test = ["websockets"]
 docs = ["Sphinx (>=3.4)", "sphinx-rtd-theme (>=0.5)"]
 optional = ["python-socks", "wsaccel"]
+test = ["websockets"]
 
 [[package]]
 name = "wrapt"
@@ -662,7 +662,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4"
-content-hash = "34abcc4bb4fdcdf0a9293b96fdea4a43dafaa6786213c272099f45f21b51ddcf"
+content-hash = "b97ed7f930171e3855bdf4c10d2923bdf04fa0d68babbf1092a8448a3511494f"
 
 [metadata.files]
 attrs = [
@@ -670,16 +670,16 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 boto3 = [
-    {file = "boto3-1.23.2-py3-none-any.whl", hash = "sha256:7889c3a07171b8a43468a8644d7c95948dc9e1389c4aac2b689a428ee1a98300"},
-    {file = "boto3-1.23.2.tar.gz", hash = "sha256:4408cf07340d29d7a9c8d32cf71b1c54f86b768b2145d341d2698c1e467d7d32"},
+    {file = "boto3-1.23.7-py3-none-any.whl", hash = "sha256:b59a210fa6a87f0c755b40403ffc66b9b285680bbc5ad5245cf167e2def33620"},
+    {file = "boto3-1.23.7.tar.gz", hash = "sha256:3fb956d097105a0fb98c29a622ff233fa8de68519aabd7088d7ffd36dfc33214"},
 ]
 botocore = [
-    {file = "botocore-1.26.2-py3-none-any.whl", hash = "sha256:1977f2ad6b6263f4dd9e8b784e69b194988f16d6bd90c4eede15964f4eecf878"},
-    {file = "botocore-1.26.2.tar.gz", hash = "sha256:16b9d523a19d61b0edc80ef2253f9130165bad473b1b5707027f10975a8d5467"},
+    {file = "botocore-1.26.7-py3-none-any.whl", hash = "sha256:9f8d5e8d65b24d97fcb7804b84831e5627fceb52707167d2f496477675c98ded"},
+    {file = "botocore-1.26.7.tar.gz", hash = "sha256:0f4a467188644382856e96e85bff0b453442d5cf0c0f554154571a6e2468a005"},
 ]
 certifi = [
-    {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
-    {file = "certifi-2021.10.8.tar.gz", hash = "sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872"},
+    {file = "certifi-2022.5.18.1-py3-none-any.whl", hash = "sha256:f1d53542ee8cbedbe2118b5686372fb33c297fcd6379b050cca0ef13a597382a"},
+    {file = "certifi-2022.5.18.1.tar.gz", hash = "sha256:9c5705e395cd70084351dd8ad5c41e65655e08ce46f2ec9cf6c2c08390f71eb7"},
 ]
 cffi = [
     {file = "cffi-1.15.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:c2502a1a03b6312837279c8c1bd3ebedf6c12c4228ddbad40912d671ccc8a962"},
@@ -779,8 +779,8 @@ idna = [
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
 ]
 importlib-metadata = [
-    {file = "importlib_metadata-4.11.3-py3-none-any.whl", hash = "sha256:1208431ca90a8cca1a6b8af391bb53c1a2db74e5d1cef6ddced95d4b2062edc6"},
-    {file = "importlib_metadata-4.11.3.tar.gz", hash = "sha256:ea4c597ebf37142f827b8f39299579e31685c31d3a438b59f469406afd0f2539"},
+    {file = "importlib_metadata-4.11.4-py3-none-any.whl", hash = "sha256:c58c8eb8a762858f49e18436ff552e83914778e50e9d2f1660535ffb364552ec"},
+    {file = "importlib_metadata-4.11.4.tar.gz", hash = "sha256:5d26852efe48c0a32b0509ffbc583fda1a2266545a78d104a6f4aff3db17d700"},
 ]
 importlib-resources = [
     {file = "importlib_resources-5.7.1-py3-none-any.whl", hash = "sha256:e447dc01619b1e951286f3929be820029d48c75eb25d265c28b92a16548212b8"},
@@ -856,8 +856,8 @@ netaddr = [
     {file = "netaddr-0.8.0.tar.gz", hash = "sha256:d6cc57c7a07b1d9d2e917aa8b36ae8ce61c35ba3fcd1b83ca31c5a0ee2b5a243"},
 ]
 networkx = [
-    {file = "networkx-2.8-py3-none-any.whl", hash = "sha256:1a1e8fe052cc1b4e0339b998f6795099562a264a13a5af7a32cad45ab9d4e126"},
-    {file = "networkx-2.8.tar.gz", hash = "sha256:4a52cf66aed221955420e11b3e2e05ca44196b4829aab9576d4d439212b0a14f"},
+    {file = "networkx-2.8.2-py3-none-any.whl", hash = "sha256:51d6ae63c24dcd33901357688a2ad20d6bcd38f9a4c5307720048d3a8081059c"},
+    {file = "networkx-2.8.2.tar.gz", hash = "sha256:ae99c9b0d35e5b4a62cf1cfea01e5b3633d8d02f4a0ead69685b6e7de5b85eab"},
 ]
 pycparser = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},

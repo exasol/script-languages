@@ -172,7 +172,12 @@ class JavaHive(udf.TestCase):
     @udf.skipIfNot(docker_db_environment.is_available, reason="This test requires a docker-db environment")
     def test_java_hive(self):
         env = docker_db_environment.DockerDBEnvironment("JAVA_HIVE")
+
         try:
+            docker_user = os.getenv("DOCKER_USERNAME")
+            docker_password = os.getenv("DOCKER_PASSWORD")
+            if docker_user is not None and docker_password is not None:
+                env.get_client().login(username=docker_user, password=docker_password)
             #        env.get_client().images.pull("bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8")
             #        env.get_client().images.pull("bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8")
             #        env.get_client().images.pull("bde2020/hive:2.3.2-postgresql-metastore")
