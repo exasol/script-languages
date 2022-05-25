@@ -27,6 +27,13 @@ batch:
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
       privileged-mode: true
       type: BUILD_GENERAL1_MEDIUM
+    - identifier: build_python_38_conda_minimal_EXASOL_620
+      env:
+        variables:
+          FLAVOR: python-3.8-conda-minimal-EXASOL-6.2.0
+      buildspec: ./aws-code-build/ci/build_buildspec.yaml
+      privileged-mode: true
+      type: BUILD_GENERAL1_MEDIUM
     - identifier: build_python_38_minimal_EXASOL_620
       env:
         variables:
