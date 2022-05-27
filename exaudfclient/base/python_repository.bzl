@@ -7,28 +7,25 @@ def _get_actual_python_version(binary,p_repository_ctx):
     print("python actual_version: %s"%actual_version)
     return actual_version
 
-def _get_include_dir(binary,version,p_repository_ctx):
-    command_result = p_repository_ctx.execute([binary,"-c","import sysconfig; print(sysconfig.get_config_var('INCLUDEDIR'))"]) #example stdout: /usr/include\n
+def _get_sysconfig_value(binary,key,p_repository_ctx):
+    script = "import sysconfig; print(sysconfig.get_config_var('{key}'))".format(key=key)
+    command_result = p_repository_ctx.execute([binary,"-c", script])
     if command_result.return_code != 0:
         fail("Could not acquire include_dir for python, got return code %s stderr: \n %s"
             % (command_result.return_code, command_result.stderr))
-    base_include_dir = command_result.stdout.strip("\n") #example: /usr/include
+    stripped_command_result = command_result.stdout.strip("\n")
+    return stripped_command_result
 
+def _get_include_dir(binary,version,p_repository_ctx): 
+    base_include_dir = _get_sysconfig_value(binary,"INCLUDEDIR",p_repository_ctx) #example: /usr/include
     include_dir = base_include_dir+"/"+version #example /usr/include/python3.8 
     print("python include_dir: %s" % include_dir)
-
     return include_dir
 
 def _get_lib_glob(binary, version, p_repository_ctx):
-    command_result = p_repository_ctx.execute([binary,"-c","import sysconfig; print(sysconfig.get_config_var('LIBDIR'))"]) #example stdout: /usr/lib\n
-    if command_result.return_code != 0:
-        fail("Could not acquire lib_dir for python, got return code %s stderr: \n %s"
-            % (command_result.return_code, command_result.stderr))
-    base_lib_dir = command_result.stdout.strip("\n") #example: /usr/lib
-
+    base_lib_dir = _get_sysconfig_value(binary,"LIBDIR",p_repository_ctx) #example: /usr/lib
     lib_glob = "%s/**/lib%s*.so" % (base_lib_dir,version)
     print("python lib_glob: %s" % lib_glob)
-
     return lib_glob
 
 def _python_local_repository_impl(repository_ctx):
