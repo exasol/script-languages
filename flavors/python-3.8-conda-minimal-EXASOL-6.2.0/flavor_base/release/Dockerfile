@@ -1,4 +1,9 @@
 FROM ubuntu:20.04
+
+ENV ENV_NAME="base"
+ENV MAMBA_ROOT_PREFIX="/opt/conda"
+ENV MAMBA_EXE="/bin/micromamba"
+
 RUN mkdir /conf /buckets
 
 COPY --from={{language_deps}} /usr /usr
@@ -47,6 +52,8 @@ RUN true # workaround for https://github.com/moby/moby/issues/37965
 COPY --from={{flavor_customization}} /var /var
 RUN true # workaround for https://github.com/moby/moby/issues/37965
 
+COPY --from={{flavor_customization}} /root /root
+RUN true # workaround for https://github.com/moby/moby/issues/37965
 
 RUN ldconfig
 
@@ -59,4 +66,5 @@ RUN true # workaround for https://github.com/moby/moby/issues/37965
 
 RUN mkdir -p /build_info/actual_installed_packages/release && \
     /scripts/list_installed_scripts/list_installed_apt.sh > /build_info/actual_installed_packages/release/apt_get_packages && \
-    /scripts/list_installed_scripts/list_installed_pip.sh /opt/conda/bin/python3.8 > /build_info/actual_installed_packages/release/python3_pip_packages
+    /scripts/list_installed_scripts/list_installed_pip.sh /opt/conda/bin/python3.8 > /build_info/actual_installed_packages/release/python3_pip_packages && \
+   /scripts/list_installed_scripts/list_installed_conda.sh > /build_info/actual_installed_packages/release/conda_packages
