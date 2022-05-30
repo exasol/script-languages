@@ -12,6 +12,7 @@
     --file                                Input file with each line represents a input. 
                                           A line can have multiple elements separated by --element-separator. 
                                           Lines everything after a # is interpreted as comment
+    --channel-file                                File which specifies the conda channels to use for installation. 
     --with-versions                       Uses versions specified in the input file in the second element of each line
     --allow-no-version                    If --with-versions is active, allow packages to have no version specified
     --allow-no-version-for-urls           If --with-versions is active, allow packages specified by urls to have no version
@@ -30,6 +31,7 @@ use Getopt::Long;
 my $help = 0;
 my $dry_run = 0;
 my $file = '';
+my $channel_file = '';
 my $python_binary = '';
 my $with_versions = 0;
 my $allow_no_version = 0;
@@ -37,6 +39,7 @@ GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
             "file=s" => \$file,
+	    "channel-file=s" => \$channel_file,
             "with-versions" => \$with_versions,
             "allow-no-version" => \$allow_no_version
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
@@ -45,6 +48,10 @@ package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
 if($file eq ''){
     package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --file was not specified",1);
+}
+
+if($channel_file eq ''){
+    package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --channel-file was not specified",1);
 }
 
 sub identity {
@@ -96,11 +103,25 @@ sub generate_pinned_file{
     }
 }
 
+sub generate_channel_args{
+    my ($channel_file) = @_;
+
+    my $element_separator = '\\|';
+    my $combining_template = "<<<<0>>>>";
+    my @templates=("-c '<<<<0>>>>'");
+    my @separators = (" ");
+    my @rendered_line_transformation_functions = (\&identity);
+    my $channel_args = 
+        package_mgmt_utils::generate_joined_and_transformed_string_from_file(
+            $channel_file, $element_separator, $combining_template, \@templates, \@separators, 
+	    \@rendered_line_transformation_functions);
+    return $channel_args
+}
 
 sub run_install_command{
-    my ($file, $dry_run, $with_versions, $allow_no_version) = @_;
+    my ($file, $dry_run, $with_versions, $allow_no_version, $channel_args) = @_;
     my $element_separator = '\\|';
-    my $combining_template = "/bin/micromamba --yes install --freeze-installed --channel conda-forge <<<<0>>>>";
+    my $combining_template = "/bin/micromamba --yes install --freeze-installed $channel_args <<<<0>>>>";
     my @templates=("'<<<<0>>>>==<<<<1>>>>'");
     my @separators = (" ");
 
@@ -126,4 +147,5 @@ sub run_install_command{
 
 
 generate_pinned_file($file, $dry_run, $with_versions, $allow_no_version);
-run_install_command($file, $dry_run, $with_versions, $allow_no_version);
+my $channel_args = generate_channel_args($channel_file);
+run_install_command($file, $dry_run, $with_versions, $allow_no_version, $channel_args);
