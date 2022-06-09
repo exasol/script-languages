@@ -1,3 +1,5 @@
+#include "exaudflib/exaudflib_main.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -8,7 +10,7 @@
 #include <zmq.hpp>
 #include <fcntl.h>
 #include <fstream>
-#include <functional>
+
 
 #include "debug_message.h"
 
@@ -22,8 +24,6 @@
 #include "exaudflib/impl/msg_conversion.h"
 #include "exaudflib/impl/global.h"
 #include "exaudflib/impl/socket_high_level.h"
-
-#include "exaudflib/vm/swig_vm.h"
 
 
 #ifndef NDEBUG

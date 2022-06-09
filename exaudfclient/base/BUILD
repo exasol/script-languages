@@ -1,5 +1,5 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt", 
+exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt",
 	       "create_binary_wrapper.sh", "create_binary_wrapper_valgrind.sh", "create_binary_wrapper_valgrind_massif.sh"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
@@ -64,7 +64,7 @@ cc_library(
     hdrs = [
         "debug_message.h"
     ],
-    alwayslink = True,
+  #  alwayslink = True,
 )
 
 # Using cc_binary to build a shared library as output target is a workaround, because
@@ -75,12 +75,8 @@ cc_library(
 cc_binary(
     name = "libexaudflib_complete.so",
     linkshared = 1,
-    srcs = ["//exaudflib:exaudflib", 
-            "//exaudflib:zmqcontainer", 
-            "//exaudflib:script_data_transfer_objects_wrapper", 
-            "//exaudflib:script_data_transfer_objects"
-            ],
-    deps = [ "@zmq//:zmq", "@protobuf//:protobuf"],
+    srcs = ["exaudflib_complete.cc"],
+    deps = ["//exaudflib:exaudflib"],
     defines = VM_ENABLED_DEFINES
 )
 
@@ -98,12 +94,12 @@ VM_ENABLED_DEPS=select({
 VM_PYTHON2_DEPS=select({
         ":python": ["//python/python2:pythoncontainer"],
         "//conditions:default": []
-    }) 
+    })
 
 VM_PYTHON3_DEPS=select({
         ":python": ["//python/python3:pythoncontainer"],
         "//conditions:default": []
-    }) 
+    })
 
 cc_binary(
     name = "exaudfclient_bin",
@@ -174,7 +170,7 @@ sh_library(
         "//:stdout_to_bucketfs": ["//:create_binary_wrapper_stdout_to_bucketfs.sh"],
         "//conditions:default": ["//:create_binary_wrapper.sh"]
     })
-) 
+)
 
 SLOW_WRAPPER_BINARY_PY2="""$(location //:wrapper_generator_bin) "$(location exaudfclient_bin)" "$(location exaudfclient)" "$(location exaudfclient.template.sh)" """
 FAST_BINARY_PY2="""cp "$(location exaudfclient_bin)" "$(location exaudfclient)" """
@@ -237,4 +233,3 @@ genrule(
     srcs = [":exaudfclient_py3_static_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
     output_to_bindir = True
 )
-
