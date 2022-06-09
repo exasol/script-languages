@@ -16,8 +16,9 @@ FROM {{flavor_base_deps}}
 
 RUN mkdir -p /build_info/packages/flavor_customization
 
+ENV CONDA_OVERRIDE_CUDA=11.5
 COPY flavor_customization/packages /build_info/packages/flavor_customization
-RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/flavor_base_deps/conda_packages --channel-file /build_info/packages/flavor_customization/conda_channels --with-versions --allow-no-version
+RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/flavor_customization/conda_packages --channel-file /build_info/packages/flavor_customization/conda_channels --with-versions --allow-no-version
 
 ##########################################################################
 ##########################################################################
