@@ -7,3 +7,6 @@
 # also start a comment after the package definition.
 
 #pysimdjson|4.0.3
+tensorflow|2.8.1=cuda112py38*
+pytorch|1.11.0=py3.8_cuda11.5_cudnn8.3.2_0
+
