@@ -84,7 +84,7 @@ cc_library(
 # which might cause problems with tensorflow. If you need
 # "//exaudflib:scriptoptionlines","//exaudflib:script_data_transfer_objects" or
 # "//exaudflib:script_data_transfer_objects_wrapper" in the language container
-# depend directly on them
+# depend directly on them or depend on exaudflib-deps
 cc_library(
     name = "exaudflib",
     srcs = ["vm/swig_vm.cc",
@@ -102,5 +102,6 @@ cc_library(
             "impl/swig/swig_result_handler.h", "impl/swig/swig_result_handler.cc",
             "impl/swig/swig_general_iterator.h", "impl/swig/swig_general_iterator.cc"],
     defines = VM_ENABLED_DEFINES,
+    linkstatic = 1,
     deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//:debug_message_h"],
 )

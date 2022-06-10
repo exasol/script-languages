@@ -67,11 +67,15 @@ cc_library(
 )
 
 # Using cc_binary to build a shared library as output target is a workaround, because
-# Bazel's cc_library are only intermediate stage and can be used as output target.
-# It is necessary to include all dependencies of //exaudflib:exaudflib into deps and srcs,
-# otherwise dlmopen won't find the symbols from these dependencies. The target //exaudflib:exaudflib-deps
+# Bazel's cc_library are only intermediate stages and can be used as output target.
+# It is necessary to include //exaudflib:exaudflib into deps and srcs, because
+# otherwise dlmopen won't find the symbols of exaudflib and it dependencies. The target //exaudflib:exaudflib-deps
 # won't work either, because it only contains the libraries only as dependencies.
-# ...
+# exaudflib:exaudflib is built as a static library (.a) (forced with linkstatic = 1).
+# In the libexaudflib_complete.so-2.params,
+# we could see that bazel uses this static library as src of the libexaudflib_complete.so.
+# Furthermore, it links all internal dependencies from the object files (.o) statically into libexaudflib_complete.so.
+# The external dependencies libprotobuf and libzmq are linked dynamically.
 cc_binary(
     name = "libexaudflib_complete.so",
     linkshared = 1,
@@ -79,6 +83,7 @@ cc_binary(
     deps = ["//exaudflib:exaudflib"],
     defines = VM_ENABLED_DEFINES
 )
+
 
 VM_ENABLED_DEPS=select({
         ":benchmark": ["//benchmark_container:benchmark_container"],
