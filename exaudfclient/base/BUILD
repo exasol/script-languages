@@ -69,8 +69,8 @@ cc_library(
 # Using cc_binary to build a shared library as output target is a workaround, because
 # Bazel's cc_library are only intermediate stages and can be used as output target.
 # It is necessary to include //exaudflib:exaudflib into deps and srcs, because
-# otherwise dlmopen won't find the symbols of exaudflib and it dependencies. The target //exaudflib:exaudflib-deps
-# won't work either, because it only contains the libraries only as dependencies.
+# otherwise dlmopen won't find the symbols of exaudflib and its dependencies. The target //exaudflib:exaudflib-deps
+# won't work either, because it only contains the libraries as dependencies.
 # exaudflib:exaudflib is built as a static library (.a) (forced with linkstatic = 1).
 # In the libexaudflib_complete.so-2.params,
 # we could see that bazel uses this static library as src of the libexaudflib_complete.so.

@@ -85,6 +85,7 @@ cc_library(
 # "//exaudflib:scriptoptionlines","//exaudflib:script_data_transfer_objects" or
 # "//exaudflib:script_data_transfer_objects_wrapper" in the language container
 # depend directly on them or depend on exaudflib-deps
+# we enable here linkstatic = 1 such that we can then link the exaudflib statically into the exaudflib_complete.so
 cc_library(
     name = "exaudflib",
     srcs = ["vm/swig_vm.cc",
