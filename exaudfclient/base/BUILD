@@ -1,5 +1,5 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt", 
+exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt",
 	       "create_binary_wrapper.sh", "create_binary_wrapper_valgrind.sh", "create_binary_wrapper_valgrind_massif.sh"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
@@ -64,25 +64,26 @@ cc_library(
     hdrs = [
         "debug_message.h"
     ],
-    alwayslink = True,
 )
 
 # Using cc_binary to build a shared library as output target is a workaround, because
-# Bazel's cc_library are only intermediate stage and can be used as output target.
-# It is necessary to include all dependencies of //exaudflib:exaudflib into deps and srcs,
-# otherwise dlmopen won't find the symbols from these dependencies. The target //exaudflib:exaudflib-deps
-# won't work either, because it only contains the libraries only as dependencies.
+# Bazel's cc_library are only intermediate stages and can be used as output target.
+# It is necessary to include //exaudflib:exaudflib into deps and srcs, because
+# otherwise dlmopen won't find the symbols of exaudflib and its dependencies. The target //exaudflib:exaudflib-deps
+# won't work either, because it only contains the libraries as dependencies.
+# exaudflib:exaudflib is built as a static library (.a) (forced with linkstatic = 1).
+# In the libexaudflib_complete.so-2.params,
+# we could see that bazel uses this static library as src of the libexaudflib_complete.so.
+# Furthermore, it links all internal dependencies from the object files (.o) statically into libexaudflib_complete.so.
+# The external dependencies libprotobuf and libzmq are linked dynamically.
 cc_binary(
     name = "libexaudflib_complete.so",
     linkshared = 1,
-    srcs = ["//exaudflib:exaudflib", 
-            "//exaudflib:zmqcontainer", 
-            "//exaudflib:script_data_transfer_objects_wrapper", 
-            "//exaudflib:script_data_transfer_objects"
-            ],
-    deps = [ "@zmq//:zmq", "@protobuf//:protobuf"],
+    srcs = ["//exaudflib:exaudflib"],
+    deps = ["//exaudflib:exaudflib"],
     defines = VM_ENABLED_DEFINES
 )
+
 
 VM_ENABLED_DEPS=select({
         ":benchmark": ["//benchmark_container:benchmark_container"],
@@ -98,12 +99,12 @@ VM_ENABLED_DEPS=select({
 VM_PYTHON2_DEPS=select({
         ":python": ["//python/python2:pythoncontainer"],
         "//conditions:default": []
-    }) 
+    })
 
 VM_PYTHON3_DEPS=select({
         ":python": ["//python/python3:pythoncontainer"],
         "//conditions:default": []
-    }) 
+    })
 
 cc_binary(
     name = "exaudfclient_bin",
@@ -174,7 +175,7 @@ sh_library(
         "//:stdout_to_bucketfs": ["//:create_binary_wrapper_stdout_to_bucketfs.sh"],
         "//conditions:default": ["//:create_binary_wrapper.sh"]
     })
-) 
+)
 
 SLOW_WRAPPER_BINARY_PY2="""$(location //:wrapper_generator_bin) "$(location exaudfclient_bin)" "$(location exaudfclient)" "$(location exaudfclient.template.sh)" """
 FAST_BINARY_PY2="""cp "$(location exaudfclient_bin)" "$(location exaudfclient)" """
@@ -237,4 +238,3 @@ genrule(
     srcs = [":exaudfclient_py3_static_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
     output_to_bindir = True
 )
-
