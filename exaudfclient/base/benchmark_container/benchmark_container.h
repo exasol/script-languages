@@ -1,5 +1,7 @@
-#include "exaudflib/exaudflib.h"
-
+#include "exaudflib/vm/swig_vm.h"
+#include "exaudflib/swig/swig_meta_data.h"
+#include "exaudflib/swig/swig_result_handler.h"
+#include "exaudflib/swig/swig_table_iterator.h"
 
 using namespace SWIGVMContainers;
 using namespace std;

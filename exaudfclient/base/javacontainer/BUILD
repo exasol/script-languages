@@ -5,25 +5,25 @@ genrule(
     cmd = """
         mkdir -p $(location java_src)/com/exasol/swig        
         mkdir -p build_exascript_java_tmp_cc/exaudflib
-        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_cc/exaudflib
+        cp "$(location //exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_cc/exaudflib
         cd build_exascript_java_tmp_cc     
         swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -java -addextern -module exascript_java -package com.exasol.swig -outdir "../$(location java_src)/com/exasol/swig" -o "../$(location exascript_java_tmp.cc)" exaudflib/exascript.i
         """,
     outs = ["exascript_java_tmp.cc","java_src"],
-    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:swig/script_data_transfer_objects_wrapper.h"]
 )
 
 genrule(
     name = "exascript_java_tmp_h",
     cmd = """
         mkdir build_exascript_java_tmp_h
-        cp "$(location //exaudflib:script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_h
+        cp "$(location //exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_h
         cp -r "$(location exascript_java_tmp.cc)"  "$(location java_src)" build_exascript_java_tmp_h
         cd build_exascript_java_tmp_h
         swig -v -DEXTERNAL_PROCESS -c++ -java -external-runtime "../$(location exascript_java_tmp.h)"
         """,
     outs = ["exascript_java_tmp.h"],
-    srcs = ["//exaudflib:exascript.i","//exaudflib:script_data_transfer_objects_wrapper.h", ":exascript_java_tmp.cc", ":java_src"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:swig/script_data_transfer_objects_wrapper.h", ":exascript_java_tmp.cc", ":java_src"]
 )
 
 genrule(
@@ -102,8 +102,8 @@ cc_library(
 
 cc_library(
     name = "javacontainer",
-    srcs = [":javacontainer.cc", ":javacontainer.h", ":dummy"],
-    hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h","exascript_java_jni_decl.h"],
+    srcs = [":javacontainer.cc", ":javacontainer.h", ":javacontainer_impl.cc", ":javacontainer_impl.h", ":dummy"],
+    hdrs = [":exascript_java_int", ":filter_swig_code_exascript_java_h", "exascript_java_jni_decl.h"],
     deps = ["@ssl//:ssl","@java//:java", ":exascript_java", "//exaudflib:header", "//:debug_message_h","//exaudflib:scriptoptionlines"],
 #    copts= ["-O0","-fno-lto"],
     alwayslink=True,

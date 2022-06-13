@@ -9,11 +9,14 @@
 #include <fcntl.h>
 #include <fstream>
 #include <link.h>
-#ifndef PROTEGRITY_PLUGIN_CLIENT
-#include <dlfcn.h>
+#include <string.h>
+
+#ifndef UDF_PLUGIN_CLIENT
+#include <dlfcn.h> //This is required for dynamic linking in new linker namespace, not required for plugins
 #endif
 #include <exception>
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/vm/swig_vm.h"
+#include "exaudflib/load_dynamic.h"
 #ifdef ENABLE_BENCHMARK_VM
 #include "benchmark_container/benchmark_container.h"
 #endif
@@ -33,7 +36,16 @@
 #include <inttypes.h>
 
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+
+#ifdef ENABLE_JAVA_VM
+#include "javacontainer/javacontainer.h"
+#endif //ENABLE_JAVA_VM
+
+#ifdef ENABLE_PYTHON_VM
+#include "python/pythoncontainer.h"
+#endif //ENABLE_PYTHON_VM
+
+#ifdef UDF_PLUGIN_CLIENT
 #include "protegrityclient.h"
 #endif
 
@@ -44,27 +56,10 @@ namespace SWIGVMContainers {
 __thread SWIGVM_params_t * SWIGVM_params = nullptr;
 }
 
-void* handle;
-
 typedef bool (*VOID_FUN_WITH_SWIGVM_PARAMS_P)(SWIGVM_params_t*);
 typedef int (*MAIN_FUN)(std::function<SWIGVM*()>vmMaker,int,char**);
 
-char* error;
-
-#ifndef PROTEGRITY_PLUGIN_CLIENT
-void* load_dynamic(const char* name) {
-    void* res = dlsym(handle, name);
-    if ((error = dlerror()) != NULL)
-    {
-        std::stringstream sb;
-        sb << "Error when trying to load function '" << name << "': " << error;
-        throw SWIGVM::exception(sb.str().c_str());
-    }
-    return res;
-}
-#endif
-
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
 extern "C" {
 int exaudfclient_main(std::function<SWIGVM*()>vmMaker,int argc,char**argv);
 void set_SWIGVM_params(SWIGVM_params_t* p);
@@ -72,23 +67,23 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 #endif
 
 int main(int argc, char **argv) {
-#ifndef PROTEGRITY_PLUGIN_CLIENT
+#ifndef UDF_PLUGIN_CLIENT
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
-    string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
+    std::string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
-    string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
-    //string libexaudflibPath="libexaudflib_complete.so";
-    //string libexaudflibPath = string(argv[3]);
-    //string libexaudflibPath = string("/exaudf/libexaudflib_complete.so");
+    std::string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
+    //std::string libexaudflibPath="libexaudflib_complete.so";
+    //std::string libexaudflibPath = std::string(argv[3]);
+    //std::string libexaudflibPath = std::string("/exaudf/libexaudflib_complete.so");
 #endif
 #if 1
 
     Lmid_t  my_namespace_id;
-    // DBGMSG(cerr, "Load libprotobuf into new namespace");
-    // DBGVAR(cerr, libProtobufPath);
+    // DBGMSG(std::cerr, "Load libprotobuf into new namespace");
+    // DBGVAR(std::cerr, libProtobufPath);
     // handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
     // if (!handle) {
-    //     cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
+    //     std::cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
     //     exit(EXIT_FAILURE);
     // }
     // if(dlinfo(handle, RTLD_DI_LMID, &my_namespace_id) != 0) {
@@ -122,9 +117,9 @@ int main(int argc, char **argv) {
     VOID_FUN_WITH_SWIGVM_PARAMS_P set_SWIGVM_params = (VOID_FUN_WITH_SWIGVM_PARAMS_P)load_dynamic("set_SWIGVM_params");
 
 
-#endif  // ifndef PROTEGRITY_PLUGIN_CLIENT
+#endif  // ifndef UDF_PLUGIN_CLIENT
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " <socket>" << endl;
         return 1;
@@ -142,9 +137,9 @@ int main(int argc, char **argv) {
     }
     ::setlocale(LC_ALL, "en_US.utf8");
 
-    std::function<SWIGVM*()>vmMaker=[](){return nullptr;}; // the initial vm maker returns NULL
+    std::function<SWIGVMContainers::SWIGVM*()>vmMaker=[](){return nullptr;}; // the initial vm maker returns NULL
 
-#ifdef PROTEGRITY_PLUGIN_CLIENT
+#ifdef UDF_PLUGIN_CLIENT
     vmMaker = [](){return new SWIGVMContainers::Protegrity(false);};
 #else
     if (strcmp(argv[2], "lang=python")==0)
@@ -159,14 +154,14 @@ int main(int argc, char **argv) {
             }
         }
 
-        vmMaker = [](){return new PythonVM(false);};
+        vmMaker = [](){return new  SWIGVMContainers::PythonVM(false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Python support");
 #endif
     } else if (strcmp(argv[2], "lang=java")==0)
     {
 #ifdef ENABLE_JAVA_VM
-        vmMaker = [](){return new JavaVMach(false);};
+        vmMaker = [](){return new SWIGVMContainers::JavaVMach(false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Java support");
 #endif

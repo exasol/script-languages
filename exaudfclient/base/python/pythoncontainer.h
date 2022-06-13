@@ -1,31 +1,27 @@
-#ifndef JAVACONTAINER_H
-#define JAVACONTAINER_H
-
+#ifndef PYTHONVM_H
+#define PYTHONVM_H
 
 #include "exaudflib/vm/swig_vm.h"
-#include <string.h>
 
-#ifdef ENABLE_JAVA_VM
+#ifdef ENABLE_PYTHON_VM
 
 namespace SWIGVMContainers {
 
-class JavaVMImpl;
+class PythonVMImpl;
 
-class JavaVMach: public SWIGVM {
+class PythonVM: public SWIGVM {
     public:
-        JavaVMach(bool checkOnly);
-        virtual ~JavaVMach() {}
+        PythonVM(bool checkOnly);
+        virtual ~PythonVM() {};
         virtual void shutdown();
         virtual bool run();
         virtual const char* singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args);
     private:
-        JavaVMImpl *m_impl;
+        PythonVMImpl *m_impl;
 };
 
 } //namespace SWIGVMContainers
 
+#endif //ENABLE_PYTHON_VM
 
-#endif //ENABLE_JAVA_VM
-
-
-#endif //JAVACONTAINER_H
+#endif //PYTHONVM_H

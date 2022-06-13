@@ -1,4 +1,4 @@
-#include "exaudflib/exaudflib.h"
+#include "exaudflib/swig/swig_common.h"
 
 #include <Python.h>
 

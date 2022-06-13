@@ -1,6 +1,6 @@
 #include "javacontainer/test/cpp/javavm_test.h"
-#include "javacontainer/javacontainer.h"
-#include "exaudflib/exaudflib.h"
+#include "javacontainer/javacontainer_impl.h"
+#include <string.h>
 
 
 JavaVMTest::JavaVMTest(std::string scriptCode) : javaVMInternalStatus() {
