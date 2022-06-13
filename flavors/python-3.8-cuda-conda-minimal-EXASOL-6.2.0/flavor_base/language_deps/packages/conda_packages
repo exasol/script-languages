@@ -2,3 +2,4 @@ python|3.8.13
 numpy|1.22.3
 pandas|1.4.2
 libblas|3.9.0=15_linux64_mkl
+mamba|0.24.0

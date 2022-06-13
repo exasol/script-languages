@@ -32,7 +32,7 @@ my $help = 0;
 my $dry_run = 0;
 my $file = '';
 my $channel_file = '';
-my $python_binary = '';
+my $conda_binary = '';
 my $with_versions = 0;
 my $allow_no_version = 0;
 GetOptions (
@@ -41,7 +41,8 @@ GetOptions (
             "file=s" => \$file,
 	    "channel-file=s" => \$channel_file,
             "with-versions" => \$with_versions,
-            "allow-no-version" => \$allow_no_version
+            "allow-no-version" => \$allow_no_version,
+            "conda-binary=s" => \$conda_binary
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
@@ -121,7 +122,7 @@ sub generate_channel_args{
 sub run_install_command{
     my ($file, $dry_run, $with_versions, $allow_no_version, $channel_args) = @_;
     my $element_separator = '\\|';
-    my $combining_template = "/bin/micromamba --yes install --freeze-installed $channel_args <<<<0>>>>";
+    my $combining_template = "$conda_binary install --yes --freeze-installed $channel_args <<<<0>>>>";
     my @templates=("'<<<<0>>>>==<<<<1>>>>'");
     my @separators = (" ");
 
@@ -141,7 +142,7 @@ sub run_install_command{
     }
     if($cmd ne ""){
        package_mgmt_utils::execute($cmd,$dry_run);
-       package_mgmt_utils::execute("/bin/micromamba clean --all --yes",$dry_run);
+       package_mgmt_utils::execute("$conda_binary clean --all --yes",$dry_run);
     }
 }
 
