@@ -71,17 +71,15 @@ cc_library(
 # It is necessary to include //exaudflib:exaudflib into deps and srcs, because
 # otherwise dlmopen won't find the symbols of exaudflib and its dependencies. The target //exaudflib:exaudflib-deps
 # won't work either, because it only contains the libraries as dependencies.
-# exaudflib:exaudflib is built as a static library (.a) (forced with linkstatic = 1).
-# In the libexaudflib_complete.so-2.params,
-# we could see that bazel uses this static library as src of the libexaudflib_complete.so.
-# Furthermore, it links all internal dependencies from the object files (.o) statically into libexaudflib_complete.so.
-# The external dependencies libprotobuf and libzmq are linked dynamically.
+# Bazel builts a static library (.a) and a dynamic library (.so) out of exaudflib:exaudflib.
+# In the libexaudflib_complete.so-2.params, we saw that Bazel uses both libraries to built libexaudflib_complete.so.
+# Experiments have shown that we get missing symbols during loading libexaudflib_complete.so, if we only built the static library. 
 cc_binary(
     name = "libexaudflib_complete.so",
     linkshared = 1,
     srcs = ["//exaudflib:exaudflib"],
     deps = ["//exaudflib:exaudflib"],
-    defines = VM_ENABLED_DEFINES
+    defines = VM_ENABLED_DEFINES,
 )
 
 

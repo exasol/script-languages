@@ -85,7 +85,6 @@ cc_library(
 # "//exaudflib:scriptoptionlines","//exaudflib:script_data_transfer_objects" or
 # "//exaudflib:script_data_transfer_objects_wrapper" in the language container
 # depend directly on them or depend on exaudflib-deps
-# we enable here linkstatic = 1 such that we can then link the exaudflib statically into the exaudflib_complete.so
 cc_library(
     name = "exaudflib",
     srcs = ["vm/swig_vm.cc",
@@ -103,6 +102,6 @@ cc_library(
             "impl/swig/swig_result_handler.h", "impl/swig/swig_result_handler.cc",
             "impl/swig/swig_general_iterator.h", "impl/swig/swig_general_iterator.cc"],
     defines = VM_ENABLED_DEFINES,
-    linkstatic = 1,
+    linkstatic = False, # Needs to be false, because otherwise we might get missing symbols when loading exaudflib_complete.so
     deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//:debug_message_h"],
 )
