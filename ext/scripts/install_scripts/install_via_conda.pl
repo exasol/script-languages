@@ -80,7 +80,7 @@ sub generate_pinned_file{
 
     my @rendered_line_transformation_functions = (\&identity);
     if($with_versions and $allow_no_version){
-        @rendered_line_transformation_functions = (\&replace_line_missing_version);
+	@rendered_line_transformation_functions = (\&replace_line_for_missing_version);
     }
 
     my $pinned_packages_file = 
