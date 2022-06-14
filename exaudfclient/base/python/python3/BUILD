@@ -108,14 +108,6 @@ cc_binary(
     name = "pyextdataframe.so",
     linkshared = 1,
     srcs = [":python_ext_dataframe.cc"],
-    deps = ["@python3//:python3","@numpy//:numpy","//exaudflib:exaudflib-deps",
+    deps = ["@python3//:python3","@numpy//:numpy",
            "//exaudflib:header", "//:debug_message_h"],
-)
-
-# We need to set srcs and deps to :pyextdataframe, because we don't use alwayslink anymore. See also, libexaudflib_complete.so, there we do it the same way.
-cc_binary(
-    name = "pyextdataframe.so",
-    linkshared = 1,
-    srcs = [":pyextdataframe"],
-    deps = [":pyextdataframe"]
 )
