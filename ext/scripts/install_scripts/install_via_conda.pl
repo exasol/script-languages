@@ -76,7 +76,7 @@ sub generate_pinned_file{
     my ($file, $dry_run, $with_versions, $allow_no_version) = @_;
     my $element_separator = '\\|';
     my $combining_template = "<<<<0>>>>";
-    my @templates=("'<<<<0>>>> ==<<<<1>>>>'");
+    my @templates=("<<<<0>>>> ==<<<<1>>>>");
     my @separators = ("\n");
 
     my @rendered_line_transformation_functions = (\&identity);
@@ -94,9 +94,9 @@ sub generate_pinned_file{
         } 
     }
     my $filename = '/opt/conda/conda-meta/pinned';
-    if($dry_run ne 0){
+    if($dry_run == 0){
         open(my $fh, '>>', $filename) or die "Could not open file '$filename' $!";
-        print $fh "$pinned_packages_file";
+        print $fh "$pinned_packages_file\n";
         close $fh;
     }else{
         print "Generated following content for $filename\n";
