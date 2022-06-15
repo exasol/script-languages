@@ -93,7 +93,7 @@ sub generate_pinned_file{
             die "Pinned package file contains packages with unspecified versions, please check the package file '$file' or specifiy --allow-no-version. \n $pinned_packages_file";
         } 
     }
-    my $filename = '/opt/conda/conda-meta/pinned';
+    my $filename = '/opt/conda/conda-meta/pinned'; # This file is used by conda for pinning packages https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-pkgs.html#preventing-packages-from-updating-pinning
     if($dry_run == 0){
         open(my $fh, '>>', $filename) or die "Could not open file '$filename' $!";
         print $fh "$pinned_packages_file\n";
