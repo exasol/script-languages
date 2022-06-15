@@ -2,7 +2,7 @@
 
 set -u
 
-interesting_paths=("scripts" "emulator" "exaudfclient" "ext" "githooks" "google-cloud-build")
+interesting_paths=("scripts" "emulator" "exaudfclient" "ext" "githooks")
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 status=0
