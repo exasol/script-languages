@@ -142,7 +142,7 @@ sub run_install_command{
     }
     if($cmd ne ""){
        package_mgmt_utils::execute($cmd,$dry_run);
-       package_mgmt_utils::execute("$conda_binary clean --all --yes",$dry_run);
+       package_mgmt_utils::execute("$conda_binary clean --all --yes --index-cache --tarballs",$dry_run);
        package_mgmt_utils::execute("ldconfig",$dry_run);
     }
 }
