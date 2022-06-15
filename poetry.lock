@@ -14,14 +14,14 @@ dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", 
 
 [[package]]
 name = "boto3"
-version = "1.24.4"
+version = "1.24.9"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.27.4,<1.28.0"
+botocore = ">=1.27.9,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -30,7 +30,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.27.4"
+version = "1.27.9"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -175,7 +175,7 @@ url = "https://github.com/exasol/integration-test-docker-environment/releases/do
 
 [[package]]
 name = "exasol-script-languages-container-ci"
-version = "0.3.0"
+version = "0.4.0"
 description = "Implements CI builds for script-language-container."
 category = "main"
 optional = false
@@ -190,10 +190,10 @@ PyGithub = ">=1.55.0,<2.0.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.3.0/exasol_script_languages_container_ci-0.3.0-py3-none-any.whl"
+url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.4.0/exasol_script_languages_container_ci-0.4.0-py3-none-any.whl"
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "0.4.0"
+version = "0.5.0"
 description = "Manages AWS cloud CI build infrastructure."
 category = "main"
 optional = false
@@ -203,7 +203,7 @@ python-versions = ">=3.8.0,<4.0"
 boto3 = ">=1.22.0,<2.0.0"
 click = ">=8.1.3,<9.0.0"
 exasol_error_reporting_python = {git = "https://github.com/exasol/error-reporting-python.git", rev = "0.2.0"}
-exasol-script-languages-container-ci = {url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.3.0/exasol_script_languages_container_ci-0.3.0-py3-none-any.whl"}
+exasol-script-languages-container-ci = {url = "https://github.com/exasol/script-languages-container-ci/releases/download/0.4.0/exasol_script_languages_container_ci-0.4.0-py3-none-any.whl"}
 exasol_script_languages_container_tool = {url = "https://github.com/exasol/script-languages-container-tool/releases/download/0.14.0/exasol_script_languages_container_tool-0.14.0-py3-none-any.whl"}
 jinja2 = ">=3.1.0"
 jsonschema = ">=3.2.0,<4.0.0"
@@ -211,7 +211,7 @@ PyGithub = ">=1.55.0,<2.0.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/exasol/script-languages-container-ci-setup/releases/download/0.4.0/exasol_script_languages_container_ci_setup-0.4.0-py3-none-any.whl"
+url = "https://github.com/exasol/script-languages-container-ci-setup/releases/download/0.5.0/exasol_script_languages_container_ci_setup-0.5.0-py3-none-any.whl"
 [[package]]
 name = "exasol-script-languages-container-tool"
 version = "0.14.0"
@@ -396,7 +396,7 @@ python-versions = "*"
 
 [[package]]
 name = "networkx"
-version = "2.8.3"
+version = "2.8.4"
 description = "Python package for creating and manipulating graphs and networks"
 category = "main"
 optional = false
@@ -404,7 +404,7 @@ python-versions = ">=3.8"
 
 [package.extras]
 default = ["numpy (>=1.19)", "scipy (>=1.8)", "matplotlib (>=3.4)", "pandas (>=1.3)"]
-doc = ["sphinx (>=4.5)", "pydata-sphinx-theme (>=0.8.1)", "sphinx-gallery (>=0.10)", "numpydoc (>=1.3)", "pillow (>=9.1)", "nb2plots (>=0.6)", "texext (>=0.6.6)"]
+doc = ["sphinx (>=5)", "pydata-sphinx-theme (>=0.9)", "sphinx-gallery (>=0.10)", "numpydoc (>=1.4)", "pillow (>=9.1)", "nb2plots (>=0.6)", "texext (>=0.6.6)"]
 test = ["pytest (>=7.1)", "pytest-cov (>=3.0)", "codecov (>=2.1)"]
 developer = ["pre-commit (>=2.19)", "mypy (>=0.960)"]
 extra = ["lxml (>=4.6)", "pygraphviz (>=1.9)", "pydot (>=1.4.2)", "sympy (>=1.10)"]
@@ -529,21 +529,21 @@ six = ">=1.5"
 
 [[package]]
 name = "requests"
-version = "2.27.1"
+version = "2.28.0"
 description = "Python HTTP for Humans."
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+python-versions = ">=3.7, <4"
 
 [package.dependencies]
 certifi = ">=2017.4.17"
-charset-normalizer = {version = ">=2.0.0,<2.1.0", markers = "python_version >= \"3\""}
-idna = {version = ">=2.5,<4", markers = "python_version >= \"3\""}
+charset-normalizer = ">=2.0.0,<2.1.0"
+idna = ">=2.5,<4"
 urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
 use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
-socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
+socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 
 [[package]]
 name = "s3transfer"
@@ -585,11 +585,11 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "stopwatch.py"
-version = "1.0.1"
+version = "1.1.0"
 description = "A simple stopwatch for python"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3"
 
 [[package]]
 name = "tenacity"
@@ -662,7 +662,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4"
-content-hash = "66d624abdd45dc6027cf7d70fd84e212c30f52170e6fbeaf4964f63fdf672fc2"
+content-hash = "847bae6fc5570702539e652d9714a6046ce2d18500de8c518c4416e035ac9265"
 
 [metadata.files]
 attrs = [
@@ -670,12 +670,12 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 boto3 = [
-    {file = "boto3-1.24.4-py3-none-any.whl", hash = "sha256:79b7acf5cf83b34d23a975e400374caaf4711c52266c8717b293f40f3041e0aa"},
-    {file = "boto3-1.24.4.tar.gz", hash = "sha256:8bfb695cbe27d2ee9730ea4e1c894ef1fc255219d3fc7bc804171943ae8d7914"},
+    {file = "boto3-1.24.9-py3-none-any.whl", hash = "sha256:87d34861727699c795bf8d65703f2435e75f12879bdd483e08b35b7c5510e8c8"},
+    {file = "boto3-1.24.9.tar.gz", hash = "sha256:0821212ff521cb934801b1f655cef3c0e976775324b1018f1751700d0f42dbb4"},
 ]
 botocore = [
-    {file = "botocore-1.27.4-py3-none-any.whl", hash = "sha256:54ef4b035c51fe8937a61d3017e30e0a47237916143889ecf4eace481220029a"},
-    {file = "botocore-1.27.4.tar.gz", hash = "sha256:866ac4ad7de326cfb6956462cc224eee1ef1c17987c2313c6fecdbe017e753fc"},
+    {file = "botocore-1.27.9-py3-none-any.whl", hash = "sha256:5669b982b0583e73daef1fe0a4df311055e6287326f857dbb1dcc2de1d8412ad"},
+    {file = "botocore-1.27.9.tar.gz", hash = "sha256:7a7588b0170e571317496ac4104803329d5bc792bc008e8a757ffd440f1b6fa6"},
 ]
 certifi = [
     {file = "certifi-2022.5.18.1-py3-none-any.whl", hash = "sha256:f1d53542ee8cbedbe2118b5686372fb33c297fcd6379b050cca0ef13a597382a"},
@@ -856,8 +856,8 @@ netaddr = [
     {file = "netaddr-0.8.0.tar.gz", hash = "sha256:d6cc57c7a07b1d9d2e917aa8b36ae8ce61c35ba3fcd1b83ca31c5a0ee2b5a243"},
 ]
 networkx = [
-    {file = "networkx-2.8.3-py3-none-any.whl", hash = "sha256:f151edac6f9b0cf11fecce93e236ac22b499bb9ff8d6f8393b9fef5ad09506cc"},
-    {file = "networkx-2.8.3.tar.gz", hash = "sha256:67fab04a955a73eb660fe7bf281b6fa71a003bc6e23a92d2f6227654c5223dbe"},
+    {file = "networkx-2.8.4-py3-none-any.whl", hash = "sha256:6933b9b3174a0bdf03c911bb4a1ee43a86ce3edeb813e37e1d4c553b3f4a2c4f"},
+    {file = "networkx-2.8.4.tar.gz", hash = "sha256:5e53f027c0d567cf1f884dbb283224df525644e43afd1145d64c9d88a3584762"},
 ]
 pycparser = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
@@ -927,8 +927,8 @@ python-dateutil = [
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
 ]
 requests = [
-    {file = "requests-2.27.1-py2.py3-none-any.whl", hash = "sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d"},
-    {file = "requests-2.27.1.tar.gz", hash = "sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61"},
+    {file = "requests-2.28.0-py3-none-any.whl", hash = "sha256:bc7861137fbce630f17b03d3ad02ad0bf978c844f3536d0edda6499dafce2b6f"},
+    {file = "requests-2.28.0.tar.gz", hash = "sha256:d568723a7ebd25875d8d1eaf5dfa068cd2fc8194b2e483d7b1f7c81918dbec6b"},
 ]
 s3transfer = [
     {file = "s3transfer-0.6.0-py3-none-any.whl", hash = "sha256:06176b74f3a15f61f1b4f25a1fc29a4429040b7647133a463da8fa5bd28d5ecd"},
@@ -1006,7 +1006,8 @@ smmap = [
     {file = "smmap-5.0.0.tar.gz", hash = "sha256:c840e62059cd3be204b0c9c9f74be2c09d5648eddd4580d9314c3ecde0b30936"},
 ]
 "stopwatch.py" = [
-    {file = "stopwatch.py-1.0.1.tar.gz", hash = "sha256:861fee329c470017ea7d617326645ae2e6896cf9b7016a6b74a15b4287e4fd90"},
+    {file = "stopwatch.py-1.1.0-py3-none-any.whl", hash = "sha256:ca504fa21b0c580dad8464ef3c8059b05bb6c8e1f2b81339c2b664b1a04b018e"},
+    {file = "stopwatch.py-1.1.0.tar.gz", hash = "sha256:4848fa73068c18b2af1f07071d451599782653ea00d8042f99c19bf6f2c79cbb"},
 ]
 tenacity = [
     {file = "tenacity-6.3.1-py2.py3-none-any.whl", hash = "sha256:baed357d9f35ec64264d8a4bbf004c35058fad8795c5b0d8a7dc77ecdcbb8f39"},

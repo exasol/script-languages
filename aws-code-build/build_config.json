@@ -5,5 +5,6 @@
       "find_highest_error_codes_per_module.sh", "find_incomplete_error_codes.sh", "find_next_error_code_per_module.sh",
       "show_code_arround_error_codes.sh", "visualize_task_dependencies.sh", "udf-script-signature-generator",
       ".github", "cpp_client", "emulator", "exaslct_scripts", "githooks"]
-  }
+  },
+  "base_branch": "master"
 }
