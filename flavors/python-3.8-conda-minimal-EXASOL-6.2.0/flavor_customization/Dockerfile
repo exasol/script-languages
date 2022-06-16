@@ -19,6 +19,9 @@ RUN mkdir -p /build_info/packages/flavor_customization
 COPY flavor_customization/packages /build_info/packages/flavor_customization
 RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/flavor_customization/conda_packages --channel-file /build_info/packages/flavor_customization/conda_channels --with-versions --allow-no-version --conda-binary /opt/conda/bin/mamba
 
+COPY flavor_customization/packages/python3_pip_packages /build_info/packages/flavor_customization
+RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_customization/python3_pip_packages --python-binary /opt/conda/python3.8 --with-versions --allow-no-version
+
 ##########################################################################
 ##########################################################################
 # Below this text you can add any Dockerfile commands except of FROM.            
