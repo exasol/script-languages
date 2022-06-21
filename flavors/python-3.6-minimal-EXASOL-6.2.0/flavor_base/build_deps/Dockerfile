@@ -23,7 +23,7 @@ RUN apt-get -y update && \
     apt-get -y clean && \
     apt-get -y autoremove
 	  
-RUN curl -L -o swig-2.0.4.tar.gz https://storage.googleapis.com/exasol-script-languages-dependencies/swig-2.0.4.tar.gz && \
+RUN curl -L -o swig-2.0.4.tar.gz https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
     (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
     rm -rf swig-2.0.4 swig-2.0.4.tar.gz
