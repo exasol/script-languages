@@ -3,9 +3,10 @@
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.exatest.testcase import useData
+from exasol_python_test_framework.udf.available_python_packages_utils import run_python_package_import_test
 
 
-class AvailablePythonPackages(udf.TestCase):
+class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
         self.query('create schema available_packages', ignore_errors=True)
 
@@ -15,29 +16,7 @@ class AvailablePythonPackages(udf.TestCase):
 
     @useData(data)
     def test_package_import(self, pkg, fail=False, alternative=None):
-        sql=udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
-            
-            import %s
-            def run(ctx): return 1
-            /
-            ''' % (pkg))
-        print(sql)
-        self.query(sql)
-        try:
-            rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
-            if not fail:
-                self.assertRowsEqual([(1,)], rows)
-            else:
-                assert 'Expected Failure' == 'not found'
-        except:
-            if fail:
-                return
-            if alternative:
-                self.import_test(alternative,fail)
-            else:
-                raise
-
+        run_python_package_import_test(self, pkg, "PYTHON3", fail, alternative)
 
 if __name__ == '__main__':
     udf.main()
