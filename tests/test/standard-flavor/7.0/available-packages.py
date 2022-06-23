@@ -5,9 +5,11 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework.exatest.testcase import useData
 from exasol_python_test_framework.udf.available_python_packages_utils import run_python_package_import_test
 
+AVAILABLE_PACKAGES_SCHEMA = "available_packages"
+
 class AvailablePythonPackages(udf.TestCase):
     def setUp(self): 
-        self.query('create schema available_packages', ignore_errors=True)
+        self.query(f'create schema {AVAILABLE_PACKAGES_SCHEMA}', ignore_errors=True)
 
     data = [
             ("cffi",),
@@ -53,11 +55,12 @@ class AvailablePythonPackages(udf.TestCase):
 
     @useData(data)
     def test_package_import(self, pkg, fail=False, alternative=None):
-        run_python_package_import_test(self, pkg, "PYTHON", fail, alternative)
+        run_python_package_import_test(self, AVAILABLE_PACKAGES_SCHEMA, "PYTHON", pkg, fail, alternative)
+
 
 class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
-        self.query('create schema available_packages', ignore_errors=True)
+        self.query(f'create schema {AVAILABLE_PACKAGES_SCHEMA}', ignore_errors=True)
 
     data = [
             ("cffi",),
@@ -91,18 +94,17 @@ class AvailablePython3Packages(udf.TestCase):
             ("pyexasol",),
             ("paramiko",),
             ("pysftp",),
-            ("samba",),
             ("simplejson",),
             ("pycparser",),
             ("pygments",),
             ("pykickstart",),
             ("simplejson",),
-            ("pyPdf",False,"PyPDF2"),
         ]
 
     @useData(data)
     def test_package_import(self, pkg, fail=False, alternative=None):
-        run_python_package_import_test(self, pkg, "PYTHON3", fail, alternative)
+        run_python_package_import_test(self, AVAILABLE_PACKAGES_SCHEMA, "PYTHON3", pkg, fail, alternative)
+
 
 class AvailableRPackages(udf.TestCase):
     def setUp(self): 
