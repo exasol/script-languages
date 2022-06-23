@@ -102,7 +102,7 @@ class AvailablePython3Packages(udf.TestCase):
 
     @useData(data)
     def test_package_import(self, pkg, fail=False, alternative=None):
-        run_python_package_import_test(self, pkg, "PYTHON", fail, alternative)
+        run_python_package_import_test(self, pkg, "PYTHON3", fail, alternative)
 
 class AvailableRPackages(udf.TestCase):
     def setUp(self): 
