@@ -4,9 +4,12 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework.exatest.testcase import useData
 from exasol_python_test_framework.udf.available_python_packages_utils import run_python_package_import_test
 
+AVAILABLE_PACKAGES_SCHEMA = "available_packages"
+
+
 class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
-        self.query('create schema available_packages', ignore_errors=True)
+        self.query(f'create schema {AVAILABLE_PACKAGES_SCHEMA}', ignore_errors=True)
 
     data = [
             ("cffi",),
@@ -52,11 +55,11 @@ class AvailablePython3Packages(udf.TestCase):
 
     @useData(data)
     def test_package_import(self, pkg, fail=False, alternative=None):
-        run_python_package_import_test(self, pkg, "PYTHON3", fail, alternative)
+        run_python_package_import_test(self, AVAILABLE_PACKAGES_SCHEMA, "PYTHON3", pkg, fail, alternative)
 
 class AvailableRPackages(udf.TestCase):
     def setUp(self): 
-        self.query('create schema available_packages', ignore_errors=True)
+        self.query(f'create schema {AVAILABLE_PACKAGES_SCHEMA}', ignore_errors=True)
 
     data = [
             ("acepack",),
@@ -107,14 +110,14 @@ class AvailableRPackages(udf.TestCase):
 
     @useData(data)
     def test_package_import(self, pkg, fail=False, alternative=None):
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE R SCALAR SCRIPT available_packages.test_import_of_package() returns int AS
+        self.query(udf.fixindent(f'''
+            CREATE OR REPLACE R SCALAR SCRIPT {AVAILABLE_PACKAGES_SCHEMA}.test_import_of_package() returns int AS
             library(%s)
-            run <- function(ctx) { return(1) }
+            run <- function(ctx) {{ return(1) }}
             /
             ''' % (pkg)))
         try:
-            rows = self.query('''SELECT available_packages.test_import_of_package() FROM dual''')
+            rows = self.query(f'''SELECT {AVAILABLE_PACKAGES_SCHEMA}.test_import_of_package() FROM dual''')
             if not fail:
                 self.assertRowsEqual([(1,)], rows)
             else:
