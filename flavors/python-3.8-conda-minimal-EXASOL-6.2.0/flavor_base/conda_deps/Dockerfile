@@ -25,7 +25,8 @@ RUN addgroup --gid 500 exausers
 RUN adduser --disabled-login --uid 500 --gid 500 exadefusr --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
 
 SHELL ["/bin/bash", "-l", "-c"]
-RUN /scripts/install_scripts/install_micromamba.sh 0.23.0
+ENV MICROMAMBA_VERSION=0.24.0
+RUN /scripts/install_scripts/install_micromamba.sh "$MICROMAMBA_VERSION"
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
