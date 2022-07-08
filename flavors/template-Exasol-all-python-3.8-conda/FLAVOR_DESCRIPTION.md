@@ -1,4 +1,4 @@
-# Details for Python-3.8-conda-minimal-EXASOL-6.2.0 flavor
+# Details for template-Exasol-all-python-3.8-conda flavor
 
 ## Packages
 
