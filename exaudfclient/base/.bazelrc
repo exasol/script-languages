@@ -17,7 +17,7 @@ build:test-binaries-py2 --config=static-binary-py2 --config=slow-wrapper-py2
 build:test-binaries-both --config=test-binaries-py2 --config=test-binaries-py3
 build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
 #TODO test linkopts="-flto"
-build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-O3" --copt="-U_FORTIFY_SOURCE" --copt="-flto"
+build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-O3" --copt="-U_FORTIFY_SOURCE" --copt="-flto" --copt="-fuse-linker-plugin"
 build:no-tty --curses=no --color=no
 build:debug-build --sandbox_debug --config=verbose
 build:no-symlinks --symlink_prefix=/

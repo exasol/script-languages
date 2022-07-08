@@ -10,7 +10,6 @@ cc_library(
     copts= ["-fno-lto"],
     # We deactivate link time optimization, because otherwise we get the following linker/compiler error while linking/compiling exaudfclient
     # function ExecutionGraph::extractOptionLine(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long&, std::function<void (char const*)>): error: undefined reference to 'std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)'
-    alwayslink=True,
 )
 
 cc_library(
@@ -21,10 +20,9 @@ cc_library(
         "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
     }),
-    # We deactivate link time optimization for benchmark, 
+    # We deactivate link time optimization for benchmark,
     # because otherwise we get linker/compiler error while linking/compiling exaudfclient
     # Benchmark causes this, because it doesn't refer it its implementation.
-    alwayslink=True,
 )
 
 cc_library(
@@ -39,7 +37,6 @@ cc_library(
     # We deactivate link time optimization for benchmark,
     # because otherwise we get linker/compiler error while linking/compiling exaudfclient
     # Benchmark causes this, because it doesn't refer it its implementation.
-    alwayslink=True,
 )
 
 # A collection target for the case that language container want to include all public headers of exaudflib
@@ -49,7 +46,6 @@ cc_library(
         "udf_plugin_interface.h", "load_dynamic.h", "vm/swig_vm.h",
         "swig/swig_common.h", "swig/swig_meta_data.h", "swig/swig_result_handler.h", "swig/swig_table_iterator.h"
     ],
-    alwayslink=True,
 )
 
 # A collection target for the case that language container want to depent on all public libraries of exaudflib
@@ -58,7 +54,6 @@ cc_library(
 cc_library( #TODO might be not working as expected
     name = "exaudflib-deps",
     deps = [":script_data_transfer_objects",":script_data_transfer_objects_wrapper"],
-    alwayslink=True,
 )
 
 genrule(
@@ -79,16 +74,17 @@ cc_library(
     hdrs = [":zmqcontainer_proto"],
     srcs = [":zmqcontainer_proto"],
     deps = ["@protobuf//:protobuf"],
-    alwayslink=True,
+    copts = ["-DNDEBUG=1"] #We use the protobuf shared library compiled  with NDEBUG=1 (the conda package is the release version). We need to set NDEBUG=1, otherwise some functions are not visisble for the dependent libraries (compiled inline for NDEBUG=1, compiled as global function otherwise).
+
 )
 
-# Do not depend on this library in the langauge container or exaudfclient. 
+# Do not depend on this library in the langauge container or exaudfclient.
 # The only target which must depend on it is //:libexaudflib-complete.so.
 # If you depend on this target you will load protobuf into your linker namespace
 # which might cause problems with tensorflow. If you need
 # "//exaudflib:scriptoptionlines","//exaudflib:script_data_transfer_objects" or
-# "//exaudflib:script_data_transfer_objects_wrapper" in the language container 
-# depend directly on them
+# "//exaudflib:script_data_transfer_objects_wrapper" in the language container
+# depend directly on them or depend on exaudflib-deps
 cc_library(
     name = "exaudflib",
     srcs = ["vm/swig_vm.cc",
@@ -105,8 +101,7 @@ cc_library(
             "impl/swig/swig_meta_data.h", "impl/swig/swig_meta_data.cc",
             "impl/swig/swig_result_handler.h", "impl/swig/swig_result_handler.cc",
             "impl/swig/swig_general_iterator.h", "impl/swig/swig_general_iterator.cc"],
-    linkstatic = 1,
-    alwayslink = True,
     defines = VM_ENABLED_DEFINES,
-    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmqlib", ":header", "//:debug_message_h"],
+    linkstatic = False, # Needs to be false, because otherwise we might get missing symbols when loading exaudflib_complete.so
+    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//:debug_message_h"],
 )

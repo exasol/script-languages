@@ -7,32 +7,28 @@ def _get_actual_python_version(binary,p_repository_ctx):
     print("python actual_version: %s"%actual_version)
     return actual_version
 
-def _get_includes_and_hdrs(config_binary,p_repository_ctx):
-    command_result = p_repository_ctx.execute([config_binary,"--includes"]) #example stdout: -I/usr/include/python3.6m -I/usr/include/python3.6m\n
+def _get_sysconfig_value(binary,key,p_repository_ctx):
+    script = "import sysconfig; print(sysconfig.get_config_var('{key}'))".format(key=key)
+    command_result = p_repository_ctx.execute([binary,"-c", script])
     if command_result.return_code != 0:
-        fail("Could not acquire includes for python, got return code %s stderr: \n %s"
-            % (command_result.return_code, command_result.stderr))
-    raw_includes = command_result.stdout.strip("\n") #example: -I/usr/include/python3.6m -I/usr/include/python3.6m
-    raw_include_prefix_removal_length = 2 + 1
-    splitted_cleaned_includes =  [i[raw_include_prefix_removal_length:] for i in raw_includes.split(" ")] #example: ["usr/include/python3.6m","usr/include/python3.6m"]
-    
-    includes = ",".join(['"%s"'%i for i in splitted_cleaned_includes] ) #example: ["\"/usr/include/python3.6m\"","\"/usr/include/python3.6m\""]
-    print("python includes: %s"%includes)
+        fail("Could not acquire {key} for python, got return code {return_code} stderr: \n {stderr}".format(
+            key=key, return_code=command_result.return_code, stderr=command_result.stderr))
+    stripped_command_result = command_result.stdout.strip("\n")
+    return stripped_command_result
 
-    hdrs = ",".join(['"%s/**/*.h"'%i for i in splitted_cleaned_includes] ) #example: ["\"/usr/include/python3.6m/*.h\"","\"/usr/include/python3.6m/*.h\""]
-    print("python hdrs: %s"%hdrs)
+def _get_include_dir(binary,version,p_repository_ctx): 
+    key = "INCLUDEDIR"
+    base_include_dir = _get_sysconfig_value(binary,key,p_repository_ctx) #example: /usr/include
+    include_dir = base_include_dir+"/"+version #example /usr/include/python3.8 
+    print("python {key}: {include_dir}".format(key=key, include_dir=include_dir))
+    return include_dir
 
-    return includes, hdrs
-
-def _get_config_dir(config_binary,repository_ctx):
-    command_result = repository_ctx.execute([config_binary,"--configdir"])
-    if command_result.return_code != 0:
-        fail("Could not acquire config_dir for python, got return code %s stderr: \n %s"
-            % (command_result.return_code, command_result.stderr))
-    #print(command_result.stdout,command_result.stderr)
-    config_dir = command_result.stdout.strip("\n")[1:]
-    print("python config_dir: %s"%config_dir)
-    return config_dir
+def _get_lib_glob(binary, version, p_repository_ctx):
+    key = "LIBDIR"
+    base_lib_dir = _get_sysconfig_value(binary,key,p_repository_ctx) #example: /usr/lib
+    lib_glob = "%s/**/lib%s*.so" % (base_lib_dir,version)
+    print("python {key}_glob: {lib_glob}".format(key=key, lib_glob=lib_glob))
+    return lib_glob
 
 def _python_local_repository_impl(repository_ctx):
     python_prefix_env_var = repository_ctx.name.upper() + "_PREFIX"
@@ -54,9 +50,8 @@ def _python_local_repository_impl(repository_ctx):
     binary = prefix+"/bin/"+version
     actual_version = _get_actual_python_version(binary,repository_ctx)
     
-    config_binary = binary + "-config"
-    includes, hdrs = _get_includes_and_hdrs(config_binary,repository_ctx)
-    config_dir = _get_config_dir(config_binary,repository_ctx)
+    include_dir = _get_include_dir(binary, version, repository_ctx)
+    lib_glob = _get_lib_glob(binary, version, repository_ctx)
 
     defines='"ENABLE_PYTHON_VM"'
     if actual_version[0]=="3":
@@ -65,12 +60,12 @@ def _python_local_repository_impl(repository_ctx):
     build_file_content = """
 cc_library(
     name = "{name}",
-    srcs = glob(["{config_dir}/**/*.so"]),
-    hdrs = glob([{hdrs}]),
-    includes = [{includes}],
+    srcs = glob(["{lib_glob}"]),
+    hdrs = glob(["{include_dir}/**/*.h"]),
+    includes = ["{include_dir}"],
     defines = [{defines}],
     visibility = ["//visibility:public"]
-)""".format(config_dir=config_dir, hdrs=hdrs, includes=includes, name=repository_ctx.name, defines=defines)
+)""".format(lib_glob=lib_glob[1:], include_dir=include_dir[1:], name=repository_ctx.name, defines=defines)
     print(build_file_content)
 
     repository_ctx.symlink(prefix, "."+prefix)
