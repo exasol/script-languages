@@ -3,7 +3,7 @@ from typing import Dict
 from exasol_script_languages_container_tool.lib.tasks.build.docker_flavor_image_task import DockerFlavorAnalyzeImageTask
 
 
-class AnalyzeCondatDeps(DockerFlavorAnalyzeImageTask):
+class AnalyzeCondaDeps(DockerFlavorAnalyzeImageTask):
 
     def get_build_step(self) -> str:
         return "conda_deps"
@@ -23,7 +23,7 @@ class AnalyzeUDFClientDeps(DockerFlavorAnalyzeImageTask):
         return {"scripts": "ext/scripts"}
 
     def requires_tasks(self):
-        return {"conda_deps": AnalyzeCondatDeps}
+        return {"conda_deps": AnalyzeCondaDeps}
 
     def get_path_in_flavor(self):
         return "flavor_base"
