@@ -1,0 +1,35 @@
+name: Check package diff tool
+
+on:
+  push:
+
+jobs:
+  check_package_diff:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install Poetry
+      uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: 1.1.13
+
+    - name: Setup Poetry
+      run: |
+        PYTHON_BIN=$(command -v "python3.8")
+        poetry env use "$PYTHON_BIN"
+        poetry install
+        poetry_env_path=$(poetry env info --path)
+        echo "poetry_env_path=$poetry_env_path" >> $GITHUB_ENV
+      working-directory: scripts/generate_package_diffs_for_flavors
+
+    - name: Run generate_package_diffs_for_flavors
+      run: |
+        source "${{ env.poetry_env_path }}/bin/activate"
+        python3 scripts/generate_package_diffs_for_flavors/generate_package_diffs_for_flavors.py --output-directory /tmp/output --current-working-copy-name test
