@@ -150,8 +150,7 @@ def compare_flavor(flavor_path_1: Path, working_copy_1: Path, working_copy_1_nam
 
 def get_last_git_tag() -> str:
     get_fetch_command = ["git", "fetch"]
-    fetch_result = subprocess.run(get_fetch_command, stderr=subprocess.PIPE)
-    fetch_result.check_returncode()
+    fetch_result = subprocess.run(get_fetch_command, stderr=subprocess.STDOUT, check=True)
     get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags", "origin/master"]
     last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
     last_tag_result.check_returncode()
@@ -161,11 +160,9 @@ def get_last_git_tag() -> str:
 
 def checkout_git_tag_as_worktree(tmp_dir, last_tag):
     checkout_last_tag_command = ["git", "worktree", "add", tmp_dir, last_tag]
-    checkout_last_tag_result = subprocess.run(checkout_last_tag_command, stderr=subprocess.PIPE)
-    checkout_last_tag_result.check_returncode()
+    checkout_last_tag_result = subprocess.run(checkout_last_tag_command, stderr=subprocess.STDOUT, check=True)
     init_submodule_command = ["git", "submodule", "update", "--init"]
-    init_submodule_result = subprocess.run(init_submodule_command, cwd=tmp_dir, stderr=subprocess.PIPE)
-    init_submodule_result.check_returncode()
+    init_submodule_result = subprocess.run(init_submodule_command, cwd=tmp_dir, stderr=subprocess.STDOUT, check=True)
 
 
 def generate_dependency_diff_report_for_package_list(
@@ -211,12 +208,12 @@ def generate_package_list_caption(package_lists: Tuple[str, Optional[str]], ) ->
     package_list_name_1 = " ".join(word.capitalize() for word in package_lists[0].split("_"))
     if package_lists[1] is None or package_lists[0] == package_lists[1]:
         if package_lists[0] == package_lists[1]:
-            package_list_caption = f"Comparison of package list {package_list_name_1}"
+            package_list_caption = f"Comparison of {package_list_name_1}"
         else:
-            package_list_caption = f"New package list {package_list_name_1}"
+            package_list_caption = f"New {package_list_name_1}"
     else:
         package_list_name_2 = " ".join(word.capitalize() for word in package_lists[1].split("_"))
-        package_list_caption = f"Comparison of package lists {package_list_name_1} and {package_list_name_2}"
+        package_list_caption = f"Comparison of {package_list_name_1} and {package_list_name_2}"
     return package_list_caption
 
 
@@ -274,9 +271,9 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
                 diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
                                        relative_flavor_path, working_copy_2_root, working_copy_2_name)
             else:
-               # This is useful for new flavors to compare them to flavors they are based on. However, new flavors might have a different set of build steps, such that we need to compare specific build_steps.
-                print(f"Please enter the path to the flavor to which we should compare '{relative_flavor_path}':")
-                relative_flavor_path_2 = Path(input())
+                with open(flavor_path / "flavor_base" / "derived_from") as f:
+                    relative_flavor_path_2_str = f.read().strip()
+                relative_flavor_path_2 = Path(relative_flavor_path_2_str)
                 if Path(working_copy_2_root).joinpath(relative_flavor_path_2).exists():
                     diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
                                            relative_flavor_path_2, working_copy_2_root, working_copy_2_name)
@@ -312,13 +309,16 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
         '--build-step-path-2', required=False, 
         help="If this is set we only compare this build step with --build-step-path-1.",
         type=click.Path(exists=True))
-def main(output_directory:str, current_working_copy_name:str, build_step_path_1:str, build_step_path_2:str):
-    last_tag = get_last_git_tag()
+@click.option('--compare-to-commit', required=False, help="Commit to compare to.",
+              type=str)
+def main(output_directory:str, current_working_copy_name:str, build_step_path_1:str, build_step_path_2:str, compare_to_commit:str):
+    if compare_to_commit is None:
+        compare_to_commit = get_last_git_tag()
     with TemporaryDirectory() as working_copy_2_root:
-        checkout_git_tag_as_worktree(working_copy_2_root, last_tag)
+        checkout_git_tag_as_worktree(working_copy_2_root, compare_to_commit)
         working_copy_root = Path(".")
         working_copy_1_name = current_working_copy_name
-        working_copy_2_name = last_tag
+        working_copy_2_name = compare_to_commit
         if build_step_path_1 is None and build_step_path_2 is None:
             generate_dependency_diff_report_for_all_flavors(working_copy_root, working_copy_1_name,
                                                             working_copy_2_root, working_copy_2_name,
