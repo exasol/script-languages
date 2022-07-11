@@ -312,10 +312,13 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
         '--build-step-path-2', required=False, 
         help="If this is set we only compare this build step with --build-step-path-1.",
         type=click.Path(exists=True))
-def main(output_directory:str, current_working_copy_name:str, build_step_path_1:str, build_step_path_2:str):
-    last_tag = get_last_git_tag()
+@click.option('--compare-to-commit', required=False, help="Commit to compare to.",
+              type=str)
+def main(output_directory:str, current_working_copy_name:str, build_step_path_1:str, build_step_path_2:str, compare_to_commit:str):
+    if compare_to_commit is None:
+        compare_to_commit = get_last_git_tag()
     with TemporaryDirectory() as working_copy_2_root:
-        checkout_git_tag_as_worktree(working_copy_2_root, last_tag)
+        checkout_git_tag_as_worktree(working_copy_2_root, compare_to_commit)
         working_copy_root = Path(".")
         working_copy_1_name = current_working_copy_name
         working_copy_2_name = last_tag

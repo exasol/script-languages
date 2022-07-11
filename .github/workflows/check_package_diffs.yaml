@@ -32,4 +32,4 @@ jobs:
     - name: Run generate_package_diffs_for_flavors
       run: |
         source "${{ env.poetry_env_path }}/bin/activate"
-        python3 scripts/generate_package_diffs_for_flavors/generate_package_diffs_for_flavors.py --output-directory /tmp/output --current-working-copy-name test
+        python3 scripts/generate_package_diffs_for_flavors/generate_package_diffs_for_flavors.py --output-directory /tmp/output --current-working-copy-name test --compare-to-commit master
