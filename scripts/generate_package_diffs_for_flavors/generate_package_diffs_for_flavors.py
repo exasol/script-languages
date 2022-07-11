@@ -150,8 +150,7 @@ def compare_flavor(flavor_path_1: Path, working_copy_1: Path, working_copy_1_nam
 
 def get_last_git_tag() -> str:
     get_fetch_command = ["git", "fetch"]
-    fetch_result = subprocess.run(get_fetch_command, stderr=subprocess.PIPE)
-    fetch_result.check_returncode()
+    fetch_result = subprocess.run(get_fetch_command, stderr=subprocess.STDOUT, check=True)
     get_last_tag_command = ["git", "describe", "--abbrev=0", "--tags", "origin/master"]
     last_tag_result = subprocess.run(get_last_tag_command, stdout=subprocess.PIPE)
     last_tag_result.check_returncode()
@@ -161,11 +160,9 @@ def get_last_git_tag() -> str:
 
 def checkout_git_tag_as_worktree(tmp_dir, last_tag):
     checkout_last_tag_command = ["git", "worktree", "add", tmp_dir, last_tag]
-    checkout_last_tag_result = subprocess.run(checkout_last_tag_command, stderr=subprocess.PIPE)
-    checkout_last_tag_result.check_returncode()
+    checkout_last_tag_result = subprocess.run(checkout_last_tag_command, stderr=subprocess.STDOUT, check=True)
     init_submodule_command = ["git", "submodule", "update", "--init"]
-    init_submodule_result = subprocess.run(init_submodule_command, cwd=tmp_dir, stderr=subprocess.PIPE)
-    init_submodule_result.check_returncode()
+    init_submodule_result = subprocess.run(init_submodule_command, cwd=tmp_dir, stderr=subprocess.STDOUT, check=True)
 
 
 def generate_dependency_diff_report_for_package_list(
@@ -321,7 +318,7 @@ def main(output_directory:str, current_working_copy_name:str, build_step_path_1:
         checkout_git_tag_as_worktree(working_copy_2_root, compare_to_commit)
         working_copy_root = Path(".")
         working_copy_1_name = current_working_copy_name
-        working_copy_2_name = last_tag
+        working_copy_2_name = compare_to_commit
         if build_step_path_1 is None and build_step_path_2 is None:
             generate_dependency_diff_report_for_all_flavors(working_copy_root, working_copy_1_name,
                                                             working_copy_2_root, working_copy_2_name,
