@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM {{ nvidia_driver_deps }}
 
 ENV ENV_NAME="base"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
