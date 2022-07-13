@@ -15,11 +15,6 @@ RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/nvid
 ENV NVIDIA_DRIVER_VERSION=510.47.03
 RUN /scripts/install_scripts/install_nvidia_driver_libs.sh "$NVIDIA_DRIVER_VERSION"
 
-RUN addgroup --gid 1000 exasolution
-RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
-RUN addgroup --gid 500 exausers 
-RUN adduser --disabled-login --uid 500 --gid 500 exadefusr --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
-
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
