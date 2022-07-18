@@ -24,6 +24,7 @@ exasol-script-languages-container-ci-setup = {url = "https://github.com/exasol/s
 
 [tool.poetry.dev-dependencies]
 toml = ">=0.10.2"
+gitpython = ">=3.1.0"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
