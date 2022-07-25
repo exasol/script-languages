@@ -28,7 +28,7 @@ popd
 popd
 
 pushd "$LIB_DIR"
-for lib_file in *$DRIVER_VERSION; do
+for lib_file in *"$DRIVER_VERSION"; do
     lib_file_base="${lib_file%.$DRIVER_VERSION}"
     ln -sf "$lib_file" "$lib_file_base.1"
     ln -sf "$lib_file_base.1" "$lib_file_base"
