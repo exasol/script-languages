@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
+#COPY ext/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
 RUN apt-get -y update && \
     apt-get -y install \
@@ -27,5 +27,8 @@ RUN curl -s https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6
 RUN curl -s https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
 ENV EXAPLUS=/downloads/EXAplus/exaplus
 
+
 COPY requirements.txt requirements.txt
 RUN pip3 install -r "requirements.txt"
+
+COPY install_dev_tools.sh /
