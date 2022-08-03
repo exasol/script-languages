@@ -27,7 +27,6 @@ RUN curl -s https://www.exasol.com/support/secure/attachment/60963/EXASOL_JDBC-6
 RUN curl -s https://www.exasol.com/support/secure/attachment/63966/EXAplus-6.0.10.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
 ENV EXAPLUS=/downloads/EXAplus/exaplus
 
-
 COPY requirements.txt requirements.txt
 RUN pip3 install -r "requirements.txt"
 
