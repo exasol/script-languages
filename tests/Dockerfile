@@ -30,4 +30,5 @@ ENV EXAPLUS=/downloads/EXAplus/exaplus
 COPY requirements.txt requirements.txt
 RUN pip3 install -r "requirements.txt"
 
-COPY install_dev_tools.sh /
+RUN mkdir -p /dev_tools
+COPY ext/scripts/dev_tools/install_dev_tools.sh /dev_tools
