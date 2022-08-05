@@ -2,6 +2,8 @@ name: Check package diff tool
 
 on:
   push:
+    paths-ignore:
+      - master
 
 jobs:
   check_package_diff:
