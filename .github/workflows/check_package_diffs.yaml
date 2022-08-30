@@ -2,7 +2,7 @@ name: Check package diff tool
 
 on:
   push:
-    paths-ignore:
+    branches-ignore:
       - master
 
 jobs:
