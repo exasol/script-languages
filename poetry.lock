@@ -215,7 +215,7 @@ PyGithub = "^1.55.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci-setup.git"
 reference = "bug/33_update_poetry_installation"
-resolved_reference = "ea43c63b7bdf50509815e5f6aea37ddbe7af07a7"
+resolved_reference = "2741688c61f3eb3c10c6c7c6a126320b0c442ff0"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
