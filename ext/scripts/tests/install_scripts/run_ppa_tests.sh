@@ -16,7 +16,7 @@ fi
 #For this test we try to install Github CLI (https://cli.github.com/) as it is quite small (.deb has ~6MB) ##
 ##############################################################################################################
 echo ./install_key.pl with Github CLI key
-"$PATH_TO_INSTALL_SCRIPTS/install_key.pl" --key C99B11DEB97541F0 --key-server keyserver.ubuntu.com "$DRY_RUN_OPTION"
+"$PATH_TO_INSTALL_SCRIPTS/install_key.pl" --key 23F3D4EA75716059 --key-server keyserver.ubuntu.com "$DRY_RUN_OPTION"
 echo
 
 echo ./install_ppa.pl with Github CLI repository
