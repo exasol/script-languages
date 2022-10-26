@@ -3,3 +3,4 @@ numpy|1.22.3
 pandas|1.4.2
 libblas|3.9.0=15_linux64_mkl
 mamba|0.24.0
+ld_impl_linux-64|2.36.1
