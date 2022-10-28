@@ -12,3 +12,5 @@ CVE-2022-23648
 CVE-2022-0492
 # CVE-2022-27191 is an issue in Go. Which will be installed only together with Trivy.
 CVE-2022-27191
+# CVE-2022-23960 affects only ARM architectures
+CVE-2022-23960
