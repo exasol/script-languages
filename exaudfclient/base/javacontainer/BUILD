@@ -114,8 +114,9 @@ genrule(
     name = "dummy",
     cmd = 'touch "$@"',
     outs = ["dummy.h"],
-    srcs = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar"],
+    srcs = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar", "@maven//:junit_junit"],
 )
+
 
 java_library(
     name = "exaudf",
@@ -134,7 +135,8 @@ java_library(
                 "SWIGVM_datatype_e.java",
                 "SWIGVM_itertype_e.java",
                 "TableIterator.java"
-                ]
+                ],
+    deps = ["@maven//:junit_junit"]
 )
 
 java_library(
