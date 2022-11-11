@@ -114,11 +114,10 @@ genrule(
     name = "dummy",
     cmd = 'touch "$@"',
     outs = ["dummy.h"],
-    srcs = [":exaudf-api", ":exaudf", "libexaudf-src.jar", "libexaudf-api-src.jar", "@maven//:junit_junit"],
+    srcs = [":exaudf_deploy.jar"],
 )
 
-
-java_library(
+java_binary(
     name = "exaudf",
     srcs = glob(["*.java"])+
                 #The following are generated classes
@@ -136,25 +135,8 @@ java_library(
                 "SWIGVM_itertype_e.java",
                 "TableIterator.java"
                 ],
-    deps = ["@maven//:junit_junit"]
-)
-
-java_library(
-    name = "exaudf-api",
-    srcs = [
-            ":ExaCompilationException.java",
-            ":ExaConnectionAccessException.java",
-            ":ExaConnectionInformation.java",
-            ":ExaDataTypeException.java",
-            ":ExaImportSpecification.java",
-            ":ExaExportSpecification.java",
-            ":ExaIterationException.java",
-            ":ExaIterator.java",
-            ":ExaMetadata.java",
-            ":ExaUDFException.java"
-            ],
-    resources = ["//:LICENSE-exasol-script-api.txt"],
-    deps = [":exaudf"]
+    deps = ["@maven//:com_exasol_udf_api_java"],
+    create_executable=False,
 )
 
 exports_files([
