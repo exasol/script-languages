@@ -35,7 +35,7 @@ maven_install(
         "com.exasol:udf-api-java:1.0.1",
     ],
     repositories = [
-        "https://repo1.maven.org/maven2",gi
+        "https://repo1.maven.org/maven2",
     ],
 )
 
