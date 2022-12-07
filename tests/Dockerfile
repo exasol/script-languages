@@ -24,7 +24,7 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
 RUN mkdir -p downloads/ODBC downloads/JDBC downloads/EXAplus
 RUN curl -s https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/EXASOL_ODBC-7.0.11.tar.gz | tar -C downloads/ODBC --strip-components 1 -zxf -
 RUN curl -s https://x-up.s3.amazonaws.com/7.x/7.1.14/EXASOL_JDBC-7.1.14.tar.gz | tar -C downloads/JDBC --strip-components 1 -zxf -
-RUN curl -s https://x-up.s3.amazonaws.com/7.x/7.1.16/EXAplus-7.1.16.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
+RUN curl -s https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/EXAplus-7.0.11.tar.gz | tar -C downloads/EXAplus --strip-components 1 -zxf -
 ENV EXAPLUS=/downloads/EXAplus/exaplus
 
 COPY requirements.txt requirements.txt
