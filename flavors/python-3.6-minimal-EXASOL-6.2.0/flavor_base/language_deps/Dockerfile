@@ -12,4 +12,3 @@ RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/lang
 
 ENV PYTHON3_PREFIX /usr
 ENV PYTHON3_VERSION python3.6
-
