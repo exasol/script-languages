@@ -44,8 +44,6 @@ install.packages("knitr")
 
 audit_vuln <- audit[audit$no_of_vulnerabilities > 0,]
 
-write ("AAAARGH")
-
 filtered_vuln <- filter_out_ignored_cves(audit_vuln)
 
 library(jsonlite)
