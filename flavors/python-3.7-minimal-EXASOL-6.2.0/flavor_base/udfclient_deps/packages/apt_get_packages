@@ -3,4 +3,4 @@ locales|2.27-3ubuntu1.6
 libnss-db|2.2.3pre1-6build2
 libzmq3-dev|4.2.5-1ubuntu0.2
 libprotobuf-dev|3.0.0-9.1ubuntu1
-libssl-dev|1.1.1-1ubuntu2.1~18.04.20
+libssl-dev|1.1.1-1ubuntu2.1~18.04.21
