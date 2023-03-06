@@ -11,11 +11,11 @@ REPLACE=$3
 
 if [[ "$REPLACE" == "yes"  ]]
 then
-	SED_REPLACE_OPTION="-i"
+	SED_REPLACE_OPTION=("-i")
 else
-	SED_REPLACE_OPTION=""
+	SED_REPLACE_OPTION=()
 fi
 grep -E -R "^$PACKAGE\|" "$FLAVOR" \
 	| cut -f 1 -d ":" \
-	| xargs -I{} sed $SED_REPLACE_OPTION -E "s/^($PACKAGE)\|.*$/$PACKAGE|$CANDIDATE_VERSION/g" "{}" \
+	| xargs -I{} sed "${SED_REPLACE_OPTION=[@]}" -E "s/^($PACKAGE)\|.*$/$PACKAGE|$CANDIDATE_VERSION/g" "{}" \
 	| grep -E "^$PACKAGE\|"
