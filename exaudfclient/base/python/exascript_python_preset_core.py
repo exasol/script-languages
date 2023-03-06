@@ -1,11 +1,7 @@
 import sys
-if sys.version_info[0] >= 3:
-    unicode = str
-    decodeUTF8 = lambda x: x
-    encodeUTF8 = lambda x: x
-else:
-    decodeUTF8 = lambda x: x.decode('utf-8')
-    encodeUTF8 = lambda x: x.encode('utf-8')
+unicode = str
+decodeUTF8 = lambda x: x
+encodeUTF8 = lambda x: x
 
 from exascript_python import *
 import decimal
@@ -181,10 +177,7 @@ exa = exa()
 
 def __pythonvm_wrapped_parse(env):
     try:
-        if sys.version_info[0] >= 3:
-            exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec'), env)
-        else:
-            exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec')) in globals()
+        exec(compile(exa.meta.script_code, exa.meta.script_name, 'exec'), env)
     except BaseException as err:
         raise create_exception_with_complete_backtrace(
                 "F-UDF-CL-SL-PYTHON-1122",
