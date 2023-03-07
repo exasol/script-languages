@@ -42,7 +42,7 @@ def _python_local_repository_impl(repository_ctx):
     if python_version_env_var in repository_ctx.os.environ:
         version = repository_ctx.os.environ[python_version_env_var]
         if repository_ctx.name == "python3" and version.startswith("2"):
-            fail("Wrong python version specified in environment variable %s, expected %s, got %s"%(python_version_env_var,repository_ctx.name,version))
+            fail("Wrong python version specified in environment variable %s, got binary name '%s', but version number '%s'"%(python_version_env_var,repository_ctx.name,version))
         if repository_ctx.name == "python" or version.startswith("2"):
             fail("Python 2 is not supported anymore, but specified in environment variable %s, got %s, %s"%(python_version_env_var,repository_ctx.name,version))
     else:
@@ -56,7 +56,7 @@ def _python_local_repository_impl(repository_ctx):
     lib_glob = _get_lib_glob(binary, version, repository_ctx)
     defines = ['"ENABLE_PYTHON_VM"']
     if actual_version[0]=="3":
-        defines = defines+['"ENABLE_PYTHON3"']
+        defines.append('"ENABLE_PYTHON3"')
     defines_str = ",".join(defines) 
     build_file_content = """
 cc_library(
@@ -102,7 +102,7 @@ def _numpy_local_repository_impl(repository_ctx):
     else:
         fail("Environment Variable %s not found"%python_version_env_var)
     if version.startswith("2"):
-        fail("Python 2 is not supported anymore, but specified in environment variable %s, got %s, %s"%(python_version_env_var,repository_ctx.name,version))
+        fail("Wrong python version specified in environment variable %s, got binary name '%s', but version number '%s'"%(python_version_env_var,repository_ctx.name,version))
     print("python version in environment specified; %s"%version)
 
     binary = prefix+"/bin/"+version
@@ -110,7 +110,7 @@ def _numpy_local_repository_impl(repository_ctx):
 
     defines = ['"ENABLE_PYTHON_VM"']
     if actual_version[0]=="3":
-        defines = defines+['"ENABLE_PYTHON3"']
+        defines.append('"ENABLE_PYTHON3"')
     defines_str = ",".join(defines) 
 
     numpy_include_dir =_get_numpy_include_dir(binary,repository_ctx)
