@@ -94,25 +94,10 @@ VM_ENABLED_DEPS=select({
         "//conditions:default": []
     })
 
-VM_PYTHON2_DEPS=select({
-        ":python": ["//python/python2:pythoncontainer"],
-        "//conditions:default": []
-    })
-
 VM_PYTHON3_DEPS=select({
         ":python": ["//python/python3:pythoncontainer"],
         "//conditions:default": []
     })
-
-cc_binary(
-    name = "exaudfclient_bin",
-    srcs = ["exaudfclient.cc", "load_dynamic.cc"],
-    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
-           ["//exaudflib:exaudflib-deps"],
-    defines = VM_ENABLED_DEFINES,
-    data = [":libexaudflib_complete.so"],
-)
 
 cc_binary(
     name = "exaudfclient_py3_bin",
@@ -136,16 +121,6 @@ cc_binary(
 ## We need to explicitly declare the dependency of protobuf/zmq here, as the exaudflib is a static lib (//exaudflib:exaudflib)
 ## and hence does not contain dependency information. We cannot declare the shared lib (:exaudflib_complete.so)
 ## as dependency as it is a binary for bazel.
-
-cc_binary(
-    name = "exaudfclient_py2_static_bin",
-    srcs = ["exaudfclient.cc", "load_dynamic.cc"],
-    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON2_DEPS+
-          ["//exaudflib:exaudflib-deps"] + [ "@zmq//:zmq", "@protobuf//:protobuf"],
-    defines = VM_ENABLED_DEFINES,
-    data = [":libexaudflib_complete.so"],
-)
 
 cc_binary(
     name = "exaudfclient_py3_static_bin",
@@ -175,21 +150,6 @@ sh_library(
     })
 )
 
-SLOW_WRAPPER_BINARY_PY2="""$(location //:wrapper_generator_bin) "$(location exaudfclient_bin)" "$(location exaudfclient)" "$(location exaudfclient.template.sh)" """
-FAST_BINARY_PY2="""cp "$(location exaudfclient_bin)" "$(location exaudfclient)" """
-CREATE_BINARY_PY2_SCRIPT=select({
-        "//:fast_binary": FAST_BINARY_PY2,
-        "//:slow_wrapper": SLOW_WRAPPER_BINARY_PY2,
-        "//conditions:default": FAST_BINARY_PY2
-    })
-genrule(
-    name = "exaudfclient",
-    cmd = CREATE_BINARY_PY2_SCRIPT,
-    outs = ["exaudfclient"],
-    srcs = [":exaudfclient_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh","//:wrapper_generator_bin"],
-    output_to_bindir = True
-)
-
 SLOW_WRAPPER_BINARY_PY3="""$(location //:wrapper_generator_bin) "$(location exaudfclient_py3_bin)" "$(location exaudfclient_py3)" "$(location exaudfclient.template.sh)" """
 FAST_BINARY_PY3="""cp "$(location exaudfclient_py3_bin)" "$(location exaudfclient_py3)" """
 CREATE_BINARY_PY3_SCRIPT=select({
@@ -202,22 +162,6 @@ genrule(
     cmd = CREATE_BINARY_PY3_SCRIPT,
     outs = ["exaudfclient_py3"],
     srcs = [":exaudfclient_py3_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
-    output_to_bindir = True
-)
-
-SLOW_WRAPPER_STATIC_BINARY_PY2="""$(location //:wrapper_generator_bin) "$(location exaudfclient_py2_static_bin)" "$(location exaudfclient_py2_static)" "$(location exaudfclient.template.sh)" """
-FAST_BINARY_STATIC_PY2="""cp "$(location exaudfclient_py2_static_bin)" "$(location exaudfclient_py2_static)" """
-CREATE_STATIC_BINARY_PY2_SCRIPT=select({
-        "//:fast_binary": FAST_BINARY_STATIC_PY2,
-        "//:slow_wrapper": SLOW_WRAPPER_STATIC_BINARY_PY2,
-        "//conditions:default": FAST_BINARY_STATIC_PY2
-    })
-
-genrule(
-    name = "exaudfclient_py2_static",
-    cmd = CREATE_STATIC_BINARY_PY2_SCRIPT,
-    outs = ["exaudfclient_py2_static"],
-    srcs = [":exaudfclient_py2_static_bin", "//:libexaudflib_complete.so", "exaudfclient.template.sh", "//:wrapper_generator_bin"],
     output_to_bindir = True
 )
 

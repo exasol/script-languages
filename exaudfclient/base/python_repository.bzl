@@ -41,8 +41,10 @@ def _python_local_repository_impl(repository_ctx):
     python_version_env_var = repository_ctx.name.upper() + "_VERSION"
     if python_version_env_var in repository_ctx.os.environ:
         version = repository_ctx.os.environ[python_version_env_var]
-        if repository_ctx.name == "python3" and version.startswith("2") or repository_ctx.name == "python2" and version.startswith("3"):
-            fail("Wrong python version specified in environment variable %s, exppected %s, got %s"%(python_version_env_var,repository_ctx.name,version))
+        if repository_ctx.name == "python3" and version.startswith("2"):
+            fail("Wrong python version specified in environment variable %s, got binary name '%s', but version number '%s'"%(python_version_env_var,repository_ctx.name,version))
+        if repository_ctx.name == "python" or version.startswith("2"):
+            fail("Python 2 is not supported anymore, but specified in environment variable %s, got %s, %s"%(python_version_env_var,repository_ctx.name,version))
     else:
         fail("Environment Variable %s not found"%python_version_env_var)
     print("python version in environment specified; %s"%version)
@@ -52,11 +54,10 @@ def _python_local_repository_impl(repository_ctx):
     
     include_dir = _get_include_dir(binary, version, repository_ctx)
     lib_glob = _get_lib_glob(binary, version, repository_ctx)
-
-    defines='"ENABLE_PYTHON_VM"'
+    defines = ['"ENABLE_PYTHON_VM"']
     if actual_version[0]=="3":
-        defines = defines+',"ENABLE_PYTHON3"'
-
+        defines.append('"ENABLE_PYTHON3"')
+    defines_str = ",".join(defines) 
     build_file_content = """
 cc_library(
     name = "{name}",
@@ -65,7 +66,7 @@ cc_library(
     includes = ["{include_dir}"],
     defines = [{defines}],
     visibility = ["//visibility:public"]
-)""".format(lib_glob=lib_glob[1:], include_dir=include_dir[1:], name=repository_ctx.name, defines=defines)
+)""".format(lib_glob=lib_glob[1:], include_dir=include_dir[1:], name=repository_ctx.name, defines=defines_str)
     print(build_file_content)
 
     repository_ctx.symlink(prefix, "."+prefix)
@@ -74,7 +75,7 @@ cc_library(
 python_local_repository = repository_rule(
     implementation=_python_local_repository_impl,
     local = True,
-    environ = ["PYTHON2_PREFIX","PYTHON3_PREFIX","PYTHON2_VERSION", "PYTHON3_VERSION"])
+    environ = ["PYTHON3_PREFIX", "PYTHON3_VERSION"])
 
 
 def _get_numpy_include_dir(binary,p_repository_ctx):
@@ -100,14 +101,17 @@ def _numpy_local_repository_impl(repository_ctx):
         version = repository_ctx.os.environ[python_version_env_var]
     else:
         fail("Environment Variable %s not found"%python_version_env_var)
+    if version.startswith("2"):
+        fail("Wrong python version specified in environment variable %s, got binary name '%s', but version number '%s'"%(python_version_env_var,repository_ctx.name,version))
     print("python version in environment specified; %s"%version)
 
     binary = prefix+"/bin/"+version
     actual_version = _get_actual_python_version(binary,repository_ctx)
 
-    defines='"ENABLE_PYTHON_VM"'
+    defines = ['"ENABLE_PYTHON_VM"']
     if actual_version[0]=="3":
-        defines = defines+',"ENABLE_PYTHON3"'
+        defines.append('"ENABLE_PYTHON3"')
+    defines_str = ",".join(defines) 
 
     numpy_include_dir =_get_numpy_include_dir(binary,repository_ctx)
     hdrs = numpy_include_dir + "/*/*.h"
@@ -119,7 +123,7 @@ cc_library(
     includes = ["{includes}"],
     defines = [{defines}],
     visibility = ["//visibility:public"]
-)""".format(hdrs=hdrs, includes=numpy_include_dir, name=repository_ctx.name, defines=defines)
+)""".format(hdrs=hdrs, includes=numpy_include_dir, name=repository_ctx.name, defines=defines_str)
     print(build_file_content)
 
     repository_ctx.symlink(prefix, "."+prefix)

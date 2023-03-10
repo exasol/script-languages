@@ -1,27 +1,20 @@
 import sys
 import os
-isPython3 = False
 pyextdataframe_pkg = None
 
-if sys.version_info[0] == 3:
-    unicode = str
-    decodeUTF8 = lambda x: x
-    encodeUTF8 = lambda x: x
-    long = int
-    isPython3 = True
-else:
-    decodeUTF8 = lambda x: x.decode('utf-8')
-    encodeUTF8 = lambda x: x.encode('utf-8')
+unicode = str
+decodeUTF8 = lambda x: x
+encodeUTF8 = lambda x: x
+long = int
     
-if isPython3:
-    if 'LIBPYEXADATAFRAME_DIR' in os.environ:
-        path_to_pyexadataframe=os.environ['LIBPYEXADATAFRAME_DIR']
-        #print("sys.path append",path_to_pyexadataframe)
-        sys.path.append(path_to_pyexadataframe)
-    else:
-        path_to_pyexadataframe="/exaudf/python/python3"
-        #print("sys.path append",path_to_pyexadataframe)
-        sys.path.append(path_to_pyexadataframe)
+if 'LIBPYEXADATAFRAME_DIR' in os.environ:
+    path_to_pyexadataframe=os.environ['LIBPYEXADATAFRAME_DIR']
+    #print("sys.path append",path_to_pyexadataframe)
+    sys.path.append(path_to_pyexadataframe)
+else:
+    path_to_pyexadataframe="/exaudf/python/python3"
+    #print("sys.path append",path_to_pyexadataframe)
+    sys.path.append(path_to_pyexadataframe)
 
 
 
@@ -164,9 +157,6 @@ class exaiter(object):
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setBoolean(k, bool(v))
             elif type(v) in (str, unicode):
-#                vl = len(v)
-#                if not isPython3 and type(v) == unicode: v = v.encode('utf-8')
-#                if isPython3 or type(v) == unicode: v = v.encode('utf-8')
                 v = encodeUTF8(v)
                 vl = len(v)
                 if self.__outcoltypes[k] != STRING:

@@ -1,5 +1,3 @@
-python-protobuf|3.0.0-9.1ubuntu1
-python-zmq|16.0.2-2build2
 gdb|8.1.1-0ubuntu1
 valgrind|1:3.13.0-2ubuntu2.3
 gdbserver|8.1.1-0ubuntu1
