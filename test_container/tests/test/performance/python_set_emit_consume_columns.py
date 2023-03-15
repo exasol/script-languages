@@ -12,7 +12,7 @@ class SetEmitConsumeNextColumnsPythonPeformanceTest(AbstractPerformanceTest):
         self.create_schema();
         self.generate_data_linear(50)
         self.query(udf.fixindent('''
-                CREATE PYTHON SET SCRIPT CONSUME_NEXT_COLUMNS(
+                CREATE PYTHON3 SET SCRIPT CONSUME_NEXT_COLUMNS(
                     intVal DECIMAL(9,0), 
                     longVal DECIMAL(18,0), 
                     bigdecimalVal DECIMAL(36,0), 

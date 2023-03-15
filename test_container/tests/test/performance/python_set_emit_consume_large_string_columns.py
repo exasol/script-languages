@@ -67,7 +67,7 @@ class SetEmitConsumeLargeStringColumnPythonPeformanceTest(AbstractPerformanceTes
         self.create_schema();
         self.number_of_columns = 9
         self.query(udf.fixindent('''
-                CREATE PYTHON SET SCRIPT CONSUME_NEXT_COLUMNS(...) RETURNS INT AS
+                CREATE PYTHON3 SET SCRIPT CONSUME_NEXT_COLUMNS(...) RETURNS INT AS
                 def run(ctx):
                     count = 0
 #                    while(ctx.next()):

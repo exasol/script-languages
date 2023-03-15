@@ -12,7 +12,7 @@ class ScalarEmitConsumeTupleOnlyPythonPerformanceTest(AbstractPerformanceTest):
         self.create_schema()
         self.generate_data_linear(500)
         self.query(udf.fixindent('''
-                CREATE PYTHON SCALAR SCRIPT CONSUME_TUPLE(
+                CREATE PYTHON3 SCALAR SCRIPT CONSUME_TUPLE(
                     intVal DECIMAL(9,0), 
                     longVal DECIMAL(18,0), 
                     bigdecimalVal DECIMAL(36,0), 

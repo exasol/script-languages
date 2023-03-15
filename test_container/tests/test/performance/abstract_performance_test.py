@@ -56,10 +56,10 @@ class AbstractPerformanceTest(udf.TestCase):
         connection.close()
 
         connection = self.getConnection(self.user,self.password)
-        connection.query("ALTER SESSION SET script_languages='PYTHON=builtin_python PYTHON3=builtin_python3 JAVA=builtin_java R=builtin_r'")
+        connection.query("ALTER SESSION SET script_languages='PYTHON3=builtin_python3 JAVA=builtin_java R=builtin_r'")
         builtin_mean_elapsed_time,builtin_variance_elapsed_time,\
         builtin_max_elapsed_time,builtin_min_elapsed_time=\
-                self.run_queries(connection,"builtin_python", runs, warmup, query)
+                self.run_queries(connection,"builtin", runs, warmup, query)
         connection.close()
 
         deviation = 100-builtin_mean_elapsed_time/under_test_mean_elapsed_time*100

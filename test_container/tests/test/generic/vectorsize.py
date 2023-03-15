@@ -33,8 +33,6 @@ class Vectorsize(udf.TestCase):
     def test_vectorsize(self, size):
         limits = {
             'lua':      100000,
-            'ext-python':   8000,
-            'python':   8000,
             'python3':   8000,
             'r':        3000,
             'java':     3000

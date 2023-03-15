@@ -10,7 +10,7 @@ class SetEmitOutputOnlyPythonPerformanceTest(AbstractPerformanceTest):
     def setUp(self):
         self.create_schema()
         self.query(udf.fixindent('''
-                CREATE PYTHON SET SCRIPT OUTPUT_ONLY(input_value INT)
+                CREATE PYTHON3 SET SCRIPT OUTPUT_ONLY(input_value INT)
                     EMITS (
                     intVal DECIMAL(9,0), 
                     longVal DECIMAL(18,0), 

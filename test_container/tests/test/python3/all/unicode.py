@@ -30,7 +30,7 @@ class PythonUnicode(udf.TestCase):
         sql = udf.fixindent('''
             DROP SCHEMA fn1 CASCADE;
             CREATE SCHEMA fn1;
-            CREATE OR REPLACE python SCALAR SCRIPT
+            CREATE OR REPLACE python3 SCALAR SCRIPT
             unicode_in_script_body()
             RETURNS INTEGER AS
 

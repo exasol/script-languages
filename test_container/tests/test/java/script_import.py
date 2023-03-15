@@ -437,7 +437,7 @@ class ScriptImport(udf.TestCase):
             /
             '''))
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             bar()
             RETURNS DOUBLE AS
 
@@ -445,7 +445,7 @@ class ScriptImport(udf.TestCase):
                 return 32
             /
             '''))
-        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language PYTHON'):
+        with self.assertRaisesRegex(Exception, 'VM error:.* wrong language PYTHON3'):
             self.query('SELECT foo() FROM DUAL')
 
     @useData([
