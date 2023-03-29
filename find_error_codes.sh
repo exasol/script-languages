@@ -8,6 +8,7 @@ grep --only-matching \
      --exclude-dir=bazel* \
      --exclude-dir=.build_output \
      --exclude-dir=script-languages \
+     --exclude-dir=test_container \
      -I  --line-number -R -E \
   "[FEW]-[A-Z]+(-[A-Z]+)*-[0-9]+" \
   | sed -E "s/^(.+:[0-9]+):(.*)$/\1\t\2/g" \
