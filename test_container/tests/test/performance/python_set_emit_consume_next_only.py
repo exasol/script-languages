@@ -11,7 +11,7 @@ class SetEmitConsumeNextOnlyPythonPeformanceTest(AbstractPerformanceTest):
         self.create_schema()
         self.generate_data_linear(500)
         self.query(udf.fixindent('''
-                CREATE PYTHON SET SCRIPT CONSUME_NEXT(
+                CREATE PYTHON3 SET SCRIPT CONSUME_NEXT(
                     intVal DECIMAL(9,0), 
                     longVal DECIMAL(18,0), 
                     bigdecimalVal DECIMAL(36,0), 

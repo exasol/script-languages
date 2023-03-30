@@ -140,7 +140,7 @@ class ScriptImport(udf.TestCase):
             /
             '''))
         self.query(udf.fixindent('''
-            CREATE python SCALAR SCRIPT
+            CREATE python3 SCALAR SCRIPT
             bar()
             RETURNS DOUBLE AS
 

@@ -33,7 +33,7 @@ def getPythonVersionInUDFs(server, script_languages):
            alter session set script_languages='%(sl)s';
            drop schema if exists pyversion_schema cascade;
            create schema pyversion_schema;
-           create or replace python scalar script pyversion_schema.python_version() returns varchar(1000) as
+           create or replace python3 scalar script pyversion_schema.python_version() returns varchar(1000) as
            import sys
            def run(ctx):
                return 'Python='+str(sys.version_info[0])
@@ -210,127 +210,6 @@ class Unicode(udf.TestCase):
 
 class UnicodeData(udf.TestCase):
 
-    @requires('UNICODE_LOWER')
-    # @udf.TestCase.expectedFailureIfLang('java')
-    # @udf.TestCase.expectedFailureIfLang('r')
-    def test_unicode_lower_is_subset_of_Unicode520_part1(self):
-        if udf.pythonVersionInUdf == 2:
-            rows = self.query('''
-               SELECT
-                   uchar,
-                   to_lower,
-                   codepoint,
-                   name,
-                   unicode(to_lower),
-                   unicode(fn1.unicode_lower(uchar))
-               FROM utest.unicodedata
-               WHERE codepoint not between 55296 and 57343
-                   and codepoint not in (8486, 8490, 8491, 304)
-                   and (to_lower != fn1.unicode_lower(uchar))
-                   and (uchar != fn1.unicode_lower(uchar))
-               ORDER BY codepoint
-               LIMIT 50
-               ''')
-            self.maxDiff = None
-            self.assertRowsEqual([], rows)
-
-    @requires('UNICODE_LOWER')
-    # @udf.TestCase.expectedFailureIfLang('java')
-    # @udf.TestCase.expectedFailureIfLang('r')
-    # @skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
-    def test_unicode_lower_is_subset_of_Unicode520_part1_on_undefined_block(self):
-        """DWA-19940 (R)"""
-        if udf.pythonVersionInUdf == 2:
-            rows = self.query('''
-                SELECT
-                    codepoint,
-                    name,
-                    unicode(to_lower),
-                    unicode(fn1.unicode_lower(uchar))
-                FROM utest.unicodedata
-                WHERE codepoint not in (8486, 8490, 8491)
-                    and (to_lower != fn1.unicode_lower(uchar))
-                    and (uchar != fn1.unicode_lower(uchar))
-                    and codepoint between 55296 and 57343
-                ORDER BY codepoint
-                LIMIT 50
-                ''')
-            self.assertRowsEqual([], rows)
-
-    @requires('UNICODE_LOWER')
-    # @udf.TestCase.expectedFailureIfLang('lua')
-    # @udf.TestCase.expectedFailureIfLang('java')
-    # @udf.TestCase.expectedFailureIfLang('python3')
-    @skipIf(udf.pythonVersionInUdf == 3, 'Unicode test does not work in Python3 ... investigate!')
-    def test_unicode_lower_is_subset_of_Unicode520_part2(self):
-        """DWA-13702 (Lua)"""
-        if udf.pythonVersionInUdf == 2:
-            rows = self.query('''
-                SELECT
-                    codepoint,
-                    name,
-                    unicode(to_lower),
-                    unicode(fn1.unicode_lower(uchar))
-                FROM utest.unicodedata
-                WHERE codepoint in (8486, 8490, 8491)
-                    and (to_lower != fn1.unicode_lower(uchar))
-                    and (uchar != fn1.unicode_lower(uchar))
-                ORDER BY codepoint
-                LIMIT 50
-                ''')
-            self.assertRowsEqual([], rows)
-
-    @requires('UNICODE_UPPER')
-    # @udf.TestCase.expectedFailureIfLang('java')
-    # @udf.TestCase.expectedFailureIfLang('r')
-    # @skipIf(udf.pythonVersionInUdf == 3, 'Unicode tests do not work in Python3 ... investigate!')
-    def test_unicode_upper_is_subset_of_Unicode520_part1(self):
-        if udf.pythonVersionInUdf == 2:
-            rows = self.query('''
-                SELECT
-                    codepoint,
-                    name,
-                    unicode(to_upper)
-                    --,
-                    --unicode(fn1.unicode_upper(uchar)) 
-                FROM utest.unicodedata
-                WHERE codepoint not between 55296 and 57343
-                    and codepoint not in (181, 1010, 8126, 304)
-                    and codepoint not in (223,329,496,604,609,613,614,618,620,647,669,670,912,912,944,1011,1415,7830,7831,7832,7833,7834,8016,8018,8020,8022,8064,8072,8065,8073,8066,8074,8067,8075,8068,8076,8069,8077,8070,8078,8071,8079,8072,8073,8074,8075,8076,8077,8078,8079,8080,8088,8081,8089,8090,8091,8084,8092,8085,8093,8086,8094,8087,8095,8088)
-                    and codepoint not in (8082,8090,8091,8096,8104,8097,8105,8098,8106,8099,8107,8100,8108,8101,8109,8102,8110,8103,8111,8104,8105,8106,8107,8108,8109,8110,8111,8114,8115,8116,8118,8119,8124,8130,8131,8132,8134,8135,8140,8146,8147,8150,8151,8162,8163,8164,8166,8167,8178,8179,8188,8180,8182,8183,8188,64256,64257,64258,64259,64260)
-                    and codepoint not in (8083,8091,64261,64262,64275,64276,64277,64278,64279)
-                    and not codepoint between 4304 and 4346 -- Georgian Script Casing changed in Python 3.7 and Unicode 11 https://www.unicode.org/versions/Unicode11.0.0/#Migration, https://docs.python.org/3.7/whatsnew/3.7.html#unicodedata 
-                    and (to_upper != fn1.unicode_upper(uchar))
-                    and (uchar != fn1.unicode_upper(uchar))
-                ORDER BY codepoint
-                LIMIT 500
-                ''')
-            self.maxDiff = None
-            self.assertRowsEqual([], rows)
-
-    @requires('UNICODE_UPPER')
-    # @udf.TestCase.expectedFailureIfLang('java')
-    # @udf.TestCase.expectedFailureIfLang('r')
-    #    @skipIf(udf.pythonVersionInUdf == 3, 'Unicode tests do not work in Python3 ... investigate!')
-    def test_unicode_upper_is_subset_of_Unicode520_part1_on_undefined_block(self):
-        """DWA-19940 (R)"""
-        if udf.pythonVersionInUdf == 2:
-            rows = self.query('''
-                SELECT
-                    codepoint,
-                    name,
-                    unicode(to_upper),
-                    unicode(fn1.unicode_upper(uchar))
-                FROM utest.unicodedata
-                WHERE codepoint not in (181, 1010, 8126, 304)
-                    and (to_upper != fn1.unicode_upper(uchar))
-                    and (uchar != fn1.unicode_upper(uchar))
-                    and codepoint between 55296 and 57343
-                ORDER BY codepoint
-                LIMIT 50
-                ''')
-            self.assertRowsEqual([], rows)
-
     @requires('UNICODE_UPPER')
     # @udf.TestCase.expectedFailureIfLang('lua')
     def test_unicode_upper_is_subset_of_Unicode520_part2(self):
@@ -381,20 +260,6 @@ class UnicodeData(udf.TestCase):
             ''')
         self.assertRowsEqual([], rows)
 
-    @requires('UNICODE_LEN')
-    # @udf.TestCase.expectedFailureIfLang('r')
-    def test_unicode_len_on_undefined_block(self):
-        """DWA-19940 (R)"""
-        if udf.pythonVersionInUdf == 2:
-            rows = self.query('''
-               SELECT codepoint, name
-               FROM utest.unicodedata
-               WHERE len(uchar) != fn1.unicode_len(uchar)
-                   and codepoint between 55296 and 57343
-               ORDER BY codepoint
-               LIMIT 100
-               ''')
-            self.assertRowsEqual([], rows)
 
 
 if __name__ == '__main__':

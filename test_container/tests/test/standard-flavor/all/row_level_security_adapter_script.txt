@@ -1,4 +1,4 @@
-CREATE OR REPLACE PYTHON ADAPTER SCRIPT ROW_LEVEL_SECURITY_ADAPTER.rls_adapter AS
+CREATE OR REPLACE PYTHON3 ADAPTER SCRIPT ROW_LEVEL_SECURITY_ADAPTER.rls_adapter AS
 import json
 import string
 import os
@@ -76,7 +76,6 @@ def user_wants_only_active(username, meta_connection, adapter_schema):
 # This function implements the virtual schema adapter callback
 def adapter_call(request):
     try:
-        # database expects utf-8 encoded string of type str. unicode not yet supported
         root = json.loads(request)
         if root["type"] == "createVirtualSchema":
             if not "properties" in root["schemaMetadataInfo"]: raise ValueError(
@@ -91,24 +90,23 @@ def adapter_call(request):
                 "type": "createVirtualSchema",
                 "schemaMetadata": {"tables": get_meta_for_schema(meta_connection, table_schema)}
             }
-            return json.dumps(res).encode('utf-8')
+            return json.dumps(res)
         elif root["type"] == "dropVirtualSchema":
-            return json.dumps({"type": "dropVirtualSchema"}).encode('utf-8')
+            return json.dumps({"type": "dropVirtualSchema"})
         elif root["type"] == "setProperties":
-            return json.dumps({"type": "setProperties"}).encode('utf-8')
+            return json.dumps({"type": "setProperties"})
         elif root["type"] == "refresh":
             table_schema = root["schemaMetadataInfo"]["properties"]["TABLE_SCHEMA"]
             meta_connection = root["schemaMetadataInfo"]["properties"]["META_CONNECTION"]
             adapter_schema = root["schemaMetadataInfo"]["properties"]["ADAPTER_SCHEMA"]
             return json.dumps({"type": "refresh",
                                "schemaMetadata": {
-                                   "tables": get_meta_for_schema(meta_connection, table_schema, adapter_schema)}}) \
-                .encode('utf-8')
+                                   "tables": get_meta_for_schema(meta_connection, table_schema, adapter_schema)}})
         if root["type"] == "getCapabilities":
             return json.dumps({
                 "type": "getCapabilities",
                 "capabilities": []
-            }).encode('utf-8')  # database expects utf-8 encoded string of type str. unicode not yet supported.
+            })
         elif root["type"] == "pushdown":
             req = root["pushdownRequest"]
             if req["type"] != "select": raise ValueError('Unsupported pushdown type: ' + req["type"])
@@ -128,7 +126,7 @@ def adapter_call(request):
                 "type": "pushdown",
                 "sql": query
             }
-            return json.dumps(res).encode('utf-8')
+            return json.dumps(res)
         else:
             raise ValueError('Unsupported callback')
     except Exception as e:

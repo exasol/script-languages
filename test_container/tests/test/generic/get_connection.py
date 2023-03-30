@@ -163,13 +163,10 @@ class ConnectionTest(udf.TestCase):
         self.query("CREATE SCHEMA IF NOT EXISTS ADAPTER")
         self.query("CREATE CONNECTION my_conn TO 'MYADDRESS' USER 'MYUSER' IDENTIFIED BY 'MYPASSWORD'")
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON ADAPTER SCRIPT adapter.fast_adapter_conn AS
+            CREATE OR REPLACE PYTHON3 ADAPTER SCRIPT adapter.fast_adapter_conn AS
             import json
             import string
-            if sys.version_info[0] >= 3:
-                encodeUTF8 = lambda x: x
-            else:
-                encodeUTF8 = lambda x: x.encode('utf-8')
+            encodeUTF8 = lambda x: x
 
             def adapter_call(request):
                 root = json.loads(request)
