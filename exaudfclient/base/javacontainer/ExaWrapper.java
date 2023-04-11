@@ -259,7 +259,7 @@ class ExaWrapper {
             throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1081","Exception during cleanup",ex);
         }
         catch (NoSuchMethodException ex) {
-            System.err.println("W-UDF.CL.SL.JAVA-1082: Skipping init, because cleanup method cannot be found.");
+            System.err.println("W-UDF.CL.SL.JAVA-1082: Skipping cleanup, because cleanup method cannot be found.");
         }
     }
 
