@@ -159,7 +159,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe()
-                return np.asscalar(df.iloc[0, 0] + df.iloc[0, 1])
+                return (df.iloc[0, 0] + df.iloc[0, 1]).item()
             /
             ''' % (self.col_defs_str))
         self.query(udf_sql)
@@ -217,7 +217,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe()
-                ctx.emit(np.asscalar(df.C0))
+                ctx.emit(df.C0.item())
             /
             ''')
         print(udf_sql)
@@ -236,7 +236,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe(num_rows="all")
-                ctx.emit(np.asscalar(df.C0))
+                ctx.emit(df.C0.item())
             /
             ''')
         print(udf_sql)
@@ -331,7 +331,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe(num_rows="all")
-                return np.asscalar(df.iloc[:, 0].sum())
+                return df.iloc[:, 0].sum().item()
             /
             ''' % (self.col_defs_str))
         print(udf_sql)
@@ -477,7 +477,7 @@ class PandasDataFrame(udf.TestCase):
                     df = ctx.get_dataframe(num_rows=1)
                     if df is None:
                         break
-                    ctx.emit(np.asscalar(df.C0))
+                    ctx.emit(df.C0.item())
             /
             ''')
         print(udf_sql)
@@ -500,7 +500,7 @@ class PandasDataFrame(udf.TestCase):
                     if df is None:
                         break
                     for i in range(df.shape[0]):
-                        ctx.emit(np.asscalar(df.iloc[i, 0]))
+                        ctx.emit(df.iloc[i, 0].item())
             /
             ''')
         print(udf_sql)
