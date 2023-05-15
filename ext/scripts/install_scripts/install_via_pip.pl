@@ -68,9 +68,10 @@ if($use_deprecated_legacy_resolver){
   push @pip_parameters, "--use-deprecated=legacy-resolver";
 }
 
+my $constraints_file_path = "/tmp/pip_constraints.txt"; 
 my $pip_parameters_str = join( ' ', @pip_parameters);
 my $element_separator = '\\|';
-my $combining_template = "$python_binary -m pip install $pip_parameters_str --no-cache-dir <<<<0>>>>";
+my $combining_template = "$python_binary -m pip install $pip_parameters_str -c $constraints_file_path --no-cache-dir <<<<0>>>>";
 my @templates = ("'<<<<0>>>>'");
 if($with_versions){
     @templates=("'<<<<0>>>>==<<<<1>>>>'")
@@ -113,5 +114,7 @@ if($with_versions){
 }
 
 if($cmd ne ""){
+   my $pip_freeze_cmd="$python_binary -m pip freeze | grep '==' | sed 's/==/>=/' > $constraints_file_path";
+   package_mgmt_utils::execute($pip_freeze_cmd,$dry_run);
    package_mgmt_utils::execute($cmd,$dry_run);
 }
