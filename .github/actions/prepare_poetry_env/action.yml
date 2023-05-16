@@ -1,0 +1,20 @@
+name: 'Prepare Poetry environment'
+description: 'This composite actions checks out out the project, installs Poetry, and install the project in the Poetry environment'
+inputs:
+  python-version:
+    description: 'The Python version to use'
+    required: true
+    default: '3.8'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ inputs.python-version }}
+    - uses: abatilo/actions-poetry@v2
+      with:
+        poetry-version: 1.4.0
+    - name: Poetry install
+      run: poetry install
+      shell: bash
+
