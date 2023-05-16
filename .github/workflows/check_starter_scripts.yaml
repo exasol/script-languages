@@ -16,15 +16,7 @@ jobs:
     - name: Init submodules
       run: git submodule update --init --recursive
 
-    - name: Setup Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-
-    - name: Install Poetry
-      uses: abatilo/actions-poetry@v2
-      with:
-        poetry-version: 1.2.0
+    - uses: ./.github/actions/prepare_poetry_env
 
     - name: Setup poetry env
       run:  bash scripts/setup_poetry_env.sh "python3.8"
