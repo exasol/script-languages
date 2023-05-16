@@ -1,4 +1,5 @@
 #include "exaudflib/swig/swig_common.h"
+#include "debug_message.h"
 
 #include <Python.h>
 
@@ -16,6 +17,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <iostream>
 
 extern "C" {
 
@@ -26,8 +28,9 @@ extern "C" {
 #define PY_NONETYPE (NPY_USERDEF+5)
 #define PY_BOOL (NPY_USERDEF+6)
 
-std::map<std::string, int> typeMap {
+std::map<std::string, int> pandasDTypeStrToNumpyCTypeMap {
     {"bool", NPY_BOOL},
+
     {"int", NPY_INT32},
     {"intc", NPY_INT32},
     {"intp", NPY_INT64},
@@ -35,14 +38,34 @@ std::map<std::string, int> typeMap {
     {"int16", NPY_INT16},
     {"int32", NPY_INT32},
     {"int64", NPY_INT64},
+    {"int8[pyarrow]", NPY_INT8},
+    {"int16[pyarrow]", NPY_INT16},
+    {"int32[pyarrow]", NPY_INT32},
+    {"int64[pyarrow]", NPY_INT64},
+    
     {"uint8", NPY_UINT8},
     {"uint16", NPY_UINT16},
     {"uint32", NPY_UINT32},
     {"uint64", NPY_UINT64},
-    {"float", NPY_FLOAT64},
-    {"float16", NPY_FLOAT16},
+    {"uint8[pyarrow]", NPY_UINT8},
+    {"uint16[pyarrow]", NPY_UINT16},
+    {"uint32[pyarrow]", NPY_UINT32},
+    {"uint64[pyarrow]", NPY_UINT64},
+    
     {"float32", NPY_FLOAT32},
     {"float64", NPY_FLOAT64},
+    {"float", NPY_FLOAT32},
+    {"double", NPY_FLOAT64},
+    {"float32[pyarrow]", NPY_FLOAT32},
+    {"float64[pyarrow]", NPY_FLOAT64},
+    {"float[pyarrow]", NPY_FLOAT32},
+    {"double[pyarrow]", NPY_FLOAT64},
+     // We let numpy convert float16 to float (32 bit) and then use the C conversion from float to double, because a proper conversion from float16 to double in C is very complicated.
+    {"float16", NPY_FLOAT32},
+    {"halffloat", NPY_FLOAT32},
+    {"float16[pyarrow]", NPY_FLOAT32},
+    {"halffloat[pyarrow]", NPY_FLOAT32},
+
     {"py_int", PY_INT},
     {"py_decimal.Decimal", PY_DECIMAL},
     {"py_str", PY_STR},
@@ -51,6 +74,26 @@ std::map<std::string, int> typeMap {
     {"object", NPY_OBJECT},
     {"py_NoneType", PY_NONETYPE},
     {"py_bool", PY_BOOL}
+};
+
+std::map<int, std::string> numpyCTypeToNumpyDTypeStrMap {
+    {NPY_BOOL, "bool"},
+    {NPY_INT8, "int8"},
+    {NPY_INT16, "int16"},
+    {NPY_INT32, "int32"},
+    {NPY_INT64, "int64"},
+    {NPY_UINT8, "uint8"},
+    {NPY_UINT16, "uint16"},
+    {NPY_UINT32, "uint32"},
+    {NPY_UINT64, "uint64"},
+    {NPY_FLOAT32, "float32"},
+    {NPY_FLOAT64, "float64"},
+    {PY_INT, "py_int"},
+    {PY_DECIMAL, "py_decimal.Decimal"},
+    {PY_STR, "py_str"},
+    {PY_DATE, "py_datetime.date"},
+    {PY_NONETYPE, "py_NoneType"},
+    {PY_BOOL, "py_bool"}
 };
 
 std::map<int, std::string> emitTypeMap {
@@ -398,8 +441,8 @@ inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::s
     PyPtr numpyTypeIter(PyObject_GetIter(numpyTypes));
     for (PyPtr numpyType(PyIter_Next(numpyTypeIter.get())); numpyType.get(); numpyType.reset(PyIter_Next(numpyTypeIter.get()))) {
         const char *typeName = PyUnicode_AsUTF8(numpyType.get());
-        std::map<std::string, int>::iterator it = typeMap.find(typeName);
-        if (it != typeMap.end()) {
+        std::map<std::string, int>::iterator it = pandasDTypeStrToNumpyCTypeMap.find(typeName);
+        if (it != pandasDTypeStrToNumpyCTypeMap.end()) {
             colTypes.push_back(*it);
         } else if(isNumpyDatetime64(typeName)){
             std::stringstream ss;
@@ -430,6 +473,7 @@ inline void printPyObject(PyObject* obj, const std::string& error_code){
 inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, 
         std::vector<std::pair<std::string, int>>& colTypes, std::vector<PyPtr>& columnArrays){
     for (int c = 0; c < numCols; c++) {
+	DBG_STREAM_MSG(std::cerr, "Start Column " << c);
         PyPtr pyStart(PyLong_FromLong(c));
         PyPtr pyStop(PyLong_FromLong(c + 1));
         PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), Py_None));
@@ -437,9 +481,11 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
 
         PyPtr pyZero(PyLong_FromLong(0L));
         PyPtr array(PyObject_GetItem(arraySlice.get(), pyZero.get()));
+	DBG_STREAM_MSG(std::cerr, "Got array for column " << c);
 
 
         if (colTypes[c].second == NPY_OBJECT) {
+	    DBG_STREAM_MSG(std::cerr, "Column is NPY_OBJECT " << c);
             // Convert numpy array to python list
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
             if (!PyList_Check(pyList.get())) {
@@ -463,8 +509,8 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
 
             // Update type in column type info
             std::map<std::string, int>::iterator userDefIt;
-            userDefIt = typeMap.find(pyTypeName);
-            if (userDefIt != typeMap.end()) {
+            userDefIt = pandasDTypeStrToNumpyCTypeMap.find(pyTypeName);
+            if (userDefIt != pandasDTypeStrToNumpyCTypeMap.end()) {
                 colTypes[c] = *userDefIt;
             } else {
                 // TODO accept pandas.Timestamp values
@@ -477,6 +523,7 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
         }
         else if (colTypes[c].second == NPY_DATETIME) {
             
+	    DBG_STREAM_MSG(std::cerr, "Column is NPY_DATETIME " << c);
             
             // Convert numpy array to python list
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
@@ -490,13 +537,24 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
             columnArrays.push_back(std::move(pyList));
         }
         else {
+	    DBG_STREAM_MSG(std::cerr, "Column is something else " << c);
             PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
+	    DBG_STREAM_MSG(std::cerr, "Step 1 successfull" << c);
             PyPtr keywordArgs(PyDict_New());
+	    DBG_STREAM_MSG(std::cerr, "Step 2 successfull" << c);
             PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
-            PyPtr funcArgs(Py_BuildValue("(s)", colTypes[c].first.c_str()));
+	    DBG_STREAM_MSG(std::cerr, "Step 3 successfull" << c);
+	    DBG_STREAM_MSG(std::cerr, "colTypes[c].first" << colTypes[c].first);
+	    std::string numpyDTypeStr = numpyCTypeToNumpyDTypeStrMap.at(colTypes[c].second);
+	    DBG_STREAM_MSG(std::cerr, "numpyDTypeStr" << numpyDTypeStr);
+            PyPtr funcArgs(Py_BuildValue("(s)", numpyDTypeStr.c_str()));
+	    DBG_STREAM_MSG(std::cerr, "Step 4 successfull" << c);
             PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
+	    DBG_STREAM_MSG(std::cerr, "Step 5 successfull" << c);
 
             columnArrays.push_back(std::move(scalarArr));
+	    DBG_STREAM_MSG(std::cerr, "Step 6 successfull" << c);
+
         }
     }
 
@@ -734,7 +792,10 @@ inline void handleEmitNpyFloat16(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    double value = static_cast<double>(*((uint16_t*)(PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r))));
+    uint16_t float16_value = *((uint16_t*)(PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r)));
+    DBG_STREAM_MSG(std::cerr, "float16_value " << float16_value);
+    double value = static_cast<double>(float16_value);
+    DBG_STREAM_MSG(std::cerr, "value " << value);
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
@@ -1146,12 +1207,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         handleEmitNpyFloat32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
                         break;
                     }
-                    case NPY_FLOAT16:
-                    {
-                        handleEmitNpyFloat16(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-
                     case NPY_BOOL:
                     {
                         handleEmitNpyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
