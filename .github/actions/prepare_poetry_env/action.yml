@@ -1,5 +1,5 @@
 name: 'Prepare Poetry environment'
-description: 'This composite actions checks out out the project, installs Poetry, and install the project in the Poetry environment'
+description: 'This composite action installs Python, Poetry, and installs the project into the Poetry environment'
 inputs:
   python-version:
     description: 'The Python version to use'
