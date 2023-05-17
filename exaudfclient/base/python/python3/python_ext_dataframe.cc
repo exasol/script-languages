@@ -473,7 +473,6 @@ inline void printPyObject(PyObject* obj, const std::string& error_code){
 inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, 
         std::vector<std::pair<std::string, int>>& colTypes, std::vector<PyPtr>& columnArrays){
     for (int c = 0; c < numCols; c++) {
-	DBG_STREAM_MSG(std::cerr, "Start Column " << c);
         PyPtr pyStart(PyLong_FromLong(c));
         PyPtr pyStop(PyLong_FromLong(c + 1));
         PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), Py_None));
@@ -481,11 +480,9 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
 
         PyPtr pyZero(PyLong_FromLong(0L));
         PyPtr array(PyObject_GetItem(arraySlice.get(), pyZero.get()));
-	DBG_STREAM_MSG(std::cerr, "Got array for column " << c);
 
 
         if (colTypes[c].second == NPY_OBJECT) {
-	    DBG_STREAM_MSG(std::cerr, "Column is NPY_OBJECT " << c);
             // Convert numpy array to python list
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
             if (!PyList_Check(pyList.get())) {
@@ -523,7 +520,6 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
         }
         else if (colTypes[c].second == NPY_DATETIME) {
             
-	    DBG_STREAM_MSG(std::cerr, "Column is NPY_DATETIME " << c);
             
             // Convert numpy array to python list
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
@@ -537,24 +533,13 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
             columnArrays.push_back(std::move(pyList));
         }
         else {
-	    DBG_STREAM_MSG(std::cerr, "Column is something else " << c);
             PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
-	    DBG_STREAM_MSG(std::cerr, "Step 1 successfull" << c);
             PyPtr keywordArgs(PyDict_New());
-	    DBG_STREAM_MSG(std::cerr, "Step 2 successfull" << c);
             PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
-	    DBG_STREAM_MSG(std::cerr, "Step 3 successfull" << c);
-	    DBG_STREAM_MSG(std::cerr, "colTypes[c].first" << colTypes[c].first);
 	    std::string numpyDTypeStr = numpyCTypeToNumpyDTypeStrMap.at(colTypes[c].second);
-	    DBG_STREAM_MSG(std::cerr, "numpyDTypeStr" << numpyDTypeStr);
             PyPtr funcArgs(Py_BuildValue("(s)", numpyDTypeStr.c_str()));
-	    DBG_STREAM_MSG(std::cerr, "Step 4 successfull" << c);
             PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
-	    DBG_STREAM_MSG(std::cerr, "Step 5 successfull" << c);
-
             columnArrays.push_back(std::move(scalarArr));
-	    DBG_STREAM_MSG(std::cerr, "Step 6 successfull" << c);
-
         }
     }
 
@@ -775,46 +760,6 @@ inline void handleEmitNpyFloat32(
         {
             std::stringstream ss;
             ss << "F-UDF-CL-SL-PYTHON-1063: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
-            throw std::runtime_error(ss.str().c_str());
-        }
-    }
-    checkPyPtrIsNull(pyValue);
-    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
-}
-
-inline void handleEmitNpyFloat16(
-        int c, int r,
-        std::vector<PyPtr>& columnArrays,
-        std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
-        std::vector<ColumnInfo>& colInfo,
-        std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
-        PyPtr& pyValue,
-        PyPtr& pyResult,
-        PyPtr& pySetNullMethodName){
-    uint16_t float16_value = *((uint16_t*)(PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r)));
-    DBG_STREAM_MSG(std::cerr, "float16_value " << float16_value);
-    double value = static_cast<double>(float16_value);
-    DBG_STREAM_MSG(std::cerr, "value " << value);
-    if (npy_isnan(value)) {
-        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
-        return;
-    }
-    switch (colInfo[c].type) {
-        case SWIGVMContainers::INT64:
-        case SWIGVMContainers::INT32:
-            pyValue.reset(PyLong_FromLong(static_cast<int64_t>(value)));
-            break;
-        case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
-            break;
-        case SWIGVMContainers::DOUBLE:
-            pyValue.reset(PyFloat_FromDouble(value));
-            break;
-        default:
-        {
-            std::stringstream ss;
-            ss << "F-UDF-CL-SL-PYTHON-1064: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
             throw std::runtime_error(ss.str().c_str());
         }
     }
