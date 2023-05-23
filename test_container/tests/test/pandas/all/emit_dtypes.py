@@ -124,7 +124,7 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("object", "boolean", bool_dataframe_value_str, bool_expected_rows, False),
 
             ("datetime64[ns]", "timestamp", timestamp_dataframe_value_str, datetime_expected_rows, False),
-            ("object", "timestamp", timestamp_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1056.*unexpected python type: py_Timestamp.*", False),
+            ("object", "timestamp", timestamp_dataframe_value_str, datetime_expected_rows, False),
             ("object", "timestamp", datetime_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1056.*unexpected python type: py_datetime.datetime.*", False),
             ("object", "timestamp", date_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1071: emit column 0 of type TIMESTAMP but data given have type py_datetime.date.*", False),
             ("object", "DATE", date_dataframe_value_str, date_expected_rows, False),
@@ -164,6 +164,7 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("object", "boolean", none_dataframe_value_str, none_expected_rows, False),
            
             ("datetime64[ns]", "timestamp", none_dataframe_value_str, none_expected_rows, False),
+            ("object", "timestamp", none_dataframe_value_str, none_expected_rows, False),
             ("object", "DATE", none_dataframe_value_str, none_expected_rows, False),
 
             # NaN
@@ -199,6 +200,7 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("object", "boolean", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1068: emit column 0 of type BOOLEAN but data given have type py_float.*", False),
 
             ("datetime64[ns]", "timestamp", nan_dataframe_value_str, nan_expected_rows, False),
+            ("object", "timestamp", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1068: emit column 0 of type DATE but data given have type py_float.*", False),
             ("object", "DATE", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1068: emit column 0 of type DATE but data given have type py_float.*", False),
 
             # TODO mixed nan/none with values

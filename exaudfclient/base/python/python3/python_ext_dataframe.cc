@@ -28,6 +28,7 @@ extern "C" {
 #define PY_NONETYPE (NPY_USERDEF+5)
 #define PY_BOOL (NPY_USERDEF+6)
 #define PY_FLOAT (NPY_USERDEF+7)
+#define PY_TIMESTAMP (NPY_USERDEF+8)
 
 std::map<std::string, int> pandasDTypeStrToNumpyCTypeMap {
 
@@ -75,6 +76,8 @@ std::map<std::string, int> pandasDTypeStrToNumpyCTypeMap {
     {"bool", NPY_BOOL},
 
     {"datetime64[ns]", NPY_DATETIME},
+    {"timestamp[ns, tz=UTC][pyarrow]", NPY_OBJECT},
+    
     {"object", NPY_OBJECT},
     
     {"py_NAType", PY_NONETYPE},
@@ -84,7 +87,8 @@ std::map<std::string, int> pandasDTypeStrToNumpyCTypeMap {
     {"py_float", PY_FLOAT},
     {"py_decimal.Decimal", PY_DECIMAL},
     {"py_str", PY_STR},
-    {"py_datetime.date", PY_DATE}
+    {"py_datetime.date", PY_DATE},
+    {"py_Timestamp", PY_TIMESTAMP}
 };
 
 std::map<int, std::string> numpyCTypeToNumpyDTypeStrMap {
@@ -99,13 +103,6 @@ std::map<int, std::string> numpyCTypeToNumpyDTypeStrMap {
     {NPY_UINT64, "uint64"},
     {NPY_FLOAT32, "float32"},
     {NPY_FLOAT64, "float64"},
-    {PY_INT, "py_int"},
-    {PY_FLOAT, "py_float"},
-    {PY_DECIMAL, "py_decimal.Decimal"},
-    {PY_STR, "py_str"},
-    {PY_DATE, "py_datetime.date"},
-    {PY_NONETYPE, "py_NoneType"},
-    {PY_BOOL, "py_bool"}
 };
 
 std::map<int, std::string> emitTypeMap {
@@ -449,6 +446,11 @@ inline bool isNumpyDatetime64(const char* typeName){
     return std::string(typeName).find("datetime64[")==0;
 }
 
+inline bool isArrowDecimal128(const char* typeName){
+    // example decimal128(3, 2)[pyarrow]
+    return std::string(typeName).find("decimal128(")==0 && std::string(typeName).find("[pyarrow]")!=std::string::npos;
+}
+
 inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::string, int>>& colTypes){
     PyPtr numpyTypeIter(PyObject_GetIter(numpyTypes));
     for (PyPtr numpyType(PyIter_Next(numpyTypeIter.get())); numpyType.get(); numpyType.reset(PyIter_Next(numpyTypeIter.get()))) {
@@ -456,6 +458,8 @@ inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::s
         std::map<std::string, int>::iterator it = pandasDTypeStrToNumpyCTypeMap.find(typeName);
         if (it != pandasDTypeStrToNumpyCTypeMap.end()) {
             colTypes.push_back(*it);
+        } else if(isArrowDecimal128(typeName)){
+            colTypes.push_back({typeName, NPY_OBJECT});
         } else if(isNumpyDatetime64(typeName)){
             std::stringstream ss;
             ss << "F-UDF-CL-SL-PYTHON-1138: emit: unsupported datetime type: " << typeName << 
@@ -1070,6 +1074,39 @@ inline void handleEmitPyDate(
         }
     }
 }
+inline void handleEmitPyTimestamp(
+        int c, int r,
+        std::vector<PyPtr>& columnArrays,
+        std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
+        std::vector<ColumnInfo>& colInfo,
+        std::vector<std::pair<std::string, int>>& colTypes,
+        PyObject *resultHandler,
+        PyPtr& pyValue,
+        PyPtr& pyResult,
+        PyPtr& pySetNullMethodName){
+    PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
+    if (isNoneOrNA(pyTimestamp.get())) {
+        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+        return;
+    }
+
+    switch (colInfo[c].type) {
+        case SWIGVMContainers::TIMESTAMP:
+        {
+            pyTimestamp.reset(PyObject_CallMethod(pyTimestamp.get(), "astimezone", "z", NULL)); 
+            PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " "));
+            pyResult.reset(PyObject_CallMethodObjArgs(
+                resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
+            break;
+        }
+        default:
+        {
+            std::stringstream ss;
+            ss << "F-UDF-CL-SL-PYTHON-1071: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+            throw std::runtime_error(ss.str().c_str());
+        }
+    }
+}
 
 
 inline void handleEmitNpyDateTime(
@@ -1251,6 +1288,12 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                     {
                         handleEmitPyDate(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
                                         pySetNullMethodName, pyIsoformatMethodName);
+                        break;
+                    }
+                    case PY_TIMESTAMP:
+                    {
+                        handleEmitPyTimestamp(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
+                                        pySetNullMethodName);
                         break;
                     }
                     case NPY_DATETIME:
