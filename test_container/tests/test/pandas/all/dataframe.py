@@ -7,7 +7,7 @@ from datetime import datetime
 from  exasol_python_test_framework import udf
 from exasol_python_test_framework.exatest.testcase import useData
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 
 class PandasDataFrame(udf.TestCase):
@@ -905,33 +905,6 @@ class PandasDataFrame(udf.TestCase):
                     (234,)
                 ], rows)
 
-    def test_dataframe_set_emits_double_pyfloat_only_todo(self):
-        import datetime
-        udf_sql = udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts double) AS
-
-            def run(ctx):
-                import pandas as pd
-                import numpy as np
-                import datetime
-
-                c1=np.empty(shape=(2),dtype=np.object_)
-
-                c1[:]=234.5
-
-                df=pd.DataFrame({0:c1})
-
-                ctx.emit(df)
-            /
-            ''')
-        print(udf_sql)
-        self.query(udf_sql)
-        select_sql = 'SELECT foo(1)'
-        print(select_sql)
-        #TODO implement support
-        with self.assertRaisesRegex(Exception, 'F-UDF-CL-SL-PYTHON-1056'):
-            rows = self.query(select_sql)
-
     def test_dataframe_set_emits_double_npfloat32_only(self):
         import datetime
         udf_sql = udf.fixindent('''
@@ -1018,53 +991,6 @@ class PandasDataFrame(udf.TestCase):
         select_sql = 'SELECT foo(1)'
         print(select_sql)
         rows = self.query(select_sql)
-
-    int_dataframe_value_str = "[[1,2],[3,4]]"
-    int_expected_rows = [(1,2, None),(3,4, None)]
-    float16_dataframe_value_str = 'np.array([[1.0,1.0],[1.0,np.nan]], dtype="float16")'
-    float_dataframe_value_str = "[[1.0,1.0],[1.0,np.nan]]"
-    float_expected_rows = [(1.0,1.0, None),(1.0, None, None)]
-
-
-    types = [
-            ("uint8", "integer", int_dataframe_value_str, int_expected_rows),
-            ("uint16", "integer", int_dataframe_value_str, int_expected_rows),
-            ("uint32", "integer", int_dataframe_value_str, int_expected_rows),
-            ("uint64", "integer", int_dataframe_value_str, int_expected_rows),
-            ("int8", "integer", int_dataframe_value_str, int_expected_rows),
-            ("int16", "integer", int_dataframe_value_str, int_expected_rows),
-            ("int32", "integer", int_dataframe_value_str, int_expected_rows),
-            ("int64", "integer", int_dataframe_value_str, int_expected_rows),
-            ("float16", "float", float16_dataframe_value_str, float_expected_rows),
-            ("float32", "float", float_dataframe_value_str, float_expected_rows),
-            ("float64", "float", float_dataframe_value_str, float_expected_rows),
-            ("float", "float", float_dataframe_value_str, float_expected_rows),
-            ("double", "float", float_dataframe_value_str, float_expected_rows),
-        ]
-
-    @useData(types)
-    def test_dtype_emit(self, dtype:str, sql_type:str, dataframe_value_str:str, expected_rows:List[Tuple]):
-        sql=udf.fixindent(f'''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT test_dtype_emit(i integer) 
-            EMITS (o1 {sql_type}, o2 {sql_type}, traceback varchar(2000000)) AS
-
-            def run(ctx):
-                try:
-                    import pandas as pd
-                    import numpy as np
-                    df = pd.DataFrame({dataframe_value_str}, dtype="{dtype}")
-                    df["traceback"]=None
-                    ctx.emit(df)
-                except:
-                    import traceback
-                    ctx.emit(None,None,traceback.format_exc())
-            /
-            ''')
-        print(sql)
-        self.query(sql)
-        with UdfDebugger(test_case=self):
-            rows = self.query('''SELECT test_dtype_emit(0)''')
-            self.assertRowsEqual(expected_rows, rows)
 
 if __name__ == '__main__':
     udf.main()

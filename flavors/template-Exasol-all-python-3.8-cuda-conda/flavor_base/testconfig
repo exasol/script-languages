@@ -1,2 +1,2 @@
 generic_language_tests=python3
-test_folders=python3/all
+test_folders=python3/all pandas/all
