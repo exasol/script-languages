@@ -93,7 +93,7 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
     
 
     types = [
-            # Full columns without None or NaN
+            # Full columns without None or NaN / Int
 
             ("uint8", "integer", int_dataframe_value_str, int_expected_rows, False),
             ("uint16", "integer", int_dataframe_value_str, int_expected_rows, False),
@@ -105,12 +105,16 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("int64", "integer", int_dataframe_value_str, int_expected_rows, False),
             ("object", "integer", int_dataframe_value_str, int_expected_rows, False),
 
+            # Full columns without None or NaN / Float
+
             ("float16", "double", float16_dataframe_value_str, float_expected_rows, True),
             ("float32", "double", float_dataframe_value_str, float_expected_rows, True),
             ("float64", "double", float_dataframe_value_str, float_expected_rows, False),
             ("float", "double", float_dataframe_value_str, float_expected_rows, False),
             ("double", "double", float_dataframe_value_str, float_expected_rows, False),
             ("object", "double", float_dataframe_value_str, float_expected_rows, False),
+
+            # Full columns without None or NaN / Int to Float
 
             ("uint8", "double", int_dataframe_value_str, int_to_float_expected_rows, False),
             ("uint16", "double", int_dataframe_value_str, int_to_float_expected_rows, False),
@@ -122,12 +126,16 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("int64", "double", int_dataframe_value_str, int_to_float_expected_rows, False),
             ("object", "double", int_dataframe_value_str, int_to_float_expected_rows, False),
 
+            # Full columns without None or NaN / Float to Int
+
             ("float16", "integer", float16_dataframe_value_str, int_expected_rows, False),
             ("float32", "integer", float_dataframe_value_str, int_expected_rows, False),
             ("float64", "integer", float_dataframe_value_str, int_expected_rows, False),
             ("float", "integer", float_dataframe_value_str, int_expected_rows, False),
             ("double", "integer", float_dataframe_value_str, int_expected_rows, False),
             ("object", "integer", float_dataframe_value_str, int_expected_rows, False),
+
+            # Full columns without None or NaN / Int to Decimal
 
             ("uint8", "DECIMAL(10,5)", int_dataframe_value_str, int_to_decimal_expected_rows, False),
             ("uint16", "DECIMAL(10,5)", int_dataframe_value_str, int_to_decimal_expected_rows, False),
@@ -139,21 +147,31 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("int64", "DECIMAL(10,5)", int_dataframe_value_str, int_to_decimal_expected_rows, False),
             ("object", "DECIMAL(10,5)", int_dataframe_value_str, int_to_decimal_expected_rows, False),
 
+            # Full columns without None or NaN / Float to Decimal
+
             ("float16", "DECIMAL(10,5)", float16_dataframe_value_str, decimal_expected_rows, True),
             ("float32", "DECIMAL(10,5)", float_dataframe_value_str, decimal_expected_rows, True),
             ("float64", "DECIMAL(10,5)", float_dataframe_value_str, decimal_expected_rows, True),
             ("float", "DECIMAL(10,5)", float_dataframe_value_str, decimal_expected_rows, True),
             ("double", "DECIMAL(10,5)", float_dataframe_value_str, decimal_expected_rows, True),
             ("object", "DECIMAL(10,5)", float_dataframe_value_str, decimal_expected_rows, True),
+ 
+            # Full columns without None or NaN / Decimal
 
             ("object", "DECIMAL(10,5)", decimal_dataframe_value_str, decimal_expected_rows, False),
+
+            # Full columns without None or NaN / String
 
             ("string", "VARCHAR(2000000)", str_dataframe_value_str, str_expected_rows, False),
             ("object", "VARCHAR(2000000)", str_dataframe_value_str, str_expected_rows, False),
 
+            # Full columns without None or NaN / Boolean
+
             ("bool_", "boolean", bool_dataframe_value_str, bool_expected_rows, False),
             ("boolean", "boolean", bool_dataframe_value_str, bool_expected_rows, False),
             ("object", "boolean", bool_dataframe_value_str, bool_expected_rows, False),
+
+            # Full columns without None or NaN / Date and Time
 
             ("datetime64[ns]", "timestamp", timestamp_dataframe_value_str, datetime_expected_rows, False),
             ("object", "timestamp", timestamp_dataframe_value_str, datetime_expected_rows, False),
@@ -161,9 +179,13 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("object", "timestamp", date_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1071: emit column 0 of type TIMESTAMP but data given have type py_datetime.date.*", False),
             ("object", "DATE", date_dataframe_value_str, date_expected_rows, False),
 
-            # Mixed columns with values and None
+            # Mixed columns with values and None / Int
+
+            #(u)int-dtypes don't support None or np.nan
 
             ("object", "integer", mixed_int_dataframe_value_str, mixed_int_expected_rows, False),
+
+            # Mixed columns with values and None / Float
 
             ("float16", "double", mixed_float16_dataframe_value_str, mixed_float_expected_rows, True),
             ("float32", "double", mixed_float_dataframe_value_str, mixed_float_expected_rows, True),
@@ -172,6 +194,7 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("double", "double", mixed_float_dataframe_value_str, mixed_float_expected_rows, False),
             ("object", "double", mixed_float_dataframe_value_str, mixed_float_expected_rows, False),
 
+            # Mixed columns with values and None / Float to Int
             ("float16", "integer", mixed_float16_dataframe_value_str, mixed_int_expected_rows, False),
             ("float32", "integer", mixed_float_dataframe_value_str, mixed_int_expected_rows, False),
             ("float64", "integer", mixed_float_dataframe_value_str, mixed_int_expected_rows, False),
@@ -179,7 +202,11 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("double", "integer", mixed_float_dataframe_value_str, mixed_int_expected_rows, False),
             ("object", "integer", mixed_float_dataframe_value_str, mixed_int_expected_rows, False),
 
+            # Mixed columns with values and None / Int to Decimal
+
             ("object", "DECIMAL(10,5)", mixed_int_dataframe_value_str, mixed_int_to_decimal_expected_rows, False),
+
+            # Mixed columns with values and None / Float to Decimal
 
             ("float16", "DECIMAL(10,5)", mixed_float16_dataframe_value_str, mixed_decimal_expected_rows, True),
             ("float32", "DECIMAL(10,5)", mixed_float_dataframe_value_str, mixed_decimal_expected_rows, True),
@@ -188,20 +215,26 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ("double", "DECIMAL(10,5)", mixed_float_dataframe_value_str, mixed_decimal_expected_rows, True),
             ("object", "DECIMAL(10,5)", mixed_float_dataframe_value_str, mixed_decimal_expected_rows, True),
 
+            # Mixed columns with values and None / Decimal
+
             ("object", "DECIMAL(10,5)", mixed_decimal_dataframe_value_str, mixed_decimal_expected_rows, False),
+
+            # Mixed columns with values and None / String
 
             ("string", "VARCHAR(2000000)", mixed_str_dataframe_value_str, mixed_str_expected_rows, False),
             ("object", "VARCHAR(2000000)", mixed_str_dataframe_value_str, mixed_str_expected_rows, False),
  
+            # Mixed columns with values and None / Boolean
+
             ("bool_", "boolean", mixed_bool_dataframe_value_str, mixed_bool_expected_rows_bool_, False),
             ("boolean", "boolean", mixed_bool_dataframe_value_str, mixed_bool_expected_rows, False),
             ("object", "boolean", mixed_bool_dataframe_value_str, mixed_bool_expected_rows, False),
 
+            # Mixed columns with values and None / Data and time
+
             ("datetime64[ns]", "timestamp", mixed_timestamp_dataframe_value_str, mixed_datetime_expected_rows, False),
             ("object", "timestamp", mixed_timestamp_dataframe_value_str, mixed_datetime_expected_rows, False),
             ("object", "DATE", mixed_date_dataframe_value_str, mixed_date_expected_rows, False),
-
-            #(u)int-dtypes don't support None or np.nan
 
             # None
 
