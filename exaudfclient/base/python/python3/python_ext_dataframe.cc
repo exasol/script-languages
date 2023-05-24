@@ -1093,7 +1093,7 @@ inline void handleEmitPyTimestamp(
     switch (colInfo[c].type) {
         case SWIGVMContainers::TIMESTAMP:
         {
-            pyTimestamp.reset(PyObject_CallMethod(pyTimestamp.get(), "astimezone", "z", NULL)); 
+            pyTimestamp.reset(PyObject_CallMethod(pyTimestamp.get(), "tz_localize", "z", NULL));
             PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " "));
             pyResult.reset(PyObject_CallMethodObjArgs(
                 resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
