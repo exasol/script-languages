@@ -931,7 +931,7 @@ inline void handleEmitPyFloat(
         {
             double value = PyFloat_AsDouble(pyFloat.get());
             if (value < 0 && PyErr_Occurred())
-                throw std::runtime_error("F-UDF-CL-SL-PYTHON-1067: emit() PY_FLOAT: PyFloat_AsDouble error");
+                throw std::runtime_error("F-UDF-CL-SL-PYTHON-1139: emit() PY_FLOAT: PyFloat_AsDouble error");
             if (npy_isnan(value)) {
                 pyResult.reset(
                   PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -949,7 +949,7 @@ inline void handleEmitPyFloat(
         default:
         {
             std::stringstream ss;
-            ss << "F-UDF-CL-SL-PYTHON-1068: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+            ss << "F-UDF-CL-SL-PYTHON-1140: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
             throw std::runtime_error(ss.str().c_str());
         }
     }
@@ -1102,7 +1102,7 @@ inline void handleEmitPyTimestamp(
         default:
         {
             std::stringstream ss;
-            ss << "F-UDF-CL-SL-PYTHON-1071: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+            ss << "F-UDF-CL-SL-PYTHON-1141: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
             throw std::runtime_error(ss.str().c_str());
         }
     }
