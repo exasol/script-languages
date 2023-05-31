@@ -101,6 +101,7 @@ std::map<int, std::string> numpyCTypeToNumpyDTypeStrMap {
     {NPY_UINT16, "uint16"},
     {NPY_UINT32, "uint32"},
     {NPY_UINT64, "uint64"},
+     // We don't list NPY_FLOAT16 here, because we let numpy convert float16 to float (32 bit) and then use the C conversion from float to double, because a proper conversion from float16 to double in C is very complicated.
     {NPY_FLOAT32, "float32"},
     {NPY_FLOAT64, "float64"},
 };
@@ -442,13 +443,28 @@ inline void getColumnSetMethods(std::vector<ColumnInfo>& colInfo, std::vector<st
     }
 }
 
+inline bool endsWith(std::string const &str, std::string const &suffix) {
+    if (str.length() < suffix.length()) {
+        return false;
+    }
+    return str.rfind(suffix) == str.size() - suffix.size();
+}
+
+inline bool startsWith(std::string const &str, std::string const &prefix) {
+    if (str.length() < prefix.length()) {
+        return false;
+    }
+    return str.rfind(prefix, 0) == 0;
+}
+
 inline bool isNumpyDatetime64(const char* typeName){
-    return std::string(typeName).find("datetime64[")==0;
+    return startsWith(std::string(typeName),"datetime64[");
 }
 
 inline bool isArrowDecimal128(const char* typeName){
     // example decimal128(3, 2)[pyarrow]
-    return std::string(typeName).find("decimal128(")==0 && std::string(typeName).find("[pyarrow]")!=std::string::npos;
+    const std::string typeNameStr(typeName);
+    return startsWith(typeNameStr, "decimal128(") && endsWith(typeNameStr, "[pyarrow]");
 }
 
 inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::string, int>>& colTypes){
@@ -484,8 +500,14 @@ inline void printPyObject(PyObject* obj, const std::string& error_code){
         DBG_STREAM_MSG(std::cerr, error_code << ": " << std::string(s) << " " << std::string(p));
 }
 
+inline const PyPtr& getPandasNA(){
+    static const PyPtr pdNA(PyObject_GetAttrString(pandasModule.get(), "NA"));
+    return pdNA;
+}
+
 inline bool isNoneOrNA(PyObject* pyVal){
-    return pyVal == Py_None  || std::string(Py_TYPE(pyVal)->tp_name) == "NAType";
+    const PyPtr& pdNA = getPandasNA();
+    return pyVal == Py_None  || pyVal == pdNA.get();
 }
 
 inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, 
@@ -556,7 +578,7 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
             PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
             PyPtr keywordArgs(PyDict_New());
             PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
-      std::string numpyDTypeStr = numpyCTypeToNumpyDTypeStrMap.at(colTypes[c].second);
+            const std::string numpyDTypeStr = numpyCTypeToNumpyDTypeStrMap.at(colTypes[c].second);
             PyPtr funcArgs(Py_BuildValue("(s)", numpyDTypeStr.c_str()));
             PyPtr scalarArr(PyObject_Call(asType.get(), funcArgs.get(), keywordArgs.get()));
             columnArrays.push_back(std::move(scalarArr));
@@ -1093,6 +1115,9 @@ inline void handleEmitPyTimestamp(
     switch (colInfo[c].type) {
         case SWIGVMContainers::TIMESTAMP:
         {
+            // We call here pandas.Timestamp.tz_localize(None), because we need to remove the timezone from the timestamp.
+            // Exasol doesn't support timezones, and if we don't remove the timezone, pandas.Timestamp.isoformat will add
+            // it to the generated string.
             pyTimestamp.reset(PyObject_CallMethod(pyTimestamp.get(), "tz_localize", "z", NULL));
             PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " "));
             pyResult.reset(PyObject_CallMethodObjArgs(
