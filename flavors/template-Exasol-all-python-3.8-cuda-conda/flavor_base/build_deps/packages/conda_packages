@@ -1,4 +1,4 @@
-protobuf|3.21.12
+protobuf|3.21.1
 pcre|8.45
 chrpath|0.16
 openjdk|11.0.15
