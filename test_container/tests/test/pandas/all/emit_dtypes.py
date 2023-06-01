@@ -298,15 +298,15 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             #("object", "DECIMAL(10,5)", nan_dataframe_value_str, None, False), # Fails with VM error: [22018] invalid character value for cast; Value: 'nan'
 
             ("string", "VARCHAR(2000000)", nan_dataframe_value_str, nan_expected_rows, False),
-            ("object", "VARCHAR(2000000)", nan_dataframe_value_str, ".*PYTHON-1068: emit column 0 of type STRING but data given have type py_float.*", False),
+            ("object", "VARCHAR(2000000)", nan_dataframe_value_str, ".*PYTHON-1140: emit column 0 of type STRING but data given have type py_float.*", False),
 
             ("bool_", "boolean", nan_dataframe_value_str, nan_expected_rows_bool_, False),
             ("boolean", "boolean", nan_dataframe_value_str, nan_expected_rows, False),
-            ("object", "boolean", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1068: emit column 0 of type BOOLEAN but data given have type py_float.*", False),
+            ("object", "boolean", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1140: emit column 0 of type BOOLEAN but data given have type py_float.*", False),
 
             ("datetime64[ns]", "timestamp", nan_dataframe_value_str, nan_expected_rows, False),
-            ("object", "timestamp", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1068: emit column 0 of type TIMESTAMP but data given have type py_float.*", False),
-            ("object", "DATE", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1068: emit column 0 of type DATE but data given have type py_float.*", False),
+            ("object", "timestamp", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1140: emit column 0 of type TIMESTAMP but data given have type py_float.*", False),
+            ("object", "DATE", nan_dataframe_value_str, ".*F-UDF-CL-SL-PYTHON-1140: emit column 0 of type DATE but data given have type py_float.*", False),
 
         ]
 
