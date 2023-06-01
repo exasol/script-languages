@@ -5,10 +5,14 @@ from datetime import date
 from datetime import datetime
 
 from  exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest.testcase import useData
+from exasol_python_test_framework.udf.udf_debug import UdfDebugger
+from typing import List, Tuple, Union
 
 
 class PandasDataFrame(udf.TestCase):
     def setUp(self):
+        self.maxDiff=None
 
         self.query('CREATE SCHEMA FN2', ignore_errors=True)
         self.query('OPEN SCHEMA FN2', ignore_errors=True)
@@ -159,7 +163,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe()
-                return np.asscalar(df.iloc[0, 0] + df.iloc[0, 1])
+                return (df.iloc[0, 0] + df.iloc[0, 1]).item()
             /
             ''' % (self.col_defs_str))
         self.query(udf_sql)
@@ -217,7 +221,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe()
-                ctx.emit(np.asscalar(df.C0))
+                ctx.emit(df.C0.item())
             /
             ''')
         print(udf_sql)
@@ -236,7 +240,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe(num_rows="all")
-                ctx.emit(np.asscalar(df.C0))
+                ctx.emit(df.C0.item())
             /
             ''')
         print(udf_sql)
@@ -331,7 +335,7 @@ class PandasDataFrame(udf.TestCase):
 
             def run(ctx):
                 df = ctx.get_dataframe(num_rows="all")
-                return np.asscalar(df.iloc[:, 0].sum())
+                return df.iloc[:, 0].sum().item()
             /
             ''' % (self.col_defs_str))
         print(udf_sql)
@@ -477,7 +481,7 @@ class PandasDataFrame(udf.TestCase):
                     df = ctx.get_dataframe(num_rows=1)
                     if df is None:
                         break
-                    ctx.emit(np.asscalar(df.C0))
+                    ctx.emit(df.C0.item())
             /
             ''')
         print(udf_sql)
@@ -500,7 +504,7 @@ class PandasDataFrame(udf.TestCase):
                     if df is None:
                         break
                     for i in range(df.shape[0]):
-                        ctx.emit(np.asscalar(df.iloc[i, 0]))
+                        ctx.emit(df.iloc[i, 0].item())
             /
             ''')
         print(udf_sql)
@@ -901,33 +905,6 @@ class PandasDataFrame(udf.TestCase):
                     (234,)
                 ], rows)
 
-    def test_dataframe_set_emits_double_pyfloat_only_todo(self):
-        import datetime
-        udf_sql = udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (ts double) AS
-
-            def run(ctx):
-                import pandas as pd
-                import numpy as np
-                import datetime
-
-                c1=np.empty(shape=(2),dtype=np.object_)
-
-                c1[:]=234.5
-
-                df=pd.DataFrame({0:c1})
-
-                ctx.emit(df)
-            /
-            ''')
-        print(udf_sql)
-        self.query(udf_sql)
-        select_sql = 'SELECT foo(1)'
-        print(select_sql)
-        #TODO implement support
-        with self.assertRaisesRegex(Exception, 'F-UDF-CL-SL-PYTHON-1056'):
-            rows = self.query(select_sql)
-
     def test_dataframe_set_emits_double_npfloat32_only(self):
         import datetime
         udf_sql = udf.fixindent('''
@@ -1014,7 +991,6 @@ class PandasDataFrame(udf.TestCase):
         select_sql = 'SELECT foo(1)'
         print(select_sql)
         rows = self.query(select_sql)
-
 
 if __name__ == '__main__':
     udf.main()
