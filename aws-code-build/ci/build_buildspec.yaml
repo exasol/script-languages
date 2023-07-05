@@ -39,6 +39,7 @@ phases:
         - mount
         - pwd
         - ls -la
+        - env
         - poetry run python3 -m exasol_script_languages_container_ci.main run-ci --flavor $FLAVOR --branch-name "$CURRENT_BRANCH" --docker-user "$DOCKER_USER" --docker-password "$DOCKER_PASSWORD" --docker-build-repository "$BUILD_DOCKER_REPOSITORY" --docker-release-repository "$RELEASE_DOCKER_REPOSITORY" --commit-sha "$CODEBUILD_SOURCE_VERSION" --config-file aws-code-build/build_config.json
 
 artifacts:
