@@ -216,7 +216,7 @@ class DatatypesTest(udf.TestCase):
         rows = self.query('''
             describe fn2.foo
             ''')
-        self.assertEqual('TIMESTAMP', rows[0][1])
+        self.assertEqual('TIMESTAMP(3)', rows[0][1])
 
     @requires('LINE_1I_1O')
     def test_timestamp_with_timezone(self):
@@ -233,7 +233,7 @@ class DatatypesTest(udf.TestCase):
         rows = self.query('''
             describe fn2.foo
             ''')
-        self.assertEqual('TIMESTAMP WITH LOCAL TIME ZONE', rows[0][1])
+        self.assertEqual('TIMESTAMP(3) WITH LOCAL TIME ZONE', rows[0][1])
 
     @requires('LINE_1I_1O')
     def test_date(self):
