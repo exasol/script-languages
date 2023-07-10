@@ -23,7 +23,7 @@ def get_meta_for_schema(meta_connection, table_schema):
     c = exa.get_connection(meta_connection)
 
     tabs = []
-    with EXASOL.connect(c.address, c.user, c.password) as connection:
+    with EXASOL.connect(c.address, c.user, c.password, sslopt={"cert_reqs": ssl.CERT_NONE}) as connection:
         with connection.cursor() as cursor:
             query = "select table_name from EXA_ALL_TABLES where table_schema='%s'" % table_schema
             #print("get_meta_for_schema tables query", query)
