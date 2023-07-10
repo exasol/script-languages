@@ -12,10 +12,6 @@ class PysftpConnectionTest(udf.TestCase):
     def test_pysftp_connect_python3(self):
         self.pysftp_connect("PYTHON3")
 
-    @udf.skipIfNot(docker_db_environment.is_available, reason="This test requires a docker-db environment")
-    def test_pysftp_connect_python2(self):
-        self.pysftp_connect("PYTHON")
-
     def pysftp_connect(self, python_version):
         schema = "test_pysftp_connect" + python_version
         env = docker_db_environment.DockerDBEnvironment(schema)

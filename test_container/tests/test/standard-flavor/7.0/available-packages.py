@@ -7,57 +7,6 @@ from exasol_python_test_framework.udf.available_python_packages_utils import run
 
 AVAILABLE_PACKAGES_SCHEMA = "available_packages"
 
-class AvailablePythonPackages(udf.TestCase):
-    def setUp(self): 
-        self.query(f'create schema {AVAILABLE_PACKAGES_SCHEMA}', ignore_errors=True)
-
-    data = [
-            ("cffi",),
-            ("cryptography",),
-            ("docutils",),
-            ("enum",),
-            ("idna",),
-            ("ipaddress",),
-            ("jinja2",),
-            ("martian",),
-            ("google.protobuf",),
-            ("pyasn1",),
-            ("pyftpdlib",),
-            ("pyodbc",),
-            ("OpenSSL",),
-            ("ldap",),
-            ("ldb",),
-            ("roman",),
-            ("sklearn",),
-            ("cjson",),
-            ("lxml",),
-            ("numpy",),
-            ("setuptools",),
-            ("pandas",),
-            ("redis",),
-            ("scipy",),
-            ("boto3",),
-            ("boto",),
-            ("pycurl",),
-            ("requests",),
-            ("EXASOL",),
-            ("paramiko",),
-            ("pysftp",),
-            ("samba",),
-            ("simplejson",),
-            ("pycparser",),
-            ("pycryptopp",),
-            ("pygments",),
-            ("pykickstart",),
-            ("talloc",),
-            ("pyPdf",False,"PyPDF2"),
-        ]
-
-    @useData(data)
-    def test_package_import(self, pkg, fail=False, alternative=None):
-        run_python_package_import_test(self, AVAILABLE_PACKAGES_SCHEMA, "PYTHON", pkg, fail, alternative)
-
-
 class AvailablePython3Packages(udf.TestCase):
     def setUp(self): 
         self.query(f'create schema {AVAILABLE_PACKAGES_SCHEMA}', ignore_errors=True)
