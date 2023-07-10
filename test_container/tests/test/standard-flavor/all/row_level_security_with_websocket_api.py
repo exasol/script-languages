@@ -48,7 +48,7 @@ class WebsocketAPIConnectionTest(udf.TestCase):
                 ('k', 'l', 'U1', false);
         '''))
         self.query(udf.fixindent('''
-            create or replace connection sys_connection to 'ws://%s' user '%s' identified by '%s'
+            create or replace connection sys_connection to 'wss://%s' user '%s' identified by '%s'
         ''' % (self.connection, "sys", "exasol")))
         self.query("commit")
 

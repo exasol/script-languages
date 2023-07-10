@@ -46,9 +46,6 @@ class WebsocketAPIConnectionTest(udf.TestCase):
             ''' % (python_version, self.connection, self.user, self.pwd)))
         self.query('''SELECT websocket_api.connect_secure() FROM dual''')
 
-    def test_unsecure_websocket_api_connection_python3(self):
-        self.run_unsecure_websocket_api_connection("PYTHON3")
-    
     def test_secure_websocket_api_connection_python3(self):
         self.run_secure_websocket_api_connection("PYTHON3")
 
