@@ -2,6 +2,7 @@ CREATE OR REPLACE PYTHON3 ADAPTER SCRIPT ROW_LEVEL_SECURITY_ADAPTER.rls_adapter 
 import json
 import string
 import os
+import ssl
 
 os.environ["USER"] = "exasolution"
 
