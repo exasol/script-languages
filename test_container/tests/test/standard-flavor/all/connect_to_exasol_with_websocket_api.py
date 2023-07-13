@@ -13,22 +13,6 @@ class WebsocketAPIConnectionTest(udf.TestCase):
     def setUp(self):
         self.query('create schema websocket_api', ignore_errors=True)
     
-    def run_unsecure_websocket_api_connection(self, python_version):
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE %s SCALAR SCRIPT websocket_api.connect_unsecure() returns int AS
-            import EXASOL
-            import os
-            def run(ctx):
-                os.environ["USER"]="exasolution"
-                with EXASOL.connect('ws://%s', '%s', '%s') as connection:
-                    with connection.cursor() as cursor:
-                        cursor.execute('SELECT 1 FROM dual')
-                        for row in cursor:
-                            pass
-            /
-            ''' % (python_version, self.connection, self.user, self.pwd)))
-        self.query('''SELECT websocket_api.connect_unsecure() FROM dual''')
-
     def run_secure_websocket_api_connection(self, python_version):
         self.query(udf.fixindent('''
             CREATE OR REPLACE %s SCALAR SCRIPT websocket_api.connect_secure() returns int AS

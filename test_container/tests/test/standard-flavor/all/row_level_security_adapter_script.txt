@@ -60,7 +60,7 @@ def user_wants_only_active(username, meta_connection, adapter_schema):
     import EXASOL
     c = exa.get_connection(meta_connection)
 
-    with EXASOL.connect(c.address, c.user, c.password) as connection:
+    with EXASOL.connect(c.address, c.user, c.password, sslopt={"cert_reqs": ssl.CERT_NONE}) as connection:
         with connection.cursor() as cursor:
             query = """select wants_only_active from "%s".user_pref where username='%s'""" % (adapter_schema, username)
             #print("user_wants_only_active", query)
