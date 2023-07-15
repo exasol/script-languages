@@ -10,10 +10,6 @@ echo list_installed_apt.sh
 $PATH_TO_INSTALL_SCRIPTS/list_installed_apt.sh
 echo
 
-echo list_installed_pip.sh python2
-$PATH_TO_INSTALL_SCRIPTS/list_installed_pip.sh python2
-echo
-
 echo list_installed_pip.sh python3
 $PATH_TO_INSTALL_SCRIPTS/list_installed_pip.sh python3
 echo
