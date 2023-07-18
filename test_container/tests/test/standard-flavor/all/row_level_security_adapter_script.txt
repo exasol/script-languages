@@ -2,6 +2,7 @@ CREATE OR REPLACE PYTHON3 ADAPTER SCRIPT ROW_LEVEL_SECURITY_ADAPTER.rls_adapter 
 import json
 import string
 import os
+import ssl
 
 os.environ["USER"] = "exasolution"
 
@@ -23,10 +24,9 @@ def get_meta_for_schema(meta_connection, table_schema):
     c = exa.get_connection(meta_connection)
 
     tabs = []
-    with EXASOL.connect(c.address, c.user, c.password) as connection:
+    with EXASOL.connect(c.address, c.user, c.password, sslopt={"cert_reqs": ssl.CERT_NONE}) as connection:
         with connection.cursor() as cursor:
             query = "select table_name from EXA_ALL_TABLES where table_schema='%s'" % table_schema
-            #print("get_meta_for_schema tables query", query)
             result = cursor.execute(query)
             #print("get_meta_for_schema table result", result)
             if result > 0:
@@ -59,10 +59,9 @@ def user_wants_only_active(username, meta_connection, adapter_schema):
     import EXASOL
     c = exa.get_connection(meta_connection)
 
-    with EXASOL.connect(c.address, c.user, c.password) as connection:
+    with EXASOL.connect(c.address, c.user, c.password, sslopt={"cert_reqs": ssl.CERT_NONE}) as connection:
         with connection.cursor() as cursor:
             query = """select wants_only_active from "%s".user_pref where username='%s'""" % (adapter_schema, username)
-            #print("user_wants_only_active", query)
             cursor.execute(query)
             if cursor.rowcount == 0: raise ValueError(
                 """Config error: no preference for user %s defined in %s.user_pref'""" % (username, adapter_schema))

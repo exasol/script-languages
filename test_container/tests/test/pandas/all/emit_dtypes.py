@@ -332,15 +332,14 @@ class PandasDataFrameEmitDTypes(udf.TestCase):
             ''')
         print(sql)
         self.query(sql)
-        with UdfDebugger(test_case=self):
-            rows = self.query('''SELECT test_dtype_emit(0)''')
-            if isinstance(expected_result,str):
-                self.assertRegex(rows[0][2], expected_result)
+        rows = self.query('''SELECT test_dtype_emit(0)''')
+        if isinstance(expected_result,str):
+            self.assertRegex(rows[0][2], expected_result)
+        else:
+            if use_almost_equal:
+                self.assertRowsAlmostEqual(expected_result, rows, places=1)
             else:
-                if use_almost_equal:
-                    self.assertRowsAlmostEqual(expected_result, rows, places=1)
-                else:
-                    self.assertRowsEqual(expected_result, rows)
+                self.assertRowsEqual(expected_result, rows)
 
     def isValueAlmostEqual(self, left, right, places):
         if isinstance(left, (float, Decimal)) and isinstance(right, (float, Decimal)):

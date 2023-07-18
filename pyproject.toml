@@ -18,9 +18,9 @@ keywords = ['exasol', 'udf', 'script-languages']
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4"
-exasol-script-languages-container-tool = "^0.17.0"
-exasol-script-languages-container-ci = "^1.1.0"
-exasol-script-languages-container-ci-setup = "^1.0.0"
+exasol-script-languages-container-tool = "^0.18.0"
+exasol-script-languages-container-ci = "^1.3.0"
+exasol-script-languages-container-ci-setup = "^1.2.0"
 
 [tool.poetry.dev-dependencies]
 toml = ">=0.10.2"
