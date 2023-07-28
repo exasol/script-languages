@@ -20,7 +20,8 @@ class ExternalResourceTest(udf.TestCase):
                 check_for_package(pkg_name VARCHAR(300))
                 RETURNS BOOL as
                 run <- function(ctx) {
-                    require(ctx$pkg_name)
+                    package_name <- ctx$pkg_name
+                    require(package_name)
                 };
                 '''))
         rows = self.query(udf.fixindent(f"SELECT check_for_package('{pkg_name}') FROM DUAL"))
