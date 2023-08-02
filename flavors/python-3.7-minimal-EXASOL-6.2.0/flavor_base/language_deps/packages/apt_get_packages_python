@@ -1,3 +1,0 @@
-python3.7-dev|3.7.5-2ubuntu1~18.04.2
-python3.7|3.7.5-2ubuntu1~18.04.2
-python3-distutils|3.6.9-1~18.04 # Note: required by install_python3.7_pip.sh
