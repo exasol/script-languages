@@ -98,7 +98,7 @@ section {
 </style>
 <script type="text/javascript">
 function generate_sql(obj) {
-language = document.getElementById('language_lua').checked ? "LUA" : document.getElementById('language_java').checked ? "JAVA" : document.getElementById('language_r').checked ? "R" : "PYTHON";
+language = document.getElementById('language_lua').checked ? "LUA" : document.getElementById('language_java').checked ? "JAVA" : document.getElementById('language_r').checked ? "R" : "PYTHON3";
 scalar_set = document.getElementById('input_set').checked ? "SET" : "SCALAR";
 name = document.getElementById('scriptname').value;
 parameters = document.getElementsByName('parameters');
@@ -237,7 +237,7 @@ if (language=="LUA") {
  sql += 'end\n';
 }
 
-if(language=="PYTHON") {
+if(language=="PYTHON3") {
  sql += 'def run(ctx):\n';
  sql += ' ## TODO: implement script\n';
  if (scalar_set=="SET") {
@@ -358,13 +358,13 @@ function remove_li(obj) {
 <body onLoad="generate_sql(this)">
 
 <header>
-<img alt="Exasol" src="https://docs.exasol.com/7.0/resource/images/Exasol_white.svg" height="24px"> UDF-Script Signature Generator
+<img alt="Exasol" src="https://www.exasol.com/app/uploads/2020/06/1826favicon-32x32-1.png" height="24px"> UDF-Script Signature Generator
 </header>
 <section>
 <textarea style="width:480px" id="sql" rows="12"></textarea>
 
 <div class="form-style-2">
-<label for=""><span>Language</span><p><input type="radio" name="language" id="language_python" oninput="generate_sql(this)" checked>Python <input name="language" type="radio" id="language_lua" oninput="generate_sql(this)">Lua <input type="radio" name="language" id="language_java" oninput="generate_sql(this)">Java <input name="language" type="radio" id="language_r" oninput="generate_sql(this)">R</p></label>
+<label for=""><span>Language</span><p><input type="radio" name="language" id="language_python3" oninput="generate_sql(this)" checked>Python 3 <input name="language" type="radio" id="language_lua" oninput="generate_sql(this)">Lua <input type="radio" name="language" id="language_java" oninput="generate_sql(this)">Java <input name="language" type="radio" id="language_r" oninput="generate_sql(this)">R</p></label>
 <label for=""><span>Input Type</span><p><input type="radio" name="scalar_set" id="input_scalar" oninput="generate_sql(this)" checked>SCALAR <input name="scalar_set" type="radio" id="input_set" oninput="generate_sql(this)">SET</p></label>
 <label><span>Script Name</span><input type="text" id="scriptname" oninput="generate_sql(this)" class="input-field"></input></label>
 <label for=""><span>Parameters</span><p><button onClick="add_parameter()">+</button> <input type="checkbox" id="variadic_input" oninput="generate_sql(this)"/>Variadic</p>
