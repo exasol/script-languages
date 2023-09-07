@@ -12,10 +12,6 @@ class ParamikoConnectionTest(udf.TestCase):
     def test_connect_via_paramiko_to_ssh_python3(self):
         self.connect_via_paramiko_to_ssh("PYTHON3")
 
-    @udf.skipIfNot(docker_db_environment.is_available, reason="This test requires a docker-db environment")
-    def test_connect_via_paramiko_to_ssh_python2(self):
-        self.connect_via_paramiko_to_ssh("PYTHON")
-
     def connect_via_paramiko_to_ssh(self, python_version):
         schema = "test_connect_via_paramiko_to_ssh_"+python_version
         env = docker_db_environment.DockerDBEnvironment(schema)
