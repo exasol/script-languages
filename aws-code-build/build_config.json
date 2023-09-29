@@ -3,7 +3,6 @@
     "base_branch": "master",
     "ignore": {
       "paths": [
-        "python_client",
         ".gitignore",
         ".dockerignore",
         "LICENSE",
@@ -17,7 +16,6 @@
         "visualize_task_dependencies.sh",
         "udf-script-signature-generator",
         ".github",
-        "cpp_client",
         "emulator",
         "exaslct_scripts",
         "githooks"

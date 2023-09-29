@@ -1,9 +1,0 @@
-src/cpp.cpp
-src/cpp.h
-src/scriptDTO.cc
-src/scriptDTO.h
-src/scriptDTOWrapper.cc
-src/scriptDTOWrapper.h
-src/swigcontainers.h
-src/zmqcontainer.proto
-src/zmqcontainerclient.cc
