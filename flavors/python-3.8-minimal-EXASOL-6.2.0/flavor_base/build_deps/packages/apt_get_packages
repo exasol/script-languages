@@ -1,7 +1,7 @@
 coreutils|8.28-1ubuntu1
 locales|2.31-0ubuntu9.12
 tar|1.29b-2ubuntu0.4
-curl|7.68.0-1ubuntu2.19
+curl|7.68.0-1ubuntu2.20
 openjdk-11-jdk|11.0.19+7~us1-0ubuntu1~20.04.1
 build-essential|12.4ubuntu1
 libpcre3-dev|2:8.39-9ubuntu0.1
