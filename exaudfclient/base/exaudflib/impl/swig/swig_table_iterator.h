@@ -20,9 +20,9 @@ private:
 
     uint64_t m_rows_received;
     struct values_per_row_t {
-        uint64_t strings, bools, int32s, int64s, doubles;
+        uint64_t strings, bools, int32s, int64s, doubles, binaries;
         values_per_row_t(): strings(0), bools(0), int32s(0), int64s(0), doubles(0) {}
-        void reset() { strings = bools = int32s = int64s = doubles = 0; }
+        void reset() { strings = bools = int32s = int64s = doubles = binaries = 0; }
     } m_values_per_row;
     uint64_t m_column_count;
     std::vector<uint64_t> m_col_offsets;
@@ -57,11 +57,12 @@ private:
                 case INT32: m_col_offsets[current_column] = m_values_per_row.int32s++; break;
                 case INT64: m_col_offsets[current_column] = m_values_per_row.int64s++; break;
                 case NUMERIC:
-                    case TIMESTAMP:
-                        case DATE:
-                            case STRING: m_col_offsets[current_column] = m_values_per_row.strings++; break;
-                            case BOOLEAN: m_col_offsets[current_column] = m_values_per_row.bools++; break;
-                            default: m_exch->setException("F-UDF-CL-LIB-1058: Unknown data type found, got "+it->type); return;
+                case TIMESTAMP:
+                case DATE:
+                case STRING: m_col_offsets[current_column] = m_values_per_row.strings++; break;
+                case HASHTYPE: m_col_offsets[current_column] = m_values_per_row.binaries++; break;
+                case BOOLEAN: m_col_offsets[current_column] = m_values_per_row.bools++; break;
+                default: m_exch->setException("F-UDF-CL-LIB-1058: Unknown data type found, got "+it->type); return;
             }
         }
     }
@@ -241,6 +242,23 @@ public:
         const std::string &s(m_next_response.next().table().data_string(index));
         if (length != NULL) *length = s.length();
         return s.c_str();
+    }
+    inline const char *getBinary(unsigned int col, size_t *length = NULL) {
+        if (col >= m_types.size()) {
+            m_exch->setException("E-UDF-CL-LIB-1068: Input column "+std::to_string(col)+" does not exist");
+            m_was_null = true;
+            return "";
+        }
+        if (m_types[col].type != HASHTYPE) {
+            m_exch->setException("E-UDF-CL-LIB-1069: Wrong input column type, expected BINARY, got "+
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
+            m_was_null = true;
+            return "";
+        }
+        ssize_t index = check_value(col, m_next_response.next().table().data_binary_size(), "binary");
+        if (m_was_null) return "";
+        if (length != NULL) *length = m_next_response.next().table().data_binary_size();
+        return m_next_response.next().table().data_binary(index).data();
     }
     inline int32_t getInt32(unsigned int col) {
         if (col >= m_types.size()) {

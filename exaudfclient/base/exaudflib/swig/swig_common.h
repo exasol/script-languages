@@ -46,7 +46,8 @@ enum SWIGVM_datatype_e {
     BOOLEAN = 8,
     INTERVALYM = 9,
     INTERVALDS = 10,
-    GEOMETRY = 11
+    GEOMETRY = 11,
+    HASHTYPE = 12
 };
 
 

@@ -118,7 +118,8 @@ std::map<int, std::string> emitTypeMap {
     {SWIGVMContainers::BOOLEAN, "BOOLEAN"},
     {SWIGVMContainers::INTERVALYM, "INTERVALYM"},
     {SWIGVMContainers::INTERVALDS, "INTERVALDS"},
-    {SWIGVMContainers::GEOMETRY, "GEOMETRY"}
+    {SWIGVMContainers::GEOMETRY, "GEOMETRY"},
+    {SWIGVMContainers::HASHTYPE, "HASHTYPE"}
 };
 
 
@@ -295,6 +296,9 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
                 break;
             case SWIGVMContainers::STRING:
                 methodName = "getString";
+                break;
+            case SWIGVMContainers::HASHTYPE:
+                methodName = "getBinary";
                 break;
             case SWIGVMContainers::BOOLEAN:
                 methodName = "getBoolean";

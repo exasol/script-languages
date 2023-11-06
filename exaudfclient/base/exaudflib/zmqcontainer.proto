@@ -56,6 +56,9 @@ message exascript_table_data {
     // Storage for following types: NUMERIC, TIMESTAMP, DATE and STRING
     repeated string data_string = 2;
 
+    // Storage for binary data type (only HASHTYPE) for now
+    repeated bytes data_binary = 10;
+
     repeated bool data_nulls = 3 [packed = true];
     repeated bool data_bool = 4 [packed = true];
     repeated int32 data_int32 = 5 [packed = true];
