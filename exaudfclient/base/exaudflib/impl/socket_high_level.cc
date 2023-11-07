@@ -181,6 +181,10 @@ bool exaudflib::socket_high_level::send_init(zmq::socket_t &socket, const std::s
                     coltype.type = SWIGVMContainers::STRING;
                     coltype.len = coldef.size();
                     break;
+                case PB_BINARY:
+                    coltype.type = SWIGVMContainers::BINARY;
+                    coltype.len = coldef.size();
+                    break;
                 case PB_BOOLEAN:
                     coltype.type = SWIGVMContainers::BOOLEAN;
                     break;
@@ -226,6 +230,10 @@ bool exaudflib::socket_high_level::send_init(zmq::socket_t &socket, const std::s
                     break;
                 case PB_STRING:
                     coltype.type = SWIGVMContainers::STRING;
+                    coltype.len = coldef.size();
+                    break;
+                case PB_BINARY:
+                    coltype.type = SWIGVMContainers::BINARY;
                     coltype.len = coldef.size();
                     break;
                 case PB_BOOLEAN:

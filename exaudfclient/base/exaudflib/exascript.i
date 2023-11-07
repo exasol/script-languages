@@ -43,6 +43,7 @@ enum SWIGVM_datatype_e {
     TIMESTAMP = 5,
     DATE = 6,
     STRING = 7,
+    BINARY = 12,
     BOOLEAN = 8 };
 
 enum SWIGVM_itertype_e {

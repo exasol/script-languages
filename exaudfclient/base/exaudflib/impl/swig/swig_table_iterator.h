@@ -60,7 +60,7 @@ private:
                 case TIMESTAMP:
                 case DATE:
                 case STRING: m_col_offsets[current_column] = m_values_per_row.strings++; break;
-                case HASHTYPE: m_col_offsets[current_column] = m_values_per_row.binaries++; break;
+                case BINARY: m_col_offsets[current_column] = m_values_per_row.binaries++; break;
                 case BOOLEAN: m_col_offsets[current_column] = m_values_per_row.bools++; break;
                 default: m_exch->setException("F-UDF-CL-LIB-1058: Unknown data type found, got "+it->type); return;
             }
@@ -249,7 +249,7 @@ public:
             m_was_null = true;
             return "";
         }
-        if (m_types[col].type != HASHTYPE) {
+        if (m_types[col].type != BINARY) {
             m_exch->setException("E-UDF-CL-LIB-1069: Wrong input column type, expected BINARY, got "+
             exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
             m_was_null = true;

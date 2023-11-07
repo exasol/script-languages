@@ -12,6 +12,7 @@ enum column_type {
     PB_TIMESTAMP = 5;    // TIMESTAMP
     PB_DATE = 6;         // DATE
     PB_STRING = 7;       // CHAR or VARCHAR
+    PB_BINARY = 12;      // HASHTYPE
     PB_BOOLEAN = 8;      // BOOL
 }
 
