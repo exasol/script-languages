@@ -109,6 +109,7 @@ class SWIGTableIterator {
         inline unsigned long rowsCompleted();
         inline double getDouble(unsigned int col);
         inline const char *getString(unsigned int col);
+        inline const char *getBinary(unsigned int col);
         inline int getInt32(unsigned int col);
         inline long long getInt64(unsigned int col);
         inline const char *getNumeric(unsigned int col);

@@ -20,6 +20,7 @@ public:
     virtual unsigned long rowsInGroup()=0;
     virtual double getDouble(unsigned int col)=0;
     virtual const char *getString(unsigned int col, size_t *length = NULL)=0;
+    virtual const char *getBinary(unsigned int col, size_t *length = NULL)=0;
     virtual int32_t getInt32(unsigned int col)=0;
     virtual int64_t getInt64(unsigned int col)=0;
     virtual const char *getNumeric(unsigned int col)=0;
@@ -62,6 +63,7 @@ public:
     virtual unsigned long rowsInGroup() { return impl->rowsInGroup();}
     virtual double getDouble(unsigned int col) { return impl->getDouble(col);}
     virtual const char *getString(unsigned int col, size_t *length = NULL) {return impl->getString(col, length);}
+    virtual const char *getBinary(unsigned int col, size_t *length = NULL) {return impl->getBinary(col, length);}
     virtual int32_t getInt32(unsigned int col) {return impl->getInt32(col);}
     virtual int64_t getInt64(unsigned int col) {return impl->getInt64(col);}
     virtual const char *getNumeric(unsigned int col) {return impl->getNumeric(col);}

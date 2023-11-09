@@ -61,7 +61,7 @@ class exaiter(object):
                 data[colname] = rd(inp.getDouble, inp.wasNull, col)
             elif self.__incoltypes[col] == STRING:
                 data[colname] = rd(inp.getString, inp.wasNull, col, lambda x: decodeUTF8(x))
-            elif self.__incoltypes[col] == HASHTYPE:
+            elif self.__incoltypes[col] == BINARY:
                 data[colname] = rd(inp.getBinary, inp.wasNull, col)
             elif self.__incoltypes[col] == INT32:
                 data[colname] = rd(inp.getInt32, inp.wasNull, col)
