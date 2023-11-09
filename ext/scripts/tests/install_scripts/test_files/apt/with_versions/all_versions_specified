@@ -1,2 +1,2 @@
-curl|7.58.0-2ubuntu3.24 # t1
-wget|1.19.4-1ubuntu2.2 # t2
+curl|7.68.0-1ubuntu2.20 # t1
+wget|1.20.3-1ubuntu2 # t2
