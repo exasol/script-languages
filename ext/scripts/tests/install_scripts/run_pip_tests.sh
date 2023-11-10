@@ -65,5 +65,10 @@ TEST_OUTPUT=$("$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl" --file test_files/pi
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'humanfriendly==9.1' 'requests>=2.21.0' 'git+http://github.com/exasol/bucketfs-utils-python.git@0.2.0#egg=exasol-bucketfs-utils-python'"
 echo
 
+echo ./install_via_pip.pl installing a package twice with different versions
+"$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl" --file test_files/pip/version_conflict/step1 --python-binary python3 --with-versions "$DRY_RUN_OPTION"
+"$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl" --file test_files/pip/version_conflict/step2 --python-binary python3 "$DRY_RUN_OPTION"
+echo
+
 check_for_failed_tests
 echo "All pip tests passed"
