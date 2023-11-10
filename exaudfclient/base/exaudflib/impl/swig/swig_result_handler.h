@@ -25,6 +25,7 @@ private:
         std::map<int, int32_t> int32_data;
         std::map<int, int64_t> int64_data;
         std::map<int, std::string> string_data;
+        std::map<int, std::string> binary_data;
     };
     rowdata_t m_rowdata;
     exascript_request m_emit_request;
@@ -107,53 +108,61 @@ public:
                 case UNSUPPORTED:
                     m_exch->setException("F-UDF-CL-LIB-1087: Unsupported data type found");
                     return false;
-                    case DOUBLE:
-                        if (m_rowdata.double_data.find(col) == m_rowdata.double_data.end()) {
-                            m_exch->setException("F-UDF-CL-LIB-1088: Not enough double columns emited");
-                            return false;
-                        }
-                        m_message_size += sizeof(double);
-                        table->add_data_double(m_rowdata.double_data[col]);
-                        break;
-                        case INT32:
-                            if (m_rowdata.int32_data.find(col) == m_rowdata.int32_data.end()) {
-                                m_exch->setException("F-UDF-CL-LIB-1089: Not enough int32 columns emited");
-                                return false;
-                            }
-                            m_message_size += sizeof(int32_t);
-                            table->add_data_int32(m_rowdata.int32_data[col]);
-                            break;
-                            case INT64:
-                                if (m_rowdata.int64_data.find(col) == m_rowdata.int64_data.end()) {
-                                    m_exch->setException("F-UDF-CL-LIB-1090: Not enough int64 columns emited");
-                                    return false;
-                                }
-                                m_message_size += sizeof(int64_t);
-                                table->add_data_int64(m_rowdata.int64_data[col]);
-                                break;
-                                case NUMERIC:
-                                    case TIMESTAMP:
-                                        case DATE:
-                                            case STRING:
-                                                if (m_rowdata.string_data.find(col) == m_rowdata.string_data.end()) {
-                                                    m_exch->setException("F-UDF-CL-LIB-1091: Not enough string columns emited");
-                                                    return false;
-                                                }
-                                                m_message_size += sizeof(int32_t) + m_rowdata.string_data[col].length();
-                                                *table->add_data_string() = m_rowdata.string_data[col];
-                                                break;
-                                                case BOOLEAN:
-                                                    if (m_rowdata.bool_data.find(col) == m_rowdata.bool_data.end()) {
-                                                        m_exch->setException("F-UDF-CL-LIB-1092: Not enough boolean columns emited");
-                                                        return false;
-                                                    }
-                                                    m_message_size += 1;
-                                                    table->add_data_bool(m_rowdata.bool_data[col]);
-                                                    break;
-                                                    default:
-                                                        m_exch->setException("F-UDF-CL-LIB-1093: Unknown data type found, got "+
-                                                        exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
-                                                        return false;
+                case DOUBLE:
+                    if (m_rowdata.double_data.find(col) == m_rowdata.double_data.end()) {
+                        m_exch->setException("F-UDF-CL-LIB-1088: Not enough double columns emited");
+                        return false;
+                    }
+                    m_message_size += sizeof(double);
+                    table->add_data_double(m_rowdata.double_data[col]);
+                    break;
+                case INT32:
+                    if (m_rowdata.int32_data.find(col) == m_rowdata.int32_data.end()) {
+                        m_exch->setException("F-UDF-CL-LIB-1089: Not enough int32 columns emited");
+                        return false;
+                    }
+                    m_message_size += sizeof(int32_t);
+                    table->add_data_int32(m_rowdata.int32_data[col]);
+                    break;
+                case INT64:
+                    if (m_rowdata.int64_data.find(col) == m_rowdata.int64_data.end()) {
+                        m_exch->setException("F-UDF-CL-LIB-1090: Not enough int64 columns emited");
+                        return false;
+                    }
+                    m_message_size += sizeof(int64_t);
+                    table->add_data_int64(m_rowdata.int64_data[col]);
+                    break;
+                case NUMERIC:
+                case TIMESTAMP:
+                case DATE:
+                case STRING:
+                    if (m_rowdata.string_data.find(col) == m_rowdata.string_data.end()) {
+                        m_exch->setException("F-UDF-CL-LIB-1091: Not enough string columns emited");
+                        return false;
+                    }
+                    m_message_size += sizeof(int32_t) + m_rowdata.string_data[col].length();
+                    *table->add_data_string() = m_rowdata.string_data[col];
+                    break;
+                case BINARY:
+                    if (m_rowdata.binary_data.find(col) == m_rowdata.binary_data.end()) {
+                        m_exch->setException("F-UDF-CL-LIB-1091: Not enough binary columns emited");
+                        return false;
+                    }
+                    m_message_size += sizeof(int32_t) + m_rowdata.binary_data[col].length();
+                    *table->add_data_binary() = m_rowdata.binary_data[col];
+                    break;
+                case BOOLEAN:
+                    if (m_rowdata.bool_data.find(col) == m_rowdata.bool_data.end()) {
+                        m_exch->setException("F-UDF-CL-LIB-1092: Not enough boolean columns emited");
+                        return false;
+                    }
+                    m_message_size += 1;
+                    table->add_data_bool(m_rowdata.bool_data[col]);
+                    break;
+                default:
+                    m_exch->setException("F-UDF-CL-LIB-1093: Unknown data type found, got "+
+                    exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
+                    return false;
             }
         }
         table->add_row_number(m_table_iterator->get_current_row());
@@ -193,6 +202,19 @@ public:
         }
         m_rowdata.null_data[col] = false;
         m_rowdata.string_data[col] = v;
+    }
+    inline void setBinary(unsigned int col, const char *v, size_t l) {
+        if (col >= m_types.size()) {
+            m_exch->setException("E-UDF-CL-LIB-1096: Output column does "+std::to_string(col)+" not exist");
+            return;
+        }
+        if (m_types[col].type != BINARY) {
+            m_exch->setException("E-UDF-CL-LIB-1097: Wrong output column type, expected BINARY, got "+
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
+            return;
+        }
+        m_rowdata.null_data[col] = false;
+        m_rowdata.binary_data[col] = v;
     }
     inline void setInt32(unsigned int col, const int32_t v) {
         if (col >= m_types.size()) {

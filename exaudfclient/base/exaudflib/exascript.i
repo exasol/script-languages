@@ -132,6 +132,7 @@ class SWIGResultHandler {
         inline void flush();
         inline void setDouble(unsigned int col, double v);
         inline void setString(unsigned int col, char *v, size_t l);
+        inline void setBinary(unsigned int col, char *v, size_t l);
         inline void setInt32(unsigned int col, int v);
         inline void setInt64(unsigned int col, long long v);
         inline void setNumeric(unsigned int col, char *v);

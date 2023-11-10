@@ -20,6 +20,7 @@ public:
     virtual bool next()=0;
     virtual void setDouble(unsigned int col, const double v)=0;
     virtual void setString(unsigned int col, const char *v, size_t l)=0;
+    virtual void setBinary(unsigned int col, const char *v, size_t l)=0;
     virtual void setInt32(unsigned int col, const int32_t v)=0;
     virtual void setInt64(unsigned int col, const int64_t v)=0;
     virtual void setNumeric(unsigned int col, const char *v)=0;
@@ -56,6 +57,7 @@ public:
     virtual bool next() {return impl->next();}
     virtual void setDouble(unsigned int col, const double v) {impl->setDouble(col, v);}
     virtual void setString(unsigned int col, const char *v, size_t l) {impl->setString(col,v,l);}
+    virtual void setBinary(unsigned int col, const char *v, size_t l) {impl->setBinary(col,v,l);}
     virtual void setInt32(unsigned int col, const int32_t v) {impl->setInt32(col,v);}
     virtual void setInt64(unsigned int col, const int64_t v) {impl->setInt64(col,v);}
     virtual void setNumeric(unsigned int col, const char *v) {impl->setNumeric(col,v);}
