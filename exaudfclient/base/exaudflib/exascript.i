@@ -34,6 +34,10 @@ using namespace SWIGVMContainers;
 %rename(TableIterator) SWIGTableIterator;
 %rename(ResultHandler) SWIGResultHandler;
 
+%typemap(out) const char * SWIGTableIterator::getBinary {
+    $result = PyBytes_FromStringAndSize(result, arg1->getBinarySize(arg2));
+}
+
 enum SWIGVM_datatype_e {
     UNSUPPORTED = 0,
     DOUBLE = 1,

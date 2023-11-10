@@ -257,8 +257,24 @@ public:
         }
         ssize_t index = check_value(col, m_next_response.next().table().data_binary_size(), "binary");
         if (m_was_null) return "";
-        if (length != NULL) *length = m_next_response.next().table().data_binary_size();
+        if (length != NULL) *length = m_next_response.next().table().data_binary(index).length();
         return m_next_response.next().table().data_binary(index).data();
+    }
+    inline size_t getBinarySize(unsigned int col) {
+        if (col >= m_types.size()) {
+            m_exch->setException("E-UDF-CL-LIB-1068: Input column "+std::to_string(col)+" does not exist");
+            m_was_null = true;
+            return 0;
+        }
+        if (m_types[col].type != BINARY) {
+            m_exch->setException("E-UDF-CL-LIB-1069: Wrong input column type, expected BINARY, got "+
+            exaudflib::msg_conversion::convert_type_to_string(m_types[col].type));
+            m_was_null = true;
+            return 0;
+        }
+        ssize_t index = check_value(col, m_next_response.next().table().data_binary_size(), "binary");
+        if (m_was_null) return 0;
+        return m_next_response.next().table().data_binary(index).length();
     }
     inline int32_t getInt32(unsigned int col) {
         if (col >= m_types.size()) {
