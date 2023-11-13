@@ -165,6 +165,11 @@ class exaiter(object):
                     raise RuntimeError(u"E-UDF-CL-SL-PYTHON-1094: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setString(k, v, vl)
+            elif type(v) == bytes:
+                if self.__outcoltypes[k] != BINARY:
+                    raise RuntimeError(u"E-UDF-CL-SL-PYTHON-1094: emit column '%s' is of type %s but data given have type %s" \
+                            % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
+                self.__out.setBinary(k, v)
             elif type(v) == decimal.Decimal:
                 if self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, str(v))
                 elif self.__outcoltypes[k] == INT32: self.__out.setInt32(k, int(v))

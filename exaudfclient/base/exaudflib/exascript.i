@@ -37,6 +37,16 @@ using namespace SWIGVMContainers;
 %typemap(out) const char * SWIGTableIterator::getBinary {
     $result = PyBytes_FromStringAndSize(result, arg1->getBinarySize(arg2));
 }
+%typemap(in) (char *b, size_t l) (char *temp_b, int temp_l) {
+  if (!PyBytes_Check($input)) {
+    PyErr_SetString(PyExc_TypeError, "Expected a bytes object for the 'b' parameter.");
+    return NULL;
+  }
+  temp_b = PyBytes_AsString($input);
+  temp_l = PyBytes_Size($input);
+  $1 = temp_b;
+  $2 = (size_t)temp_l;
+}
 
 enum SWIGVM_datatype_e {
     UNSUPPORTED = 0,
@@ -132,7 +142,7 @@ class SWIGResultHandler {
         inline void flush();
         inline void setDouble(unsigned int col, double v);
         inline void setString(unsigned int col, char *v, size_t l);
-        inline void setBinary(unsigned int col, char *v, size_t l);
+        inline void setBinary(unsigned int col, char *b, size_t l);
         inline void setInt32(unsigned int col, int v);
         inline void setInt64(unsigned int col, long long v);
         inline void setNumeric(unsigned int col, char *v);
