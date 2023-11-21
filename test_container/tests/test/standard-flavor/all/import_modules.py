@@ -197,7 +197,7 @@ class ImportAllModulesTest(udf.TestCase):
 
 
     def tearDown(self):
-        self.query("drop schema scikit_learn cascade")
+        self.query("drop schema import_all_modules")
 
 
 if __name__ == '__main__':
