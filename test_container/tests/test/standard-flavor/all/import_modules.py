@@ -4,14 +4,14 @@
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 
-class ScikitLearnTest(udf.TestCase):
+class ImportAllModulesTest(udf.TestCase):
     
     def setUp(self):
-        self.query('create schema scikit_learn', ignore_errors=True)
+        self.query('create schema import_all_modules', ignore_errors=True)
     
-    def test_import_scikit_learn_bug_836(self):
+    def test_import_all_modules(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT scikit_learn.import_scikit_learn() 
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.import_all_modules() 
             EMITS (module_name VARCHAR(200000), exception_str VARCHAR(200000), status VARCHAR(10)) AS
             
             import sys
@@ -96,7 +96,8 @@ class ScikitLearnTest(udf.TestCase):
                 "Cython.Debugger",
                 "Cython.Build.Tests",
                 "Cython.Build.IpythonMagic",
-                "Cython.Coverage"
+                "Cython.Coverage",
+                "setuptools.modified"
             }
             excluded_submodules = (
                 "sphinxext",
@@ -184,8 +185,8 @@ class ScikitLearnTest(udf.TestCase):
                 importer.import_modules()
             /
             '''))
-        with UdfDebugger(test_case=self):
-            rows = self.query('''SELECT scikit_learn.import_scikit_learn() FROM dual''')
+        #with UdfDebugger(test_case=self):
+        rows = self.query('''SELECT import_all_modules.import_all_modules() FROM dual''')
         print("Number of modules:",len(rows))
         failed_imports = [(row[0],row[1]) for row in rows if row[2] == "ERROR"]
         for i in failed_imports:
