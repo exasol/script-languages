@@ -1,4 +1,4 @@
 unzip|6.0-25ubuntu1.1
 git|1:2.25.1-1ubuntu3.11
-libcurl4-openssl-dev|7.68.0-1ubuntu2.20
+libcurl4-openssl-dev|7.68.0-1ubuntu2.21
 build-essential|12.8ubuntu1.1
