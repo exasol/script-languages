@@ -6,17 +6,17 @@ version: 0.2
 batch:
   fast-fail: false
   build-graph:
-    - identifier: build_python_310_minimal_EXASOL_620
-      env:
-        variables:
-          FLAVOR: python-3.10-minimal-EXASOL-6.2.0
-        compute-type: BUILD_GENERAL1_MEDIUM
-        privileged-mode: true
-      buildspec: ./aws-code-build/ci/build_buildspec.yaml
     - identifier: build_python_38_minimal_EXASOL_620
       env:
         variables:
           FLAVOR: python-3.8-minimal-EXASOL-6.2.0
+        compute-type: BUILD_GENERAL1_MEDIUM
+        privileged-mode: true
+      buildspec: ./aws-code-build/ci/build_buildspec.yaml
+    - identifier: build_template_Exasol_all_python_310
+      env:
+        variables:
+          FLAVOR: template-Exasol-all-python-3.10
         compute-type: BUILD_GENERAL1_MEDIUM
         privileged-mode: true
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
