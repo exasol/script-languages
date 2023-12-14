@@ -18,22 +18,15 @@ jobs:
       run: bash find_duplicate_error_codes.sh
 
     - name: Install bazel
-      run: |
-        export ENV BAZEL_PACKAGE_VERSION="5.2.0"
-        export ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
-        export BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
-        sudo apt-get -y update && \
-            curl -L --output "$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL" && \
-            sudo apt-get install -y "./$BAZEL_PACKAGE_FILE" && \
-            rm "$BAZEL_PACKAGE_FILE" && \
-            sudo apt-get -y clean && \
-            sudo apt-get -y autoremove
+      run: | 
+        curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
+        chmod +x bazel
     - name: Install JDK and ZMQ
       run: |
+        sudo apt-get update
         sudo apt-get install -y openjdk-11-jdk libzmq3-dev
-        sudo apt-get -y clean && \
-        sudo apt-get -y autoremove
     - name: Test
       run: |
+        export USE_BAZEL_VERSION=6.4.0
         bazel test //javacontainer/test/...
       working-directory: ./exaudfclient/base
