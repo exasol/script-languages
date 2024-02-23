@@ -3,6 +3,12 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [ $# -eq 0 ];
+then
+  echo '"Package|Installed|Candidate" SEARCH_DIRECTORY REPLACE'
+  exit 1
+fi
+
 LIST_NEWEST_VERSION_OUTPUT=$1 # Package|Installed|Candidate
 SEARCH_DIRECTORY=$2
 REPLACE=$3
