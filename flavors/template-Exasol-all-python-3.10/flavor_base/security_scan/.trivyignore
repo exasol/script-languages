@@ -19,6 +19,9 @@ CVE-2023-4622
 CVE-2023-4623
 CVE-2023-4921
 CVE-2023-6176
+CVE-2024-0646
+CVE-2024-1085
+CVE-2024-1086
 # CVE-2023-20569 does not have a fix and is a problem of host system (amd cpus)
 CVE-2023-20569 
 #CVE-2022-23648 is a bug in containerd, not issue for containers
