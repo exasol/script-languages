@@ -8,6 +8,9 @@ RUN mkdir /exaudfclient /exaudf
 COPY /exaudfclient/base /exaudfclient/base
 
 WORKDIR /exaudfclient/base
+env LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib/
+env CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/opt/conda/include/
+env C_INCLUDE_PATH=$C_INCLUDE_PATH:/opt/conda/include/
 # We need to build with optimize here, because the debug build fails to run with a runtime linking error regarding protobuf
 RUN ./build.sh --config no-tty -c dbg --config python --config test-binaries-py3
 RUN cp -r -L bazel-bin/* /exaudf
