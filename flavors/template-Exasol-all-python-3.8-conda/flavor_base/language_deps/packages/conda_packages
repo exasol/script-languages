@@ -1,4 +1,4 @@
-https://github.com/conda-forge/linux-sysroot-feedstock/issues/52
+libxcrypt|4.4.36 # Needed for building the udfclient and because libcrypt got removed from conda sysroot, see https://github.com/conda-forge/linux-sysroot-feedstock/issues/52
 python|3.8.13
 numpy|1.24.3
 pandas|2.0.2
