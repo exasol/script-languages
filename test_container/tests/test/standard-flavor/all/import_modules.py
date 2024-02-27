@@ -97,7 +97,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "Cython.Build.Tests",
                 "Cython.Build.IpythonMagic",
                 "Cython.Coverage",
-                "setuptools.modified"
+                "setuptools.modified",
                 "tqdm.tk",
                 "tqdm.rich",
                 "tqdm.keras",
