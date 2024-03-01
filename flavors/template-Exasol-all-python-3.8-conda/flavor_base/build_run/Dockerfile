@@ -4,9 +4,9 @@ RUN mkdir /exaudfclient /exaudf
 COPY exaudfclient/base /exaudfclient/base
 
 WORKDIR /exaudfclient/base
-env LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib/
-env CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/opt/conda/include/
-env C_INCLUDE_PATH=$C_INCLUDE_PATH:/opt/conda/include/
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/
+ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
+ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 RUN ./build.sh --config no-tty --config optimize --config python --config fast-binary-py3
 RUN cp -r -L bazel-bin/* /exaudf
 
