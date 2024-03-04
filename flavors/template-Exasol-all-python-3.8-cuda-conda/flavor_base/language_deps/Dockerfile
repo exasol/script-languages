@@ -5,6 +5,6 @@ COPY language_deps/packages/ /build_info/packages/language_deps
 
 RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/language_deps/conda_packages --channel-file /build_info/packages/language_deps/conda_channels --with-versions --conda-binary /bin/micromamba
 
-ENV PYTHON3_PREFIX /opt/conda
-ENV PYTHON3_VERSION python3.8
+ENV PYTHON3_PREFIX=$MAMBA_ROOT_PREFIX
+ENV PYTHON3_VERSION=python3.8
 

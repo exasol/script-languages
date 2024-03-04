@@ -3,6 +3,12 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [ $# -eq 0 ];
+then
+  echo '"Package|Installed|Candidate" SEARCH_DIRECTORY REPLACE'
+  exit 1
+fi
+
 LIST_NEWEST_VERSION_OUTPUT=$1 # Package|Installed|Candidate
 SEARCH_DIRECTORY=$2
 REPLACE=$3
@@ -19,7 +25,7 @@ do
   grep "^$PACKAGE|$CURRENT_VERSION" "$FILE"
   echo "Updated lines:"
   CURRENT_VERSION_ESCAPE=${CURRENT_VERSION//\~/\\~}
-  SEARCH_REPLACE_PATTERN="s/^($PACKAGE|$CURRENT_VERSION_ESCAPE).*$/$PACKAGE|$CANDIDATE_VERSION/g"
+  SEARCH_REPLACE_PATTERN="s/^($PACKAGE\|$CURRENT_VERSION_ESCAPE).*$/$PACKAGE|$CANDIDATE_VERSION/g"
 	sed -E "$SEARCH_REPLACE_PATTERN" "$FILE" | grep "^$PACKAGE|"
   if [[ "$REPLACE" == "yes"  ]]
   then

@@ -97,7 +97,20 @@ class ImportAllModulesTest(udf.TestCase):
                 "Cython.Build.Tests",
                 "Cython.Build.IpythonMagic",
                 "Cython.Coverage",
-                "setuptools.modified"
+                "setuptools.modified",
+                "tqdm.tk",
+                "tqdm.rich",
+                "tqdm.keras",
+                "tqdm.dask",
+                "tqdm.contrib.slack",
+                "tqdm.contrib.discord",
+                "sagemaker.serve.validations.parse_registry_accounts",
+                "pyparsing.diagram",
+                "numba.core.rvsdg_frontend",
+                "msrest.universal_http.aiohttp",
+                "msrest.pipeline.aiohttp",
+                "docker.transport.npipesocket",
+                "docker.transport.npipeconn"
             }
             excluded_submodules = (
                 "sphinxext",
