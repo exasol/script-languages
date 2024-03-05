@@ -58,6 +58,22 @@ class PyexsolConnectionTest(udf.TestCase):
     def test_fingerprint_pyexasol_connection_python3(self):
         self.run_fingerprint_pyexasol_connection("PYTHON3")
 
+    def test_pyexasol_export_to_pandas(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT pyexasol.export_to_pandas() returns int AS
+            import pyexasol
+            import ssl
+            import os
+            def run(ctx):
+                os.environ["USER"]="exasolution"
+                with pyexasol.connect(
+                        dsn='{host}:{port}', user='{user}', password='{pwd}', 
+                        websocket_sslopt={{"cert_reqs": ssl.CERT_NONE}}, encryption=True) as connection:
+                    result = connection.export_to_pandas('SELECT 1 FROM dual')
+            /
+            '''.format(python=python_version, host=self.host, port=self.port, user=self.user, pwd=self.pwd)))
+        self.query('''SELECT pyexasol.export_to_pandas() FROM dual''')
+
     def tearDown(self):
         self.query("drop schema pyexasol cascade")
 
