@@ -71,7 +71,7 @@ class PyexsolConnectionTest(udf.TestCase):
                         websocket_sslopt={{"cert_reqs": ssl.CERT_NONE}}, encryption=True) as connection:
                     result = connection.export_to_pandas('SELECT 1 FROM dual')
             /
-            '''.format(python=python_version, host=self.host, port=self.port, user=self.user, pwd=self.pwd)))
+            '''.format(host=self.host, port=self.port, user=self.user, pwd=self.pwd)))
         self.query('''SELECT pyexasol.export_to_pandas() FROM dual''')
 
     def tearDown(self):
