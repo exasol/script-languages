@@ -60,7 +60,7 @@ class PyexsolConnectionTest(udf.TestCase):
 
     def test_pyexasol_export_to_pandas(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT pyexasol.export_to_pandas() returns int AS
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT pyexasol.export_to_pandas() EMITS (RESULT_VALUE INTEGER) AS
             import pyexasol
             import ssl
             import os
@@ -70,9 +70,41 @@ class PyexsolConnectionTest(udf.TestCase):
                         dsn='{host}:{port}', user='{user}', password='{pwd}', 
                         websocket_sslopt={{"cert_reqs": ssl.CERT_NONE}}, encryption=True) as connection:
                     result = connection.export_to_pandas('SELECT 1 FROM dual')
+                    ctx.emit(result)
             /
             '''.format(host=self.host, port=self.port, user=self.user, pwd=self.pwd)))
-        self.query('''SELECT pyexasol.export_to_pandas() FROM dual''')
+        rows = self.query('''SELECT pyexasol.export_to_pandas() FROM dual''')
+        self.assertRowsEqual([(1,)], rows)
+    
+    def test_pyexasol_import_from_pandas(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT pyexasol.import_from_pandas() EMITS (RESULT_VALUE INTEGER) AS
+            import pyexasol
+            import ssl
+            import os
+            import pandas as pd
+
+            def run(ctx):
+                os.environ["USER"]="exasolution"
+                with pyexasol.connect(
+                        dsn='{host}:{port}', user='{user}', password='{pwd}', 
+                        websocket_sslopt={{"cert_reqs": ssl.CERT_NONE}}, encryption=True) as connection:
+                    connection.execute("CREATE SCHEMA IF NOT EXISTS IMPORT_FROM_PANDAS_FROM_UDF;")
+                    connection.open_schema("IMPORT_FROM_PANDAS_FROM_UDF")
+                    connection.execute("""
+                        CREATE OR REPLACE TABLE TEST_TABLE
+                        (
+                            MY_ID DECIMAL(18,0)
+                        )
+                    """)
+                    input = pd.DataFrame(data=[[1],[2],[3]], columns=["MY_ID"])
+                    connection.import_from_pandas(input, 'TEST_TABLE')
+                    result = connection.export_to_pandas('SELECT * FROM TEST_TABLE')
+                    ctx.emit(result)
+            /
+            '''.format(host=self.host, port=self.port, user=self.user, pwd=self.pwd)))
+        rows = self.query('''SELECT pyexasol.import_from_pandas() FROM dual''')
+        self.assertRowsEqual([(1,),(2,),(3,)], rows)
 
     def tearDown(self):
         self.query("drop schema pyexasol cascade")
