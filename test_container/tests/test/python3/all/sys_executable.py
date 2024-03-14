@@ -12,7 +12,21 @@ class SysExecutableTest(udf.TestCase):
     def tearDown(self):
         self.query(f'DROP SCHEMA {self.schema} CASCADE', ignore_errors=True)
 
-    def test_getuser(self):
+    def test_environment_of_udf_and_sys_executabe(self):
+        """
+        Older version of pyexasol used subprocess(sys.executable, ...) when using httptransport. 
+        This didn't work in SLC version 6.0.0, because the subprocess didn't find the pyexasol package.
+        While investigating this issue we found out that the sys.executable returned by the UDF is not 
+        the same python interpreter as the UDF ran in. The default value returned for sys.executable is
+        is usually /usr/lib/python3 without any specific version. In the SLC version 6.0.0 were two 
+        Python version installed and the returned binary pointed to a different interpreter then the UDF used.
+        The underlying issue will be fixed with https://github.com/exasol/script-languages-release/issues/872-
+        This test only checks that the environment in the python interpreter of the UDF is close to 
+        the environment in the python interpreter returned by sys.executable. For that, we compare 
+        the interpreter version, the interpreter implementation (interpreter specific value) and 
+        the sys.path (search path for packages). This should make sure, that everything that works 
+        in the python interpreter UDF works also in the python interpreter returned by the sys.executable.
+        """
         self.query(udf.fixindent('''
                 CREATE OR REPLACE python3 SCALAR SCRIPT
                 check_sys_executable()
