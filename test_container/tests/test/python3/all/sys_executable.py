@@ -5,7 +5,7 @@ from exasol_python_test_framework import udf
 
 class SysExecutableTest(udf.TestCase):
     def setUp(self):
-        self.schema = "SYS_EXECUTABLE"
+        self.schema = "SYS_EXECUTABLE_TEST"
         self.query(f'CREATE SCHEMA {self.schema}', ignore_errors=True)
         self.query(f'OPEN SCHEMA {self.schema}', ignore_errors=True)
 
