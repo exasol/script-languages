@@ -10,7 +10,7 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework import docker_db_environment
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 
-@unittest.skip("ClassLoader.class.getDeclaredField("usr_paths") in addDirToJavaLibraryPath doesn't work in Java 17")
+@unittest.skip("""ClassLoader.class.getDeclaredField("usr_paths") in addDirToJavaLibraryPath doesn't work in Java 17""")
 class JavaHive(udf.TestCase):
 
     def setUp(self):
