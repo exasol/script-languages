@@ -20,7 +20,7 @@ There are two options:
 
 ### Run
 
-- Set the flavor in aws-code-build/run_local_run_local.env
+- Set the flavor in `aws-code-build/run_local/run_local.env`
 - Run [run_local.sh](run_local/run_local.sh) or [run_local_prebuilt.sh](run_local/run_local_prebuilt.sh) with buildspec file and AWS profile as parameters:
 
 ```bash
