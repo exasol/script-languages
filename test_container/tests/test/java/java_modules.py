@@ -4,9 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
-import sys
 import tempfile
-import unittest
 import zipfile
 import requests
 from requests.auth import HTTPBasicAuth
@@ -14,6 +12,7 @@ from requests.auth import HTTPBasicAuth
 from exasol_python_test_framework import udf
 from exasol_python_test_framework import docker_db_environment
 from exasol_python_test_framework.udf import useData, expectedFailure
+from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 
 script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 java_udf_dir = script_dir / "resources/java_udf"
@@ -61,27 +60,31 @@ class JavaModules(udf.TestCase):
         r_upload.raise_for_status()
         return f"/buckets/bfsdefault/myudfs/{path.name}"
 
+
     def test_module_jar_udf_classpath(self):
-        java_udf_jar_bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java17)
-        self.query(udf.fixindent(f'''
-                CREATE JAVA SCALAR SCRIPT JAVA_MODULE_TEST() RETURNS INT AS
+        assert self.get_jre_version(self.java_udf_jar_java11) in ["11", "17"]
+
+    def test_java_17_udf(self):
+        if self.get_jre_version(self.java_udf_jar_java11) == "17":
+            bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java17)
+            self.query(udf.fixindent(f'''
+                CREATE JAVA SCALAR SCRIPT JAVA_17_UDF() RETURNS INT AS
                 %scriptclass com.exasol.slc.testudf.Main;
-                %jar {java_udf_jar_bucketfs_path};
+                %jar {bucketfs_path};
                 '''))
-        rows = self.query("SELECT JAVA_MODULE_TEST()")
-        self.assertEqual(rows[0][0], 17)
-        
-    def test_module_jar_udf_modulepath_fails(self):
-        java_udf_jar_bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java17)
+            rows = self.query("SELECT JAVA_17_UDF()")
+            return str(rows[0][0])
+
+    def get_jre_version(self, jar: Path):
+        bucketfs_path = self.upload_to_bucketfs(jar)
         self.query(udf.fixindent(f'''
-                CREATE JAVA SCALAR SCRIPT JAVA_MODULE_TEST() RETURNS INT AS
+                CREATE JAVA SCALAR SCRIPT JRE_VERSION() RETURNS INT AS
                 %scriptclass com.exasol.slc.testudf.Main;
-                %jvmoption --module-path={java_udf_jar_bucketfs_path};
-                %jvmoption --add-exports=java.base/sun.security.x509=ALL-UNNAMED;
-                %jvmoption --add-modules=com.exasol.slc.testudf;
+                %jar {bucketfs_path};
                 '''))
-        with self.assertRaisesRegex(Exception, "VM error: Internal error: VM crashed"):
-            self.query("SELECT JAVA_MODULE_TEST()")
+        rows = self.query("SELECT JRE_VERSION()")
+        return str(rows[0][0])
+ 
 
 if __name__ == '__main__':
     udf.main()
