@@ -62,21 +62,35 @@ class JavaModules(udf.TestCase):
 
 
     def test_module_jar_udf_classpath(self):
-        assert self.get_jre_version(self.java_udf_jar_java11) in ["11", "17"]
+        """
+        Verify that a module JAR with a module-info.class can be used in a UDF.
+        We don't know the JRE version installed in the SLC, so we accept both 11 and 17.
+        """
+        assert self.get_jre_version() in ["11", "17"]
 
     def test_java_17_udf(self):
-        if self.get_jre_version(self.java_udf_jar_java11) == "17":
-            bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java17)
-            self.query(udf.fixindent(f'''
-                CREATE JAVA SCALAR SCRIPT JAVA_17_UDF() RETURNS INT AS
-                %scriptclass com.exasol.slc.testudf.Main;
-                %jar {bucketfs_path};
-                '''))
+        """
+        Verify that a JAR built for Java 17 can be used in a UDF.
+        We don't know the JRE version installed in the SLC, so first check that it is 17.
+        """
+        bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java17)
+        self.query(udf.fixindent(f'''
+            CREATE JAVA SCALAR SCRIPT JAVA_17_UDF() RETURNS INT AS
+            %scriptclass com.exasol.slc.testudf.Main;
+            %jar {bucketfs_path};
+            '''))
+        if self.get_jre_version() == "17":
             rows = self.query("SELECT JAVA_17_UDF()")
             return str(rows[0][0])
+        else:
+            with self.assertRaisesRegex(Exception, "UnsupportedClassVersionError: com/exasol/slc/testudf/Main has been compiled by a more recent version of the Java Runtime"):
+                self.query("SELECT JAVA_17_UDF()")
 
-    def get_jre_version(self, jar: Path):
-        bucketfs_path = self.upload_to_bucketfs(jar)
+    def get_jre_version(self):
+        """
+        Get the SLC's JRE version by executing a UDF that returns the JRE major version ("11" or "17").
+        """
+        bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java11)
         self.query(udf.fixindent(f'''
                 CREATE JAVA SCALAR SCRIPT JRE_VERSION() RETURNS INT AS
                 %scriptclass com.exasol.slc.testudf.Main;
