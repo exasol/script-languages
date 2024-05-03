@@ -32,7 +32,6 @@ class JavaModules(udf.TestCase):
     def setUp(self):
         self.query('CREATE SCHEMA JAVA_MODULES', ignore_errors=True)
         self.query('OPEN SCHEMA JAVA_MODULES')
-        self.query("ALTER SESSION SET SCRIPT_OUTPUT_ADDRESS='192.168.179.38:3000'")
         self.env = docker_db_environment.DockerDBEnvironment("JAVA_MODULE_TEST")
 
     def build_java_udf(self, javaVersion: int) -> Path:
@@ -77,9 +76,11 @@ class JavaModules(udf.TestCase):
         self.query(udf.fixindent(f'''
                 CREATE JAVA SCALAR SCRIPT JAVA_MODULE_TEST() RETURNS INT AS
                 %scriptclass com.exasol.slc.testudf.Main;
-                %jvmoption --module-path {java_udf_jar_bucketfs_path};
+                %jvmoption --module-path={java_udf_jar_bucketfs_path};
+                %jvmoption --add-exports=java.base/sun.security.x509=ALL-UNNAMED;
+                %jvmoption --add-modules=com.exasol.slc.testudf;
                 '''))
-        with self.assertRaisesRegex(Exception, "VM error: F-UDF-CL-LIB-1125: F-UDF-CL-SL-JAVA-1000: F-UDF-CL-SL-JAVA-1028: Cannot start the JVM: unknown error \\(-1\\)"):
+        with self.assertRaisesRegex(Exception, "VM error: Internal error: VM crashed"):
             self.query("SELECT JAVA_MODULE_TEST()")
 
 if __name__ == '__main__':
