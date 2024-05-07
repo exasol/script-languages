@@ -28,6 +28,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "urllib3.contrib.socks",
                 "urllib3.contrib.securetransport",
                 "urllib3.contrib.ntlmpool",
+                "urllib3.contrib.emscripten",
                 "simplejson.ordered_dict",
                 "pymemcache.test",
                 "sagemaker.feature_store.feature_processor",
@@ -43,6 +44,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "lxml.html.soupparser",
                 "lxml.html.html5parser",
                 "lxml.html.ElementSoup",
+                "lxml.html.clean",
                 "lxml.cssselect",
                 "jsonschema.benchmarks",
                 "numpy.f2py.setup",
@@ -73,6 +75,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "sagemaker.content_types",
                 "pyarrow.libarrow_python_flight",
                 "pyarrow.libarrow_python",
+                "pyarrow.libarrow_python_parquet_encryption"
                 "pyarrow.cuda",
                 "numba.testing.notebook",
                 "numba.np.ufunc.tbbpool",
@@ -110,7 +113,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "msrest.universal_http.aiohttp",
                 "msrest.pipeline.aiohttp",
                 "docker.transport.npipesocket",
-                "docker.transport.npipeconn"
+                "docker.transport.npipeconn"                
             }
             excluded_submodules = (
                 "sphinxext",
