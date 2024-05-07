@@ -53,6 +53,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "numpy.core.setup",
                 "numpy.core.generate_numpy_api",
                 "numpy.core.cversions",
+                "numpy.core.umath_tests",
                 "multiprocess.popen_spawn_win32",
                 "msal.broker",
                 "joblib.externals.loky.backend.popen_loky_win32",
@@ -75,8 +76,8 @@ class ImportAllModulesTest(udf.TestCase):
                 "sagemaker.content_types",
                 "pyarrow.libarrow_python_flight",
                 "pyarrow.libarrow_python",
-                "pyarrow.libarrow_python_parquet_encryption"
-                "pyarrow.cuda",
+                "pyarrow.libarrow_python_parquet_encryption",
+                "pyarrow._cuda",
                 "numba.testing.notebook",
                 "numba.np.ufunc.tbbpool",
                 "numba.misc.gdb_print_extension",
