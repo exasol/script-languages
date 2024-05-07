@@ -77,7 +77,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "pyarrow.libarrow_python_flight",
                 "pyarrow.libarrow_python",
                 "pyarrow.libarrow_python_parquet_encryption",
-                "pyarrow._cuda",
+                "pyarrow.cuda",
                 "numba.testing.notebook",
                 "numba.np.ufunc.tbbpool",
                 "numba.misc.gdb_print_extension",
