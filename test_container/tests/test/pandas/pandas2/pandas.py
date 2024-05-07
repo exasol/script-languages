@@ -280,32 +280,32 @@ class Pandas2Test(udf.TestCase):
 
             # NaN
 
-            ("dtype='uint8[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='uint16[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='uint32[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='uint64[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='int8[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='int16[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='int32[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='int64[pyarrow]'", "integer", nan_dataframe_value_str, nan_expected_rows, False),
+            ("dtype='uint8[pyarrow]'", "integer", nan_dataframe_value_str, False),
+            ("dtype='uint16[pyarrow]'", "integer", nan_dataframe_value_str, False),
+            ("dtype='uint32[pyarrow]'", "integer", nan_dataframe_value_str, False),
+            ("dtype='uint64[pyarrow]'", "integer", nan_dataframe_value_str, False),
+            ("dtype='int8[pyarrow]'", "integer", nan_dataframe_value_str, False),
+            ("dtype='int16[pyarrow]'", "integer", nan_dataframe_value_str, False),
+            ("dtype='int32[pyarrow]'", "integer", nan_dataframe_value_str, False),
+            ("dtype='int64[pyarrow]'", "integer", nan_dataframe_value_str, False),
 
-            ("dtype='float16[pyarrow]'", "float", nan_dataframe_value_str, ".*pyarrow.lib.ArrowNotImplementedError: Unsupported cast from double to halffloat using function cast_half_float.*", False),
-            ("dtype='float32[pyarrow]'", "float", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='float64[pyarrow]'", "float", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='halffloat[pyarrow]'", "float", nan_dataframe_value_str, ".*pyarrow.lib.ArrowNotImplementedError: Unsupported cast from double to halffloat using function cast_half_float.*", False),
-            ("dtype='float[pyarrow]'", "float", nan_dataframe_value_str, nan_expected_rows, False),
-            ("dtype='double[pyarrow]'", "float", nan_dataframe_value_str, nan_expected_rows, False),
+            ("dtype='float16[pyarrow]'", "float", nan_dataframe_value_str, False),
+            ("dtype='float32[pyarrow]'", "float", nan_dataframe_value_str, False),
+            ("dtype='float64[pyarrow]'", "float", nan_dataframe_value_str, False),
+            ("dtype='halffloat[pyarrow]'", "float", nan_dataframe_value_str, False),
+            ("dtype='float[pyarrow]'", "float", nan_dataframe_value_str, False),
+            ("dtype='double[pyarrow]'", "float", nan_dataframe_value_str, False),
 
-            ("dtype='string[pyarrow]'", "VARCHAR(2000000)", nan_dataframe_value_str, nan_expected_rows, False),
+            ("dtype='string[pyarrow]'", "VARCHAR(2000000)", nan_dataframe_value_str, False),
 
-            ("dtype='bool[pyarrow]'", "boolean", nan_dataframe_value_str, nan_expected_rows, False),
+            ("dtype='bool[pyarrow]'", "boolean", nan_dataframe_value_str, False),
 
-            #("dtype=pd.ArrowDtype(pa.timestamp('ns','UTC'))", "timestamp", nan_dataframe_value_str, nan_expected_rows, False), # Dateframe creation fails with: pyarrow.lib.ArrowNotImplementedError: Unsupported cast from double to timestamp using function cast_timestamp
-            ("dtype=pd.ArrowDtype(pa.decimal128(3, scale=2))", "DECIMAL(10,5)", nan_dataframe_value_str, nan_expected_rows, False),
+            #("dtype=pd.ArrowDtype(pa.timestamp('ns','UTC'))", "timestamp", nan_dataframe_value_str, False), # Dateframe creation fails with: pyarrow.lib.ArrowNotImplementedError: Unsupported cast from double to timestamp using function cast_timestamp
+            ("dtype=pd.ArrowDtype(pa.decimal128(3, scale=2))", "DECIMAL(10,5)", nan_dataframe_value_str, False),
         ]
 
     @useData(types)
-    def test_dtype_emit(self, dtype_definition:str, sql_type:str, dataframe_value_str:str, expected_result:Union[str,List[Tuple]], use_almost_equal:bool):
+    def test_dtype_emit(self, dtype_definition:str, sql_type:str, dataframe_value_str:str, use_almost_equal:bool):
         sql=udf.fixindent(f'''
             CREATE OR REPLACE PYTHON3 SET SCRIPT test_dtype_emit(i integer) 
             EMITS (o1 {sql_type}, o2 {sql_type}, traceback varchar(2000000)) AS
@@ -329,13 +329,10 @@ class Pandas2Test(udf.TestCase):
         print(sql)
         self.query(sql)
         rows = self.query('''SELECT test_dtype_emit(0)''')
-        if isinstance(expected_result,str):
-            self.assertRegex(rows[0][2], expected_result)
+        if use_almost_equal:
+            self.assertRowsAlmostEqual(self.nan_expected_rows, rows, places=1)
         else:
-            if use_almost_equal:
-                self.assertRowsAlmostEqual(expected_result, rows, places=1)
-            else:
-                self.assertRowsEqual(expected_result, rows)
+            self.assertRowsEqual(self.nan_expected_rows, rows)
 
     def isValueAlmostEqual(self, left, right, places):
         if isinstance(left, (float, Decimal)) and isinstance(right, (float, Decimal)):
