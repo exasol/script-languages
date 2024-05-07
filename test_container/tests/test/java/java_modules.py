@@ -61,17 +61,18 @@ class JavaModules(udf.TestCase):
         return f"/buckets/bfsdefault/myudfs/{path.name}"
 
 
-    def test_module_jar_udf_classpath(self):
+    def test_java_11_udf(self):
         """
-        Verify that a module JAR with a module-info.class can be used in a UDF.
+        Verify that a module JAR built for Java 11 with a module-info.class can be used in a UDF.
         We don't know the JRE version installed in the SLC, so we accept both 11 and 17.
         """
         assert self.get_jre_version() in ["11", "17"]
 
     def test_java_17_udf(self):
         """
-        Verify that a JAR built for Java 17 can be used in a UDF.
-        We don't know the JRE version installed in the SLC, so first check that it is 17.
+        Verify that a module JAR built for Java 17 can be used in a UDF.
+        We don't know the JRE version installed in the SLC, so first check that it is 11 or 17.
+        Exepct an error if the JRE version is not 17.
         """
         bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java17)
         self.query(udf.fixindent(f'''
@@ -86,9 +87,9 @@ class JavaModules(udf.TestCase):
             with self.assertRaisesRegex(Exception, "UnsupportedClassVersionError: com/exasol/slc/testudf/Main has been compiled by a more recent version of the Java Runtime"):
                 self.query("SELECT JAVA_17_UDF()")
 
-    def get_jre_version(self):
+    def get_jre_version(self) -> str:
         """
-        Get the SLC's JRE version by executing a UDF that returns the JRE major version ("11" or "17").
+        Get the SLC's JRE version by executing a Java 11 UDF that returns the JRE major version ("11" or "17").
         """
         bucketfs_path = self.upload_to_bucketfs(self.java_udf_jar_java11)
         self.query(udf.fixindent(f'''
