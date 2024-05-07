@@ -21,6 +21,8 @@ RUN apt-get -y update && \
     apt-get -y autoremove && \
     ldconfig
 
+RUN update-java-alternatives --set java-1.11.0-openjdk-amd64
+
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
 
 RUN mkdir -p downloads/ODBC downloads/JDBC downloads/EXAplus
