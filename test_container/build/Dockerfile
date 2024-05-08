@@ -5,7 +5,9 @@ COPY deps/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
 RUN apt-get -y update && \
     apt-get -y install \
+        openjdk-17-jdk \
         openjdk-11-jdk \
+        maven \
         locales \
         python3.8-venv \
         python3-pip \
@@ -18,6 +20,8 @@ RUN apt-get -y update && \
     apt-get -y clean && \
     apt-get -y autoremove && \
     ldconfig
+
+RUN update-java-alternatives --set java-1.11.0-openjdk-amd64
 
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
 
@@ -32,3 +36,4 @@ RUN pip3 install -r "requirements.txt"
 
 RUN mkdir -p /dev_tools
 COPY deps/install_dev_tools.sh /dev_tools
+COPY deps/maven-toolchains.xml /root/.m2/toolchains.xml
