@@ -157,10 +157,12 @@ class Pandas2Test(udf.TestCase):
 
             # Full columns without None or NaN / Float to Int
 
-            ("dtype='float16[pyarrow]'", "integer", float16_dataframe_value_str, int_expected_rows, False),
+            #Decativated until all flavors are using pyarrow >=16.0.0
+            #("dtype='float16[pyarrow]'", "integer", float16_dataframe_value_str, int_expected_rows, False),
             ("dtype='float32[pyarrow]'", "integer", float_dataframe_value_str, int_expected_rows, False),
             ("dtype='float64[pyarrow]'", "integer", float_dataframe_value_str, int_expected_rows, False),
-            ("dtype='halffloat[pyarrow]'", "integer", float16_dataframe_value_str, int_expected_rows, False),
+            # Decativated until all flavors are using pyarrow >=16.0.0
+            #("dtype='halffloat[pyarrow]'", "integer", float16_dataframe_value_str, int_expected_rows, False),
             ("dtype='float[pyarrow]'", "integer", float_dataframe_value_str, int_expected_rows, False),
             ("dtype='double[pyarrow]'", "integer", float_dataframe_value_str, int_expected_rows, False),           
 
