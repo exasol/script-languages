@@ -232,7 +232,7 @@ class ImportAllModulesTest(udf.TestCase):
         self.create_import_for_all_submodules_udf()
         for root_module in root_modules:
             # with UdfDebugger(test_case=self):
-            rows = self.query(f'''SELECT import_all_modules.import_all_submodules({root_module}) FROM dual''')
+            rows = self.query(f'''SELECT import_all_modules.import_all_submodules('{root_module}') FROM dual''')
             print("Number of modules:", len(rows))
             failed_imports = [(row[0], row[1]) for row in rows if row[2] == "ERROR"]
             for i in failed_imports:
