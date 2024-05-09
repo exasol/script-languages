@@ -33,7 +33,7 @@ class ImportAllModulesTest(udf.TestCase):
         print(f"Found {len(root_modules)} root modules.")
         return root_modules
 
-    def run_import_for_all_submodules(self, root_module: str):
+    def create_import_for_all_submodules_udf(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.import_for_all_submodules(root_module_name VARCHAR(200000)) 
             EMITS (module_name VARCHAR(200000), exception_str VARCHAR(200000), status VARCHAR(10)) AS
@@ -226,20 +226,20 @@ class ImportAllModulesTest(udf.TestCase):
                 importer.import_modules(ctx.root_module_name)
             /
             '''))
-        #with UdfDebugger(test_case=self):
-        rows = self.query(f'''SELECT import_all_modules.import_all_submodules({root_module}) FROM dual''')
-        print("Number of modules:",len(rows))
-        failed_imports = [(row[0],row[1]) for row in rows if row[2] == "ERROR"]
-        for i in failed_imports:
-            print(i[0])
-        for i in failed_imports:
-            print(i[0], i[1])
-        self.assertEqual(failed_imports,[])
 
     def test_import_all_modules(self):
         root_modules = self.get_all_root_modules()
+        self.create_import_for_all_submodules_udf()
         for root_module in root_modules:
-            self.run_import_for_all_submodules(root_module)
+            # with UdfDebugger(test_case=self):
+            rows = self.query(f'''SELECT import_all_modules.import_all_submodules({root_module}) FROM dual''')
+            print("Number of modules:", len(rows))
+            failed_imports = [(row[0], row[1]) for row in rows if row[2] == "ERROR"]
+            for i in failed_imports:
+                print(i[0])
+            for i in failed_imports:
+                print(i[0], i[1])
+            self.assertEqual(failed_imports, [])
 
     def tearDown(self):
         self.query("drop schema import_all_modules cascade", ignore_errors=True)
