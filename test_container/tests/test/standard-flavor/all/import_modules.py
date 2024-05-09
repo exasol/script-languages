@@ -1,17 +1,41 @@
 #!/usr/bin/env python3
-
+from typing import List
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 
 class ImportAllModulesTest(udf.TestCase):
-    
+
     def setUp(self):
         self.query('create schema import_all_modules', ignore_errors=True)
-    
-    def test_import_all_modules(self):
+
+    def get_all_root_modules(self) -> List[str]:
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.import_all_modules() 
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.get_all_root_modules() 
+            EMITS (module_name VARCHAR(200000)) AS
+
+            import sys
+            import pkgutil
+
+            def get_module_names(path):
+                modules = list(module for _, module, _ in pkgutil.iter_modules(path))
+                return modules
+
+            def run(ctx):
+                modules = get_module_names(sys.path)
+                for module in modules:
+                    ctx.emit(module)
+            /
+            '''))
+        rows = self.query('''SELECT import_all_modules.get_all_root_modules() FROM dual''')
+        print("Number of modules:",len(rows))
+        root_modules = [row[0]for row in rows]
+        print(f"Found {len(root_modules)} root modules.")
+        return root_modules
+
+    def run_import_for_all_submodules(self, root_module: str):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.import_for_all_submodules(root_module_name VARCHAR(200000)) 
             EMITS (module_name VARCHAR(200000), exception_str VARCHAR(200000), status VARCHAR(10)) AS
             
             import sys
@@ -149,14 +173,6 @@ class ImportAllModulesTest(udf.TestCase):
                     self.error_count += 1                                                                                          
                     return self.error_count > self.error_limit
 
-                def import_modules(self):
-                    self.modules = get_module_names(sys.path)
-                    while len(self.modules) > 0:
-                        module = self.modules.pop()
-                        limit_reached = self.import_module(module)
-                        if limit_reached:
-                            break
-
                 def add_submodules(self, module, module_import):
                     if hasattr(module_import,"__path__"):
                         submodule_names = get_module_names(module_import.__path__)
@@ -166,6 +182,14 @@ class ImportAllModulesTest(udf.TestCase):
                             if not submodule.startswith("_") and submodule not in self.excluded_submodules
                         ])
 
+                def import_modules(self, root_module: str):
+                    self.modules = [root_module]
+                    while len(self.modules) > 0:
+                        module = self.modules.pop()
+                        limit_reached = self.import_module(module)
+                        if limit_reached:
+                            break
+            
                 def import_module(self, module: str) -> bool:
                     print("========================================================")
                     print("========================================================")
@@ -199,11 +223,11 @@ class ImportAllModulesTest(udf.TestCase):
                     module_limit = module_limit,                                                                     
                     excluded_modules = excluded_modules,
                     excluded_submodules = excluded_submodules)
-                importer.import_modules()
+                importer.import_modules(ctx.root_module_name)
             /
             '''))
         #with UdfDebugger(test_case=self):
-        rows = self.query('''SELECT import_all_modules.import_all_modules() FROM dual''')
+        rows = self.query(f'''SELECT import_all_modules.import_all_submodules({root_module}) FROM dual''')
         print("Number of modules:",len(rows))
         failed_imports = [(row[0],row[1]) for row in rows if row[2] == "ERROR"]
         for i in failed_imports:
@@ -212,6 +236,10 @@ class ImportAllModulesTest(udf.TestCase):
             print(i[0], i[1])
         self.assertEqual(failed_imports,[])
 
+    def test_import_all_modules(self):
+        root_modules = self.get_all_root_modules()
+        for root_module in root_modules:
+            self.run_import_for_all_submodules(root_module)
 
     def tearDown(self):
         self.query("drop schema import_all_modules cascade", ignore_errors=True)
