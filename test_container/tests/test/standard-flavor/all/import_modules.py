@@ -35,7 +35,7 @@ class ImportAllModulesTest(udf.TestCase):
 
     def create_import_for_all_submodules_udf(self):
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.import_for_all_submodules(root_module_name VARCHAR(200000)) 
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.import_all_submodules(root_module_name VARCHAR(200000)) 
             EMITS (module_name VARCHAR(200000), exception_str VARCHAR(200000), status VARCHAR(10)) AS
             
             import sys
