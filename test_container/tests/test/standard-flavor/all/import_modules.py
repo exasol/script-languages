@@ -118,6 +118,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "encodings.oem",
                 "encodings.mbcs",
                 "distutils.msvc9compiler",
+                "distutils.command.bdist_msi",
                 "dbm.gnu",
                 "asyncio.windows_utils",
                 "asyncio.windows_events",
@@ -139,7 +140,6 @@ class ImportAllModulesTest(udf.TestCase):
                 "msrest.pipeline.aiohttp",
                 "docker.transport.npipesocket",
                 "docker.transport.npipeconn",
-                "msilib"
             }
             excluded_submodules = (
                 "sphinxext",
