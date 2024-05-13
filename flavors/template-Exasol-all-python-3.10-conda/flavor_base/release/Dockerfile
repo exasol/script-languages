@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV ENV_NAME="base"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"

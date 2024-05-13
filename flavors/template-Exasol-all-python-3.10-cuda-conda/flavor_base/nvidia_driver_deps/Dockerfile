@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV ARCHIVE_UBUNTU_PREFIX=""
@@ -12,7 +12,7 @@ RUN mkdir -p /build_info/packages
 COPY nvidia_driver_deps/packages /build_info/packages/nvidia_driver_deps
 RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/nvidia_driver_deps/apt_get_packages --with-versions
 
-ENV NVIDIA_DRIVER_VERSION=510.47.03
+ENV NVIDIA_DRIVER_VERSION=550.78
 RUN /scripts/install_scripts/install_nvidia_driver_libs.sh "$NVIDIA_DRIVER_VERSION"
 
 ENV LANG en_US.UTF-8

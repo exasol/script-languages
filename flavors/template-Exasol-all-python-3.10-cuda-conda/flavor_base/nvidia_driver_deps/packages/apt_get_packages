@@ -1,4 +1,4 @@
-coreutils|8.30-3ubuntu2
-locales|2.31-0ubuntu9.15
-curl|7.68.0-1ubuntu2.22
-ca-certificates|20230311ubuntu0.20.04.1
+coreutils|8.32-4.1ubuntu1
+locales|2.35-0ubuntu3.7
+curl|7.68.0-1ubuntu2.19
+ca-certificates|20230311ubuntu0.22.04.1
