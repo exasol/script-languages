@@ -1,6 +1,7 @@
 #ifndef SWIG_COMMON_H
 #define SWIG_COMMON_H
 
+#include <cstdint>
 #include <vector>
 #include <string>
 #include <cstdint>
