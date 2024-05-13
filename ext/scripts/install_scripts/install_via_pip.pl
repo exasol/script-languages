@@ -70,7 +70,7 @@ if($use_deprecated_legacy_resolver){
 
 my $pip_parameters_str = join( ' ', @pip_parameters);
 my $element_separator = '\\|';
-my $combining_template = "$python_binary -m pip install $pip_parameters_str --no-cache-dir <<<<0>>>>";
+my $combining_template = "$python_binary -m pip install $pip_parameters_str --break-system-packages --no-cache-dir <<<<0>>>>";
 my @templates = ("'<<<<0>>>>'");
 if($with_versions){
     @templates=("'<<<<0>>>>==<<<<1>>>>'")
