@@ -6,13 +6,6 @@ version: 0.2
 batch:
   fast-fail: false
   build-graph:
-    - identifier: build_python_38_minimal_EXASOL_620
-      env:
-        variables:
-          FLAVOR: python-3.8-minimal-EXASOL-6.2.0
-        compute-type: BUILD_GENERAL1_MEDIUM
-        privileged-mode: true
-      buildspec: ./aws-code-build/ci/build_buildspec.yaml
     - identifier: build_template_Exasol_all_python_310
       env:
         variables:
@@ -20,17 +13,17 @@ batch:
         compute-type: BUILD_GENERAL1_MEDIUM
         privileged-mode: true
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
-    - identifier: build_template_Exasol_all_python_38_conda
+    - identifier: build_template_Exasol_all_python_310_conda
       env:
         variables:
-          FLAVOR: template-Exasol-all-python-3.8-conda
+          FLAVOR: template-Exasol-all-python-3.10-conda
         compute-type: BUILD_GENERAL1_MEDIUM
         privileged-mode: true
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
-    - identifier: build_template_Exasol_all_python_38_cuda_conda
+    - identifier: build_template_Exasol_all_python_310_cuda_conda
       env:
         variables:
-          FLAVOR: template-Exasol-all-python-3.8-cuda-conda
+          FLAVOR: template-Exasol-all-python-3.10-cuda-conda
         compute-type: BUILD_GENERAL1_MEDIUM
         privileged-mode: true
       buildspec: ./aws-code-build/ci/build_buildspec.yaml

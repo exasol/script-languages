@@ -1,0 +1,6 @@
+libprotobuf|4.25.3
+zeromq|4.3.5
+openssl|3.3.0
+nss|3.100
+cppzmq|4.10.0
+_openmp_mutex|4.5=2_kmp_llvm # We need this, such that we can later install libblas with mkl, which is for example needed by pytorch
