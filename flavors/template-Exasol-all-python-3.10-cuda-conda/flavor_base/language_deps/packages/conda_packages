@@ -2,7 +2,7 @@ libxcrypt|4.4.36 # Needed for building the udfclient and because libcrypt got re
 python|3.10.4
 numpy|1.26.2
 pandas|2.2.2
-pyarrow|14.0.2=py310h40d6bed_7_cuda
+pyarrow|15.0.2=py310h40d6bed_7_cuda
 libblas|3.9.0=15_linux64_mkl
 mamba|1.5.1
 ld_impl_linux-64|2.36.1
