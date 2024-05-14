@@ -4,7 +4,7 @@ numpy|1.26.2
 pandas|2.2.2
 pyarrow|16.0.0
 libblas|3.9.0=15_linux64_mkl
-mamba|1.5.8
+mamba|1.5.1
 ld_impl_linux-64|2.40
 cryptography|42.0.7
 libxml2|2.10.3=hca2bb57_4 # Pinned for OpenJDK in build_deps
