@@ -107,6 +107,8 @@ genrule(
 cc_binary(
     name = "pyextdataframe.so",
     linkshared = 1,
+    copts =  ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
+    linkopts = ["-lpython3.10"],
     srcs = [":python_ext_dataframe.cc"],
     deps = ["@python3//:python3","@numpy//:numpy",
            "//exaudflib:header", "//:debug_message_h"],
