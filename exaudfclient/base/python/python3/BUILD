@@ -3,7 +3,7 @@ package(default_visibility = ["//visibility:public"])
 genrule(
     name = "exascript_python_tmp_cc",
     cmd = """
-        INCLUDES=`$$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION-config --includes`
+        INCLUDES=`$$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION-dbg-config --includes`
         mkdir -p build_exascript_python_tmp_cc/exaudflib
         cp "$(location //exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_python_tmp_cc/exaudflib
         cd build_exascript_python_tmp_cc
@@ -16,7 +16,7 @@ genrule(
 genrule(
     name = "exascript_python_tmp_h",
     cmd = """
-        INCLUDES=`$$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION-config --includes`
+        INCLUDES=`$$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION-dbg-config --includes`
         mkdir build_exascript_python_tmp_h
         cp "$(location //exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_python_tmp_h
         cp "$(location exascript_python_tmp.cc)"  "$(location exascript_python.py)" build_exascript_python_tmp_h
@@ -79,6 +79,7 @@ genrule(
 
 cc_library(
     name = "exascript_python",
+    copts = ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
     srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
     hdrs = [":filter_swig_code_exascript_python_h"],
     deps = ["@python3//:python3","//exaudflib:exaudflib-deps","//exaudflib:header"],
@@ -88,7 +89,8 @@ cc_library(
 cc_library(
     name = "pythoncontainer",
     srcs = ["//python:pythoncontainer.cc", ":dummy.h"],
-    data = [":extend_exascript_python_preset_py"], 
+    data = [":extend_exascript_python_preset_py"],
+    copts = ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
     deps = ["@python3//:python3",":exascript_python","//exaudflib:header",
@@ -107,8 +109,7 @@ genrule(
 cc_binary(
     name = "pyextdataframe.so",
     linkshared = 1,
-    copts =  ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
-    linkopts = ["-lpython3.10"],
+    copts = ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
     srcs = [":python_ext_dataframe.cc"],
     deps = ["@python3//:python3","@numpy//:numpy",
            "//exaudflib:header", "//:debug_message_h"],
