@@ -9,5 +9,5 @@ touch "$CLIENT_WRAPPER"
 {
 cat "$WRAPPER_TEMPLATE"
 echo
-echo valgrind "./$(basename "$CLIENT_BINARY")" '$*'
+echo valgrind --leak-check=full "./$(basename "$CLIENT_BINARY")" '$*'
 } >> "$CLIENT_WRAPPER"

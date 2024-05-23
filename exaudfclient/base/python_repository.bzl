@@ -19,7 +19,7 @@ def _get_sysconfig_value(binary,key,p_repository_ctx):
 def _get_include_dir(binary,version,p_repository_ctx): 
     key = "INCLUDEDIR"
     base_include_dir = _get_sysconfig_value(binary,key,p_repository_ctx) #example: /usr/include
-    include_dir = base_include_dir+"/"+version #example /usr/include/python3.8 
+    include_dir = base_include_dir+"/"+version #example /usr/include/python3.8
     print("python {key}: {include_dir}".format(key=key, include_dir=include_dir))
     return include_dir
 

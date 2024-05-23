@@ -1,4 +1,6 @@
 ca-certificates|20230311ubuntu0.22.04.1
 python3.10-dbg|3.10.12-1~22.04.3
+libpython3-dbg|3.10.4-0ubuntu2
+libpython3-dev|3.10.4-0ubuntu2
 python3-distutils|3.10.8-1~22.04
 curl|7.81.0-1ubuntu1.16
