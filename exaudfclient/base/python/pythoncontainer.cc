@@ -207,7 +207,8 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 	 PyObject *retvalue = PyObject_CallFunctionObjArgs(runobj, globals, NULL); check("F-UDF-CL-SL-PYTHON-1017");
          Py_XDECREF(retvalue); retvalue = NULL;
 
-	code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check("F-UDF-CL-SL-PYTHON-1018");
+    PyCompilerFlags pycompilerFlags = {.cf_flags = 0, .cf_feature_version = PY_MINOR_VERSION};
+	code = Py_CompileStringExFlags(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input, &pycompilerFlags, 0); check("F-UDF-CL-SL-PYTHON-1018");
         if (code == NULL) throw PythonVM::exception("Failed to compile wrapping script");
 
 	PyEval_EvalCode(code, globals, globals); check("F-UDF-CL-SL-PYTHON-1019");

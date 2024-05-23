@@ -92,7 +92,7 @@ bool exaudflib::socket_high_level::send_init(zmq::socket_t &socket, const std::s
 #ifdef SWIGVM_LOG_CLIENT
         std::cerr << "W-UDF-CL-LIB-1011: Failed to set nofile limit" << std::endl;
 #else
-    throw SWIGVMContainers::SWIGVM::exception("F-UDF-CL-LIB-1012: Failed to set nofile limit");
+    std::cerr << "W-UDF-CL-LIB-1011: Failed to set nofile limit" << std::endl;
 #endif
     d.rlim_cur = d.rlim_max = 32768;
     if (setrlimit(RLIMIT_NPROC, &d) != 0)

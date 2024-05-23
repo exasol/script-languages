@@ -134,7 +134,7 @@ inline void checkPyObjectIsNull(const PyObject *obj, const std::string& error_co
 
 struct PyUniquePtrDeleter {
     void operator()(PyObject *obj) const noexcept {
-        Py_XDECREF(obj);
+        Py_CLEAR(obj);
     }
 };
 
@@ -523,6 +523,7 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
 
 
         if (colTypes[c].second == NPY_OBJECT) {
+            DBGMSG(std::cerr, "getColumnArrays: is a NPY_OBJECT");
             // Convert numpy array to python list
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
             if (!PyList_Check(pyList.get())) {
@@ -558,10 +559,10 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
                 throw std::runtime_error(ss.str().c_str());
             }
 
-            columnArrays.push_back(std::move(pyList));
+//            columnArrays.push_back(std::move(pyList));
         }
         else if (colTypes[c].second == NPY_DATETIME) {
-            
+            DBGMSG(std::cerr, "getColumnArrays: is a NPY_DATETIME");
             
             // Convert numpy array to python list
             PyPtr pyList(PyObject_CallMethod(array.get(), "tolist", NULL));
@@ -575,6 +576,7 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
             columnArrays.push_back(std::move(pyList));
         }
         else {
+            DBGMSG(std::cerr, "getColumnArrays: is anything else");
             PyPtr asType (PyObject_GetAttrString(array.get(), "astype"));
             PyPtr keywordArgs(PyDict_New());
             PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
@@ -597,6 +599,7 @@ inline void handleEmitNpyUint64(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     int64_t value = *((int64_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -622,6 +625,7 @@ inline void handleEmitNpyUint64(
     }
     checkPyPtrIsNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitNpyUint32(
@@ -634,6 +638,7 @@ inline void handleEmitNpyUint32(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     int32_t value = *((int32_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -659,6 +664,7 @@ inline void handleEmitNpyUint32(
     }
     checkPyPtrIsNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitNpyUint16(
@@ -671,6 +677,7 @@ inline void handleEmitNpyUint16(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     int16_t value = *((int16_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -696,6 +703,7 @@ inline void handleEmitNpyUint16(
     }
     checkPyPtrIsNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitNpyUint8(
@@ -708,6 +716,7 @@ inline void handleEmitNpyUint8(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     int8_t value = *((int8_t*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -733,6 +742,7 @@ inline void handleEmitNpyUint8(
     }
     checkPyPtrIsNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitNpyFloat64(
@@ -745,31 +755,38 @@ inline void handleEmitNpyFloat64(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    double value = *((double*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
+    DBG_FUNC_BEGIN(std::cerr);
+    double value = 1.0;//*((double*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+        DBGMSG(std::cerr, "handleEmitNpyFloat64: value is NaN");
         return;
     }
-    switch (colInfo[c].type) {
-        case SWIGVMContainers::INT64:
-        case SWIGVMContainers::INT32:
-            pyValue.reset(PyLong_FromLong(static_cast<int64_t>(value)));
-            break;
-        case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
-            break;
-        case SWIGVMContainers::DOUBLE:
-            pyValue.reset(PyFloat_FromDouble(value));
-            break;
-        default:
-        {
-            std::stringstream ss;
-            ss << "F-UDF-CL-SL-PYTHON-1062: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
-            throw std::runtime_error(ss.str().c_str());
-        }
-    }
+//    switch (colInfo[c].type) {
+//        case SWIGVMContainers::INT64:
+//        case SWIGVMContainers::INT32:
+//            DBGMSG(std::cerr, "handleEmitNpyFloat64: value is INT64/INT32");
+//            pyValue.reset(PyLong_FromLong(static_cast<int64_t>(value)));
+//            break;
+//        case SWIGVMContainers::NUMERIC:
+//            DBGMSG(std::cerr, "handleEmitNpyFloat64: value is NUMERIC");
+//            pyValue.reset(PyUnicode_FromString(std::to_string(value).c_str()));
+//            break;
+//        case SWIGVMContainers::DOUBLE:
+//            DBGMSG(std::cerr, "handleEmitNpyFloat64: value is DOUBLE");
+//            pyValue.reset(PyFloat_FromDouble(value));
+//            break;
+//        default:
+//        {
+//            std::stringstream ss;
+//            ss << "F-UDF-CL-SL-PYTHON-1062: emit column " << c << " of type " << emitTypeMap.at(colInfo[c].type) << " but data given have type " << colTypes[c].first;
+//            throw std::runtime_error(ss.str().c_str());
+//        }
+//    }
     checkPyPtrIsNull(pyValue);
-    pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    PyObject *resObj = PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL);
+    Py_CLEAR(resObj);
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitNpyFloat32(
@@ -782,6 +799,7 @@ inline void handleEmitNpyFloat32(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     double value = *((float*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -807,6 +825,7 @@ inline void handleEmitNpyFloat32(
     }
     checkPyPtrIsNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitNpyBool(
@@ -819,6 +838,7 @@ inline void handleEmitNpyBool(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     bool value = *((bool*)PyArray_GETPTR1((PyArrayObject*)(columnArrays[c].get()), r));
     if (npy_isnan(value)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -844,6 +864,7 @@ inline void handleEmitNpyBool(
     }
     checkPyPtrIsNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitPyBool(
@@ -856,6 +877,7 @@ inline void handleEmitPyBool(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     PyPtr pyBool(PyList_GetItem(columnArrays[c].get(), r));
     checkPyPtrIsNull(pyBool);
     if (isNoneOrNA(pyBool.get())) {
@@ -885,6 +907,7 @@ inline void handleEmitPyBool(
     }
     checkPyPtrIsNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitPyInt(
@@ -897,6 +920,7 @@ inline void handleEmitPyInt(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     PyPtr pyInt(PyList_GetItem(columnArrays[c].get(), r));
     checkPyPtrIsNull(pyInt);
     if (isNoneOrNA(pyInt.get())) {
@@ -928,6 +952,7 @@ inline void handleEmitPyInt(
         }
     }
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitPyFloat(
@@ -940,6 +965,7 @@ inline void handleEmitPyFloat(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_BEGIN(std::cerr);
     PyPtr pyFloat(PyList_GetItem(columnArrays[c].get(), r));
     checkPyPtrIsNull(pyFloat);
     if (isNoneOrNA(pyFloat.get())) {
@@ -976,6 +1002,7 @@ inline void handleEmitPyFloat(
         }
     }
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitPyDecimal(
@@ -991,6 +1018,7 @@ inline void handleEmitPyDecimal(
         PyPtr& pyIntMethodName,
         PyPtr& pyFloatMethodName
         ){
+    DBG_FUNC_BEGIN(std::cerr);
     PyPtr pyDecimal(PyList_GetItem(columnArrays[c].get(), r));
     if (isNoneOrNA(pyDecimal.get())) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1022,6 +1050,7 @@ inline void handleEmitPyDecimal(
         }
     }
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitPyStr(
@@ -1034,7 +1063,7 @@ inline void handleEmitPyStr(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    
+    DBG_FUNC_END(std::cerr);
     PyPtr pyString(PyList_GetItem(columnArrays[c].get(), r));
     if (isNoneOrNA(pyString.get())) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1062,6 +1091,7 @@ inline void handleEmitPyStr(
             throw std::runtime_error(ss.str().c_str());
         }
     }
+    DBG_FUNC_END(std::cerr);
 }
 
 inline void handleEmitPyDate(
@@ -1075,6 +1105,7 @@ inline void handleEmitPyDate(
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName,
         PyPtr& pyIsoformatMethodName){
+    DBG_FUNC_END(std::cerr);
     PyPtr pyDate(PyList_GetItem(columnArrays[c].get(), r));
     if (isNoneOrNA(pyDate.get())) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1095,6 +1126,7 @@ inline void handleEmitPyDate(
             throw std::runtime_error(ss.str().c_str());
         }
     }
+    DBG_FUNC_END(std::cerr);
 }
 inline void handleEmitPyTimestamp(
         int c, int r,
@@ -1106,6 +1138,7 @@ inline void handleEmitPyTimestamp(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    DBG_FUNC_END(std::cerr);
     PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
     if (isNoneOrNA(pyTimestamp.get())) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1131,6 +1164,7 @@ inline void handleEmitPyTimestamp(
             throw std::runtime_error(ss.str().c_str());
         }
     }
+    DBG_FUNC_END(std::cerr);
 }
 
 
@@ -1145,6 +1179,7 @@ inline void handleEmitNpyDateTime(
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName,
         PyPtr& pdNaT){
+    DBG_FUNC_END(std::cerr);
     PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
     if (pyTimestamp.get() == pdNaT.get()) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1166,13 +1201,14 @@ inline void handleEmitNpyDateTime(
             throw std::runtime_error(ss.str().c_str());
         }
     }
+    DBG_FUNC_END(std::cerr);
 }
 
 void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
 {
     std::vector<std::pair<PyPtr, PyPtr>> pyColSetMethods;
     try{
-        getColumnSetMethods(colInfo, pyColSetMethods);
+        //getColumnSetMethods(colInfo, pyColSetMethods);
     } catch (std::exception& err){
         throw std::runtime_error("F-UDF-CL-SL-PYTHON-1133: "+std::string(err.what()));
     }
@@ -1189,7 +1225,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
 
 
     PyPtr data;
-    PyArrayObject *pyArray;
     PyPtr colArray;
     if(colTypes.size()==1 && colTypes.at(0).second == NPY_DATETIME){
         // if we get an dataframe with a single datetime column with type datetime[ns],
@@ -1200,7 +1235,8 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         // slice out the datetime column, which then will be an Array of pandas.Timestamp objects
         PyPtr resetIndex(PyObject_CallMethod(dataframe, "reset_index", NULL));
         data=PyPtr(PyObject_GetAttrString(resetIndex.get(), "values"));
-        pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        PyPtr pyArrayObj(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        PyArrayObject *pyArray = reinterpret_cast<PyArrayObject*>(pyArrayObj.get());
         numRows = PyArray_DIM(pyArray, 0);
         numCols = PyArray_DIM(pyArray, 1)-1;
         // Transpose to column-major
@@ -1214,10 +1250,12 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         
     }else{
         data=PyPtr(PyObject_GetAttrString(dataframe, "values"));
-        pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        PyPtr pyArrayObj(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        PyArrayObject *pyArray = reinterpret_cast<PyArrayObject*>(pyArrayObj.get());
+
         numRows = PyArray_DIM(pyArray, 0);
         numCols = PyArray_DIM(pyArray, 1);
-        // Transpose to column-major
+        //Transpose to column-major
         colArray = PyPtr(PyArray_Transpose(pyArray, NULL));
     }
 
@@ -1229,144 +1267,147 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         throw std::runtime_error("F-UDF-CL-SL-PYTHON-1135: "+std::string(err.what()));
     }
 
-    try{
-        PyPtr pySetNullMethodName(PyUnicode_FromString("setNull"));
-        PyPtr pyNextMethodName(PyUnicode_FromString("next"));
-        PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
-        PyPtr pyIntMethodName(PyUnicode_FromString("__int__"));
-        PyPtr pyFloatMethodName(PyUnicode_FromString("__float__"));
-        PyPtr pyIsoformatMethodName(PyUnicode_FromString("isoformat"));
-        PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
+//    try{
+//        PyPtr pySetNullMethodName(PyUnicode_FromString("setNull"));
+//        PyPtr pyNextMethodName(PyUnicode_FromString("next"));
+//        PyPtr pyCheckExceptionMethodName(PyUnicode_FromString("checkException"));
+//        PyPtr pyIntMethodName(PyUnicode_FromString("__int__"));
+//        PyPtr pyFloatMethodName(PyUnicode_FromString("__float__"));
+//        PyPtr pyIsoformatMethodName(PyUnicode_FromString("isoformat"));
+//        PyPtr pdNaT(PyObject_GetAttrString(pandasModule.get(), "NaT"));
+//
+//        // Emit data
+//        PyPtr pyValue(PyLong_FromLong(static_cast<int64_t>(1)));
+//        PyPtr pyResult;
+//        for (int r = 0; r < numRows; r++) {
+//            for (int c = 0; c < numCols; c++) {
+//                switch (colTypes[c].second) {
+//                    case NPY_INT64:
+//                    case NPY_UINT64:
+//                    {
+//                        handleEmitNpyUint64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case NPY_INT32:
+//                    case NPY_UINT32:
+//                    {
+//                        handleEmitNpyUint32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case NPY_INT16:
+//                    case NPY_UINT16:
+//                    {
+//                        handleEmitNpyUint16(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case NPY_INT8:
+//                    case NPY_UINT8:
+//                    {
+//                        handleEmitNpyUint8(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case NPY_FLOAT64:
+//                    {
+//                        //handleEmitNpyFloat64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        //PyObject *resObj = PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL);
+//                        //Py_CLEAR(resObj);
+//
+//                        break;
+//                    }
+//                    case NPY_FLOAT32:
+//                    {
+//                        handleEmitNpyFloat32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case NPY_BOOL:
+//                    {
+//                        handleEmitNpyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case PY_BOOL:
+//                    {
+//                        handleEmitPyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case PY_INT:
+//                    {
+//                        handleEmitPyInt(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case PY_FLOAT:
+//                    {
+//                        handleEmitPyFloat(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case PY_DECIMAL:
+//                    {
+//                        handleEmitPyDecimal(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult,
+//                                            pySetNullMethodName, pyIntMethodName, pyFloatMethodName);
+//                        break;
+//                    }
+//                    case PY_STR:
+//                    {
+//                        handleEmitPyStr(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
+//                        break;
+//                    }
+//                    case PY_DATE:
+//                    {
+//                        handleEmitPyDate(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult,
+//                                        pySetNullMethodName, pyIsoformatMethodName);
+//                        break;
+//                    }
+//                    case PY_TIMESTAMP:
+//                    {
+//                        handleEmitPyTimestamp(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult,
+//                                        pySetNullMethodName);
+//                        break;
+//                    }
+//                    case NPY_DATETIME:
+//                    {
+//                        handleEmitNpyDateTime(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult,
+//                                            pySetNullMethodName, pdNaT);
+//                        break;
+//                    }
+//                    case PY_NONETYPE:
+//                    {
+//                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
+//                        break;
+//                    }
+//                    default:
+//                    {
+//                        std::stringstream ss;
+//                        ss << "F-UDF-CL-SL-PYTHON-1073: emit: unexpected type: " << colTypes[c].first;
+//                        throw std::runtime_error(ss.str().c_str());
+//                    }
+//                }
+//
+//                if (!pyResult) {
+//                    PyObject *ptype, *pvalue, *ptraceback;
+//                    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+//                    if (pvalue) {
+//                        std::stringstream ss;
+//                        ss << "F-UDF-CL-SL-PYTHON-1074: emit(): Error setting value for row " << r << ", column " << c << ": ";
+//                        ss << PyUnicode_AsUTF8(pvalue);
+//                        throw std::runtime_error(ss.str().c_str());
+//                    }
+//                }
+//
+//                PyPtr pyCheckException(PyObject_CallMethodObjArgs(resultHandler, pyCheckExceptionMethodName.get(), NULL));
+//                if (pyCheckException.get() != Py_None) {
+//                    const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
+//                    if (exMsg) {
+//                        std::stringstream ss;
+//                        ss << "F-UDF-CL-SL-PYTHON-1075: emit(): " << exMsg;
+//                        throw std::runtime_error(ss.str().c_str());
+//                    }
+//                }
+//            }
 
-        // Emit data
-        PyPtr pyValue;
-        PyPtr pyResult;
-        for (int r = 0; r < numRows; r++) {
-            for (int c = 0; c < numCols; c++) {
-                switch (colTypes[c].second) {
-                    case NPY_INT64:
-                    case NPY_UINT64:
-                    {
-                        handleEmitNpyUint64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case NPY_INT32:
-                    case NPY_UINT32:
-                    {
-                        handleEmitNpyUint32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case NPY_INT16:
-                    case NPY_UINT16:
-                    {
-                        handleEmitNpyUint16(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case NPY_INT8:
-                    case NPY_UINT8:
-                    {   
-                        handleEmitNpyUint8(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case NPY_FLOAT64:
-                    {   
-                        handleEmitNpyFloat64(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case NPY_FLOAT32:
-                    {
-                        handleEmitNpyFloat32(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case NPY_BOOL:
-                    {
-                        handleEmitNpyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case PY_BOOL:
-                    {
-                        handleEmitPyBool(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case PY_INT:
-                    {
-                        handleEmitPyInt(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case PY_FLOAT:
-                    {
-                        handleEmitPyFloat(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case PY_DECIMAL:
-                    {
-                        handleEmitPyDecimal(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
-                                            pySetNullMethodName, pyIntMethodName, pyFloatMethodName);
-                        break;
-                    }
-                    case PY_STR:
-                    {
-                        handleEmitPyStr(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, pySetNullMethodName);
-                        break;
-                    }
-                    case PY_DATE:
-                    {
-                        handleEmitPyDate(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
-                                        pySetNullMethodName, pyIsoformatMethodName);
-                        break;
-                    }
-                    case PY_TIMESTAMP:
-                    {
-                        handleEmitPyTimestamp(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
-                                        pySetNullMethodName);
-                        break;
-                    }
-                    case NPY_DATETIME:
-                    {
-                        handleEmitNpyDateTime(c, r, columnArrays, pyColSetMethods, colInfo, colTypes, resultHandler, pyValue, pyResult, 
-                                            pySetNullMethodName, pdNaT);
-                        break;
-                    }
-                    case PY_NONETYPE:
-                    {
-                        pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
-                        break;
-                    }
-                    default:
-                    {
-                        std::stringstream ss;
-                        ss << "F-UDF-CL-SL-PYTHON-1073: emit: unexpected type: " << colTypes[c].first;
-                        throw std::runtime_error(ss.str().c_str());
-                    }
-                }
-
-                if (!pyResult) {
-                    PyObject *ptype, *pvalue, *ptraceback;
-                    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-                    if (pvalue) {
-                        std::stringstream ss;
-                        ss << "F-UDF-CL-SL-PYTHON-1074: emit(): Error setting value for row " << r << ", column " << c << ": ";
-                        ss << PyUnicode_AsUTF8(pvalue);
-                        throw std::runtime_error(ss.str().c_str());
-                    }
-                }
-
-                PyPtr pyCheckException(PyObject_CallMethodObjArgs(resultHandler, pyCheckExceptionMethodName.get(), NULL));
-                if (pyCheckException.get() != Py_None) {
-                    const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
-                    if (exMsg) {
-                        std::stringstream ss;
-                        ss << "F-UDF-CL-SL-PYTHON-1075: emit(): " << exMsg;
-                        throw std::runtime_error(ss.str().c_str());
-                    }
-                }
-            }
-
-            PyPtr pyNext(PyObject_CallMethodObjArgs(resultHandler, pyNextMethodName.get(), NULL));
-        }
-    }catch (std::exception& err){
-        throw std::runtime_error("F-UDF-CL-SL-PYTHON-1136: "+std::string(err.what()));
-    }
+            //PyPtr pyNext(PyObject_CallMethodObjArgs(resultHandler, pyNextMethodName.get(), NULL));
+//        }
+//    }catch (std::exception& err){
+//        throw std::runtime_error("F-UDF-CL-SL-PYTHON-1136: "+std::string(err.what()));
+//    }
 }
 
 PyObject *createDataFrame(PyObject *data, std::vector<ColumnInfo>& colInfo)

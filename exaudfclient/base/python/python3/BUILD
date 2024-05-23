@@ -79,6 +79,8 @@ genrule(
 
 cc_library(
     name = "exascript_python",
+    #copts = ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
+    copts = ["-DPy_DEBUG=1"],
     srcs = [":filter_swig_code_exascript_python_cc",":filter_swig_code_exascript_python_h"],
     hdrs = [":filter_swig_code_exascript_python_h"],
     deps = ["@python3//:python3","//exaudflib:exaudflib-deps","//exaudflib:header"],
@@ -88,7 +90,9 @@ cc_library(
 cc_library(
     name = "pythoncontainer",
     srcs = ["//python:pythoncontainer.cc", ":dummy.h"],
-    data = [":extend_exascript_python_preset_py"], 
+    data = [":extend_exascript_python_preset_py"],
+    #copts = ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
+    copts = ["-DPy_DEBUG=1"],
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
     deps = ["@python3//:python3",":exascript_python","//exaudflib:header",
@@ -100,6 +104,7 @@ cc_library(
 genrule(
     name = "dummy",
     cmd = 'touch "$@"',
+
     outs = ["dummy.h"],
     srcs = [":pyextdataframe.so"],
 )
@@ -107,6 +112,8 @@ genrule(
 cc_binary(
     name = "pyextdataframe.so",
     linkshared = 1,
+    #copts = ["-DPy_TRACE_REFS=1", "-DPy_DEBUG=1"],
+    copts = ["-DPy_DEBUG=1"],
     srcs = [":python_ext_dataframe.cc"],
     deps = ["@python3//:python3","@numpy//:numpy",
            "//exaudflib:header", "//:debug_message_h"],
