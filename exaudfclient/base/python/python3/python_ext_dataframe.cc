@@ -1189,6 +1189,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
 
 
     PyPtr data;
+    PyPtr arrayPtr;
     PyArrayObject *pyArray;
     PyPtr colArray;
     if(colTypes.size()==1 && colTypes.at(0).second == NPY_DATETIME){
@@ -1200,7 +1201,8 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         // slice out the datetime column, which then will be an Array of pandas.Timestamp objects
         PyPtr resetIndex(PyObject_CallMethod(dataframe, "reset_index", NULL));
         data=PyPtr(PyObject_GetAttrString(resetIndex.get(), "values"));
-        pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        arrayPtr = PyPtr(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        pyArray = reinterpret_cast<PyArrayObject*>(arrayPtr.get());
         numRows = PyArray_DIM(pyArray, 0);
         numCols = PyArray_DIM(pyArray, 1)-1;
         // Transpose to column-major
@@ -1214,7 +1216,8 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         
     }else{
         data=PyPtr(PyObject_GetAttrString(dataframe, "values"));
-        pyArray = reinterpret_cast<PyArrayObject*>(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        arrayPtr = PyPtr(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
+        pyArray = reinterpret_cast<PyArrayObject*>(arrayPtr.get());
         numRows = PyArray_DIM(pyArray, 0);
         numCols = PyArray_DIM(pyArray, 1);
         // Transpose to column-major
