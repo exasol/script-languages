@@ -278,11 +278,11 @@ inline PyObject *getDecimalFromString(PyObject *value)
 PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows, long startCol, bool isSetInput, bool& isFinished)
 {
     const long numCols = colInfo.size();
-    std::vector<std::tuple<Py_ssize_t, PyPtr, PyPtr, std::function<PyObject *(PyObject *)>>> pyColGetMethods;
+    std::vector<std::tuple<Py_ssize_t, PyPtr, PyPtr, std::function<PyObject *(PyObject*)>>> pyColGetMethods;
 
     for (long i = 0; i < numCols; i++) {
         PyPtr pyColNum(PyLong_FromLong(i + startCol));
-        std::function<PyObject *(PyObject *)> postFunction;
+        std::function<PyObject *(PyObject*)> postFunction;
 
         std::string methodName;
         switch(colInfo[i].type) {
@@ -498,10 +498,10 @@ inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::s
 
 }
 
-inline void printPyObject(PyObject *obj, const std::string& error_code){
+inline void printPyObject(PyObject* obj, const std::string& error_code){
         PyTypeObject* type = obj->ob_type;
         const char* p = type->tp_name;
-        PyObject *objectsRepresentation = PyObject_Repr(obj);
+        PyObject* objectsRepresentation = PyObject_Repr(obj);
         const char* s =  PyUnicode_AsUTF8(objectsRepresentation);
         DBG_STREAM_MSG(std::cerr, error_code << ": " << std::string(s) << " " << std::string(p));
 }
@@ -511,7 +511,7 @@ inline const PyPtr& getPandasNA(){
     return pdNA;
 }
 
-inline bool isNoneOrNA(PyObject *pyVal){
+inline bool isNoneOrNA(PyObject* pyVal){
     const PyPtr& pdNA = getPandasNA();
     return pyVal == Py_None  || pyVal == pdNA.get();
 }
