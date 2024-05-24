@@ -123,7 +123,7 @@ std::map<int, std::string> emitTypeMap {
 
 
 
-inline void checkPyObjectIsNull(const PyObject *obj, const std::string& error_code) {
+inline void checkPyObjectIsNull(const PyObject* obj, const std::string& error_code) {
     // Error message set by Python
     if (!obj)
         // formerly F-UDF-CL-SL-PYTHON-1038, now we use different error codes 
@@ -133,7 +133,7 @@ inline void checkPyObjectIsNull(const PyObject *obj, const std::string& error_co
 
 
 struct PyUniquePtrDeleter {
-    void operator()(PyObject *obj) const noexcept {
+    void operator()(PyObject* obj) const noexcept {
         Py_XDECREF(obj);
     }
 };
@@ -143,17 +143,17 @@ using PyUniquePtr = std::unique_ptr<PyObject, PyUniquePtrDeleter>;
 struct PyPtr {
     explicit PyPtr() {
     }
-    explicit PyPtr(PyObject *obj) {
+    explicit PyPtr(PyObject* obj) {
         checkPyObjectIsNull(obj,"F-UDF-CL-SL-PYTHON-1130");
         ptr.reset(obj);
     }
-    void reset(PyObject *obj) {
+    void reset(PyObject* obj) {
         ptr.reset(obj);
     }
-    PyObject *get() const {
+    PyObject* get() const {
         return ptr.get();
     }
-    PyObject *release() {
+    PyObject* release() {
         return ptr.release();
     }
     explicit operator bool() const {
@@ -162,7 +162,13 @@ struct PyPtr {
     PyUniquePtr ptr;
 };
 
-inline void checkPyPtrIsNull(const PyPtr& obj) {
+inline void checkPyPtrIsNotNull(const PyPtr& obj) {
+    // Error message set by Python
+    if (!obj)
+        throw std::runtime_error("F-UDF-CL-SL-PYTHON-1039");
+}
+
+inline void checkPyObjIsNotNull(const PyObject* obj) {
     // Error message set by Python
     if (!obj)
         throw std::runtime_error("F-UDF-CL-SL-PYTHON-1039");
@@ -190,7 +196,7 @@ PyPtr pandasModule(PyImport_ImportModule("pandas"));
 
 
 
-inline void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, std::vector<ColumnInfo>& colInfo)
+inline void getColumnInfo(PyObject* ctxIter, PyObject* colNames, long startCol, std::vector<ColumnInfo>& colInfo)
 {
     const char *ctxColumnTypeList = "_exaiter__incoltypes";
 
@@ -217,13 +223,13 @@ inline void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, 
     }
 
     for (Py_ssize_t i = startCol; i < pyNumCols; i++) {
-        PyObject *pyColType = PyList_GetItem(pyColTypes.get(), i);
+        PyObject* pyColType = PyList_GetItem(pyColTypes.get(), i);
         checkPyObjectIsNull(pyColType,"F-UDF-CL-SL-PYTHON-1131");
         int colType = PyLong_AsLong(pyColType);
         if (colType < 0 && PyErr_Occurred())
             throw std::runtime_error("F-UDF-CL-SL-PYTHON-1043 getColumnInfo(): PyLong_AsLong error");
 
-        PyObject *pyColName = PyList_GetItem(colNames, i);
+        PyObject* pyColName = PyList_GetItem(colNames, i);
         checkPyObjectIsNull(pyColName,"F-UDF-CL-SL-PYTHON-1132");
         const char *colName = PyUnicode_AsUTF8(pyColName);
         if (!colName)
@@ -234,7 +240,7 @@ inline void getColumnInfo(PyObject *ctxIter, PyObject *colNames, long startCol, 
 }
 
 
-inline PyObject *getDateFromString(PyObject *value)
+inline PyObject* getDateFromString(PyObject* value)
 {
     PyPtr datetime(PyObject_GetAttrString(datetimeModule.get(), "datetime"));
     PyPtr pyDatetime(PyObject_CallMethod(datetime.get(), "strptime", "(Os)", value, "%Y-%m-%d"));
@@ -246,7 +252,7 @@ inline PyObject *getDateFromString(PyObject *value)
     return pyDate.release();
 }
 
-inline PyObject *getDatetimeFromString(PyObject *value)
+inline PyObject* getDatetimeFromString(PyObject* value)
 {
     PyPtr datetime(PyObject_GetAttrString(datetimeModule.get(), "datetime"));
     PyPtr pyDatetime(PyObject_CallMethod(datetime.get(), "strptime", "(Os)", value, "%Y-%m-%d %H:%M:%S.%f"));
@@ -254,14 +260,14 @@ inline PyObject *getDatetimeFromString(PyObject *value)
     return pyDatetime.release();
 }
 
-inline PyObject *getLongFromString(PyObject *value)
+inline PyObject* getLongFromString(PyObject* value)
 {
     PyPtr pyLong(PyLong_FromUnicodeObject(value, 10));
 
     return pyLong.release();
 }
 
-inline PyObject *getDecimalFromString(PyObject *value)
+inline PyObject* getDecimalFromString(PyObject* value)
 {
     PyPtr pyDecimal(PyObject_CallMethod(decimalModule.get(), "Decimal", "(O)", value));
 
@@ -269,14 +275,14 @@ inline PyObject *getDecimalFromString(PyObject *value)
 }
 
 
-PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, long numRows, long startCol, bool isSetInput, bool& isFinished)
+PyObject* getColumnData(std::vector<ColumnInfo>& colInfo, PyObject* tableIter, long numRows, long startCol, bool isSetInput, bool& isFinished)
 {
     const long numCols = colInfo.size();
-    std::vector<std::tuple<Py_ssize_t, PyPtr, PyPtr, std::function<PyObject *(PyObject*)>>> pyColGetMethods;
+    std::vector<std::tuple<Py_ssize_t, PyPtr, PyPtr, std::function<PyObject* (PyObject*)>>> pyColGetMethods;
 
     for (long i = 0; i < numCols; i++) {
         PyPtr pyColNum(PyLong_FromLong(i + startCol));
-        std::function<PyObject *(PyObject*)> postFunction;
+        std::function<PyObject* (PyObject*)> postFunction;
 
         std::string methodName;
         switch(colInfo[i].type) {
@@ -334,7 +340,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
         for (long c = 0; c < numCols; c++) {
             PyPtr pyVal(PyObject_CallMethodObjArgs(tableIter, std::get<2>(pyColGetMethods[c]).get(), std::get<1>(pyColGetMethods[c]).get(), NULL));
             if (!pyVal) {
-                PyObject *ptype, *pvalue, *ptraceback;
+                PyObject* ptype, *pvalue, *ptraceback;
                 PyErr_Fetch(&ptype, &pvalue, &ptraceback);
                 std::stringstream ss;
                 ss << "F-UDF-CL-SL-PYTHON-1047: getColumnData(): Error fetching value for row " << r << ", column " << c << ": ";
@@ -467,7 +473,7 @@ inline bool isArrowDecimal128(const char* typeName){
     return startsWith(typeNameStr, "decimal128(") && endsWith(typeNameStr, "[pyarrow]");
 }
 
-inline void getColumnTypeInfo(PyObject *numpyTypes, std::vector<std::pair<std::string, int>>& colTypes){
+inline void getColumnTypeInfo(PyObject* numpyTypes, std::vector<std::pair<std::string, int>>& colTypes){
     PyPtr numpyTypeIter(PyObject_GetIter(numpyTypes));
     for (PyPtr numpyType(PyIter_Next(numpyTypeIter.get())); numpyType.get(); numpyType.reset(PyIter_Next(numpyTypeIter.get()))) {
         const char *typeName = PyUnicode_AsUTF8(numpyType.get());
@@ -510,7 +516,7 @@ inline bool isNoneOrNA(PyObject* pyVal){
     return pyVal == Py_None  || pyVal == pdNA.get();
 }
 
-inline void getColumnArrays(PyObject *colArray, int numCols, int numRows, 
+inline void getColumnArrays(PyObject* colArray, int numCols, int numRows, 
         std::vector<std::pair<std::string, int>>& colTypes, std::vector<PyPtr>& columnArrays){
     for (int c = 0; c < numCols; c++) {
         PyPtr pyStart(PyLong_FromLong(c));
@@ -532,7 +538,7 @@ inline void getColumnArrays(PyObject *colArray, int numCols, int numRows,
             }
 
             // Get type of first non-None, non-NA item in list
-            PyObject *pyVal = PyList_GetItem(pyList.get(), 0);
+            PyObject* pyVal = PyList_GetItem(pyList.get(), 0);
             checkPyObjectIsNull(pyVal,"F-UDF-CL-SL-PYTHON-1126");
             std::string pyTypeName(std::string("py_") + Py_TYPE(pyVal)->tp_name);
             bool pyValIsNoneOrNA = isNoneOrNA(pyVal);
@@ -593,7 +599,7 @@ inline void handleEmitNpyUint64(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
@@ -620,7 +626,7 @@ inline void handleEmitNpyUint64(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -630,7 +636,7 @@ inline void handleEmitNpyUint32(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
@@ -657,7 +663,7 @@ inline void handleEmitNpyUint32(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -667,7 +673,7 @@ inline void handleEmitNpyUint16(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
@@ -694,7 +700,7 @@ inline void handleEmitNpyUint16(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -704,7 +710,7 @@ inline void handleEmitNpyUint8(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
@@ -731,7 +737,7 @@ inline void handleEmitNpyUint8(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -741,7 +747,7 @@ inline void handleEmitNpyFloat64(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
@@ -768,7 +774,7 @@ inline void handleEmitNpyFloat64(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -778,7 +784,7 @@ inline void handleEmitNpyFloat32(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
@@ -805,7 +811,7 @@ inline void handleEmitNpyFloat32(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -815,7 +821,7 @@ inline void handleEmitNpyBool(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
@@ -842,7 +848,7 @@ inline void handleEmitNpyBool(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -852,23 +858,23 @@ inline void handleEmitPyBool(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    PyPtr pyBool(PyList_GetItem(columnArrays[c].get(), r));
-    checkPyPtrIsNull(pyBool);
-    if (isNoneOrNA(pyBool.get())) {
+    PyObject* pyBool = PyList_GetItem(columnArrays[c].get(), r);
+    checkPyObjIsNotNull(pyBool);
+    if (isNoneOrNA(pyBool)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
     switch (colInfo[c].type) {
         case SWIGVMContainers::BOOLEAN:
-            if (pyBool.get() == Py_True) {
+            if (pyBool == Py_True) {
                 Py_INCREF(Py_True);
                 pyValue.reset(Py_True);
             }
-            else if (pyBool.get() == Py_False) {
+            else if (pyBool == Py_False) {
                 Py_INCREF(Py_False);
                 pyValue.reset(Py_False);
             }
@@ -883,7 +889,7 @@ inline void handleEmitPyBool(
             throw std::runtime_error(ss.str().c_str());
         }
     }
-    checkPyPtrIsNull(pyValue);
+    checkPyPtrIsNotNull(pyValue);
     pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyValue.get(), NULL));
 }
 
@@ -893,13 +899,13 @@ inline void handleEmitPyInt(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    PyPtr pyInt(PyList_GetItem(columnArrays[c].get(), r));
-    checkPyPtrIsNull(pyInt);
-    if (isNoneOrNA(pyInt.get())) {
+    PyObject* pyInt = PyList_GetItem(columnArrays[c].get(), r);
+    checkPyObjIsNotNull(pyInt);
+    if (isNoneOrNA(pyInt)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
@@ -907,14 +913,17 @@ inline void handleEmitPyInt(
     switch (colInfo[c].type) {
         case SWIGVMContainers::INT64:
         case SWIGVMContainers::INT32:
-            pyValue.reset(pyInt.release());
+        {
+            long value = PyLong_AsLong(pyInt);
+            pyValue.reset(PyLong_FromLong(value));
             break;
+        }
         case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyObject_Str(pyInt.get()));
+            pyValue.reset(PyObject_Str(pyInt));
             break;
         case SWIGVMContainers::DOUBLE:
         {
-            double value = PyFloat_AsDouble(pyInt.get());
+            double value = PyFloat_AsDouble(pyInt);
             if (value < 0 && PyErr_Occurred())
                 throw std::runtime_error("F-UDF-CL-SL-PYTHON-1067: emit() PY_INT: PyFloat_AsDouble error");
             pyValue.reset(PyFloat_FromDouble(value));
@@ -936,13 +945,13 @@ inline void handleEmitPyFloat(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    PyPtr pyFloat(PyList_GetItem(columnArrays[c].get(), r));
-    checkPyPtrIsNull(pyFloat);
-    if (isNoneOrNA(pyFloat.get())) {
+    PyObject* pyFloat = PyList_GetItem(columnArrays[c].get(), r);
+    checkPyObjIsNotNull(pyFloat);
+    if (isNoneOrNA(pyFloat)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
@@ -951,7 +960,7 @@ inline void handleEmitPyFloat(
         case SWIGVMContainers::INT64:
         case SWIGVMContainers::INT32:
         {
-            double value = PyFloat_AsDouble(pyFloat.get());
+            double value = PyFloat_AsDouble(pyFloat);
             if (value < 0 && PyErr_Occurred())
                 throw std::runtime_error("F-UDF-CL-SL-PYTHON-1139: emit() PY_FLOAT: PyFloat_AsDouble error");
             if (npy_isnan(value)) {
@@ -963,11 +972,14 @@ inline void handleEmitPyFloat(
             break;
         }
         case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyObject_Str(pyFloat.get()));
+            pyValue.reset(PyObject_Str(pyFloat));
             break;
         case SWIGVMContainers::DOUBLE:
-            pyValue.reset(pyFloat.release());
+        {
+            double value = PyFloat_AsDouble(pyFloat);
+            pyValue.reset(PyFloat_FromDouble(value));
             break;
+        }
         default:
         {
             std::stringstream ss;
@@ -984,15 +996,15 @@ inline void handleEmitPyDecimal(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName,
         PyPtr& pyIntMethodName,
         PyPtr& pyFloatMethodName
         ){
-    PyPtr pyDecimal(PyList_GetItem(columnArrays[c].get(), r));
-    if (isNoneOrNA(pyDecimal.get())) {
+    PyObject* pyDecimal = PyList_GetItem(columnArrays[c].get(), r);
+    if (isNoneOrNA(pyDecimal)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
@@ -1001,16 +1013,16 @@ inline void handleEmitPyDecimal(
         case SWIGVMContainers::INT64:
         case SWIGVMContainers::INT32:
         {
-            PyPtr pyInt(PyObject_CallMethodObjArgs(pyDecimal.get(), pyIntMethodName.get(), NULL));
+            PyPtr pyInt(PyObject_CallMethodObjArgs(pyDecimal, pyIntMethodName.get(), NULL));
             pyValue.reset(pyInt.release());
             break;
         }
         case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyObject_Str(pyDecimal.get()));
+            pyValue.reset(PyObject_Str(pyDecimal));
             break;
         case SWIGVMContainers::DOUBLE:
         {
-            PyPtr pyFloat(PyObject_CallMethodObjArgs(pyDecimal.get(), pyFloatMethodName.get(), NULL));
+            PyPtr pyFloat(PyObject_CallMethodObjArgs(pyDecimal, pyFloatMethodName.get(), NULL));
             pyValue.reset(pyFloat.release());
             break;
         }
@@ -1030,29 +1042,29 @@ inline void handleEmitPyStr(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
     
-    PyPtr pyString(PyList_GetItem(columnArrays[c].get(), r));
-    if (isNoneOrNA(pyString.get())) {
+    PyObject* pyString = PyList_GetItem(columnArrays[c].get(), r);
+    if (isNoneOrNA(pyString)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
 
     switch (colInfo[c].type) {
         case SWIGVMContainers::NUMERIC:
-            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString.get(), NULL));
+            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString, NULL));
             break;
         case SWIGVMContainers::STRING:
         {
             Py_ssize_t size = -1;
-            const char *str = PyUnicode_AsUTF8AndSize(pyString.get(), &size);
+            const char *str = PyUnicode_AsUTF8AndSize(pyString, &size);
             if (!str && size < 0)
                 throw std::runtime_error("F-UDF-CL-SL-PYTHON-1137: invalid size of string");
             PyPtr pySize(PyLong_FromSsize_t(size));
-            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString.get(), pySize.get(), NULL));
+            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString, pySize.get(), NULL));
             break;
         }
         default:
@@ -1070,13 +1082,13 @@ inline void handleEmitPyDate(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName,
         PyPtr& pyIsoformatMethodName){
-    PyPtr pyDate(PyList_GetItem(columnArrays[c].get(), r));
-    if (isNoneOrNA(pyDate.get())) {
+    PyObject* pyDate = PyList_GetItem(columnArrays[c].get(), r);
+    if (isNoneOrNA(pyDate)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
@@ -1084,7 +1096,7 @@ inline void handleEmitPyDate(
     switch (colInfo[c].type) {
         case SWIGVMContainers::DATE:
         {
-            PyPtr pyIsoDate(PyObject_CallMethodObjArgs(pyDate.get(), pyIsoformatMethodName.get(), NULL));
+            PyPtr pyIsoDate(PyObject_CallMethodObjArgs(pyDate, pyIsoformatMethodName.get(), NULL));
             pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDate.get(), NULL));
             break;
         }
@@ -1102,12 +1114,12 @@ inline void handleEmitPyTimestamp(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
-    if (isNoneOrNA(pyTimestamp.get())) {
+    PyObject* pyTimestamp = PyList_GetItem(columnArrays[c].get(), r);
+    if (isNoneOrNA(pyTimestamp)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
@@ -1118,8 +1130,8 @@ inline void handleEmitPyTimestamp(
             // We call here pandas.Timestamp.tz_localize(None), because we need to remove the timezone from the timestamp.
             // Exasol doesn't support timezones, and if we don't remove the timezone, pandas.Timestamp.isoformat will add
             // it to the generated string.
-            pyTimestamp.reset(PyObject_CallMethod(pyTimestamp.get(), "tz_localize", "z", NULL));
-            PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " "));
+            PyPtr pyTzLocalize(PyObject_CallMethod(pyTimestamp, "tz_localize", "z", NULL));
+            PyPtr pyIsoDatetime(PyObject_CallMethod(pyTzLocalize.get(), "isoformat", "s", " "));
             pyResult.reset(PyObject_CallMethodObjArgs(
                 resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
             break;
@@ -1140,13 +1152,13 @@ inline void handleEmitNpyDateTime(
         std::vector<std::pair<PyPtr, PyPtr>>& pyColSetMethods,
         std::vector<ColumnInfo>& colInfo,
         std::vector<std::pair<std::string, int>>& colTypes,
-        PyObject *resultHandler,
+        PyObject* resultHandler,
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName,
         PyPtr& pdNaT){
-    PyPtr pyTimestamp(PyList_GetItem(columnArrays[c].get(), r));
-    if (pyTimestamp.get() == pdNaT.get()) {
+    PyObject* pyTimestamp = PyList_GetItem(columnArrays[c].get(), r);
+    if (pyTimestamp == pdNaT.get()) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
         return;
     }
@@ -1154,7 +1166,7 @@ inline void handleEmitNpyDateTime(
     switch (colInfo[c].type) {
         case SWIGVMContainers::TIMESTAMP:
         {
-            PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp.get(), "isoformat", "s", " "));
+            PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp, "isoformat", "s", " "));
             pyResult.reset(PyObject_CallMethodObjArgs(
                 resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
             break;
@@ -1168,7 +1180,7 @@ inline void handleEmitNpyDateTime(
     }
 }
 
-void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *dataframe, PyObject *numpyTypes)
+void emit(PyObject* resultHandler, std::vector<ColumnInfo>& colInfo, PyObject* dataframe, PyObject* numpyTypes)
 {
     std::vector<std::pair<PyPtr, PyPtr>> pyColSetMethods;
     try{
@@ -1344,7 +1356,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                 }
 
                 if (!pyResult) {
-                    PyObject *ptype, *pvalue, *ptraceback;
+                    PyObject* ptype, *pvalue, *ptraceback;
                     PyErr_Fetch(&ptype, &pvalue, &ptraceback);
                     if (pvalue) {
                         std::stringstream ss;
@@ -1372,7 +1384,7 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     }
 }
 
-PyObject *createDataFrame(PyObject *data, std::vector<ColumnInfo>& colInfo)
+PyObject* createDataFrame(PyObject* data, std::vector<ColumnInfo>& colInfo)
 {
     PyPtr pdDataFrame(PyObject_GetAttrString(pandasModule.get(), "DataFrame"));
 
@@ -1393,7 +1405,7 @@ PyObject *createDataFrame(PyObject *data, std::vector<ColumnInfo>& colInfo)
     return pyDataFrame.release();
 }
 
-PyObject *getNumpyTypes(PyObject *dataframe)
+PyObject* getNumpyTypes(PyObject* dataframe)
 {
     PyPtr pyDtypes(PyObject_GetAttrString(dataframe, "dtypes"));
     PyPtr pyDtypeValues(PyObject_CallMethod(pyDtypes.get(), "tolist", NULL));
@@ -1407,7 +1419,7 @@ PyObject *getNumpyTypes(PyObject *dataframe)
     Py_ssize_t pyNumCols = PyList_Size(pyDtypeValues.get());
     PyPtr pyColumnDtypes(PyList_New(pyNumCols));
     for (Py_ssize_t i = 0; i < pyNumCols; i++) {
-        PyObject *pyColDtype = PyList_GetItem(pyDtypeValues.get(), i);
+        PyObject* pyColDtype = PyList_GetItem(pyDtypeValues.get(), i);
         checkPyObjectIsNull(pyColDtype,"F-UDF-CL-SL-PYTHON-1128");
         PyPtr pyColDtypeString(PyObject_Str(pyColDtype));
         PyList_SET_ITEM(pyColumnDtypes.get(), i, pyColDtypeString.release());
@@ -1416,7 +1428,7 @@ PyObject *getNumpyTypes(PyObject *dataframe)
     return pyColumnDtypes.release();
 }
 
-void getOutputColumnTypes(PyObject *colTypes, std::vector<ColumnInfo>& colInfo)
+void getOutputColumnTypes(PyObject* colTypes, std::vector<ColumnInfo>& colInfo)
 {
     if (!PyList_Check(colTypes)) {
         std::stringstream ss;
@@ -1426,7 +1438,7 @@ void getOutputColumnTypes(PyObject *colTypes, std::vector<ColumnInfo>& colInfo)
 
     Py_ssize_t pyNumCols = PyList_Size(colTypes);
     for (Py_ssize_t i = 0; i < pyNumCols; i++) {
-        PyObject *pyColType = PyList_GetItem(colTypes, i);
+        PyObject* pyColType = PyList_GetItem(colTypes, i);
         checkPyObjectIsNull(pyColType,"F-UDF-CL-SL-PYTHON-1129");
         int colType = PyLong_AsLong(pyColType);
         if (colType < 0 && PyErr_Occurred())
@@ -1437,9 +1449,9 @@ void getOutputColumnTypes(PyObject *colTypes, std::vector<ColumnInfo>& colInfo)
 }
 
 
-static PyObject *getDataframe(PyObject *self, PyObject *args)
+static PyObject* getDataframe(PyObject* self, PyObject* args)
 {
-    PyObject *ctxIter = NULL;
+    PyObject* ctxIter = NULL;
     long numRows = 0;
     long startCol = 0;
 
@@ -1482,10 +1494,10 @@ static PyObject *getDataframe(PyObject *self, PyObject *args)
     return pyDataFrame.release();
 }
 
-static PyObject *emitDataframe(PyObject *self, PyObject *args)
+static PyObject* emitDataframe(PyObject* self, PyObject* args)
 {
-    PyObject *ctxIter = NULL;
-    PyObject *dataframe = NULL;
+    PyObject* ctxIter = NULL;
+    PyObject* dataframe = NULL;
 
     if (!PyArg_ParseTuple(args, "OO", &ctxIter, &dataframe))
         return NULL;
