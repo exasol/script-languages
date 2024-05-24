@@ -369,7 +369,7 @@ PyObject *getColumnData(std::vector<ColumnInfo>& colInfo, PyObject *tableIter, l
             PyList_SET_ITEM(pyRow.get(), std::get<0>(pyColGetMethods[c]) - startCol, pyVal.release());
         }
 
-        int ok = PyList_Append(pyData.get(), pyRow.get());
+        int ok = PyList_Append(pyData.get(), pyRow.release());
         if (ok < 0)
             throw std::runtime_error("F-UDF-CL-SL-PYTHON-1050: getColumnData(): PyList_Append error");
 
