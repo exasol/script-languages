@@ -171,7 +171,7 @@ inline void checkPyPtrIsNotNull(const PyPtr& obj) {
 inline void checkPyObjIsNotNull(const PyObject *obj) {
     // Error message set by Python
     if (!obj)
-        throw std::runtime_error("F-UDF-CL-SL-PYTHON-1039");
+        throw std::runtime_error("F-UDF-CL-SL-PYTHON-1142");
 }
 
 
