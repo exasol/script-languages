@@ -914,8 +914,8 @@ inline void handleEmitPyInt(
         case SWIGVMContainers::INT64:
         case SWIGVMContainers::INT32:
         {
-            long value = PyLong_AsLong(pyInt);
-            pyValue.reset(PyLong_FromLong(value));
+            Py_INCREF(pyInt);
+            pyValue.reset(pyInt);
             break;
         }
         case SWIGVMContainers::NUMERIC:
@@ -976,8 +976,8 @@ inline void handleEmitPyFloat(
             break;
         case SWIGVMContainers::DOUBLE:
         {
-            double value = PyFloat_AsDouble(pyFloat);
-            pyValue.reset(PyFloat_FromDouble(value));
+            Py_INCREF(pyFloat);
+            pyValue.reset(pyFloat);
             break;
         }
         default:
