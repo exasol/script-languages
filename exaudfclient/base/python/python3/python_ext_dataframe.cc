@@ -862,6 +862,7 @@ inline void handleEmitPyBool(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyBool = PyList_GetItem(columnArrays[c].get(), r);
     checkPyObjIsNotNull(pyBool);
     if (isNoneOrNA(pyBool)) {
@@ -903,6 +904,7 @@ inline void handleEmitPyInt(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyInt = PyList_GetItem(columnArrays[c].get(), r);
     checkPyObjIsNotNull(pyInt);
     if (isNoneOrNA(pyInt)) {
@@ -914,6 +916,7 @@ inline void handleEmitPyInt(
         case SWIGVMContainers::INT64:
         case SWIGVMContainers::INT32:
         {
+            //pyInt points to a 'borrowed' reference. We need to explicitly increase the ref counter here, as pyValue will decrease it again later.
             Py_INCREF(pyInt);
             pyValue.reset(pyInt);
             break;
@@ -949,6 +952,7 @@ inline void handleEmitPyFloat(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+     //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyFloat = PyList_GetItem(columnArrays[c].get(), r);
     checkPyObjIsNotNull(pyFloat);
     if (isNoneOrNA(pyFloat)) {
@@ -976,6 +980,7 @@ inline void handleEmitPyFloat(
             break;
         case SWIGVMContainers::DOUBLE:
         {
+            //pyFloat points to a 'borrowed' reference. We need to explicitly increase the ref counter here, as pyValue will decrease it again later.
             Py_INCREF(pyFloat);
             pyValue.reset(pyFloat);
             break;
@@ -1003,6 +1008,7 @@ inline void handleEmitPyDecimal(
         PyPtr& pyIntMethodName,
         PyPtr& pyFloatMethodName
         ){
+    //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyDecimal = PyList_GetItem(columnArrays[c].get(), r);
     if (isNoneOrNA(pyDecimal)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1046,7 +1052,7 @@ inline void handleEmitPyStr(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
-    
+    //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyString = PyList_GetItem(columnArrays[c].get(), r);
     if (isNoneOrNA(pyString)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1087,6 +1093,7 @@ inline void handleEmitPyDate(
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName,
         PyPtr& pyIsoformatMethodName){
+    //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyDate = PyList_GetItem(columnArrays[c].get(), r);
     if (isNoneOrNA(pyDate)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1118,6 +1125,7 @@ inline void handleEmitPyTimestamp(
         PyPtr& pyValue,
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName){
+    //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyTimestamp = PyList_GetItem(columnArrays[c].get(), r);
     if (isNoneOrNA(pyTimestamp)) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1157,6 +1165,7 @@ inline void handleEmitNpyDateTime(
         PyPtr& pyResult,
         PyPtr& pySetNullMethodName,
         PyPtr& pdNaT){
+    //PyList_GetItem returns a 'borrowed' reference. Must not call XDECREF() on it.
     PyObject *pyTimestamp = PyList_GetItem(columnArrays[c].get(), r);
     if (pyTimestamp == pdNaT.get()) {
         pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pySetNullMethodName.get(), pyColSetMethods[c].first.get(), NULL));
@@ -1210,6 +1219,9 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
                         return colType.second == NPY_DATETIME;
                     });
     if(allColsAreDateTime) {
+        // if we get an dataframe with only datetime columns with type datetime[ns],
+        // As we call PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY) with parameter NPY_OBJECT we need
+        // to explicitly cast the values to type 'object'. Per default the dtypes of values are datetime[ns].
         PyPtr asTypeFunc (PyObject_GetAttrString(dataframe, "astype"));
         PyPtr keywordArgs(PyDict_New());
         PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
