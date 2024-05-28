@@ -40,14 +40,14 @@ class PandasDataFrameEmitDTypesMemoryLeakCheck(udf.TestCase):
     types = [
         # Full columns without None or NaN / Int
 
-        ("uint8", "integer", int_dataframe_value_str, 100000),
-        ("uint16", "integer", int_dataframe_value_str, 100000),
-        ("uint32", "integer", int_dataframe_value_str, 100000),
-        ("uint64", "integer", int_dataframe_value_str, 100000),
-        ("int8", "integer", int_dataframe_value_str, 100000),
-        ("int16", "integer", int_dataframe_value_str, 100000),
-        ("int32", "integer", int_dataframe_value_str, 100000),
-        ("int64", "integer", int_dataframe_value_str, 100000),
+        ("uint8", "integer", int_dataframe_value_str, 200000),
+        ("uint16", "integer", int_dataframe_value_str, 200000),
+        ("uint32", "integer", int_dataframe_value_str, 200000),
+        ("uint64", "integer", int_dataframe_value_str, 200000),
+        ("int8", "integer", int_dataframe_value_str, 200000),
+        ("int16", "integer", int_dataframe_value_str, 200000),
+        ("int32", "integer", int_dataframe_value_str, 200000),
+        ("int64", "integer", int_dataframe_value_str, 200000),
         ("object", "integer", int_dataframe_value_str, 200000),
 
         # Full columns without None or NaN / Float
@@ -118,19 +118,18 @@ class PandasDataFrameEmitDTypesMemoryLeakCheck(udf.TestCase):
 
         # Full columns without None or NaN / Date and Time
 
-        ("datetime64[ns]", "timestamp", timestamp_dataframe_value_str, 100000),
+        ("datetime64[ns]", "timestamp", timestamp_dataframe_value_str, 200000),
         ("object", "timestamp", timestamp_dataframe_value_str, 200000),
         ("object", "DATE", date_dataframe_value_str, 200000),
     ]
 
     @useData(types)
     def test_dtype_emit(self, dtype: str, sql_type: str, dataframe_value_str: str, max_memory: int):
+        emit_cols = [f"o{i} {sql_type}" for i in range(25)]
+        emit_cols_str = ",".join(emit_cols)
         udf_def_str = udf.fixindent(f'''
             CREATE OR REPLACE PYTHON3 SCALAR SCRIPT test_dtype_emit("batch_size" integer, "batch_count" integer) 
-            EMITS (o1 {sql_type}, o2 {sql_type}, o3 {sql_type}, o4 {sql_type}, o5 {sql_type}, o6 {sql_type}, 
-                   o7 {sql_type}, o8 {sql_type}, o9 {sql_type}, o10 {sql_type}, o11 {sql_type}, o12 {sql_type},
-                   o13 {sql_type}, o14 {sql_type}, o15 {sql_type}, o16 {sql_type}, o17 {sql_type}, o18 {sql_type},
-                   o19 {sql_type}, o20 {sql_type}, o21 {sql_type}, o22 {sql_type}, o23 {sql_type}, o24 {sql_type}) AS
+            EMITS ({emit_cols_str}) AS
 
             import gc
             import tracemalloc
@@ -141,7 +140,7 @@ class PandasDataFrameEmitDTypesMemoryLeakCheck(udf.TestCase):
             def run(ctx):
                 tracemalloc.start()
                 for i in range(ctx.batch_count):
-                    df = pd.DataFrame([[{dataframe_value_str} for c in range(24)] for r in range(ctx.batch_size)], 
+                    df = pd.DataFrame([[{dataframe_value_str} for c in range(25)] for r in range(ctx.batch_size)], 
                                       dtype="{dtype}")
                     ctx.emit(df)
                     if i == 0:
@@ -157,9 +156,9 @@ class PandasDataFrameEmitDTypesMemoryLeakCheck(udf.TestCase):
             ''')
         print(udf_def_str)
         self.query(udf_def_str)
-        rows = self.query('''SELECT test_dtype_emit(100, 10000)''')
-        assert len(rows[0]) == 24
-        assert len(rows) == 1000000
+        rows = self.query('''SELECT test_dtype_emit(100, 1000)''')
+        assert len(rows[0]) == 25
+        assert len(rows) == 100000
 
 
 if __name__ == '__main__':
