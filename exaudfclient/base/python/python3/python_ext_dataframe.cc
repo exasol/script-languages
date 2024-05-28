@@ -1204,28 +1204,24 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
     PyPtr arrayPtr;
     PyArrayObject *pyArray;
     PyPtr colArray;
-    if(colTypes.size()==1 && colTypes.at(0).second == NPY_DATETIME){
-        // if we get an dataframe with a single datetime column with type datetime[ns],
-        // it doesn't get transformed into a 2D Array with the attributes values, 
-        // instead we get a DatetimeIndex like this:
-        // DatetimeIndex(['2020-07-27 14:22:33.600699', ...], dtype='datetime64[ns]', freq=None)
-        // As a workaround we add a column to the dataframe via resetIndex, use values to get a 2D Array and
-        // slice out the datetime column, which then will be an Array of pandas.Timestamp objects
-        PyPtr resetIndex(PyObject_CallMethod(dataframe, "reset_index", NULL));
-        data=PyPtr(PyObject_GetAttrString(resetIndex.get(), "values"));
+    bool allColsAreDateTime =
+        std::all_of(colTypes.begin(), colTypes.end(),
+                    [](std::pair<std::string, int> colType) {
+                        return colType.second == NPY_DATETIME;
+                    });
+    if(allColsAreDateTime) {
+        PyPtr asTypeFunc (PyObject_GetAttrString(dataframe, "astype"));
+        PyPtr keywordArgs(PyDict_New());
+        PyDict_SetItemString(keywordArgs.get(), "copy", Py_False);
+        PyPtr funcArgs(Py_BuildValue("(s)", "object"));
+        PyPtr castedValues(PyObject_Call(asTypeFunc.get(), funcArgs.get(), keywordArgs.get()));
+        data.reset(PyObject_GetAttrString(castedValues.get(), "values"));
         arrayPtr = PyPtr(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
         pyArray = reinterpret_cast<PyArrayObject*>(arrayPtr.get());
         numRows = PyArray_DIM(pyArray, 0);
-        numCols = PyArray_DIM(pyArray, 1)-1;
+        numCols = PyArray_DIM(pyArray, 1);
         // Transpose to column-major
-        PyPtr transpose = PyPtr(PyArray_Transpose(pyArray, NULL));
-
-        PyPtr pyStart(PyLong_FromLong(1));
-        PyPtr pyStop(PyLong_FromLong(2));
-        PyPtr slice(PySlice_New(pyStart.get(), pyStop.get(), Py_None));
-        colArray=PyPtr(PyObject_GetItem(transpose.get(), slice.get()));
-
-        
+        colArray = PyPtr(PyArray_Transpose(pyArray, NULL));
     }else{
         data=PyPtr(PyObject_GetAttrString(dataframe, "values"));
         arrayPtr = PyPtr(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
