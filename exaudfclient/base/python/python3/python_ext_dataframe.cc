@@ -1210,7 +1210,6 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
 
 
     PyPtr data;
-    PyPtr arrayPtr;
     PyArrayObject *pyArray;
     PyPtr colArray;
     bool allColsAreDateTime =
@@ -1228,16 +1227,16 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
         PyPtr funcArgs(Py_BuildValue("(s)", "object"));
         PyPtr castedValues(PyObject_Call(asTypeFunc.get(), funcArgs.get(), keywordArgs.get()));
         data.reset(PyObject_GetAttrString(castedValues.get(), "values"));
-        arrayPtr = PyPtr(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
-        pyArray = reinterpret_cast<PyArrayObject*>(arrayPtr.get());
+        arrayPtr = PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY);
+        pyArray = reinterpret_cast<PyArrayObject*>(arrayPtr);
         numRows = PyArray_DIM(pyArray, 0);
         numCols = PyArray_DIM(pyArray, 1);
         // Transpose to column-major
         colArray = PyPtr(PyArray_Transpose(pyArray, NULL));
     }else{
         data=PyPtr(PyObject_GetAttrString(dataframe, "values"));
-        arrayPtr = PyPtr(PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY));
-        pyArray = reinterpret_cast<PyArrayObject*>(arrayPtr.get());
+        arrayPtr = PyArray_FROM_OTF(data.get(), NPY_OBJECT, NPY_ARRAY_IN_ARRAY);
+        pyArray = reinterpret_cast<PyArrayObject*>(arrayPtr);
         numRows = PyArray_DIM(pyArray, 0);
         numCols = PyArray_DIM(pyArray, 1);
         // Transpose to column-major
