@@ -76,56 +76,56 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
             self.query(insert_sql)
         self.num_rows = 2**num_inserts
 
-    # def test_dataframe_scalar_emits(self):
-    #     """
-    #     This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 100KB, where
-    #     the memory block snapshots are retrieved during the first/last invocation of the scalar UDF,
-    #     but after the emit().
-    #     Reasoning for 100KB is that the number of rows is > 100K, so if there was 1 Byte leaking during every execution,
-    #     it would be found here.
-    #     """
-    #     udf_def_str = udf.fixindent('''
-    #         CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
-    #         foo(%s)
-    #         EMITS(%s) AS
-    #
-    #         %%perNodeAndCallInstanceLimit 1;
-    #
-    #         import tracemalloc
-    #         import gc
-    #         snapshot_begin = None
-    #         memory_check_executed = False
-    #         tracemalloc.start()
-    #         counter = 0
-    #
-    #         def run(ctx):
-    #             df = ctx.get_dataframe()
-    #             global memory_check_executed
-    #             global snapshot_begin
-    #             global counter
-    #             ctx.emit(df)
-    #             if counter == 0:
-    #                 print("Retrieving start snapshot", flush=True)
-    #                 snapshot_begin = tracemalloc.take_snapshot()
-    #             if counter == %s:
-    #                 assert memory_check_executed == False #Sanity check for row number
-    #                 print("Checking memory usage", flush=True)
-    #                 gc.collect()
-    #                 snapshot_end = tracemalloc.take_snapshot()
-    #                 top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
-    #                 first_item = top_stats_begin_end[0] #First item is always the largest one
-    #                 if first_item.size_diff > 100000:
-    #                     raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
-    #                 memory_check_executed = True
-    #             counter = counter + 1
-    #         /
-    #
-    #     ''' % (self.col_defs_str, self.col_defs_str, self.num_rows - 1))
-    #     self.query(udf_def_str)
-    #     select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
-    #     rows = self.query(select_sql)
-    #     self.assertEqual(self.num_rows, len(rows))
-    #
+    def test_dataframe_scalar_emits(self):
+        """
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 100KB, where
+        the memory block snapshots are retrieved during the first/last invocation of the scalar UDF,
+        but after the emit().
+        Reasoning for 100KB is that the number of rows is > 100K, so if there was 1 Byte leaking during every execution,
+        it would be found here.
+        """
+        udf_def_str = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
+            foo(%s)
+            EMITS(%s) AS
+
+            %%perNodeAndCallInstanceLimit 1;
+
+            import tracemalloc
+            import gc
+            snapshot_begin = None
+            memory_check_executed = False
+            tracemalloc.start()
+            counter = 0
+
+            def run(ctx):
+                df = ctx.get_dataframe()
+                global memory_check_executed
+                global snapshot_begin
+                global counter
+                ctx.emit(df)
+                if counter == 0:
+                    print("Retrieving start snapshot", flush=True)
+                    snapshot_begin = tracemalloc.take_snapshot()
+                if counter == %s:
+                    assert memory_check_executed == False #Sanity check for row number
+                    print("Checking memory usage", flush=True)
+                    gc.collect()
+                    snapshot_end = tracemalloc.take_snapshot()
+                    top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
+                    first_item = top_stats_begin_end[0] #First item is always the largest one
+                    if first_item.size_diff > 100000:
+                        raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
+                    memory_check_executed = True
+                counter = counter + 1
+            /
+
+        ''' % (self.col_defs_str, self.col_defs_str, self.num_rows - 1))
+        self.query(udf_def_str)
+        select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
+        rows = self.query(select_sql)
+        self.assertEqual(self.num_rows, len(rows))
+
     def test_dataframe_scalar_emits_multiple(self):
         """
         This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 150KB, where
@@ -185,107 +185,107 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
         print(select_sql)
         rows = self.query(select_sql)
         self.assertEqual(self.num_rows, len(rows))
-    #
-    # def test_dataframe_scalar_returns(self):
-    #     """
-    #     This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 100KB, where
-    #     the memory block snapshots are retrieved during the first/last invocation of the scalar UDF.
-    #     Reasoning for 100KB is that the number of rows is > 100K, so if there was 1 Byte leaking during every execution,
-    #     it would be found here.
-    #     """
-    #     udf_sql = udf.fixindent('''
-    #         CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
-    #         foo(%s)
-    #         RETURNS DECIMAL(10,5) AS
-    #
-    #
-    #         %%perNodeAndCallInstanceLimit 1;
-    #
-    #         import tracemalloc
-    #         import gc
-    #         snapshot_begin = None
-    #         memory_check_executed = False
-    #         tracemalloc.start()
-    #         counter = 0
-    #
-    #         def run(ctx):
-    #             df = ctx.get_dataframe()
-    #             global memory_check_executed
-    #             global snapshot_begin
-    #             global counter
-    #             if counter == 0:
-    #                 print("Retrieving start snapshot", flush=True)
-    #                 snapshot_begin = tracemalloc.take_snapshot()
-    #             if counter == %s:
-    #                 assert memory_check_executed == False #Sanity check for row number
-    #                 print("Checking memory usage", flush=True)
-    #                 gc.collect()
-    #                 snapshot_end = tracemalloc.take_snapshot()
-    #                 top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
-    #                 first_item = top_stats_begin_end[0] #First item is always the largest one
-    #                 if first_item.size_diff > 100000:
-    #                     raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
-    #                 memory_check_executed = True
-    #             counter = counter + 1
-    #
-    #             return (df.iloc[0, 0] + df.iloc[0, 1]).item()
-    #         /
-    #         ''' % (self.col_defs_str, self.num_rows - 1))
-    #     self.query(udf_sql)
-    #     print(udf_sql)
-    #     select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
-    #     print(select_sql)
-    #     rows = self.query(select_sql)
-    #     self.assertEqual(self.num_rows, len(rows))
-    #
-    #
-    # def test_dataframe_set_emits(self):
-    #     """
-    #     This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 10KB,
-    #     where the memory block snapshots are retrieved during the first/last get+emit
-    #     of a batch of 2^14 = 16384 rows. In total, 2^3 = 8 batches are retrieved and emitted.
-    #     """
-    #     batch_count = 8
-    #     batch_size = self.num_rows / batch_count
-    #     udf_sql = udf.fixindent('''
-    #                 CREATE OR REPLACE PYTHON3 SET SCRIPT
-    #                 foo(%s)
-    #                 EMITS(%s) AS
-    #
-    #                 import tracemalloc
-    #                 import gc
-    #                 tracemalloc.start()
-    #
-    #                 def process_df(ctx):
-    #                     df = ctx.get_dataframe(num_rows=%d)
-    #                     ctx.emit(df)
-    #
-    #                 def run(ctx):
-    #
-    #                     for batch_idx in range(%d):
-    #                         print(f"Processing batch {batch_idx}", flush=True)
-    #
-    #                         process_df(ctx)
-    #                         if batch_idx == 0:
-    #                             gc.collect()
-    #                             snapshot_begin = tracemalloc.take_snapshot()
-    #
-    #                         if batch_idx == (%d - 1):
-    #                             gc.collect()
-    #                             snapshot_end = tracemalloc.take_snapshot()
-    #                             top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
-    #                             first_item = top_stats_begin_end[0] #First item is always the largest one
-    #                             print(f"Largest memory item is {first_item}", flush=True)
-    #                             if first_item.size_diff > 10000:
-    #                                 raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
-    #                 /
-    #                 ''' % (self.col_defs_str, self.col_defs_str, batch_size, batch_count, batch_count))
-    #     print(udf_sql)
-    #     self.query(udf_sql)
-    #     select_sql = 'SELECT foo(%s) FROM TEST1' % self.col_names_str
-    #     print(select_sql)
-    #     rows = self.query(select_sql)
-    #     self.assertEqual(self.num_rows, len(rows))
+
+    def test_dataframe_scalar_returns(self):
+        """
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 100KB, where
+        the memory block snapshots are retrieved during the first/last invocation of the scalar UDF.
+        Reasoning for 100KB is that the number of rows is > 100K, so if there was 1 Byte leaking during every execution,
+        it would be found here.
+        """
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
+            foo(%s)
+            RETURNS DECIMAL(10,5) AS
+
+
+            %%perNodeAndCallInstanceLimit 1;
+
+            import tracemalloc
+            import gc
+            snapshot_begin = None
+            memory_check_executed = False
+            tracemalloc.start()
+            counter = 0
+
+            def run(ctx):
+                df = ctx.get_dataframe()
+                global memory_check_executed
+                global snapshot_begin
+                global counter
+                if counter == 0:
+                    print("Retrieving start snapshot", flush=True)
+                    snapshot_begin = tracemalloc.take_snapshot()
+                if counter == %s:
+                    assert memory_check_executed == False #Sanity check for row number
+                    print("Checking memory usage", flush=True)
+                    gc.collect()
+                    snapshot_end = tracemalloc.take_snapshot()
+                    top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
+                    first_item = top_stats_begin_end[0] #First item is always the largest one
+                    if first_item.size_diff > 100000:
+                        raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
+                    memory_check_executed = True
+                counter = counter + 1
+
+                return (df.iloc[0, 0] + df.iloc[0, 1]).item()
+            /
+            ''' % (self.col_defs_str, self.num_rows - 1))
+        self.query(udf_sql)
+        print(udf_sql)
+        select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertEqual(self.num_rows, len(rows))
+
+
+    def test_dataframe_set_emits(self):
+        """
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 10KB,
+        where the memory block snapshots are retrieved during the first/last get+emit
+        of a batch of 2^14 = 16384 rows. In total, 2^3 = 8 batches are retrieved and emitted.
+        """
+        batch_count = 8
+        batch_size = self.num_rows / batch_count
+        udf_sql = udf.fixindent('''
+                    CREATE OR REPLACE PYTHON3 SET SCRIPT
+                    foo(%s)
+                    EMITS(%s) AS
+
+                    import tracemalloc
+                    import gc
+                    tracemalloc.start()
+
+                    def process_df(ctx):
+                        df = ctx.get_dataframe(num_rows=%d)
+                        ctx.emit(df)
+
+                    def run(ctx):
+
+                        for batch_idx in range(%d):
+                            print(f"Processing batch {batch_idx}", flush=True)
+
+                            process_df(ctx)
+                            if batch_idx == 0:
+                                gc.collect()
+                                snapshot_begin = tracemalloc.take_snapshot()
+
+                            if batch_idx == (%d - 1):
+                                gc.collect()
+                                snapshot_end = tracemalloc.take_snapshot()
+                                top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
+                                first_item = top_stats_begin_end[0] #First item is always the largest one
+                                print(f"Largest memory item is {first_item}", flush=True)
+                                if first_item.size_diff > 10000:
+                                    raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
+                    /
+                    ''' % (self.col_defs_str, self.col_defs_str, batch_size, batch_count, batch_count))
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(%s) FROM TEST1' % self.col_names_str
+        print(select_sql)
+        rows = self.query(select_sql)
+        self.assertEqual(self.num_rows, len(rows))
 
 
 if __name__ == '__main__':
