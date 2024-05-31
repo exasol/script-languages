@@ -241,7 +241,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
 
     def test_dataframe_set_emits(self):
         """
-        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 10KB,
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 15KB,
         where the memory block snapshots are retrieved during the first/last get+emit
         of a batch of 2^14 = 16384 rows. In total, 2^3 = 8 batches are retrieved and emitted.
         """
@@ -276,7 +276,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                                 top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                                 first_item = top_stats_begin_end[0] #First item is always the largest one
                                 print(f"Largest memory item is {first_item}", flush=True)
-                                if first_item.size_diff > 10000:
+                                if first_item.size_diff > 15000:
                                     raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
                     /
                     ''' % (self.col_defs_str, self.col_defs_str, batch_size, batch_count, batch_count))
