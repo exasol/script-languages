@@ -56,9 +56,9 @@ if($rscript_binary eq ''){
 
 my $combining_template = "library(remotes)\n<<<<0>>>>";
 my @separators = ("\n");
-my @templates = ('install_version("<<<<0>>>>",NULL,repos="http://cran.r-project.org", Ncpus=4)');
+my @templates = ('install_version("<<<<0>>>>",NULL,repos="https://cloud.r-project.org", Ncpus=4)');
 if($with_versions){  
-    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>",repos="http://cran.r-project.org", Ncpus=4)');
+    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>",repos="https://cloud.r-project.org", Ncpus=4)');
 }
 
 sub identity {
@@ -96,7 +96,7 @@ if($script ne ""){
     print FH $script;
     close(FH);
     my $cmd = "$rscript_binary '$filename'";
-    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"remotes\",repos=\"http://cran.r-project.org\")'",$dry_run);
+    package_mgmt_utils::execute("$rscript_binary -e 'install.packages(\"remotes\",repos=\"https://cloud.r-project.org\")'",$dry_run);
     print "Executing:\n$script\n";
     package_mgmt_utils::execute($cmd,$dry_run);
     unlink($filename) or die "Can't delete $filename: $!\n";
