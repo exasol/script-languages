@@ -247,39 +247,39 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
         """
         batch_count = 8
         batch_size = self.num_rows / batch_count
-        udf_sql = udf.fixindent('''
+        udf_sql = udf.fixindent(f'''
                     CREATE OR REPLACE PYTHON3 SET SCRIPT
-                    foo(%s)
-                    EMITS(%s) AS
+                    foo({self.col_defs_str})
+                    EMITS({self.col_defs_str}) AS
 
                     import tracemalloc
                     import gc
                     tracemalloc.start()
 
                     def process_df(ctx):
-                        df = ctx.get_dataframe(num_rows=%d)
+                        df = ctx.get_dataframe(num_rows={batch_size})
                         ctx.emit(df)
 
                     def run(ctx):
 
-                        for batch_idx in range(%d):
-                            print(f"Processing batch {batch_idx}", flush=True)
+                        for batch_idx in range({batch_count}):
+                            print(f"Processing batch {{batch_idx}}", flush=True)
 
                             process_df(ctx)
                             if batch_idx == 0:
                                 gc.collect()
                                 snapshot_begin = tracemalloc.take_snapshot()
 
-                            if batch_idx == (%d - 1):
+                            if batch_idx == ({batch_count} - 1):
                                 gc.collect()
                                 snapshot_end = tracemalloc.take_snapshot()
                                 top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                                 first_item = top_stats_begin_end[0] #First item is always the largest one
-                                print(f"Largest memory item is {first_item}", flush=True)
+                                print(f"Largest memory item is {{first_item}}", flush=True)
                                 if first_item.size_diff > 15000:
-                                    raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
+                                    raise RuntimeError(f"scalar emit UDF uses too much memory: {{first_item}}")
                     /
-                    ''' % (self.col_defs_str, self.col_defs_str, batch_size, batch_count, batch_count))
+                    ''')
         print(udf_sql)
         self.query(udf_sql)
         select_sql = 'SELECT foo(%s) FROM TEST1' % self.col_names_str
