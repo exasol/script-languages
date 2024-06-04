@@ -246,7 +246,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
         of a batch of 2^14 = 16384 rows. In total, 2^3 = 8 batches are retrieved and emitted.
         """
         batch_count = 8
-        batch_size = self.num_rows / batch_count
+        batch_size = int(self.num_rows / batch_count)
         udf_sql = udf.fixindent(f'''
                     CREATE OR REPLACE PYTHON3 SET SCRIPT
                     foo({self.col_defs_str})
