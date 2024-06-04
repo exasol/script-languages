@@ -15,12 +15,12 @@ phases:
 
   install:
     runtime-versions:
-      python: 3.8
+      python: 3.10
     commands:
       - git submodule update --init --recursive
       - curl -sSL https://install.python-poetry.org | python3 -
       - export PATH=$PATH:$HOME/.local/bin
-      - poetry env use $(command -v "python3.8")
+      - poetry env use $(command -v "python3.10")
       - poetry install
 
   pre_build:
