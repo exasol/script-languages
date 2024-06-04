@@ -16,8 +16,6 @@ jobs:
     - name: Init submodules
       run: git submodule update --init --recursive
 
-    - uses: ./.github/actions/prepare_poetry_env
-
     - name: Setup Python & Poetry Environment
       uses: exasol/python-toolbox/.github/actions/python-environment@0.12.0
       with:
