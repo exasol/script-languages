@@ -686,13 +686,13 @@ setuptools = ">=70.0.0,<71.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "1.3.0"
+version = "1.3.1"
 description = "Manages AWS cloud CI build infrastructure."
 optional = false
 python-versions = "<4.0,>=3.10.0"
 files = [
-    {file = "exasol_script_languages_container_ci_setup-1.3.0-py3-none-any.whl", hash = "sha256:b34f249146251c784333abc89f3476ee6ab5a5b235bcb797529f07840cb7f96b"},
-    {file = "exasol_script_languages_container_ci_setup-1.3.0.tar.gz", hash = "sha256:03324f759b3ef50717f8a073d089a15a364dd4514d4aa48f495511d5eaf82923"},
+    {file = "exasol_script_languages_container_ci_setup-1.3.1-py3-none-any.whl", hash = "sha256:5e203de2f90229db3e6302c204b147b5a378bf32887e6a3388df2f497f74c76b"},
+    {file = "exasol_script_languages_container_ci_setup-1.3.1.tar.gz", hash = "sha256:81bca46204ed99990d394915c3fc0800fc69e884ed5ecad05608fb5617529cd8"},
 ]
 
 [package.dependencies]
@@ -2231,4 +2231,4 @@ test = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-it
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4"
-content-hash = "d336ceccd9ce2f9c8f0229dec0d33c8f23faa437ada3f72451c8b2f3ca928873"
+content-hash = "099b3b75ea9d6ac0de1a7f400116a4d91cd41b5fdb95952ba9f0b862bd71beea"
