@@ -11,15 +11,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Init submodules
       run: git submodule update --init --recursive
 
-    - uses: ./.github/actions/prepare_poetry_env
-
-    - name: Setup poetry env
-      run:  bash scripts/setup_poetry_env.sh "python3.8"
+    - name: Setup Python & Poetry Environment
+      uses: exasol/python-toolbox/.github/actions/python-environment@0.12.0
+      with:
+        python-version: "3.10"
+        poetry-version: '1.8.2'
 
     - name: Run githooks/update_aws_buildspec.sh
       run: bash githooks/update_aws_buildspec.sh

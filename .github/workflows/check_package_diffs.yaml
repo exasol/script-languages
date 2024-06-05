@@ -10,15 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - uses: ./.github/actions/prepare_poetry_env
+    - name: Setup Python & Poetry Environment
+      uses: exasol/python-toolbox/.github/actions/python-environment@0.12.0
+      with:
+        python-version: "3.10"
+        poetry-version: '1.8.2'
 
     - name: Setup Poetry
       run: |
-        PYTHON_BIN=$(command -v "python3.8")
+        PYTHON_BIN=$(command -v "python3.10")
         poetry env use "$PYTHON_BIN"
         poetry install
         poetry_env_path=$(poetry env info --path)
