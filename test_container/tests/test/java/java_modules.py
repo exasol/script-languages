@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -13,6 +14,11 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework import docker_db_environment
 from exasol_python_test_framework.udf import useData, expectedFailure
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
+
+def bucket_fs_port_from_environment_info_file():
+    with open("/environment_info.json", "r") as f:
+        env_info_dict = json.load(f)
+        return env_info_dict["database_info"]["ports"]["bucketfs"]
 
 script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 java_udf_dir = script_dir / "resources/java_udf"
@@ -50,10 +56,12 @@ class JavaModules(udf.TestCase):
         with zipfile.ZipFile(self.java_udf_jar_java17, 'r') as zip:
             assert "module-info.class" in zip.namelist()
 
+
     def upload_to_bucketfs(self, path: Path) -> str:
         docker_db_container = self.env.get_docker_db_container()
         docker_db_ip = self.env.get_ip_address_of_container(docker_db_container)
-        upload_url = f"http://{docker_db_ip}:2580/myudfs/{path.name}"
+        bucketfs_port = bucket_fs_port_from_environment_info_file()
+        upload_url = f"http://{docker_db_ip}:{bucketfs_port}/myudfs/{path.name}"
         username = "w"
         password = "write"
         print(f"Trying to upload to {upload_url}")
