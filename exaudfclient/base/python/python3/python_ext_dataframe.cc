@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "exaudflib/swig/swig_common.h"
 #include "debug_message.h"
 
