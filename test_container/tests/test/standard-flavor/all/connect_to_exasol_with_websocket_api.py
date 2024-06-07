@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
-
+import json
 
 from exasol_python_test_framework import udf
 
 
+def db_port_from_environment_info_file():
+    with open("/environment_info.json", "r") as f:
+        env_info_dict = json.load(f)
+        return env_info_dict["database_info"]["ports"]["database"]
+
+
 class WebsocketAPIConnectionTest(udf.TestCase):
     # TODO use dsn and credentials injected into the testcase
-    connection = "localhost:8888"
+    db_port = db_port_from_environment_info_file()
+    connection = f"localhost:{db_port}"
     user = "sys"
     pwd = "exasol"
 
