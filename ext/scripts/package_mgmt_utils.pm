@@ -5,7 +5,7 @@ use File::Find;
 
 package package_mgmt_utils;
 
-#use Data::Dumper;
+use Data::Dumper;
 
 sub generate_joined_and_transformed_string_from_file{
     my ($file, $element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref) = @_;
@@ -17,17 +17,31 @@ sub generate_joined_and_transformed_string_from_file{
 
 
 sub generate_joined_and_transformed_string_from_files {
-    my (@files, $element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref) = @_;
+    my ($element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref, $files_ref) = @_;
     my %transformed_lines;
-    for (my $i=0; $i <= $#files; $i++) {
+    my @files = @$files_ref;
+    my $file = '';
+    foreach $file ( @files ) {
         my @transformed_lines_for_current_file = generate_transformed_lines_for_templates(
-            $files[$i], $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
-        foreach (@transformed_lines_for_current_file) {
-            $transformed_lines{$_} = 1;
+            $file, $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
+        my $line_ref = '';
+        foreach $line_ref ( @transformed_lines_for_current_file ) {
+            my @lines = @$line_ref;
+            my $line = '';
+            foreach $line ( @lines) {
+                $transformed_lines{$line} = 1;
+            }
         }
     }
-    my @transformed_lines_arr = keys %transformed_lines;
-    my $final_string = generate_joined_string_from_lines(\@transformed_lines_arr, $combining_template, $separators_ref);
+
+    my @transformed_lines_arr = sort( keys %transformed_lines );
+
+    if( !@transformed_lines_arr ){
+        return "";
+    }
+
+    my @transformed_lines_arr_as_ref = ( \@transformed_lines_arr );
+    my $final_string = generate_joined_string_from_lines(\@transformed_lines_arr_as_ref, $combining_template, $separators_ref);
     return $final_string;
 }
 
@@ -239,15 +253,15 @@ sub print_usage_and_abort{
 
 
 sub merge_package_files {
-    my ($base_file, $base_search_dir,$file_pattern) = @_;
-    my @result = $base_file;
+    my ($base_file, $base_search_dir, $file_pattern) = @_;
+    my @result = ($base_file);
 
-    find(sub {
-      if (-f and /\.$file_pattern$/) {
-        push(@result, $_);
+    File::Find::find(sub {
+      if (-f and /^$file_pattern$/) {
+        push(@result, $File::Find::name);
       }
     }, $base_search_dir);
-    return @result
+    return @result;
 }
 
 1;

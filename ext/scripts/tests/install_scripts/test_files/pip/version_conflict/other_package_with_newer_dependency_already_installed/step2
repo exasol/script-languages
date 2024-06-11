@@ -1,0 +1,2 @@
+azure-storage-queue|1.1.0 #depends on azure-common>=1.1.28
+

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -W
+#!/usr/bin/perl -w
 
 =pod
  
@@ -48,7 +48,7 @@ GetOptions (
             "ignore-installed" => \$ignore_installed,
             "use-deprecated-legacy-resolver" => \$use_deprecated_legacy_resolver,
             "python-binary=s" => \$python_binary,
-            "ancestor-pip-package-root-path" => \$ancestor_pip_package_root_path
+            "ancestor-pip-package-root-path=s" => \$ancestor_pip_package_root_path
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
@@ -115,7 +115,7 @@ if($ancestor_pip_package_root_path eq '') {
     my @all_files = package_mgmt_utils::merge_package_files($file, $ancestor_pip_package_root_path, 'python3_pip_packages');
     $cmd =
        package_mgmt_utils::generate_joined_and_transformed_string_from_files(
-           @all_files, $element_separator, $combining_template, \@templates, \@separators, \@rendered_line_transformation_functions);
+           $element_separator, $combining_template, \@templates, \@separators, \@rendered_line_transformation_functions, \@all_files);
 }
 
 if($with_versions){
