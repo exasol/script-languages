@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -W
 
 =pod
  
@@ -18,6 +18,7 @@
     --ignore-installed                    Set the --ignore-installed option for pip
     --use-deprecated-legacy-resolver      Set the --use-deprecated=legacy-resolver option for pip
     --python-binary                       Python-binary to use for the installation
+    --ancestor-pip-package-root-path      Base directory of pip package files for previous build steps
                                      
 =cut
 
@@ -36,6 +37,7 @@ my $allow_no_version = 0;
 my $allow_no_version_for_urls = 0;
 my $ignore_installed = 0;
 my $use_deprecated_legacy_resolver = 0;
+my $ancestor_pip_package_root_path = '';
 GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
@@ -45,7 +47,8 @@ GetOptions (
             "allow-no-version-for-urls" => \$allow_no_version_for_urls,
             "ignore-installed" => \$ignore_installed,
             "use-deprecated-legacy-resolver" => \$use_deprecated_legacy_resolver,
-            "python-binary=s" => \$python_binary
+            "python-binary=s" => \$python_binary,
+            "ancestor-pip-package-root-path" => \$ancestor_pip_package_root_path
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
@@ -68,10 +71,9 @@ if($use_deprecated_legacy_resolver){
   push @pip_parameters, "--use-deprecated=legacy-resolver";
 }
 
-my $constraints_file_path = "/tmp/pip_constraints.txt"; 
 my $pip_parameters_str = join( ' ', @pip_parameters);
 my $element_separator = '\\|';
-my $combining_template = "$python_binary -m pip install $pip_parameters_str -c $constraints_file_path --no-cache-dir <<<<0>>>>";
+my $combining_template = "$python_binary -m pip install $pip_parameters_str --no-cache-dir <<<<0>>>>";
 my @templates = ("'<<<<0>>>>'");
 if($with_versions){
     @templates=("'<<<<0>>>>==<<<<1>>>>'")
@@ -103,9 +105,18 @@ if($with_versions and $allow_no_version){
     @rendered_line_transformation_functions = (\&replace_missing_version_for_urls);
 }
 
-my $cmd = 
+my $cmd = '';
+
+if($ancestor_pip_package_root_path eq '') {
+ $cmd =
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
         $file, $element_separator, $combining_template, \@templates, \@separators, \@rendered_line_transformation_functions);
+} else {
+    my @all_files = package_mgmt_utils::merge_package_files($file, $ancestor_pip_package_root_path, 'python3_pip_packages');
+    $cmd =
+       package_mgmt_utils::generate_joined_and_transformed_string_from_files(
+           @all_files, $element_separator, $combining_template, \@templates, \@separators, \@rendered_line_transformation_functions);
+}
 
 if($with_versions){
     if (index($cmd, "==<<<<1>>>>") != -1) {
@@ -114,7 +125,5 @@ if($with_versions){
 }
 
 if($cmd ne ""){
-   my $pip_freeze_cmd="$python_binary -m pip freeze | grep '==' | sed 's/==/>=/' > $constraints_file_path";
-   package_mgmt_utils::execute($pip_freeze_cmd,$dry_run);
    package_mgmt_utils::execute($cmd,$dry_run);
 }

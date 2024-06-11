@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+use File::Find;
+
 package package_mgmt_utils;
 
 #use Data::Dumper;
@@ -10,6 +12,22 @@ sub generate_joined_and_transformed_string_from_file{
     my @transformed_lines = generate_transformed_lines_for_templates(
         $file, $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
     my $final_string = generate_joined_string_from_lines(\@transformed_lines, $combining_template,, $separators_ref);
+    return $final_string;
+}
+
+
+sub generate_joined_and_transformed_string_from_files {
+    my (@files, $element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref) = @_;
+    my %transformed_lines;
+    for (my $i=0; $i <= $#files; $i++) {
+        my @transformed_lines_for_current_file = generate_transformed_lines_for_templates(
+            $files[$i], $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
+        foreach (@transformed_lines_for_current_file) {
+            $transformed_lines{$_} = 1;
+        }
+    }
+    my @transformed_lines_arr = keys %transformed_lines;
+    my $final_string = generate_joined_string_from_lines(\@transformed_lines_arr, $combining_template, $separators_ref);
     return $final_string;
 }
 
@@ -219,5 +237,17 @@ sub print_usage_and_abort{
     exit($exitcode);
 }
 
-1;
 
+sub merge_package_files {
+    my ($base_file, $base_search_dir,$file_pattern) = @_;
+    my @result = $base_file;
+
+    find(sub {
+      if (-f and /\.$file_pattern$/) {
+        push(@result, $_);
+      }
+    }, $base_search_dir);
+    return @result
+}
+
+1;
