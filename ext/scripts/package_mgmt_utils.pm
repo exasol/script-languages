@@ -251,17 +251,31 @@ sub print_usage_and_abort{
     exit($exitcode);
 }
 
+sub find_files_matching_pattern {
+    my ($dir, $pattern) = @_;
+    my @files;
+
+    opendir(my $dh, $dir) or die "Can't open directory $dir: $!";
+    while (my $file = readdir($dh)) {
+        next if ($file =~ /^\./);  # Skip hidden files
+        my $path = "$dir/$file";
+        if (-d $path) {
+            # Recursively traverse subdirectories
+            push(@files, find_files_matching_pattern($path, $pattern));
+        } elsif (-f $path and $file =~ /^$pattern$/) {
+            push(@files, $path);
+        }
+    }
+    closedir($dh);
+
+    return @files;
+}
 
 sub merge_package_files {
     my ($base_file, $base_search_dir, $file_pattern) = @_;
-    my @result = ($base_file);
 
-    File::Find::find(sub {
-      if (-f and /^$file_pattern$/) {
-        push(@result, $File::Find::name);
-      }
-    }, $base_search_dir);
-    return @result;
+    my @files_in_search_dir = find_files_matching_pattern($base_search_dir, $file_pattern);
+    return ($base_file, @files_in_search_dir);
 }
 
 1;

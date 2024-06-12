@@ -112,29 +112,40 @@ TEST_OUTPUT=$(run_install_must_fail "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-common==1.1.28' 'azure-common==1.1.4'"
 echo
 
+
 echo ./install_via_pip.pl installing with ancestors but all empty
 TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/empty/step2 --ancestor-pip-package-root-path test_files/pip/empty/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
 assert "$TEST_OUTPUT" ""
 echo
+
 
 echo ./install_via_pip.pl installing with ancestors and correct dependency
 TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/no_version_conflict/dependency_already_installed/step2 --ancestor-pip-package-root-path test_files/pip/no_version_conflict/dependency_already_installed/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-batch==1.0.0' 'azure-common==1.1.4'"
 echo
 
+
 echo ./install_via_pip.pl installing with ancestors and dependency with wrong version must fail
 TEST_OUTPUT=$(run_install_must_fail "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/version_conflict/dependency_already_installed/step2 --ancestor-pip-package-root-path test_files/pip/version_conflict/dependency_already_installed/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-batch==1.0.0' 'azure-common==1.1.28'"
 echo
+
 
 echo ./install_via_pip.pl installing with ancestors and package which has a dependency to an older package must fail
 TEST_OUTPUT=$(run_install_must_fail "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/version_conflict/other_package_with_older_dependency_already_installed/step2 --ancestor-pip-package-root-path test_files/pip/version_conflict/other_package_with_older_dependency_already_installed/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-batch==1.0.0' 'azure-storage-queue==1.1.0'"
 echo
 
+
 echo ./install_via_pip.pl installing with ancestors and package which has a dependency to a newer package must fail
 TEST_OUTPUT=$(run_install_must_fail "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/version_conflict/other_package_with_newer_dependency_already_installed/step2 --ancestor-pip-package-root-path test_files/pip/version_conflict/other_package_with_newer_dependency_already_installed/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-batch==1.0.0' 'azure-storage-queue==1.1.0'"
+echo
+
+
+echo ./install_via_pip.pl installing with multiple ancestors
+TEST_OUTPUT=$(run_install_must_fail "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/no_version_conflict/multiple_ancestors/step3 --ancestor-pip-package-root-path test_files/pip/no_version_conflict/multiple_ancestors/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
+assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-batch==14.2.0' 'azure-common==1.1.28' 'azure-storage-queue==1.1.0'"
 echo
 
 check_for_failed_tests
