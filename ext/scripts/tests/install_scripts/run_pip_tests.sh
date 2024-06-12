@@ -144,7 +144,7 @@ echo
 
 
 echo ./install_via_pip.pl installing with multiple ancestors
-TEST_OUTPUT=$(run_install_must_fail "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/no_version_conflict/multiple_ancestors/step3 --ancestor-pip-package-root-path test_files/pip/no_version_conflict/multiple_ancestors/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
+TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/no_version_conflict/multiple_ancestors/step3 --ancestor-pip-package-root-path test_files/pip/no_version_conflict/multiple_ancestors/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-batch==14.2.0' 'azure-common==1.1.28' 'azure-storage-queue==1.1.0'"
 echo
 
