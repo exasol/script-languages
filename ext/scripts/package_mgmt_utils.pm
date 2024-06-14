@@ -17,16 +17,11 @@ sub generate_joined_and_transformed_string_from_file{
 sub generate_joined_and_transformed_string_from_files {
     my ($element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref, $files_ref) = @_;
     my %transformed_lines;
-    my @files = @$files_ref;
-    my $file = '';
-    foreach $file ( @files ) {
+    foreach my $file ( @$files_ref ) {
         my @transformed_lines_for_current_file = generate_transformed_lines_for_templates(
             $file, $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
-        my $line_ref = '';
-        foreach $line_ref ( @transformed_lines_for_current_file ) {
-            my @lines = @$line_ref;
-            my $line = '';
-            foreach $line ( @lines) {
+        foreach my $lines_ref ( @transformed_lines_for_current_file ) {
+            foreach my $line ( @$lines_ref) {
                 $transformed_lines{$line} = 1;
             }
         }
