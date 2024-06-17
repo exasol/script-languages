@@ -16,25 +16,31 @@ sub generate_joined_and_transformed_string_from_file{
 
 sub generate_joined_and_transformed_string_from_files {
     my ($element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref, $files_ref) = @_;
-    my %transformed_lines;
+    my @transformed_lines;
     foreach my $file ( @$files_ref ) {
         my @transformed_lines_for_current_file = generate_transformed_lines_for_templates(
             $file, $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
-        foreach my $lines_ref ( @transformed_lines_for_current_file ) {
-            foreach my $line ( @$lines_ref) {
-                $transformed_lines{$line} = 1;
+
+        if (!@transformed_lines) {
+            @transformed_lines = @transformed_lines_for_current_file;
+        } else {
+            if ($#transformed_lines_for_current_file != $#transformed_lines) {
+                die "Internal error processing package file $file\n";
+            }
+            for my $i (0 .. $#transformed_lines_for_current_file) {
+                #Resolve reference for the resulting and new arrays, merge both and assign back the reference to the resulting array
+                my $transformed_lines_for_current_file_part_ref = $transformed_lines_for_current_file[$i];
+                my @transformed_lines_for_current_file_part = @$transformed_lines_for_current_file_part_ref;
+
+                my $transformed_lines_part_ref = $transformed_lines[$i];
+                my @transformed_lines_part = @$transformed_lines_part_ref;
+
+                push (@transformed_lines_part, @transformed_lines_for_current_file_part);
+                $transformed_lines[$i] = \@transformed_lines_part;
             }
         }
     }
-
-    my @transformed_lines_arr = sort( keys %transformed_lines );
-
-    if( !@transformed_lines_arr ){
-        return "";
-    }
-
-    my @transformed_lines_arr_as_ref = ( \@transformed_lines_arr );
-    my $final_string = generate_joined_string_from_lines(\@transformed_lines_arr_as_ref, $combining_template, $separators_ref);
+    my $final_string = generate_joined_string_from_lines(\@transformed_lines, $combining_template, $separators_ref);
     return $final_string;
 }
 
@@ -268,7 +274,7 @@ sub merge_package_files {
     my ($base_file, $base_search_dir, $file_pattern) = @_;
 
     my @files_in_search_dir = find_files_matching_pattern($base_search_dir, $file_pattern);
-    return ($base_file, @files_in_search_dir);
+    return sort ($base_file, @files_in_search_dir);
 }
 
 1;
