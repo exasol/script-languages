@@ -25,7 +25,7 @@ sub generate_joined_and_transformed_string_from_files {
             @transformed_lines = @transformed_lines_for_current_file;
         } else {
             my $transformed_lines_for_current_file_count = scalar @transformed_lines_for_current_file
-            my $transformed_lines_count = sclar @transformed_lines
+            my $transformed_lines_count = scalar @transformed_lines
             if ($transformed_lines_count > 0 and $transformed_lines_for_current_file_count > 0 and $transformed_lines_for_current_file_count != $transformed_lines_count) {
                 die "Internal error processing package file $file. The transformed package files have different number of columns.\n";
             }
