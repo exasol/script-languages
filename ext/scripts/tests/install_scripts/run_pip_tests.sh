@@ -125,6 +125,8 @@ TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file te
 assert "$TEST_OUTPUT" ""
 echo
 
+#Following tests verify the --ancestor-pip-package-root-path parameter
+#However, the scenarios tested here are not exactly the same as in the real SLC builds, because we do not run multiple pip installations (and install the ancestors before) but run only the pip install command for the "current" build step.
 
 echo ./install_via_pip.pl installing with ancestors and correct dependency
 TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/no_version_conflict/dependency_already_installed/step2 --ancestor-pip-package-root-path test_files/pip/no_version_conflict/dependency_already_installed/build_info/packages --python-binary python3 --with-versions $DRY_RUN_OPTION")

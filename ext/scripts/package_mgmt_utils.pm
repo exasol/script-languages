@@ -25,7 +25,7 @@ sub generate_joined_and_transformed_string_from_files {
             @transformed_lines = @transformed_lines_for_current_file;
         } else {
             if ($#transformed_lines_for_current_file != $#transformed_lines) {
-                die "Internal error processing package file $file\n";
+                die "Internal error processing package file $file. The transformed package files have different number of columns.\n";
             }
             for my $i (0 .. $#transformed_lines_for_current_file) {
                 #Resolve reference for the resulting and new arrays, merge both and assign back the reference to the resulting array
@@ -36,6 +36,7 @@ sub generate_joined_and_transformed_string_from_files {
                 my @transformed_lines_part = @$transformed_lines_part_ref;
 
                 push (@transformed_lines_part, @transformed_lines_for_current_file_part);
+                #We need to assign back the reference to the changed array because somewhere in the steps above perl creates a copy of source array.
                 $transformed_lines[$i] = \@transformed_lines_part;
             }
         }
