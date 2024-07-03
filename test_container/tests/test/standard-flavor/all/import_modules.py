@@ -1,17 +1,41 @@
 #!/usr/bin/env python3
-
+from typing import List
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 
-class ScikitLearnTest(udf.TestCase):
-    
+class ImportAllModulesTest(udf.TestCase):
+
     def setUp(self):
-        self.query('create schema scikit_learn', ignore_errors=True)
-    
-    def test_import_scikit_learn_bug_836(self):
+        self.query('create schema import_all_modules', ignore_errors=True)
+
+    def get_all_root_modules(self) -> List[str]:
         self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT scikit_learn.import_scikit_learn() 
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.get_all_root_modules() 
+            EMITS (module_name VARCHAR(200000)) AS
+
+            import sys
+            import pkgutil
+
+            def get_module_names(path):
+                modules = list(module for _, module, _ in pkgutil.iter_modules(path))
+                return modules
+
+            def run(ctx):
+                modules = get_module_names(sys.path)
+                for module in modules:
+                    ctx.emit(module)
+            /
+            '''))
+        rows = self.query('''SELECT import_all_modules.get_all_root_modules() FROM dual''')
+        print("Number of modules:",len(rows))
+        root_modules = [row[0]for row in rows]
+        print(f"Found {len(root_modules)} root modules.")
+        return root_modules
+
+    def create_import_for_all_submodules_udf(self):
+        self.query(udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT import_all_modules.import_all_submodules(root_module_name VARCHAR(200000)) 
             EMITS (module_name VARCHAR(200000), exception_str VARCHAR(200000), status VARCHAR(10)) AS
             
             import sys
@@ -28,6 +52,7 @@ class ScikitLearnTest(udf.TestCase):
                 "urllib3.contrib.socks",
                 "urllib3.contrib.securetransport",
                 "urllib3.contrib.ntlmpool",
+                "urllib3.contrib.emscripten",
                 "simplejson.ordered_dict",
                 "pymemcache.test",
                 "sagemaker.feature_store.feature_processor",
@@ -43,6 +68,7 @@ class ScikitLearnTest(udf.TestCase):
                 "lxml.html.soupparser",
                 "lxml.html.html5parser",
                 "lxml.html.ElementSoup",
+                "lxml.html.clean",
                 "lxml.cssselect",
                 "jsonschema.benchmarks",
                 "numpy.f2py.setup",
@@ -51,6 +77,7 @@ class ScikitLearnTest(udf.TestCase):
                 "numpy.core.setup",
                 "numpy.core.generate_numpy_api",
                 "numpy.core.cversions",
+                "numpy.core.umath_tests",
                 "multiprocess.popen_spawn_win32",
                 "msal.broker",
                 "joblib.externals.loky.backend.popen_loky_win32",
@@ -73,6 +100,7 @@ class ScikitLearnTest(udf.TestCase):
                 "sagemaker.content_types",
                 "pyarrow.libarrow_python_flight",
                 "pyarrow.libarrow_python",
+                "pyarrow.libarrow_python_parquet_encryption",
                 "pyarrow.cuda",
                 "numba.testing.notebook",
                 "numba.np.ufunc.tbbpool",
@@ -90,13 +118,28 @@ class ScikitLearnTest(udf.TestCase):
                 "encodings.oem",
                 "encodings.mbcs",
                 "distutils.msvc9compiler",
+                "distutils.command.bdist_msi",
                 "dbm.gnu",
                 "asyncio.windows_utils",
                 "asyncio.windows_events",
                 "Cython.Debugger",
                 "Cython.Build.Tests",
                 "Cython.Build.IpythonMagic",
-                "Cython.Coverage"
+                "Cython.Coverage",
+                "setuptools.modified",
+                "tqdm.tk",
+                "tqdm.rich",
+                "tqdm.keras",
+                "tqdm.dask",
+                "tqdm.contrib.slack",
+                "tqdm.contrib.discord",
+                "sagemaker.serve.validations.parse_registry_accounts",
+                "pyparsing.diagram",
+                "numba.core.rvsdg_frontend",
+                "msrest.universal_http.aiohttp",
+                "msrest.pipeline.aiohttp",
+                "docker.transport.npipesocket",
+                "docker.transport.npipeconn",
             }
             excluded_submodules = (
                 "sphinxext",
@@ -131,14 +174,6 @@ class ScikitLearnTest(udf.TestCase):
                     self.error_count += 1                                                                                          
                     return self.error_count > self.error_limit
 
-                def import_modules(self):
-                    self.modules = get_module_names(sys.path)
-                    while len(self.modules) > 0:
-                        module = self.modules.pop()
-                        limit_reached = self.import_module(module)
-                        if limit_reached:
-                            break
-
                 def add_submodules(self, module, module_import):
                     if hasattr(module_import,"__path__"):
                         submodule_names = get_module_names(module_import.__path__)
@@ -148,6 +183,14 @@ class ScikitLearnTest(udf.TestCase):
                             if not submodule.startswith("_") and submodule not in self.excluded_submodules
                         ])
 
+                def import_modules(self, root_module: str):
+                    self.modules = [root_module]
+                    while len(self.modules) > 0:
+                        module = self.modules.pop()
+                        limit_reached = self.import_module(module)
+                        if limit_reached:
+                            break
+            
                 def import_module(self, module: str) -> bool:
                     print("========================================================")
                     print("========================================================")
@@ -181,22 +224,26 @@ class ScikitLearnTest(udf.TestCase):
                     module_limit = module_limit,                                                                     
                     excluded_modules = excluded_modules,
                     excluded_submodules = excluded_submodules)
-                importer.import_modules()
+                importer.import_modules(ctx.root_module_name)
             /
             '''))
-        with UdfDebugger(test_case=self):
-            rows = self.query('''SELECT scikit_learn.import_scikit_learn() FROM dual''')
-        print("Number of modules:",len(rows))
-        failed_imports = [(row[0],row[1]) for row in rows if row[2] == "ERROR"]
-        for i in failed_imports:
-            print(i[0])
-        for i in failed_imports:
-            print(i[0], i[1])
-        self.assertEqual(failed_imports,[])
 
+    def test_import_all_modules(self):
+        root_modules = self.get_all_root_modules()
+        self.create_import_for_all_submodules_udf()
+        for root_module in root_modules:
+            # with UdfDebugger(test_case=self):
+            rows = self.query(f'''SELECT import_all_modules.import_all_submodules('{root_module}') FROM dual''')
+            print("Number of modules:", len(rows))
+            failed_imports = [(row[0], row[1]) for row in rows if row[2] == "ERROR"]
+            for i in failed_imports:
+                print(i[0])
+            for i in failed_imports:
+                print(i[0], i[1])
+            self.assertEqual(failed_imports, [])
 
     def tearDown(self):
-        self.query("drop schema scikit_learn cascade")
+        self.query("drop schema import_all_modules cascade", ignore_errors=True)
 
 
 if __name__ == '__main__':

@@ -4,12 +4,15 @@ import time
 import os
 from io import BytesIO
 import tarfile
+import unittest
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework import docker_db_environment
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
+from exasol_python_test_framework.exatest.utils import obj_from_json_file
 
 
+@unittest.skip("""ClassLoader.class.getDeclaredField("usr_paths") in addDirToJavaLibraryPath doesn't work in Java 17""")
 class JavaHive(udf.TestCase):
 
     def setUp(self):
@@ -112,9 +115,10 @@ class JavaHive(udf.TestCase):
                 raise Exception(output)
 
     def upload_hadoop_etl_udf_jar_to_bucket_fs(self, env):
-        docker_db_container = env.get_docker_db_container()
-        docker_db_ip = env.get_ip_address_of_container(docker_db_container)
-        upload_url = "http://{docker_db_ip}:6583/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar".format(
+        env_info = obj_from_json_file("/environment_info.json")
+        docker_db_ip = env_info.database_info.container_info.ip_address
+        bucketfs_port = env_info.database_info.ports.bucketfs
+        upload_url = f"http://{docker_db_ip}:{bucketfs_port}/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar".format(
             docker_db_ip=docker_db_ip)
         username = "w"
         password = "write"  # TOOD hardcoded

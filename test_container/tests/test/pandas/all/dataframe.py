@@ -818,6 +818,36 @@ class PandasDataFrame(udf.TestCase):
                     (datetime.datetime(2020, 7, 27, 14, 22, 33, 673000),)
                 ], rows)
 
+    def test_dataframe_set_emits_timestamp_many_column(self):
+        import datetime
+        emits = [f"ts{i} timestamp" for i in range(40)]
+        emits_str = ",".join(emits)
+        udf_sql = udf.fixindent('''
+            CREATE OR REPLACE PYTHON3 SET SCRIPT foo(sec int) EMITS (%s) AS
+
+            def run(ctx):
+                import pandas as pd
+                import numpy as np
+                from datetime import datetime
+
+                ts1 = pd.Timestamp(datetime(2020, 7, 27, 14, 22, 33, 673251))
+                ts2 = pd.Timestamp(datetime(2021, 7, 27, 14, 22, 33, 673251))
+                df = pd.DataFrame([[ts1, ts2]*20]*40, dtype="datetime64[ns]")
+
+                ctx.emit(df)
+            /
+            ''' % (emits_str))
+        print(udf_sql)
+        self.query(udf_sql)
+        select_sql = 'SELECT foo(1)'
+        print(select_sql)
+        rows = self.query(select_sql)
+        ts1 = datetime.datetime(2020, 7, 27, 14, 22, 33, 673000)
+        ts2 = datetime.datetime(2021, 7, 27, 14, 22, 33, 673000)
+
+        result_rows = [[ts1, ts2] * 20] * 40
+        self.assertRowsEqual(rows, result_rows)
+
     def test_dataframe_set_emits_timestamp_with_timezone_only_fail(self):
         import datetime
         udf_sql = udf.fixindent('''

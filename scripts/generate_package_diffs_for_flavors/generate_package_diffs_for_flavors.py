@@ -114,18 +114,26 @@ def compare_build_step(build_step_path_1: Path, working_copy_1: Path, working_co
                 package_list_working_copy_str_2 = ""
             else:
                 package_list_file_2 = Path(build_step_path_2, "packages", package_list_file_name_2)
-                package_list_working_copy_str_2 = load_package_file_or_alternative(working_copy_2,
-                                                                                   package_list_file_2)
+                if working_copy_1 == working_copy_2 \
+                        and package_list_file_2 == package_list_file_1:
+                    package_list_working_copy_str_2 = ""
+                else:
+                    package_list_working_copy_str_2 = load_package_file_or_alternative(working_copy_2,
+                                                                                       package_list_file_2)
             try:
                 diff_df = compare_package_lists(package_list_working_copy_str_2, package_list_working_copy_str_1)
             except ValueError as ve:
                 raise ValueError(f"Error comparing package lists for file '{package_list_file_1}'", ve)
             new_version1_name = f"Version in {working_copy_2_name}"
             new_version2_name = f"Version in {working_copy_1_name}"
-
+            if package_list_file_name_2 is not None \
+                    and package_list_file_2 == package_list_file_1 \
+                    and working_copy_1 == working_copy_2:
+                diff_df = diff_df[["Package","Version2","Status"]]
+            else:
+                diff_df = diff_df[["Package","Version1","Version2","Status"]]
             diff_df = diff_df.rename(columns={"Version1": new_version1_name,
                                               "Version2": new_version2_name})
-            diff_df = diff_df[["Package",new_version1_name,new_version2_name,"Status"]]
             result[result_key] = diff_df
     return result
 
@@ -271,14 +279,19 @@ def generate_dependency_diff_report_for_all_flavors(working_copy_1_root: Path,
                 diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
                                        relative_flavor_path, working_copy_2_root, working_copy_2_name)
             else:
-                with open(flavor_path / "flavor_base" / "derived_from") as f:
-                    relative_flavor_path_2_str = f.read().strip()
-                relative_flavor_path_2 = Path(relative_flavor_path_2_str)
-                if Path(working_copy_2_root).joinpath(relative_flavor_path_2).exists():
-                    diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
-                                           relative_flavor_path_2, working_copy_2_root, working_copy_2_name)
+                derived_from_file = flavor_path / "flavor_base" / "derived_from"
+                if derived_from_file.is_file():
+                    with open(flavor_path / "flavor_base" / "derived_from") as f:
+                        relative_flavor_path_2_str = f.read().strip()
+                    relative_flavor_path_2 = Path(relative_flavor_path_2_str)
+                    if Path(working_copy_2_root).joinpath(relative_flavor_path_2).exists():
+                        diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
+                                               relative_flavor_path_2, working_copy_2_root, working_copy_2_name)
+                    else:
+                        raise Exception(f"Could not find flavor {relative_flavor_path_2}")
                 else:
-                    raise Exception(f"Could not find flavor {relative_flavor_path_2}")
+                    diffs = compare_flavor(relative_flavor_path, working_copy_1_root, working_copy_1_name,
+                                           relative_flavor_path, working_copy_1_root, working_copy_1_name)
             if len(diffs) > 0:
                 flavor_1 = relative_flavor_path.name
                 flavor_2 = relative_flavor_path_2.name

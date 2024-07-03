@@ -15,3 +15,4 @@ luigi.cfg
 exaudfclient/base/file.txt
 dist
 *.swp
+test_container/tests/test/java/resources/java_udf/target/

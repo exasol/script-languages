@@ -13,6 +13,40 @@ sub generate_joined_and_transformed_string_from_file{
     return $final_string;
 }
 
+
+sub generate_joined_and_transformed_string_from_files {
+    my ($element_separator, $combining_template, $templates_ref, $separators_ref, $rendered_line_transformation_functions_ref, $files_ref) = @_;
+    my @transformed_lines;
+    foreach my $file ( @$files_ref ) {
+        my @transformed_lines_for_current_file = generate_transformed_lines_for_templates(
+            $file, $element_separator, $templates_ref, $rendered_line_transformation_functions_ref);
+
+        if (!@transformed_lines) {
+            @transformed_lines = @transformed_lines_for_current_file;
+        } else {
+            my $transformed_lines_for_current_file_count = scalar @transformed_lines_for_current_file;
+            my $transformed_lines_count = scalar @transformed_lines;
+            if ($transformed_lines_count > 0 and $transformed_lines_for_current_file_count > 0 and $transformed_lines_for_current_file_count != $transformed_lines_count) {
+                die "Internal error processing package file $file. The transformed package files have different number of columns.\n";
+            }
+            for my $i (0 .. $#transformed_lines_for_current_file) {
+                #Resolve reference for the resulting and new arrays, merge both and assign back the reference to the resulting array
+                my $transformed_lines_for_current_file_part_ref = $transformed_lines_for_current_file[$i];
+                my @transformed_lines_for_current_file_part = @$transformed_lines_for_current_file_part_ref;
+
+                my $transformed_lines_part_ref = $transformed_lines[$i];
+                my @transformed_lines_part = @$transformed_lines_part_ref;
+
+                push (@transformed_lines_part, @transformed_lines_for_current_file_part);
+                #We need to assign back the reference to the changed array because somewhere in the steps above perl creates a copy of source array.
+                $transformed_lines[$i] = \@transformed_lines_part;
+            }
+        }
+    }
+    my $final_string = generate_joined_string_from_lines(\@transformed_lines, $combining_template, $separators_ref);
+    return $final_string;
+}
+
 sub generate_joined_string_from_lines{
     my ($lines_ref, $combining_template, $separators_ref) = @_;
     my @separators = @$separators_ref;
@@ -219,5 +253,31 @@ sub print_usage_and_abort{
     exit($exitcode);
 }
 
-1;
+sub find_files_matching_pattern {
+    my ($dir, $pattern) = @_;
+    my @files;
 
+    opendir(my $dh, $dir) or die "Can't open directory $dir: $!";
+    while (my $file = readdir($dh)) {
+        next if ($file =~ /^\./);  # Skip hidden files
+        my $path = "$dir/$file";
+        if (-d $path) {
+            # Recursively traverse subdirectories
+            push(@files, find_files_matching_pattern($path, $pattern));
+        } elsif (-f $path and $file =~ /^$pattern$/) {
+            push(@files, $path);
+        }
+    }
+    closedir($dh);
+
+    return @files;
+}
+
+sub merge_package_files {
+    my ($base_file, $base_search_dir, $file_pattern) = @_;
+
+    my @files_in_search_dir = find_files_matching_pattern($base_search_dir, $file_pattern);
+    return sort ($base_file, @files_in_search_dir);
+}
+
+1;
