@@ -8,6 +8,6 @@ libblas|3.9.0=15_linux64_mkl
 mamba|1.5.1
 ld_impl_linux-64|2.36.1
 cryptography|42.0.7
-libxml2|2.10.3=hca2bb57_4 # Pinned for OpenJDK in build_deps
-icu|70.1=h27087fc_0 # Pinned for OpenJDK in build_deps
-cuda-toolkit|11.8.0
+libxml2|2.12.7=h4c95cb1_3 # Pinned for OpenJDK in build_deps
+icu|73.2=h59595ed_0 # Pinned for OpenJDK in build_deps
+cuda-toolkit|12.4.0
