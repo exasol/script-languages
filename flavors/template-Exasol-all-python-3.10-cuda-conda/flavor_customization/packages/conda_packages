@@ -7,3 +7,4 @@
 # also start a comment after the package definition.
 
 #pysimdjson|4.0.3
+tensorflow|2.16.2=cuda120py310heb3ae67_0

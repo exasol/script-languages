@@ -3,7 +3,7 @@ FROM {{udfclient_deps}}
 RUN mkdir -p /build_info/packages/language_deps
 COPY language_deps/packages/ /build_info/packages/language_deps
 
-ENV CONDA_OVERRIDE_CUDA=11.8
+ENV CONDA_OVERRIDE_CUDA=12.4
 
 RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/language_deps/conda_packages --channel-file /build_info/packages/language_deps/conda_channels --with-versions --conda-binary /bin/micromamba
 
