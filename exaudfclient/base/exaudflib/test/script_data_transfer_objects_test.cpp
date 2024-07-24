@@ -1,4 +1,4 @@
-#include <engine/exscript/script_data_transfer_objects.h>
+#include "exaudflib/swig/script_data_transfer_objects.h"
 #include <gtest/gtest.h>
 
 using namespace ExecutionGraph;
@@ -257,10 +257,4 @@ TEST_F(ConnectionInformationTest, copy)
     EXPECT_TRUE(ca.getUser() == cb.getUser());
     EXPECT_TRUE(ca.getPassword() == cb.getPassword());
     EXPECT_TRUE(ca.hasData() == cb.hasData());
-}
-
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }
