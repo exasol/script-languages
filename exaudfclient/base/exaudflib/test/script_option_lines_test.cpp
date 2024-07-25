@@ -113,3 +113,60 @@ TEST(ScriptOptionLinesTest, ignores_any_other_option) {
     EXPECT_EQ(code, original_code);
 }
 
+
+TEST(ScriptOptionLinesTest, test_all_in_one_line_does_second_option_does_not_work) {
+    /**
+    Verify the wrong behavior and assumptions as described in https://github.com/exasol/script-languages-release/issues/652.
+    Here we call `extractOptionLine()` with the keys in the order of the new implementation (first for key 'jvmoption').
+    This is supposed to not work.
+    */
+    size_t pos;
+    const std::string original_code = "%jar /buckets/bucketfs1/jars/exajdbc.jar; %jvmoption -Xms4m; class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;";
+    std::string code = original_code;
+    const std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    EXPECT_TRUE(res.empty());
+    EXPECT_EQ(code, original_code);
+}
+
+TEST(ScriptOptionLinesTest, test_all_in_one_line_does_first_option_does_work) {
+    /**
+    Verify the wrong behavior and assumptions as described in https://github.com/exasol/script-languages-release/issues/652.
+    Here we call `extractOptionLine()` with the keys in the order of the old implementation (first for key '%jar', then for key 'jvmoption').
+    This is supposed to work.
+    */
+    size_t pos;
+    const std::string original_code = "%jar /buckets/bucketfs1/jars/exajdbc.jar; %jvmoption -Xms4m; class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;";
+    std::string code = original_code;
+    std::string res = extractOptionLine(code, "%jar", whitespace, lineEnd, pos, throwException);
+    EXPECT_EQ(res, "/buckets/bucketfs1/jars/exajdbc.jar");
+    EXPECT_EQ(code, " %jvmoption -Xms4m; class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;");
+    res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    EXPECT_EQ(code, "  class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;");
+}
+
+TEST(ScriptOptionLinesTest, test_values_must_not_contain_spaces) {
+    /**
+    Verify the wrong behavior and assumptions as described in https://github.com/exasol/script-languages-release/issues/878
+    The parser is actually correct, but the client code incorrectly parses the result (see javacontainer_test.cc - quoted_jvm_option)
+    */
+    size_t pos;
+    const std::string original_code =
+        "%jvmoption -Dhttp.agent=\"ABC DEF\";\n\n"
+        "class JVMOPTION_TEST_WITH_SPACE {\n"
+        "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n"
+        "	ctx.emit(\"Success!\");\n"
+        " }\n"
+        "}\n";
+    std::string code = original_code;
+    std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    EXPECT_EQ(res, "-Dhttp.agent=\"ABC DEF\"");
+    const std::string expected_result_code =
+        "\n\n"
+        "class JVMOPTION_TEST_WITH_SPACE {\n"
+        "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n"
+        "	ctx.emit(\"Success!\");\n"
+        " }\n"
+        "}\n";
+    EXPECT_EQ(code, expected_result_code);
+}
+
