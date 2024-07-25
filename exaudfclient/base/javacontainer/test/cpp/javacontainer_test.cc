@@ -109,6 +109,10 @@ TEST(JavaContainer, quoted_jvm_option) {
     const std::vector<std::string> expectedJarPaths = {};
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_jarPaths, expectedJarPaths);
     EXPECT_TRUE(vm.getJavaVMInternalStatus().m_needsCompilation);
+    /*
+     * Note: The option "DEF" is wrong and causes UDF's to crash!
+     *       The correct option would be '-Dhttp.agent=\"ABC DEF\"'
+     */
     const std::vector<std::string> expectedJVMOptions = {   "-Dhttp.agent=\"ABC", "DEF\"", "-Xms128m", "-Xmx128m", "-Xss512k",
                                                             "-XX:ErrorFile=/tmp/hs_err_pid%p.log",
                                                             "-Djava.class.path=/tmp:/exaudf/javacontainer/libexaudf.jar",
