@@ -86,4 +86,36 @@ TEST(JavaContainer, combined_inline_jar) {
 }
 
 
-
+TEST(JavaContainer, quoted_jvm_option) {
+    const std::string script_code =
+        "%jvmoption -Dhttp.agent=\"ABC DEF\";\n\n"
+        "class JVMOPTION_TEST_WITH_SPACE {\n"
+        "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n"
+        "	ctx.emit(\"Success!\");\n"
+        " }\n"
+        "}\n";
+    JavaVMTest vm(script_code);
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/javacontainer");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
+    const std::string expected_script_code =
+        "package com.exasol;\r\n\n\n"
+        "class JVMOPTION_TEST_WITH_SPACE {\n"
+        "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n"
+        "\tctx.emit(\"Success!\");\n"
+         " }\n}\n";
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, expected_script_code);
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/javacontainer/libexaudf.jar");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/tmp:/exaudf/javacontainer/libexaudf.jar");
+    const std::vector<std::string> expectedJarPaths = {};
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_jarPaths, expectedJarPaths);
+    EXPECT_TRUE(vm.getJavaVMInternalStatus().m_needsCompilation);
+    /*
+     * Note: The option "DEF" is wrong and causes UDF's to crash!
+     *       The correct option would be '-Dhttp.agent=\"ABC DEF\"'
+     */
+    const std::vector<std::string> expectedJVMOptions = {   "-Dhttp.agent=\"ABC", "DEF\"", "-Xms128m", "-Xmx128m", "-Xss512k",
+                                                            "-XX:ErrorFile=/tmp/hs_err_pid%p.log",
+                                                            "-Djava.class.path=/tmp:/exaudf/javacontainer/libexaudf.jar",
+                                                            "-XX:+UseSerialGC" };
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_jvmOptions, expectedJVMOptions);
+}

@@ -25,8 +25,14 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y openjdk-11-jdk libzmq3-dev
-    - name: Test
+    - name: Java Tests
       run: |
         export USE_BAZEL_VERSION=6.4.0
         bazel test //javacontainer/test/...
       working-directory: ./exaudfclient/base
+    - name: ExaudfLib Tests
+      run: |
+        export USE_BAZEL_VERSION=6.4.0
+        bazel test //exaudflib/test/...
+      working-directory: ./exaudfclient/base
+
