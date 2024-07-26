@@ -67,20 +67,33 @@ TEST(ScriptOptionLinesTest, need_line_end_character) {
     }, TestException );
 }
 
-TEST(ScriptOptionLinesTest, only_finds_the_first_option) {
+TEST(ScriptOptionLinesTest, only_finds_the_first_option_same_key) {
     size_t pos;
     std::string code =
         "%option myoption; %option mysecondoption;\n"
         "\nmycode";
     const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos, throwException);
-    EXPECT_EQ(res, "myoption");
     const std::string expected_resulting_code =
         " %option mysecondoption;\n"
         "\nmycode";
 
+    EXPECT_EQ(res, "myoption");
     EXPECT_EQ(code, expected_resulting_code);
 }
 
+TEST(ScriptOptionLinesTest, only_finds_the_first_option_different_key) {
+    size_t pos;
+    std::string code =
+        "%option myoption; %otheroption mysecondoption;\n"
+        "\nmycode";
+    const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos, throwException);
+    const std::string expected_resulting_code =
+        " %otheroption mysecondoption;\n"
+        "\nmycode";
+
+    EXPECT_EQ(res, "myoption");
+    EXPECT_EQ(code, expected_resulting_code);
+}
 
 class ScriptOptionLinesInvalidOptionTest : public ::testing::TestWithParam<std::string> {};
 
@@ -159,7 +172,6 @@ TEST(ScriptOptionLinesTest, test_values_must_not_contain_spaces) {
         "}\n";
     std::string code = original_code;
     std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
-    EXPECT_EQ(res, "-Dhttp.agent=\"ABC DEF\"");
     const std::string expected_result_code =
         "\n\n"
         "class JVMOPTION_TEST_WITH_SPACE {\n"
@@ -167,6 +179,7 @@ TEST(ScriptOptionLinesTest, test_values_must_not_contain_spaces) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
+    EXPECT_EQ(res, "-Dhttp.agent=\"ABC DEF\"");
     EXPECT_EQ(code, expected_result_code);
 }
 
