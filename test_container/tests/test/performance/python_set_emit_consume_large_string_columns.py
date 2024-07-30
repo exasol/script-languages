@@ -26,7 +26,7 @@ class SetEmitConsumeLargeStringColumnPythonPeformanceTest(AbstractPerformanceTes
         try:
             os.mkfifo(fifo_filename)
             cmd = '''%(exaplus)s -c %(conn)s -u %(user)s -P %(password)s -s %(schema)s
-                            -no-config -autocommit ON -L -pipe -jdbcparam "validateservercertificate=0"''' % {
+                            -no-config -autocommit ON -L -pipe -jdbcparam validateservercertificate=0''' % {
                                     'exaplus': os.environ.get('EXAPLUS'),
                                     'conn': udf.opts.server,
                                     'user': self.user,

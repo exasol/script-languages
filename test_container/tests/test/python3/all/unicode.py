@@ -14,7 +14,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 class PythonUnicode(udf.TestCase):
     def test_unicode_umlaute(self):
         cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol 
-		-no-config -autocommit ON -L -pipe -jdbcparam "validateservercertificate=0"''' % {
+		-no-config -autocommit ON -L -pipe -jdbcparam validateservercertificate=0''' % {
             'exaplus': os.environ.get('EXAPLUS',
                                       '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
             'conn': udf.opts.server

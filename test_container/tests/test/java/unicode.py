@@ -14,7 +14,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 class JavaUnicode(udf.TestCase):
     def test_unicode_umlaute(self):
         cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol
-		-no-config -autocommit ON -L -pipe -jdbcparam "validateservercertificate=0"''' % {
+		-no-config -autocommit ON -L -pipe -jdbcparam validateservercertificate=0''' % {
 			'exaplus': os.environ.get('EXAPLUS',
 				'/usr/opt/EXASuite-5/EXASolution-5.0.rc1/bin/Console/exaplus'),
 			'conn': udf.opts.server
