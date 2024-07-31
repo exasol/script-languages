@@ -6,6 +6,7 @@ COPY deps/01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 RUN apt-get -y update && \
     apt-get -y install \
         openjdk-17-jdk \
+        openjdk-11-jdk \
         maven \
         locales \
         python3.10-venv \
