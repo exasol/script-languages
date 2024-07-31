@@ -23,7 +23,7 @@ def _find_shared_libraries(prefix,library,p_repository_ctx):
     return path_to_library
 
 def _java_local_repository_impl(repository_ctx):
-    prefix = "/usr/lib/jvm/java-11-openjdk-amd64"
+    prefix = "/usr/lib/jvm/java-17-openjdk-amd64"
     if 'JAVA_PREFIX' in repository_ctx.os.environ:
         prefix = repository_ctx.os.environ['JAVA_PREFIX']
     print("java prefix in environment specified; %s"%prefix)
@@ -33,14 +33,14 @@ def _java_local_repository_impl(repository_ctx):
     defines = '"ENABLE_JAVA_VM"'
     build_file_content = """
 cc_library(
-    name = "{name}",
+    name = "java",
     srcs = glob(["{prefix}/include/*.h"], allow_empty=False),
     hdrs = glob(["{prefix}/include/*.h","{prefix}/include/linux/*.h"], allow_empty=False),
     includes = ["{prefix}/include","{prefix}/include/linux"],
     defines = [{defines}],
     linkopts = ["-ljvm","-L{rpath_libjvm}",'-Wl,-rpath','{rpath_libjvm}'],
     visibility = ["//visibility:public"]
-)""".format( name=repository_ctx.name, defines=defines, prefix="java", rpath_libjvm=path_to_libjvm)
+)""".format( defines=defines, prefix="java", rpath_libjvm=path_to_libjvm)
     print(build_file_content)
 
     repository_ctx.symlink(prefix, "./java")
