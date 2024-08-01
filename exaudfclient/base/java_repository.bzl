@@ -23,7 +23,7 @@ def _find_shared_libraries(prefix,library,p_repository_ctx):
     return path_to_library
 
 def _java_local_repository_impl(repository_ctx):
-    prefix = "/usr/lib/jvm/java-17-openjdk-amd64"
+    prefix = "/usr/lib/jvm/java-11-openjdk-amd64"
     if 'JAVA_PREFIX' in repository_ctx.os.environ:
         prefix = repository_ctx.os.environ['JAVA_PREFIX']
     print("java prefix in environment specified; %s"%prefix)
