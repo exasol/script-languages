@@ -1,5 +1,5 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(["filter_swig_code.py", "build_integrated.py","LICENSE-exasol-script-api.txt",
+exports_files(["filter_swig_code.py", "build_integrated.py",
 	       "create_binary_wrapper.sh", "create_binary_wrapper_valgrind.sh", "create_binary_wrapper_valgrind_massif.sh"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
