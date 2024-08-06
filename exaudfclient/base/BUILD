@@ -127,7 +127,7 @@ cc_binary(
     srcs = ["exaudfclient.cc", "load_dynamic.cc"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["//exaudflib:header", "//:debug_message_h"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
-            ["//exaudflib:exaudflib-deps"] + [ "@libzmq//:zmq", "@protobuf//:protobuf"],
+            ["//exaudflib:exaudflib-deps"] + [ "@zmq//:zmq", "@protobuf//:protobuf"],
     defines = VM_ENABLED_DEFINES,
     data = [":libexaudflib_complete.so"],
 )
