@@ -74,9 +74,6 @@ genrule(
             cp -r -L $(location //:filter_swig_code.py) $(location :exascript_java_tmp.cc) "$$TMPDIR"
             (cd "$$TMPDIR"
             python3 filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
-            ls -la .
-            pwd
-            echo And now...
             cp "$$TMPDIR"/exascript_java.cc $(location :exascript_java.cc)
             cp "$$TMPDIR"/java_src/com/exasol/swig/TableIterator.java $(location :filtered/com/exasol/swig/TableIterator.java)
             cp "$$TMPDIR"/java_src/com/exasol/swig/ResultHandler.java $(location :filtered/com/exasol/swig/ResultHandler.java)
