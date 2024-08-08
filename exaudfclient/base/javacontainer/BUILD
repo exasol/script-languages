@@ -135,8 +135,7 @@ genrule(
             "orig/com/exasol/swig/SWIGTYPE_p_ExecutionGraph__ImportSpecification.java",
             "orig/com/exasol/swig/SWIGVM_datatype_e.java",
             "orig/com/exasol/swig/SWIGVM_itertype_e.java",
-            ],
-    tools = ["//:filter_swig_code.py"]
+            ]
 )
 
 cc_library(

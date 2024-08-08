@@ -1,5 +1,4 @@
 libprotobuf|4.25.3
 zeromq|4.3.5
-openssl|3.3.1
 nss|3.100
 cppzmq|4.10.0
