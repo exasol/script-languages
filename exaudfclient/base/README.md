@@ -52,11 +52,11 @@ With Bazel defines you can specify which language support is actually compiled i
     --define benchmark=true # This language is only for test and development purpose and benchmarks the performance of the C++ Implementation
 
 
-The main targets are //:exaudfclient and //:exaudfclient_py3. The former one compiles with Python 2 support if Python is via defines enable. The later one instead compiles with Python 3 support.
+The main targets are //:exaudfclient and //exaudf:exaudfclient_py3. The former one compiles with Python 2 support if Python is via defines enable. The later one instead compiles with Python 3 support.
 
 ## Visualizing the build dependencies
 
-Bazel allows to query the dependencies of a target. Furthermore, it can export the dependencies as .dot file. With Graphviz you can generate figures from the .dot file. The script visualize_deps.sh and visualize_all.sh wrap this process. The script visualize_all.sh visualizes the dependencies of the main targets //:exaudfclient and //:exaudfclient_py3. The script visualize_deps.sh visualizes the dependencies of given targets.
+Bazel allows to query the dependencies of a target. Furthermore, it can export the dependencies as .dot file. With Graphviz you can generate figures from the .dot file. The script visualize_deps.sh and visualize_all.sh wrap this process. The script visualize_all.sh visualizes the dependencies of the main targets //:exaudfclient and //exaudf:exaudfclient_py3. The script visualize_deps.sh visualizes the dependencies of given targets.
 
     visualize_deps.sh <targets>
 
@@ -70,7 +70,7 @@ The usage of multiple linker namespace requires some precautions in the build pr
 
 ## Precautions in the build process
 
-In the build process you need to be cautious which libraries you link together and that no link leaks symbols from a library in one namespace to a library in the other namespace. Furthermore, you have to build a shared library with all dependency linked to it as output target. In our case, we have to main output targets //:exaudfclient and //:libexaudflib.so. Both get loaded into different linker namespaces. The language container live in the same namespace as //:exaudfclient. This namespace must not know anyhing about protobuf and zeromq, because it is possible that a language container may load protobuf or zeromq in a different version. Protobuf and zeromq are only known in the namespace of //:libexaudflib.so. The target //:libexaudflib.so depends on //exaudflib:exaudflib which contains the logic of the exaudflib. You must not depend on //exaudflib:exaudflib in //:exaudfclient or the langauge container, because this would leak zeromq and protobuf. If you need to depend on the other dependency of //exaudflib:exaudflib which not depend on protobuf or zeromq them self, such as //exaudflib:script_data_transfer_objects, //exaudflib:script_data_transfer_objects_wrapper, //exaudflib:scriptoptionlines, use either their target as self, the collection of libraries //exaudflib:exaudflib-deps or the collection of headers //exaudflib:header.
+In the build process you need to be cautious which libraries you link together and that no link leaks symbols from a library in one namespace to a library in the other namespace. Furthermore, you have to build a shared library with all dependency linked to it as output target. In our case, we have to main output targets //:exaudfclient and //:libexaudflib.so. Both get loaded into different linker namespaces. The language container live in the same namespace as //:exaudfclient. This namespace must not know anyhing about protobuf and zeromq, because it is possible that a language container may load protobuf or zeromq in a different version. Protobuf and zeromq are only known in the namespace of //:libexaudflib.so. The target //:libexaudflib.so depends on //exaudf/exaudflib:exaudflib which contains the logic of the exaudflib. You must not depend on //exaudf/exaudflib:exaudflib in //:exaudfclient or the langauge container, because this would leak zeromq and protobuf. If you need to depend on the other dependency of //exaudf/exaudflib:exaudflib which not depend on protobuf or zeromq them self, such as //exaudf/exaudflib:script_data_transfer_objects, //exaudf/exaudflib:script_data_transfer_objects_wrapper, //exaudf/exaudflib:scriptoptionlines, use either their target as self, the collection of libraries //exaudf/exaudflib:exaudflib-deps or the collection of headers //exaudf/exaudflib:header.
 
 ## Precautions in the implementations
 
