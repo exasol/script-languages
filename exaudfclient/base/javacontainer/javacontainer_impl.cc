@@ -22,7 +22,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
                                         m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL), m_needsCompilation(true) {
 
     stringstream ss;
-    m_exaJavaPath = "/exaudf/javacontainer"; // TODO hardcoded path
+    m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
     DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
     DBG_FUNC_CALL(cerr,importScripts());
     DBG_FUNC_CALL(cerr,getExternalJvmOptions());
