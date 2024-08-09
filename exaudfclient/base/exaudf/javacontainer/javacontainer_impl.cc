@@ -11,8 +11,8 @@
 #include "exascript_java_jni_decl.h"
 
 #include "exaudf/debug_message.h"
-#include "javacontainer/javacontainer.h"
-#include "javacontainer/javacontainer_impl.h"
+#include "exaudf/javacontainer/javacontainer.h"
+#include "exaudf/javacontainer/javacontainer_impl.h"
 #include "exaudf/exaudflib/vm/scriptoptionlines.h"
 
 using namespace SWIGVMContainers;

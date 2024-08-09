@@ -38,11 +38,11 @@
 
 
 #ifdef ENABLE_JAVA_VM
-#include "javacontainer/javacontainer.h"
+#include "exaudf/javacontainer/javacontainer.h"
 #endif //ENABLE_JAVA_VM
 
 #ifdef ENABLE_PYTHON_VM
-#include "python/pythoncontainer.h"
+#include "exaudf/python/pythoncontainer.h"
 #endif //ENABLE_PYTHON_VM
 
 #ifdef UDF_PLUGIN_CLIENT

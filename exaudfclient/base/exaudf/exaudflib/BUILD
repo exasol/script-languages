@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 exports_files(["exascript.i"])
 
-load("//exaudf:variables.bzl", "VM_ENABLED_DEFINES")
+load("//:variables.bzl", "VM_ENABLED_DEFINES")
 
 cc_library(
     name = "scriptoptionlines",
@@ -17,7 +17,7 @@ cc_library(
     srcs = ["swig/script_data_transfer_objects.cc","swig/script_data_transfer_objects.h"],
     hdrs = ["swig/script_data_transfer_objects.h"],
     copts= select({
-        "//exaudf:benchmark": ["-fno-lto"],
+        "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
     }),
     # We deactivate link time optimization for benchmark,
@@ -31,7 +31,7 @@ cc_library(
     deps = [":script_data_transfer_objects"],
     hdrs = ["swig/script_data_transfer_objects_wrapper.h"],
     copts= select({
-        "//exaudf:benchmark": ["-fno-lto"],
+        "//:benchmark": ["-fno-lto"],
         "//conditions:default": []
     }),
     # We deactivate link time optimization for benchmark,

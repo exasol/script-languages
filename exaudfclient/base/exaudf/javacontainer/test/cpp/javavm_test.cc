@@ -1,5 +1,5 @@
-#include "javacontainer/test/cpp/javavm_test.h"
-#include "javacontainer/javacontainer_impl.h"
+#include "exaudf/javacontainer/test/cpp/javavm_test.h"
+#include "exaudf/javacontainer/javacontainer_impl.h"
 #include <string.h>
 
 

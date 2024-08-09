@@ -52,11 +52,11 @@ With Bazel defines you can specify which language support is actually compiled i
     --define benchmark=true # This language is only for test and development purpose and benchmarks the performance of the C++ Implementation
 
 
-The main targets are //:exaudfclient and //exaudf:exaudfclient_py3. The former one compiles with Python 2 support if Python is via defines enable. The later one instead compiles with Python 3 support.
+The main targets are //:exaudfclient and //:exaudfclient_py3. The former one compiles with Python 2 support if Python is via defines enable. The later one instead compiles with Python 3 support.
 
 ## Visualizing the build dependencies
 
-Bazel allows to query the dependencies of a target. Furthermore, it can export the dependencies as .dot file. With Graphviz you can generate figures from the .dot file. The script visualize_deps.sh and visualize_all.sh wrap this process. The script visualize_all.sh visualizes the dependencies of the main targets //:exaudfclient and //exaudf:exaudfclient_py3. The script visualize_deps.sh visualizes the dependencies of given targets.
+Bazel allows to query the dependencies of a target. Furthermore, it can export the dependencies as .dot file. With Graphviz you can generate figures from the .dot file. The script visualize_deps.sh and visualize_all.sh wrap this process. The script visualize_all.sh visualizes the dependencies of the main targets //:exaudfclient and //:exaudfclient_py3. The script visualize_deps.sh visualizes the dependencies of given targets.
 
     visualize_deps.sh <targets>
 

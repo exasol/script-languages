@@ -1,5 +1,5 @@
-#include "javacontainer/javacontainer.h"
-#include "javacontainer/javacontainer_impl.h"
+#include "exaudf/javacontainer/javacontainer.h"
+#include "exaudf/javacontainer/javacontainer_impl.h"
 
 using namespace SWIGVMContainers;
 using namespace std;
