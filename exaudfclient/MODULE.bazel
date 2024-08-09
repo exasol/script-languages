@@ -1,0 +1,3 @@
+module(name="exaudfclient", version = "1.0")
+
+include("//base:base.MODULE.bazel")

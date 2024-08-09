@@ -31,20 +31,21 @@ def _get_lib_glob(binary, version, p_repository_ctx):
     return lib_glob
 
 def _python_local_repository_impl(repository_ctx):
-    python_prefix_env_var = repository_ctx.name.upper() + "_PREFIX"
+    python_version = repository_ctx.attr.python_version
+    python_prefix_env_var = python_version.upper() + "_PREFIX"
     if python_prefix_env_var in repository_ctx.os.environ:
         prefix = repository_ctx.os.environ[python_prefix_env_var]
     else:
         fail("Environment Variable %s not found"%python_prefix_env_var)
     print("python prefix in environment specified; %s"%prefix)
 
-    python_version_env_var = repository_ctx.name.upper() + "_VERSION"
+    python_version_env_var = python_version.upper() + "_VERSION"
     if python_version_env_var in repository_ctx.os.environ:
         version = repository_ctx.os.environ[python_version_env_var]
-        if repository_ctx.name == "python3" and version.startswith("2"):
-            fail("Wrong python version specified in environment variable %s, got binary name '%s', but version number '%s'"%(python_version_env_var,repository_ctx.name,version))
-        if repository_ctx.name == "python" or version.startswith("2"):
-            fail("Python 2 is not supported anymore, but specified in environment variable %s, got %s, %s"%(python_version_env_var,repository_ctx.name,version))
+        if python_version == "python3" and version.startswith("2"):
+            fail("Wrong python version specified in environment variable %s, got binary name '%s', but version number '%s'"%(python_version_env_var,python_version,version))
+        if python_version == "python" or version.startswith("2"):
+            fail("Python 2 is not supported anymore, but specified in environment variable %s, got %s, %s"%(python_version_env_var,python_version,version))
     else:
         fail("Environment Variable %s not found"%python_version_env_var)
     print("python version in environment specified; %s"%version)
@@ -66,7 +67,7 @@ cc_library(
     includes = ["{include_dir}"],
     defines = [{defines}],
     visibility = ["//visibility:public"]
-)""".format(lib_glob=lib_glob[1:], include_dir=include_dir[1:], name=repository_ctx.name, defines=defines_str)
+)""".format(lib_glob=lib_glob[1:], include_dir=include_dir[1:], name=python_version, defines=defines_str)
     print(build_file_content)
 
     repository_ctx.symlink(prefix, "."+prefix)
@@ -75,7 +76,8 @@ cc_library(
 python_local_repository = repository_rule(
     implementation=_python_local_repository_impl,
     local = True,
-    environ = ["PYTHON3_PREFIX", "PYTHON3_VERSION"])
+    environ = ["PYTHON3_PREFIX", "PYTHON3_VERSION"],
+    attrs = {"python_version": attr.string()})
 
 
 def _get_numpy_include_dir(binary,p_repository_ctx):
@@ -117,13 +119,13 @@ def _numpy_local_repository_impl(repository_ctx):
     hdrs = numpy_include_dir + "/*/*.h"
     build_file_content = """
 cc_library(
-    name = "{name}",
+    name = "numpy",
     srcs = [],
     hdrs = glob(["{hdrs}"]),
     includes = ["{includes}"],
     defines = [{defines}],
     visibility = ["//visibility:public"]
-)""".format(hdrs=hdrs, includes=numpy_include_dir, name=repository_ctx.name, defines=defines_str)
+)""".format(hdrs=hdrs, includes=numpy_include_dir, defines=defines_str)
     print(build_file_content)
 
     repository_ctx.symlink(prefix, "."+prefix)

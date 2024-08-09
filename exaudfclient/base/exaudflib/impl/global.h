@@ -1,9 +1,9 @@
 #ifndef EXAUDFCLIENT_EXUDFLIB_GLOBAL_H
 #define EXAUDFCLIENT_EXUDFLIB_GLOBAL_H
 
-#include "exaudflib/swig/script_data_transfer_objects.h"
-#include "exaudflib/zmqcontainer.pb.h"
-#include "exaudflib/swig/swig_common.h"
+#include "base/exaudflib/swig/script_data_transfer_objects.h"
+#include "base/exaudflib/zmqcontainer.pb.h"
+#include "base/exaudflib/swig/swig_common.h"
 #include <zmq.hpp>
 
 namespace exaudflib {

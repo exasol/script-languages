@@ -1,9 +1,9 @@
 #ifndef SWIG_META_DATA_H
 #define SWIG_META_DATA_H
 
-#include "exaudflib/load_dynamic.h"
-#include "exaudflib/swig/swig_common.h"
-#include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
+#include "base/exaudflib/load_dynamic.h"
+#include "base/exaudflib/swig/swig_common.h"
+#include "base/exaudflib/swig/script_data_transfer_objects_wrapper.h"
 
 namespace SWIGVMContainers {
 

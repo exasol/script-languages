@@ -3,11 +3,11 @@
 %}
 
 %{
-#include "exaudflib/swig/swig_result_handler.h"
-#include "exaudflib/swig/swig_meta_data.h"
+#include "base/exaudflib/swig/swig_result_handler.h"
+#include "base/exaudflib/swig/swig_meta_data.h"
 
 using namespace SWIGVMContainers;
-#include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
+#include "base/exaudflib/swig/script_data_transfer_objects_wrapper.h"
 %}
 
 %ignore ExecutionGraph::ConnectionInformationWrapper::ConnectionInformationWrapper;

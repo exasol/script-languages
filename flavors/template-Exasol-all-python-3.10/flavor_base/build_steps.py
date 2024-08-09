@@ -52,7 +52,7 @@ class AnalyzeBuildRun(DockerFlavorAnalyzeImageTask):
                 "language_deps": AnalyzeLanguageDeps}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
-        return {"exaudfclient/base": "exaudfclient/base"}
+        return {"exaudfclient": "exaudfclient"}
 
     def get_path_in_flavor(self):
         return "flavor_base"
@@ -80,7 +80,7 @@ class AnalyzeBaseTestBuildRun(DockerFlavorAnalyzeImageTask):
                 "language_deps": AnalyzeLanguageDeps}
 
     def get_additional_build_directories_mapping(self) -> Dict[str, str]:
-        return {"exaudfclient/base": "exaudfclient/base", "emulator": "emulator"}
+        return {"exaudfclient": "exaudfclient", "emulator": "emulator"}
 
     def get_path_in_flavor(self):
         return "flavor_base"

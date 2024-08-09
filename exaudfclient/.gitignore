@@ -5,3 +5,4 @@ bazel-src
 bazel-testlogs
 graph.in
 graph.png
+MODULE.bazel.lock

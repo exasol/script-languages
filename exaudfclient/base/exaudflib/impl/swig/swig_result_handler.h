@@ -1,13 +1,13 @@
 #ifndef EXAUDFCLIENT_SWIGRESULTHANDLER_H
 #define EXAUDFCLIENT_SWIGRESULTHANDLER_H
 
-#include "exaudflib/swig/swig_common.h"
-#include "exaudflib/swig/swig_result_handler.h"
-#include "exaudflib/impl/swig/swig_general_iterator.h"
-#include "exaudflib/impl/global.h"
-#include "exaudflib/impl/msg_conversion.h"
-#include "exaudflib/impl/socket_low_level.h"
-#include "exaudflib/zmqcontainer.pb.h"
+#include "base/exaudflib/swig/swig_common.h"
+#include "base/exaudflib/swig/swig_result_handler.h"
+#include "base/exaudflib/impl/swig/swig_general_iterator.h"
+#include "base/exaudflib/impl/global.h"
+#include "base/exaudflib/impl/msg_conversion.h"
+#include "base/exaudflib/impl/socket_low_level.h"
+#include "base/exaudflib/zmqcontainer.pb.h"
 
 namespace SWIGVMContainers {
 

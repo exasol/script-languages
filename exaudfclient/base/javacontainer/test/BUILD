@@ -1,6 +1,6 @@
 java_library(
     name = "ExaStackTraceCleaner",
-    srcs = ["//javacontainer:ExaStackTraceCleaner.java"]
+    srcs = ["//base/javacontainer:ExaStackTraceCleaner.java"]
 )
 
 java_test(
@@ -15,7 +15,7 @@ cc_test(
     name = "javacontainer-test",
     srcs = ["cpp/javacontainer_test.cc", "cpp/exaudf_wrapper.cc", "cpp/javavm_test.cc", "cpp/javavm_test.h"],
     deps = [
-        "//javacontainer:javacontainer",
+        "//base/javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
     data = ["test.jar"]

@@ -5,7 +5,7 @@
 #include <vector>
 #include <set>
 
-#include "exaudflib/vm/swig_vm.h"
+#include "base/exaudflib/vm/swig_vm.h"
 #include <jni.h>
 
 #ifdef ENABLE_JAVA_VM

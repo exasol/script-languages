@@ -12,12 +12,12 @@ def _zmq_local_repository_impl(repository_ctx):
     print("zmq include prefix in environment specified; %s"%include_prefix)
     build_file_content = """
 cc_library(
-    name = "{name}",
+    name = "zmq",
     srcs = glob(["zmq/lib/**/libzmq.so"]),
     hdrs = glob(["zmq/include/zmq*"]),
     includes = ["zmq/include/"],
     visibility = ["//visibility:public"]
-)""".format( name=repository_ctx.name)
+)"""
     print(build_file_content)
 
     repository_ctx.symlink(library_prefix, "./zmq/lib")
