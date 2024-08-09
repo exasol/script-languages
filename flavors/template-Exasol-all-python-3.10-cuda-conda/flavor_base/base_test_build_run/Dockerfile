@@ -14,8 +14,10 @@ ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 # We need to build with optimize here, because the debug build fails to run with a runtime linking error regarding protobuf
 RUN ./build.sh --lockfile_mode=off --config no-tty -c dbg --config python --config test-binaries-py3
 RUN cp -r -L bazel-bin/* /exaudf
-RUN ./base/test_udfclient.sh /exaudf/exaudfclient_py3
-RUN ./base/test_udfclient.sh /exaudf/exaudfclient_py3_static
+
+WORKDIR /exaudfclient/base
+RUN ./test_udfclient.sh /exaudf/exaudfclient_py3
+RUN ./test_udfclient.sh /exaudf/exaudfclient_py3_static
 
 WORKDIR /
 RUN mkdir /exasol_emulator
