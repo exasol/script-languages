@@ -28,11 +28,11 @@ jobs:
     - name: Java Tests
       run: |
         export USE_BAZEL_VERSION=7.2.1
-        bazel test //javacontainer/test/...
-      working-directory: ./exaudfclient/base
+        bazel test //base/javacontainer/test/...
+      working-directory: ./exaudfclient/
     - name: ExaudfLib Tests
       run: |
         export USE_BAZEL_VERSION=7.2.1
-        bazel test //exaudflib/test/...
-      working-directory: ./exaudfclient/base
+        bazel test //base/exaudflib/test/...
+      working-directory: ./exaudfclient/
 
