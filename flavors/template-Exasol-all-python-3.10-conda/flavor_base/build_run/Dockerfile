@@ -1,13 +1,13 @@
 FROM {{build_deps}}
 
 RUN mkdir /exaudfclient /exaudf
-COPY exaudfclient/base /exaudfclient/base
+COPY exaudfclient/ /exaudfclient/
 
-WORKDIR /exaudfclient/base
+WORKDIR /exaudfclient/
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/
 ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-RUN ./build.sh --config no-tty --config optimize --config python --config fast-binary-py3
+RUN ./build.sh --lockfile_mode=off --config no-tty --config optimize --config python --config fast-binary-py3
 RUN cp -r -L bazel-bin/* /exaudf
 
 RUN ./test_udfclient.sh /exaudf/exaudfclient_py3

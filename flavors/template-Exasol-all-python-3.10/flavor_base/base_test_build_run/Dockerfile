@@ -24,10 +24,10 @@ RUN true # workaround for https://github.com/moby/moby/issues/37965
 RUN ldconfig
 
 RUN mkdir /exaudfclient /exaudf
-COPY /exaudfclient/base /exaudfclient/base
+COPY /exaudfclient/ /exaudfclient/
 
-WORKDIR /exaudfclient/base
-RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty -c dbg --config python --config test-binaries-py3"]
+WORKDIR /exaudfclient/
+RUN ["/bin/bash", "-c", "source /env && bash build.sh --lockfile_mode=off --config no-tty -c dbg --config python --config test-binaries-py3"]
 RUN cp -r -L bazel-bin/* /exaudf
 RUN ./test_udfclient.sh /exaudf/exaudfclient_py3
 RUN ./test_udfclient.sh /exaudf/exaudfclient_py3_static

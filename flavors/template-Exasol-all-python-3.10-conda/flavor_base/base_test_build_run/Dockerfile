@@ -5,14 +5,14 @@ RUN mkdir /conf /buckets
 RUN ldconfig
 
 RUN mkdir /exaudfclient /exaudf
-COPY /exaudfclient/base /exaudfclient/base
+COPY /exaudfclient/ /exaudfclient/
 
-WORKDIR /exaudfclient/base
+WORKDIR /exaudfclient/
 # We need to build with optimize here, because the debug build fails to run with a runtime linking error regarding protobuf
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/
 ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-RUN ./build.sh --config no-tty -c dbg --config python --config test-binaries-py3
+RUN ./build.sh --lockfile_mode=off --config no-tty -c dbg --config python --config test-binaries-py3
 RUN cp -r -L bazel-bin/* /exaudf
 RUN ./test_udfclient.sh /exaudf/exaudfclient_py3
 RUN ./test_udfclient.sh /exaudf/exaudfclient_py3_static
