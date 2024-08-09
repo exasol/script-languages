@@ -14,8 +14,8 @@ ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 RUN ./build.sh --lockfile_mode=off --config no-tty -c dbg --config python --config test-binaries-py3
 RUN cp -r -L bazel-bin/* /exaudf
-RUN ./test_udfclient.sh /exaudf/exaudfclient_py3
-RUN ./test_udfclient.sh /exaudf/exaudfclient_py3_static
+RUN ./base/test_udfclient.sh /exaudf/exaudfclient_py3
+RUN ./base/test_udfclient.sh /exaudf/exaudfclient_py3_static
 
 WORKDIR /
 RUN mkdir /exasol_emulator

@@ -28,7 +28,7 @@ WORKDIR /exaudfclient/
 RUN ["/bin/bash", "-c", "source /env && bash build.sh --lockfile_mode=off --config no-tty --config optimize --config python --config fast-binary-py3"]
 RUN cp -r -L bazel-bin/* /exaudf
 
-RUN ./test_udfclient.sh /exaudf/exaudfclient_py3
+RUN ./base/test_udfclient.sh /exaudf/exaudfclient_py3
 
 WORKDIR /exaudf
 
