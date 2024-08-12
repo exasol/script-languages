@@ -12,7 +12,7 @@ WORKDIR /exaudfclient/
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/
 ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-RUN ./build.sh --lockfile_mode=off --config no-tty -c dbg --config python --config test-binaries-py3
+RUN ./build.sh --config no-tty -c dbg --config python --config test-binaries-py3
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base

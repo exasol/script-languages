@@ -1,4 +1,4 @@
-build --copt='-std=c++17' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX 
+build --lockfile_mode=off --copt='-std=c++17' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX
 # TODO add environment variables for R libraries
 build:benchmark --define benchmark=true
 build:java  --define java=true --action_env=JAVA_PREFIX

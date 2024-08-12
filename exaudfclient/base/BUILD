@@ -24,7 +24,7 @@ cc_library(
 
 
 # Using cc_binary to build a shared library as output target is a workaround, because
-# Bazel's cc_library are only intermediate stages and can be used as output target.
+# Bazel's cc_library are only intermediate stages and can't be used as output target.
 # It is necessary to include //base/exaudflib:exaudflib into deps and srcs, because
 # otherwise dlmopen won't find the symbols of exaudflib and its dependencies. The target //base/exaudflib:exaudflib-deps
 # won't work either, because it only contains the libraries as dependencies.
