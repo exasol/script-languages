@@ -4,7 +4,7 @@ ENV ENV_NAME="base"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
 ENV MAMBA_EXE="/bin/micromamba"
 
-RUN mkdir /conf /buckets
+RUN mkdir /conf /buckets /nvdriver
 
 COPY --from={{language_deps}} /usr /usr
 RUN true # workaround for https://github.com/moby/moby/issues/37965
