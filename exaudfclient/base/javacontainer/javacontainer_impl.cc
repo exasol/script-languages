@@ -433,7 +433,7 @@ void JavaVMImpl::registerFunctions() {
 }
 
 void JavaVMImpl::setClasspath() {
-    m_exaJarPath = m_exaJavaPath + "/libexaudf.jar";
+    m_exaJarPath = m_exaJavaPath + "/exaudf_deploy.jar";
     m_classpath = m_exaJarPath;
 }
 
