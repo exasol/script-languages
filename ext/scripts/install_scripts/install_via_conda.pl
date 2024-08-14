@@ -122,7 +122,7 @@ sub generate_channel_args{
 sub run_install_command{
     my ($file, $dry_run, $with_versions, $allow_no_version, $channel_args) = @_;
     my $element_separator = '\\|';
-    my $combining_template = "$conda_binary install --yes --freeze-installed $channel_args <<<<0>>>>";
+    my $combining_template = "$conda_binary install --yes $channel_args <<<<0>>>>";
     my @templates=("'<<<<0>>>>==<<<<1>>>>'");
     my @separators = (" ");
 

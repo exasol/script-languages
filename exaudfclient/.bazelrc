@@ -1,9 +1,9 @@
-build --copt='-std=c++17' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX 
+build --lockfile_mode=off --copt='-std=c++17' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX
 # TODO add environment variables for R libraries
 build:benchmark --define benchmark=true
 build:java  --define java=true --action_env=JAVA_PREFIX
 build:python --define python=true  --action_env=PYTHON2_SYSPATH --action_env=PYTHON2_PREFIX --action_env=PYTHON2_VERSION --action_env=NUMPY_PREFIX --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION
-build:fast-binary-py3 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/libexaudflib_complete.so"' --define binary_type=fast_binary //:exaudfclient_py3
+build:fast-binary-py3 --copt='-DCUSTOM_LIBEXAUDFLIB_PATH="/exaudf/base/libexaudflib_complete.so"' --define binary_type=fast_binary //:exaudfclient_py3
 build:slow-wrapper-py3 --define binary_type=slow_wrapper //:exaudfclient_py3
 build:static-binary-py3 //:exaudfclient_py3_static
 build:test-binaries-py3 --config=static-binary-py3 --config=slow-wrapper-py3

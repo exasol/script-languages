@@ -7,13 +7,13 @@
 #include <unistd.h>
 #include <sstream>
 
-#include "exaudflib/swig/swig_meta_data.h"
+#include "base/exaudflib/swig/swig_meta_data.h"
 #include "exascript_java_jni_decl.h"
 
-#include "debug_message.h"
-#include "javacontainer/javacontainer.h"
-#include "javacontainer/javacontainer_impl.h"
-#include "exaudflib/vm/scriptoptionlines.h"
+#include "base/debug_message.h"
+#include "base/javacontainer/javacontainer.h"
+#include "base/javacontainer/javacontainer_impl.h"
+#include "base/exaudflib/vm/scriptoptionlines.h"
 
 using namespace SWIGVMContainers;
 using namespace std;
@@ -22,7 +22,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
                                         m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL), m_needsCompilation(true) {
 
     stringstream ss;
-    m_exaJavaPath = "/exaudf/javacontainer"; // TODO hardcoded path
+    m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
     DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
     DBG_FUNC_CALL(cerr,importScripts());
     DBG_FUNC_CALL(cerr,getExternalJvmOptions());
@@ -433,7 +433,7 @@ void JavaVMImpl::registerFunctions() {
 }
 
 void JavaVMImpl::setClasspath() {
-    m_exaJarPath = m_exaJavaPath + "/libexaudf.jar";
+    m_exaJarPath = m_exaJavaPath + "/exaudf_deploy.jar";
     m_classpath = m_exaJarPath;
 }
 

@@ -1,6 +1,6 @@
-#include "exaudflib/impl/swig/swig_meta_data.h"
-#include "exaudflib/impl/swig/swig_table_iterator.h"
-#include "exaudflib/impl/swig/swig_result_handler.h"
+#include "base/exaudflib/impl/swig/swig_meta_data.h"
+#include "base/exaudflib/impl/swig/swig_table_iterator.h"
+#include "base/exaudflib/impl/swig/swig_result_handler.h"
 
 extern "C" {
 

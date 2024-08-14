@@ -82,8 +82,8 @@ cc_library(
 # The only target which must depend on it is //:libexaudflib-complete.so.
 # If you depend on this target you will load protobuf into your linker namespace
 # which might cause problems with tensorflow. If you need
-# "//exaudflib:scriptoptionlines","//exaudflib:script_data_transfer_objects" or
-# "//exaudflib:script_data_transfer_objects_wrapper" in the language container
+# "//base/exaudflib:scriptoptionlines","//base/exaudflib:script_data_transfer_objects" or
+# "//base/exaudflib:script_data_transfer_objects_wrapper" in the language container
 # depend directly on them or depend on exaudflib-deps
 cc_library(
     name = "exaudflib",
@@ -103,5 +103,5 @@ cc_library(
             "impl/swig/swig_general_iterator.h", "impl/swig/swig_general_iterator.cc"],
     defines = VM_ENABLED_DEFINES,
     linkstatic = False, # Needs to be false, because otherwise we might get missing symbols when loading exaudflib_complete.so
-    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//:debug_message_h"],
+    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//base:debug_message_h"],
 )

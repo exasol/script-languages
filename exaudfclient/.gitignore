@@ -3,5 +3,7 @@ bazel-genfiles
 bazel-out
 bazel-src
 bazel-testlogs
+bazel-exaudfclient
 graph.in
 graph.png
+MODULE.bazel.lock
