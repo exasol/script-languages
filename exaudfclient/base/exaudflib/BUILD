@@ -6,7 +6,7 @@ load("//:variables.bzl", "VM_ENABLED_DEFINES")
 cc_library(
     name = "scriptoptionlines",
     hdrs = ["vm/scriptoptionlines.h"],
-    srcs = ["vm/scriptoptionlines.cc","vm/scriptoptionlines.h"],
+    srcs = ["vm/scriptoptionlines.cc","vm/scriptoptionlines.h", "vm/ctpg.h"],
     copts= ["-fno-lto"],
     # We deactivate link time optimization, because otherwise we get the following linker/compiler error while linking/compiling exaudfclient
     # function ExecutionGraph::extractOptionLine(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long&, std::function<void (char const*)>): error: undefined reference to 'std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)'
