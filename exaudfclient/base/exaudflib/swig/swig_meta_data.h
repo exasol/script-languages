@@ -27,7 +27,7 @@ class SWIGMetadata {
 		if (impl!=nullptr) {
         	    delete impl;
 	        }
-	}
+	    }
         virtual const char* databaseName() { return impl->databaseName(); }
         virtual const char* databaseVersion() { return impl->databaseVersion(); }
         virtual const char* scriptName() { return impl->scriptName(); }

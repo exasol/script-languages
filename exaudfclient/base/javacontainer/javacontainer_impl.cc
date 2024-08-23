@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <sstream>
 
-#include "base/exaudflib/swig/swig_meta_data.h"
 #include "exascript_java_jni_decl.h"
 
 #include "base/debug_message.h"
