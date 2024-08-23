@@ -12,7 +12,6 @@ JavaVMTest::JavaVMTest(std::string scriptCode) : javaVMInternalStatus() {
     javaVMInternalStatus.m_scriptCode = javaVMImpl.m_scriptCode;
     javaVMInternalStatus.m_exaJarPath = javaVMImpl.m_exaJarPath;
     javaVMInternalStatus.m_classpath = javaVMImpl.m_classpath;
-    javaVMInternalStatus.m_jarPaths.assign(javaVMImpl.m_jarPaths.begin(), javaVMImpl.m_jarPaths.end());
     javaVMInternalStatus.m_jvmOptions = javaVMImpl.m_jvmOptions;
     javaVMInternalStatus.m_needsCompilation = javaVMImpl.m_needsCompilation;
     delete script_code;
