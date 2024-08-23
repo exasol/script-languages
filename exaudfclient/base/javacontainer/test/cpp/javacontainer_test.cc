@@ -13,8 +13,6 @@ TEST(JavaContainer, basic_jar) {
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, "\n");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/base/javacontainer/exaudf_deploy.jar");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar");
-    const std::vector<std::string> expectedJarPaths = {"base/javacontainer/test/test.jar"};
-    EXPECT_EQ(vm.getJavaVMInternalStatus().m_jarPaths, expectedJarPaths);
     EXPECT_FALSE(vm.getJavaVMInternalStatus().m_needsCompilation);
     const std::vector<std::string> expectedJVMOptions = { "-Dexasol.scriptclass=com.exasol.udf_profiling.UdfProfiler",
                                                             "-Xms128m", "-Xmx128m", "-Xss512k",
@@ -44,7 +42,6 @@ TEST(JavaContainer, basic_inline) {
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, expected_script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/base/javacontainer/exaudf_deploy.jar");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/tmp:/exaudf/base/javacontainer/exaudf_deploy.jar");
-    EXPECT_TRUE(vm.getJavaVMInternalStatus().m_jarPaths.empty());
     EXPECT_TRUE(vm.getJavaVMInternalStatus().m_needsCompilation);
     const std::vector<std::string> expectedJVMOptions = {   "-Xms128m", "-Xmx128m", "-Xss512k",
                                                             "-XX:ErrorFile=/tmp/hs_err_pid%p.log",
@@ -75,8 +72,6 @@ TEST(JavaContainer, combined_inline_jar) {
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, expected_script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/base/javacontainer/exaudf_deploy.jar");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/tmp:/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar");
-    const std::vector<std::string> expectedJarPaths = {"base/javacontainer/test/test.jar"};
-    EXPECT_EQ(vm.getJavaVMInternalStatus().m_jarPaths, expectedJarPaths);
     EXPECT_TRUE(vm.getJavaVMInternalStatus().m_needsCompilation);
     const std::vector<std::string> expectedJVMOptions = {   "-Xms128m", "-Xmx128m", "-Xss512k",
                                                             "-XX:ErrorFile=/tmp/hs_err_pid%p.log",
@@ -106,8 +101,6 @@ TEST(JavaContainer, quoted_jvm_option) {
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, expected_script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/base/javacontainer/exaudf_deploy.jar");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/tmp:/exaudf/base/javacontainer/exaudf_deploy.jar");
-    const std::vector<std::string> expectedJarPaths = {};
-    EXPECT_EQ(vm.getJavaVMInternalStatus().m_jarPaths, expectedJarPaths);
     EXPECT_TRUE(vm.getJavaVMInternalStatus().m_needsCompilation);
     /*
      * Note: The option "DEF" is wrong and causes UDF's to crash!
