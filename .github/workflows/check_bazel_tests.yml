@@ -11,8 +11,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      USE_BAZEL_VERSION=7.2.1
+
     steps:
     - uses: actions/checkout@v4
+
 
     - name: Search for duplicated error codes
       run: bash find_duplicate_error_codes.sh
@@ -27,17 +31,14 @@ jobs:
         sudo apt-get install -y openjdk-11-jdk libzmq3-dev
     - name: Java Tests
       run: |
-        export USE_BAZEL_VERSION=7.2.1
         bazel test //base/javacontainer/test/...
       working-directory: ./exaudfclient/
     - name: ExaudfLib Tests
       run: |
-        export USE_BAZEL_VERSION=7.2.1
         bazel test //base/exaudflib/test/...
       working-directory: ./exaudfclient/
     - name: Script Options Parser Tests
       run: |
-        export USE_BAZEL_VERSION=7.2.1
         bazel test //base/script_options_parser/test/...
       working-directory: ./exaudfclient/
 
