@@ -1,5 +1,5 @@
-#include "base/javacontainer/script_options/scriptoptionlinesconverter.h"
-#include "base/javacontainer/script_options/scriptoptionlinesparserlegacy.h"
+#include "base/javacontainer/script_options/converter.h"
+#include "base/javacontainer/script_options/parserlegacy.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
 #include <openssl/md5.h>
 #include <string.h>

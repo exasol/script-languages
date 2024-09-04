@@ -11,7 +11,7 @@
 #include "base/debug_message.h"
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
-#include "base/javacontainer/script_options/scriptoptionlinesconverter.h"
+#include "base/javacontainer/script_options/converter.h"
 
 
 using namespace SWIGVMContainers;

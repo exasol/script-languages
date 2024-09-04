@@ -2,7 +2,7 @@
 #define SCRIPTOPTIONLINEPARSERLEGACY_H 1
 
 
-#include "base/javacontainer/script_options/scriptoptionlinesparser.h"
+#include "base/javacontainer/script_options/parser.h"
 
 
 namespace SWIGVMContainers {
