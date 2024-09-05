@@ -1,8 +1,8 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "scriptoptionlinesparser",
-    hdrs = ["scriptoptionlines.h"],
-    srcs = ["scriptoptionlines.cc","scriptoptionlines.h"],
+    name = "script_option_lines_parser",
+    hdrs = ["script_option_lines.h"],
+    srcs = ["script_option_lines.cc","script_option_lines.h"],
     copts= ["-fno-lto"],
 )
