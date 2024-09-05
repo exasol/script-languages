@@ -546,7 +546,6 @@ files = [
 ]
 
 [package.dependencies]
-pywin32 = {version = ">=304", markers = "sys_platform == \"win32\""}
 requests = ">=2.26.0"
 urllib3 = ">=1.26.0"
 
@@ -2078,13 +2077,13 @@ test = ["coverage[toml] (>=7)", "mypy (>=1.2.0)", "pytest (>=7)"]
 
 [[package]]
 name = "types-requests"
-version = "2.32.0.20240712"
+version = "2.32.0.20240905"
 description = "Typing stubs for requests"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-requests-2.32.0.20240712.tar.gz", hash = "sha256:90c079ff05e549f6bf50e02e910210b98b8ff1ebdd18e19c873cd237737c1358"},
-    {file = "types_requests-2.32.0.20240712-py3-none-any.whl", hash = "sha256:f754283e152c752e46e70942fa2a146b5bc70393522257bb85bd1ef7e019dcc3"},
+    {file = "types-requests-2.32.0.20240905.tar.gz", hash = "sha256:e97fd015a5ed982c9ddcd14cc4afba9d111e0e06b797c8f776d14602735e9bd6"},
+    {file = "types_requests-2.32.0.20240905-py3-none-any.whl", hash = "sha256:f46ecb55f5e1a37a58be684cf3f013f166da27552732ef2469a0cc8e62a72881"},
 ]
 
 [package.dependencies]
@@ -2219,4 +2218,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4"
-content-hash = "a8badb94badf27e4301d96e6b501b417c71ec1f19f19e0f709e90f0c83f86db6"
+content-hash = "e0188ac2e68d838b8cf4e70372ba737342fabdbcc2567006066a17f15e9af863"
