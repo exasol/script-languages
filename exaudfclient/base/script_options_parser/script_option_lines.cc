@@ -2,6 +2,8 @@
 #include <string>
 #include <sstream>
 
+
+
 namespace ExecutionGraph
 {
 
@@ -99,5 +101,6 @@ std::string extractOptionLine(std::string& code, const std::string option, const
     }
     return result;
 }
+
 
 } // namespace ExecutionGraph

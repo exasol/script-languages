@@ -1,5 +1,4 @@
 #include "pythoncontainer.h"
-#include "base/exaudflib/swig/swig_meta_data.h"
 #include <iostream>
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -11,7 +10,6 @@
 #include "exascript_python_int.h"
 #include "exascript_python.h"
 #include "base/debug_message.h"
-#include "base/exaudflib/vm/scriptoptionlines.h"
 
 #include "base/exaudflib/swig/script_data_transfer_objects.h"
 

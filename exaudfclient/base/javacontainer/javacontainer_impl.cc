@@ -1,19 +1,18 @@
 #include <iostream>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <openssl/md5.h>
 #include <set>
 #include <jni.h>
 #include <unistd.h>
 #include <sstream>
 
-#include "base/exaudflib/swig/swig_meta_data.h"
 #include "exascript_java_jni_decl.h"
 
 #include "base/debug_message.h"
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
-#include "base/exaudflib/vm/scriptoptionlines.h"
+#include "base/javacontainer/script_options/converter.h"
+
 
 using namespace SWIGVMContainers;
 using namespace std;
@@ -23,11 +22,23 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
 
     stringstream ss;
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
-    DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
-    DBG_FUNC_CALL(cerr,importScripts());
-    DBG_FUNC_CALL(cerr,getExternalJvmOptions());
+
+
+
+    JavaScriptOptions::ScriptOptionsConverter optionsConverter([&](const std::string &msg){throwException(msg);},
+                                                               m_jvmOptions);
+
+    DBG_FUNC_CALL(cerr,optionsConverter.getScriptClassName(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
+    DBG_FUNC_CALL(cerr,optionsConverter.convertImportScripts(m_scriptCode));
+    DBG_FUNC_CALL(cerr,optionsConverter.getExternalJvmOptions(m_scriptCode));
     DBG_FUNC_CALL(cerr,setClasspath());
-    DBG_FUNC_CALL(cerr,addExternalJarPaths());
+    DBG_FUNC_CALL(cerr,optionsConverter.getExternalJarPaths(m_scriptCode));
+
+    for (set<string>::iterator it = optionsConverter.getJarPaths().begin(); it != optionsConverter.getJarPaths().end();
+         ++it) {
+        addJarToClasspath(*it);
+    }
+
     m_needsCompilation = checkNeedsCompilation();
     if (m_needsCompilation) {
         DBG_FUNC_CALL(cerr,addPackageToScript());
@@ -233,94 +244,6 @@ void JavaVMImpl::compileScript() {
     check("F-UDF-CL-SL-JAVA-1037",calledUndefinedSingleCall);
 }
 
-void JavaVMImpl::addExternalJarPaths() {
-    const string jarKeyword = "%jar";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    while (true) {
-        string jarPath = ExecutionGraph::extractOptionLine(m_scriptCode, jarKeyword, whitespace, lineEnd, pos, [&](const char* msg){throwException(msg);});
-        if (jarPath == "")
-            break;
-        for (size_t start = 0, delim = 0; ; start = delim + 1) {
-            delim = jarPath.find(":", start);
-            if (delim != string::npos) {
-                string jar = jarPath.substr(start, delim - start);
-                if (m_jarPaths.find(jar) == m_jarPaths.end())
-                    m_jarPaths.insert(jar);
-            }
-            else {
-                string jar = jarPath.substr(start);
-                if (m_jarPaths.find(jar) == m_jarPaths.end())
-                    m_jarPaths.insert(jar);
-                break;
-            }
-        }
-    }
-    for (set<string>::iterator it = m_jarPaths.begin(); it != m_jarPaths.end(); ++it) {
-        addJarToClasspath(*it);
-    }
-}
-
-void JavaVMImpl::getScriptClassName() {
-    const string scriptClassKeyword = "%scriptclass";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    string scriptClass = 
-      ExecutionGraph::extractOptionLine(
-          m_scriptCode, 
-          scriptClassKeyword, 
-          whitespace, 
-          lineEnd, 
-          pos, 
-          [&](const char* msg){throwException("F-UDF-CL-SL-JAVA-1038: "+std::string(msg));}
-          );
-    if (scriptClass != "") {
-        m_jvmOptions.push_back("-Dexasol.scriptclass=" + scriptClass);
-    }
-}
-
-void JavaVMImpl::importScripts() {
-    SWIGMetadata *meta = NULL;
-    const string importKeyword = "%import";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    // Attention: We must hash the parent script before modifying it (adding the
-    // package definition). Otherwise we don't recognize if the script imports its self
-    m_importedScriptChecksums.insert(scriptToMd5(m_scriptCode.c_str()));
-    while (true) {
-        string scriptName = 
-          ExecutionGraph::extractOptionLine(
-              m_scriptCode, 
-              importKeyword, 
-              whitespace, 
-              lineEnd, 
-              pos, 
-              [&](const char* msg){throwException("F-UDF-CL-SL-JAVA-1039: "+std::string(msg));}
-              );
-        if (scriptName == "")
-            break;
-        if (!meta) {
-            meta = new SWIGMetadata();
-            if (!meta)
-                throwException("F-UDF-CL-SL-JAVA-1040: Failure while importing scripts");
-        }
-        const char *scriptCode = meta->moduleContent(scriptName.c_str());
-        const char *exception = meta->checkException();
-        if (exception)
-            throwException("F-UDF-CL-SL-JAVA-1041: "+std::string(exception));
-        if (m_importedScriptChecksums.insert(scriptToMd5(scriptCode)).second) {
-            // Script has not been imported yet
-            // If this imported script contains %import statements 
-            // they will be resolved in this while loop.
-            m_scriptCode.insert(pos, scriptCode);
-        }
-    }
-    if (meta)
-        delete meta;
-}
 
 bool JavaVMImpl::check(const string& errorCode, string& calledUndefinedSingleCall) {
     jthrowable ex = m_env->ExceptionOccurred();
@@ -448,15 +371,6 @@ bool JavaVMImpl::checkNeedsCompilation() {
     return false == trimmedScriptCode.empty();
 }
 
-vector<unsigned char> JavaVMImpl::scriptToMd5(const char *script) {
-    MD5_CTX ctx;
-    unsigned char md5[MD5_DIGEST_LENGTH];
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, script, strlen(script));
-    MD5_Final(md5, &ctx);
-    return vector<unsigned char>(md5, md5 + sizeof(md5));
-}
-
 void JavaVMImpl::addJarToClasspath(const string& path) {
     string jarPath = path; // m_exaJavaPath + "/jars/" + path;
 
@@ -488,38 +402,6 @@ void JavaVMImpl::addJarToClasspath(const string& path) {
     m_classpath += ":" + jarPath;
 }
 
-void JavaVMImpl::getExternalJvmOptions() {
-    const string jvmOption = "%jvmoption";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    while (true) {
-        string options = 
-          ExecutionGraph::extractOptionLine(
-              m_scriptCode,
-              jvmOption, 
-              whitespace, 
-              lineEnd, 
-              pos, 
-              [&](const char* msg){throwException("F-UDF-CL-SL-JAVA-1064: "+std::string(msg));}
-              );
-        if (options == "")
-            break;
-        for (size_t start = 0, delim = 0; ; start = delim + 1) {
-            start = options.find_first_not_of(whitespace, start);
-            if (start == string::npos)
-                break;
-            delim = options.find_first_of(whitespace, start);
-            if (delim != string::npos) {
-                m_jvmOptions.push_back(options.substr(start, delim - start));
-            }
-            else {
-                m_jvmOptions.push_back(options.substr(start));
-                break;
-            }
-        }
-    }
-}
 
 void JavaVMImpl::setJvmOptions() {
     bool minHeap = false;

@@ -1,4 +1,4 @@
-#include "base/exaudflib/vm/scriptoptionlines.h"
+#include "base/script_options_parser/scriptoptionlines.h"
 #include <gtest/gtest.h>
 #include <string>
 #include <exception>
@@ -183,3 +183,28 @@ TEST(ScriptOptionLinesTest, test_values_must_not_contain_spaces) {
     EXPECT_EQ(code, expected_result_code);
 }
 
+TEST(ScriptOptionLinesTest, test_multiple_lines_with_code) {
+    /**
+    Verify that the parser can read options coming after some code.
+    */
+    size_t pos;
+    const std::string original_code =
+        "%jvmoption -Dhttp.agent=\"ABC DEF\"; class Abc{};\n\n"
+        "%jar /buckets/bucketfs1/jars/exajdbc.jar; class DEF{};\n";
+    std::string code = original_code;
+
+    std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    EXPECT_EQ(res, "-Dhttp.agent=\"ABC DEF\"");
+    std::string expected_result_code =
+        " class Abc{};\n\n"
+        "%jar /buckets/bucketfs1/jars/exajdbc.jar; class DEF{};\n";
+    EXPECT_EQ(code, expected_result_code);
+
+    res = extractOptionLine(code, "%jar", whitespace, lineEnd, pos, throwException);
+    EXPECT_EQ(res, "/buckets/bucketfs1/jars/exajdbc.jar");
+    expected_result_code =
+        " class Abc{};\n\n"
+        " class DEF{};\n";
+
+    EXPECT_EQ(code, expected_result_code);
+}
