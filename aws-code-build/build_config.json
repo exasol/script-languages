@@ -17,7 +17,6 @@
         "udf-script-signature-generator",
         ".github",
         "emulator",
-        "exaslct_scripts",
         "githooks"
       ]
     }
