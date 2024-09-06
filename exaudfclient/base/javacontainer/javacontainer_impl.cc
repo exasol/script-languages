@@ -11,7 +11,7 @@
 #include "base/debug_message.h"
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
-#include "base/javacontainer/script_options/converter.h"
+#include "base/javacontainer/script_options/extractor.h"
 
 
 using namespace SWIGVMContainers;
@@ -23,18 +23,16 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
     stringstream ss;
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
+    JavaScriptOptions::Extractor extractor(m_scriptCode, [&](const std::string &msg){throwException(msg);});
 
+    DBG_FUNC_CALL(cerr,extractor.extract());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
 
-    JavaScriptOptions::ScriptOptionsConverter optionsConverter([&](const std::string &msg){throwException(msg);},
-                                                               m_jvmOptions);
-
-    DBG_FUNC_CALL(cerr,optionsConverter.getScriptClassName(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
-    DBG_FUNC_CALL(cerr,optionsConverter.convertImportScripts(m_scriptCode));
-    DBG_FUNC_CALL(cerr,optionsConverter.getExternalJvmOptions(m_scriptCode));
+    m_scriptCode = std::move(extractor.moveModifiedScriptCode());
     DBG_FUNC_CALL(cerr,setClasspath());
-    DBG_FUNC_CALL(cerr,optionsConverter.getExternalJarPaths(m_scriptCode));
 
-    for (set<string>::iterator it = optionsConverter.getJarPaths().begin(); it != optionsConverter.getJarPaths().end();
+    m_jvmOptions = std::move(extractor.moveJvmOptions());
+
+    for (set<string>::iterator it = extractor.getJarPaths().begin(); it != extractor.getJarPaths().end();
          ++it) {
         addJarToClasspath(*it);
     }

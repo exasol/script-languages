@@ -24,8 +24,8 @@ void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keywo
           pos,
           [&](const char* msg){throwException(std::string("F-UDF-CL-SL-JAVA-1606: ") + msg);}
           );
-    if option != "" {}
-        callback(options, pos);
+    if (option != "") {
+        callback(option, pos);
     }
 }
 
@@ -35,7 +35,7 @@ void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string ke
                             std::function<void(const std::string&)> throwException) {
     size_t pos;
     while (true) {
-        const std::string options =
+        const std::string option =
           ExecutionGraph::extractOptionLine(
               m_scriptCode,
               keyword,
@@ -44,9 +44,9 @@ void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string ke
               pos,
               [&](const char* msg){throwException(std::string("F-UDF-CL-SL-JAVA-1607: ") + msg);}
               );
-        if (options == "")
+        if (option == "")
             break;
-        callback(options, pos);
+        callback(option, pos);
     }
 }
 

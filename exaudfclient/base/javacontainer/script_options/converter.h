@@ -30,12 +30,8 @@ class Converter {
             return m_jarPaths;
         }
 
-        const std::vector<std::string>& getJvmOptions() const {
-            return m_jvmOptions;
-        }
-
-        const std::string& getScriptClassName() const {
-            return m_scriptClassName;
+        std::vector<std::string>&& moveJvmOptions() {
+            return std::move(m_jvmOptions);
         }
 
     private:
@@ -44,7 +40,7 @@ class Converter {
         
         std::set<std::string> m_jarPaths;
 
-        std::string m_scriptClassName;
+        const std::string m_whitespace;
 };
 
 

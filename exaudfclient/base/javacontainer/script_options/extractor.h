@@ -13,28 +13,26 @@
 
 namespace SWIGVMContainers {
 
+class SWIGMetadata;
+
 namespace JavaScriptOptions {
 
-class Extractor() {
+class Extractor {
 
     public:
-        Extractor(const std::string scriptCode,
+        Extractor(const std::string & scriptCode,
                     std::function<void(const std::string&)> throwException);
 
-        const std::string& getModifiedScriptCode() const {
-            return m_modifiedCode;
+        std::string&& moveModifiedScriptCode() {
+            return std::move(m_modifiedCode);
         }
 
         const std::set<std::string> & getJarPaths() const {
             return m_converter.getJarPaths();
         }
 
-        const std::vector<std::string>& getJvmOptions() const {
-            return m_converter.getJvmOptions();
-        }
-
-        const std::string& getScriptClassName() const {
-            return m_converter.getScriptClassName();
+        std::vector<std::string>&& moveJvmOptions() {
+            return std::move(m_converter.moveJvmOptions());
         }
 
         void extract();
@@ -45,7 +43,7 @@ class Extractor() {
         void extractImportScripts(ScriptOptionsParser* parser);
 
         void extractImportScript(SWIGMetadata** metaData, std::string & scriptCode,
-                                        const std::string &importScript, size_t importScriptPos,
+                                        const std::string &importScriptId, size_t importScriptPos,
                                         std::set<std::vector<unsigned char> > & importedScriptChecksums);
 
     private:

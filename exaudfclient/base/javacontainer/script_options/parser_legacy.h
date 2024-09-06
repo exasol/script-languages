@@ -24,7 +24,7 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
     private:
         const std::string m_whitespace;
         const std::string m_lineend;
-        std:: & m_scriptCode;
+        std::string & m_scriptCode;
 };
 
 } //namespace JavaScriptOptions
