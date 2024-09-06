@@ -37,22 +37,18 @@ void Extractor::extractImportScripts(ScriptOptionsParser *parser) {
     // package definition). Otherwise we don't recognize if the script imports its self
     std::set<std::vector<unsigned char> > importedScriptChecksums;
     importedScriptChecksums.insert(scriptToMd5(m_modifiedCode.c_str()));
-    extractImportScript(&metaData, m_modifiedCode, parser, importedScriptChecksums);
+    parser->parseForMultipleOptions(m_importKeyword,
+                                    [&](const std::string& value, size_t pos){extractImportScript(&metaData,
+                                                                                                    m_modifiedCode,
+                                                                                                    importedScriptChecksums, value, pos);}
+                                    [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1614" + msg);});
     if (meta)
         delete meta;
 }
 
-void Extractor::extractImportScript(SWIGMetadata** metaData, std::string & scriptCode, ScriptOptionsParser *parser,
-                            std::set<std::vector<unsigned char> > & importedScriptChecksums) {
-    while (true) {
-        std::string importScript;
-        size_t importScriptPos;
-        parser->parseForSingleOption(m_importKeyword,
-                                        [](const std::string& value, size_t pos){importScript=value; importScriptPos=pos;}
-                                        [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1614" + msg);});
-        if importScriptPos == "" {
-            break;
-        }
+void Extractor::extractImportScript(SWIGMetadata** metaData, std::string & scriptCode,
+                                        const std::string &importScript, size_t importScriptPos,
+                                        std::set<std::vector<unsigned char> > & importedScriptChecksums) {
         if (!(*meta)) {
             *meta = new SWIGMetadata();
             if (!*meta)
@@ -65,10 +61,14 @@ void Extractor::extractImportScript(SWIGMetadata** metaData, std::string & scrip
         if (importedScriptChecksums.insert(scriptToMd5(importScript)).second) {
             // Script has not been imported yet
             // If this imported script contains %import statements
-            // they will be resolved in this while loop.
+            // they will be resolved in the recursion.
             std::string importScriptCode(scriptCode);
             std::unique_ptr newParser(makeParser(importScriptCode));
-            extractImportScript(metaData, importScriptCode, newParser.get(), importedScriptChecksums);
+            parser->parseForMultipleOptions(m_importKeyword,
+                                            [&](const std::string& value, size_t pos){extractImportScript(&metaData,
+                                                                                                            importScriptCode,
+                                                                                                            importedScriptChecksums, value, pos);}
+                                            [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1617" + msg);});
             scriptCode.insert(importScriptPos, importScriptCode);
         }
     }
