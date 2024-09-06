@@ -12,7 +12,7 @@ namespace JavaScriptOptions {
 class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
 
     public:
-        ScriptOptionLinesParserLegacy();
+        ScriptOptionLinesParserLegacy(std::string & scriptCode);
 
         virtual void parseForSingleOption(const std::string key,
                                         std::function<void(const std::string &option, size_t pos)> callback,
@@ -24,6 +24,7 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
     private:
         const std::string m_whitespace;
         const std::string m_lineend;
+        std:: & m_scriptCode;
 };
 
 } //namespace JavaScriptOptions

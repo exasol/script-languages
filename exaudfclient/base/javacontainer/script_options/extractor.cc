@@ -27,46 +27,68 @@ Extractor::Extractor(const std::string scriptCode, std::function<void(const std:
 , m_jvmOptionKeyword("%jvmoption") {}
 
 
-ScriptOptionsParser* Extractor::makeParser() {
-    return new ScriptOptionLinesParserLegacy();
+ScriptOptionsParser* Extractor::makeParser(std::string & scriptCode) {
+    return new ScriptOptionLinesParserLegacy(scriptCode);
 }
 
-void extractImportScripts(ScriptOptionsParser *parser) {
+void Extractor::extractImportScripts(ScriptOptionsParser *parser) {
     SWIGMetadata *meta = NULL;
     // Attention: We must hash the parent script before modifying it (adding the
     // package definition). Otherwise we don't recognize if the script imports its self
     std::set<std::vector<unsigned char> > importedScriptChecksums;
     importedScriptChecksums.insert(scriptToMd5(m_modifiedCode.c_str()));
-    extractImportScript()
+    extractImportScript(&metaData, m_modifiedCode, parser, importedScriptChecksums);
     if (meta)
         delete meta;
 }
 
-void extractImportScript(SWIGMetadata** metaData, std::string & scriptCode, ScriptOptionsParser *parser) {
+void Extractor::extractImportScript(SWIGMetadata** metaData, std::string & scriptCode, ScriptOptionsParser *parser,
+                            std::set<std::vector<unsigned char> > & importedScriptChecksums) {
     while (true) {
         std::string importScript;
         size_t importScriptPos;
         parser->parseForSingleOption(m_importKeyword,
                                         [](const std::string& value, size_t pos){importScript=value; importScriptPos=pos;}
-                                        [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1604" + msg);});
-        if importScriptPos
-        if (!meta) {
-            meta = new SWIGMetadata();
-            if (!meta)
-                m_throwException("F-UDF-CL-SL-JAVA-1603: Failure while importing scripts");
+                                        [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1614" + msg);});
+        if importScriptPos == "" {
+            break;
         }
-        const char *scriptCode = meta->moduleContent(nextImportStatement.first.c_str());
-        const char *exception = meta->checkException();
+        if (!(*meta)) {
+            *meta = new SWIGMetadata();
+            if (!*meta)
+                m_throwException("F-UDF-CL-SL-JAVA-1615: Failure while importing scripts");
+        }
+        const char *scriptCode = (*meta)->moduleContent(importScriptPos);
+        const char *exception = (*meta)->checkException();
         if (exception)
-            m_throwException("F-UDF-CL-SL-JAVA-1605: "+std::string(exception));
-        if (m_importedScriptChecksums.insert(scriptToMd5(scriptCode)).second) {
+            m_throwException("F-UDF-CL-SL-JAVA-1616: "+std::string(exception));
+        if (importedScriptChecksums.insert(scriptToMd5(importScript)).second) {
             // Script has not been imported yet
             // If this imported script contains %import statements
             // they will be resolved in this while loop.
-            src_scriptCode.insert(nextImportStatement.second, scriptCode);
+            std::string importScriptCode(scriptCode);
+            std::unique_ptr newParser(makeParser(importScriptCode));
+            extractImportScript(metaData, importScriptCode, newParser.get(), importedScriptChecksums);
+            scriptCode.insert(importScriptPos, importScriptCode);
         }
     }
-    }
+}
+
+void Extractor::extract() {
+        std::unique_ptr parser(makeParser(m_modifiedCode));
+        parser->parseForSingleOption(m_scriptClassKeyword,
+                                        [&](const std::string& value, size_t pos){m_converter.convertScriptClassName(value);}
+                                        [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1610" + msg);});
+        extractImportScripts(parser.get());
+        parser->parseForSingleOption(m_scriptClassKeyword,
+                                        [&](const std::string& value, size_t pos){m_converter.convertScriptClassName(value);}
+                                        [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1611" + msg);});
+        parser->parseForMultipleOptions(m_jvmOptionKeyword,
+                                        [&](const std::string& value, size_t pos){m_converter.convertJvmOption(value);}
+                                        [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1612" + msg);});
+        parser->parseForMultipleOptions(m_jarKeyword,
+                                        [&](const std::string& value, size_t pos){m_converter.convertExternalJar(value);}
+                                        [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1613" + msg);});
 }
 
 } //namespace JavaScriptOptions

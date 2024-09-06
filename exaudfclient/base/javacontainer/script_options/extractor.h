@@ -18,19 +18,12 @@ namespace JavaScriptOptions {
 class Extractor() {
 
     public:
-    Extractor(const std::string scriptCode,
-                std::function<void(const std::string&)> throwException);
+        Extractor(const std::string scriptCode,
+                    std::function<void(const std::string&)> throwException);
 
-    const std::string& getModifiedScriptCode() const {
-        return m_modifiedCode;
-    }
-
-    private:
-        ScriptOptionsParser* makeParser();
-
-        void extractImportScripts(ScriptOptionsParser* parser);
-
-        void extractImportScript(SWIGMetadata** metaData, std::string & scriptCode, ScriptOptionsParser *parser);
+        const std::string& getModifiedScriptCode() const {
+            return m_modifiedCode;
+        }
 
         const std::set<std::string> & getJarPaths() const {
             return m_converter.getJarPaths();
@@ -44,6 +37,15 @@ class Extractor() {
             return m_converter.getScriptClassName();
         }
 
+        void extract();
+    private:
+        ScriptOptionsParser* makeParser(std::string & scriptCode);
+
+
+        void extractImportScripts(ScriptOptionsParser* parser);
+
+        void extractImportScript(SWIGMetadata** metaData, std::string & scriptCode, ScriptOptionsParser *parser,
+                                    std::set<std::vector<unsigned char> > & importedScriptChecksums);
 
     private:
         std::string m_modifiedCode;
