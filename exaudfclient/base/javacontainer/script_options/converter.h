@@ -15,33 +15,36 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-class ScriptOptionsConverter {
+class Converter {
 
     public:
-        ScriptOptionsConverter(std::function<void(const std::string &msg)> throwException,
-                               std::vector<std::string>& jvmOptions);
-
+        Converter();
     
-        void getExternalJarPaths(std::string & src_scriptCode);
+        void convertExternalJar(const std::string & value);
 
-        void getScriptClassName(std::string & src_scriptCode);
+        void convertScriptClassName(const std::string & value);
 
-        void convertImportScripts(std::string & src_scriptCode);
+        void convertJvmOption(const std::string & value);
 
-        void getExternalJvmOptions(std::string & src_scriptCode);
+        const std::set<std::string> & getJarPaths() const {
+            return m_jarPaths;
+        }
 
-        const std::set<std::string> & getJarPaths();
+        const std::vector<std::string>& getJvmOptions() const {
+            return m_jvmOptions;
+        }
+
+        const std::string& getScriptClassName() const {
+            return m_scriptClassName;
+        }
+
     private:
-    
-        std::unique_ptr<ScriptOptionsParser> m_scriptOptionsParser;
-        
-        std::function<void(const std::string &msg)> m_throwException;
 
-        std::vector<std::string>& m_jvmOptions;
+        std::vector<std::string> m_jvmOptions;
         
         std::set<std::string> m_jarPaths;
 
-        std::set<std::vector<unsigned char> > m_importedScriptChecksums;
+        std::string m_scriptClassName;
 };
 
 

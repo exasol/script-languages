@@ -10,21 +10,12 @@ namespace SWIGVMContainers {
 namespace JavaScriptOptions {
 
 struct ScriptOptionsParser {
-
-    virtual void findExternalJarPaths(std::string & src_scriptCode,
-                                      std::vector<std::string>& jarPaths,
-                                      std::function<void(const std::string&)> throwException) = 0;
-
-    virtual void getScriptClassName(std::string & src_scriptCode, std::string &scriptClassName,
-                                    std::function<void(const std::string&)> throwException) = 0;
-
-    virtual void getNextImportScript(std::string & src_scriptCode,
-                                     std::pair<std::string, size_t> & result,
-                                     std::function<void(const std::string&)> throwException) = 0;
-
-    virtual void getExternalJvmOptions(std::string & src_scriptCode,
-                                       std::vector<std::string>& jvmOptions,
-                                       std::function<void(const std::string&)> throwException) = 0;
+    virtual void parseForSingleOption(const std::string key,
+                                        std::function<void(const std::string &option, size_t pos)> callback,
+                                        std::function<void(const std::string&)> throwException) = 0;
+    virtual void parseForMultipleOptions(const std::string key,
+                                            std::function<void(const std::string &option, size_t pos)> callback,
+                                            std::function<void(const std::string&)> throwException) = 0;
 };
 
 } //namespace JavaScriptOptions
