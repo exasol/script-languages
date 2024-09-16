@@ -10,10 +10,11 @@
 namespace SWIGVMContainers {
 
 class JavaVMImpl;
+class SwigFactory;
 
 class JavaVMach: public SWIGVM {
     public:
-        JavaVMach(bool checkOnly);
+        JavaVMach(bool checkOnly, SwigFactory& swigFactory);
         virtual ~JavaVMach() {}
         virtual void shutdown();
         virtual bool run();

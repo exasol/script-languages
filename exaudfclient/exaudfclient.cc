@@ -49,6 +49,8 @@
 #include "protegrityclient.h"
 #endif
 
+#include "base/swig_factory/swig_factory_impl.h"
+
 using namespace std;
 using namespace SWIGVMContainers;
 
@@ -138,7 +140,7 @@ int main(int argc, char **argv) {
     ::setlocale(LC_ALL, "en_US.utf8");
 
     std::function<SWIGVMContainers::SWIGVM*()>vmMaker=[](){return nullptr;}; // the initial vm maker returns NULL
-
+    SwigFactoryImpl swigFactory;
 #ifdef UDF_PLUGIN_CLIENT
     vmMaker = [](){return new SWIGVMContainers::Protegrity(false);};
 #else
@@ -161,7 +163,7 @@ int main(int argc, char **argv) {
     } else if (strcmp(argv[2], "lang=java")==0)
     {
 #ifdef ENABLE_JAVA_VM
-        vmMaker = [](){return new SWIGVMContainers::JavaVMach(false);};
+        vmMaker = [&](){return new SWIGVMContainers::JavaVMach(false, swigFactory);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Java support");
 #endif

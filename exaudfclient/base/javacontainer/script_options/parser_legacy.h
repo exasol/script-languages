@@ -26,7 +26,8 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
         void parseForExternalJars(std::function<void(const std::string &option)> callback,
                                   std::function<void(const std::string&)> throwException) override;
 
-        void extractImportScripts(std::function<void(const std::string&)> throwException) override;
+        void extractImportScripts(SwigFactory & swigFactory,
+                                  std::function<void(const std::string&)> throwException) override;
 
         std::string && getScriptCode() override;
 

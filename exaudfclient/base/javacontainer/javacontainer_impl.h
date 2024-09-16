@@ -17,7 +17,7 @@ namespace SWIGVMContainers {
 class JavaVMImpl {
     public:
         friend class ::JavaVMTest;
-        JavaVMImpl(bool checkOnly, bool noJNI);
+        JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory);
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
@@ -48,6 +48,7 @@ class JavaVMImpl {
         JavaVM *m_jvm;
         JNIEnv *m_env;
         bool m_needsCompilation;
+        SwigFactory& m_swigFactory;
 };
 
 } //namespace SWIGVMContainers

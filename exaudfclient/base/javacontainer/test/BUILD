@@ -13,7 +13,8 @@ java_test(
 
 cc_test(
     name = "javacontainer-test",
-    srcs = ["cpp/javacontainer_test.cc", "cpp/exaudf_wrapper.cc", "cpp/javavm_test.cc", "cpp/javavm_test.h"],
+    srcs = ["cpp/javacontainer_test.cc", "cpp/exaudf_wrapper.cc", "cpp/javavm_test.cc", "cpp/javavm_test.h",
+            "cpp/swig_factory_test.h", "cpp/swig_factory_test.cc"],
     deps = [
         "//base/javacontainer:javacontainer",
         "@googletest//:gtest_main",

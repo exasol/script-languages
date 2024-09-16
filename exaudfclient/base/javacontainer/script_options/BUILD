@@ -7,5 +7,5 @@ cc_library(
     srcs = [":parser.h", ":converter.h", ":converter.cc", ":parser_legacy.cc", ":extractor.cc",
             ":keywords.h", ":checksum.h", ":checksum.cc"],
     deps = ["//base/script_options_parser:script_option_lines_parser", "//base:debug_message_h",
-            "//base/exaudflib:header", "//base/exaudflib:exaudflib-deps"],
+            "//base/exaudflib:header", "//base/exaudflib:exaudflib-deps", "//base/swig_factory:swig_factory_if"],
 )

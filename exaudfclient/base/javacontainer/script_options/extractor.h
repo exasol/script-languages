@@ -8,12 +8,12 @@
 
 
 #include "base/javacontainer/script_options/converter.h"
-
+#include "base/swig_factory/swig_factory.h"
 
 
 namespace SWIGVMContainers {
 
-class SWIGMetadata;
+class SWIGMetadataIf;
 
 namespace JavaScriptOptions {
 
@@ -23,6 +23,7 @@ class Extractor {
 
     public:
         Extractor(ScriptOptionsParser & parser,
+                  SwigFactory& swigFactory,
                   std::function<void(const std::string&)> throwException);
 
         const std::set<std::string> & getJarPaths() const {
@@ -40,6 +41,8 @@ class Extractor {
 
         Converter m_converter;
         ScriptOptionsParser & m_parser;
+
+        SwigFactory& m_swigFactory;
 };
 
 
