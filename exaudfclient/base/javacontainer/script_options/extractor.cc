@@ -28,8 +28,8 @@ Extractor::Extractor(const std::string & scriptCode, std::function<void(const st
 , m_jvmOptionKeyword("%jvmoption") {}
 
 
-ScriptOptionsParser* Extractor::makeParser(std::string & scriptCode) {
-    return new ScriptOptionLinesParserLegacy(scriptCode);
+ScriptOptionsParser* Extractor::makeParser() {
+    return new ScriptOptionLinesParserLegacy();
 }
 
 void Extractor::extractImportScripts(ScriptOptionsParser *parser) {
@@ -38,7 +38,7 @@ void Extractor::extractImportScripts(ScriptOptionsParser *parser) {
     // package definition). Otherwise we don't recognize if the script imports its self
     std::set<std::vector<unsigned char> > importedScriptChecksums;
     importedScriptChecksums.insert(scriptToMd5(m_modifiedCode.c_str()));
-    parser->parseForMultipleOptions(m_importKeyword,
+    parser->parseForMultipleOptions(m_modifiedCode, m_importKeyword,
                                     [&](const std::string& value, size_t pos){extractImportScript(&metaData,
                                                                                                     m_modifiedCode,
                                                                                                     value, pos,
@@ -65,30 +65,30 @@ void Extractor::extractImportScript(SWIGMetadata** metaData, std::string & scrip
         // If this imported script contains %import statements
         // they will be resolved in the recursion.
         std::string importScriptCodeBuffer(importScriptCode);
-        std::unique_ptr<ScriptOptionsParser> newParser(makeParser(importScriptCodeBuffer));
-        newParser->parseForMultipleOptions(m_importKeyword,
+        std::unique_ptr<ScriptOptionsParser> newParser(makeParser());
+        newParser->parseForMultipleOptions(importScriptCodeBuffer, m_importKeyword,
                                         [&](const std::string& value, size_t pos){extractImportScript(metaData,
                                                                                                       importScriptCodeBuffer,
                                                                                                       value, pos,
                                                                                                       importedScriptChecksums);},
                                         [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1617" + msg);});
-        scriptCode.insert(importScriptPos, importScriptCode);
+        scriptCode.insert(importScriptPos, importScriptCodeBuffer);
     }
 }
 
 void Extractor::extract() {
-        std::unique_ptr<ScriptOptionsParser> parser(makeParser(m_modifiedCode));
-        parser->parseForSingleOption(m_scriptClassKeyword,
+        std::unique_ptr<ScriptOptionsParser> parser(makeParser());
+        parser->parseForSingleOption(m_modifiedCode, m_scriptClassKeyword,
                                         [&](const std::string& value, size_t pos){m_converter.convertScriptClassName(value);},
                                         [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1610" + msg);});
         extractImportScripts(parser.get());
-        parser->parseForSingleOption(m_scriptClassKeyword,
+        parser->parseForSingleOption(m_modifiedCode, m_scriptClassKeyword,
                                         [&](const std::string& value, size_t pos){m_converter.convertScriptClassName(value);},
                                         [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1611" + msg);});
-        parser->parseForMultipleOptions(m_jvmOptionKeyword,
+        parser->parseForMultipleOptions(m_modifiedCode, m_jvmOptionKeyword,
                                         [&](const std::string& value, size_t pos){m_converter.convertJvmOption(value);},
                                         [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1612" + msg);});
-        parser->parseForMultipleOptions(m_jarKeyword,
+        parser->parseForMultipleOptions(m_modifiedCode, m_jarKeyword,
                                         [&](const std::string& value, size_t pos){m_converter.convertExternalJar(value);},
                                         [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1613" + msg);});
 }

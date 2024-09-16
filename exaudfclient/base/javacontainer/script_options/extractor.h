@@ -37,7 +37,7 @@ class Extractor {
 
         void extract();
     private:
-        ScriptOptionsParser* makeParser(std::string & scriptCode);
+        ScriptOptionsParser* makeParser();
 
 
         void extractImportScripts(ScriptOptionsParser* parser);

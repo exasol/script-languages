@@ -6,18 +6,17 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-ScriptOptionLinesParserLegacy::ScriptOptionLinesParserLegacy(std::string & scriptCode)
-: m_scriptCode(scriptCode)
-, m_whitespace(" \t\f\v")
+ScriptOptionLinesParserLegacy::ScriptOptionLinesParserLegacy()
+: m_whitespace(" \t\f\v")
 , m_lineend(";") {}
 
-void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keyword,
+void ScriptOptionLinesParserLegacy::parseForSingleOption(std::string & scriptCode, const std::string keyword,
                             std::function<void(const std::string &option, size_t pos)> callback,
                             std::function<void(const std::string&)> throwException) {
     size_t pos;
     const std::string option =
       ExecutionGraph::extractOptionLine(
-          m_scriptCode,
+          scriptCode,
           keyword,
           m_whitespace,
           m_lineend,
@@ -30,14 +29,14 @@ void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keywo
 }
 
 
-void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string keyword,
+void ScriptOptionLinesParserLegacy::parseForMultipleOptions(std::string & scriptCode, const std::string keyword,
                             std::function<void(const std::string &option, size_t pos)> callback,
                             std::function<void(const std::string&)> throwException) {
     size_t pos;
     while (true) {
         const std::string option =
           ExecutionGraph::extractOptionLine(
-              m_scriptCode,
+              scriptCode,
               keyword,
               m_whitespace,
               m_lineend,
