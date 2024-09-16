@@ -13,10 +13,9 @@
 
 namespace SWIGVMContainers {
 
-class SWIGMetadata_Impl : public SWIGMetadata {
+class SWIGMetadata_Impl : public SWIGMetadataIf {
 public:
     SWIGMetadata_Impl():
-        SWIGMetadata(false),
         m_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id),
         m_socket(*(exaudflib::global.sock)),
         m_exch(&exaudflib::global.exchandler),

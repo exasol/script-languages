@@ -10,7 +10,7 @@ class SWIGTableIterator;
 }
 
 extern "C" {
-SWIGVMContainers::SWIGMetadata* create_SWIGMetaData();
+SWIGVMContainers::SWIGMetadataIf* create_SWIGMetaData();
 SWIGVMContainers::AbstractSWIGTableIterator* create_SWIGTableIterator();
 SWIGVMContainers::SWIGRAbstractResultHandler* create_SWIGResultHandler(SWIGVMContainers::SWIGTableIterator* table_iterator);
 }

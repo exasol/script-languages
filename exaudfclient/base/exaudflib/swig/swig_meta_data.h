@@ -7,9 +7,56 @@
 
 namespace SWIGVMContainers {
 
-class SWIGMetadata {
-    SWIGMetadata* impl=nullptr;
-    typedef SWIGVMContainers::SWIGMetadata* (*CREATE_METADATA_FUN)();
+struct SWIGMetadataIf {
+
+        virtual ~SWIGMetadataIf() {};
+        virtual const char* databaseName() = 0;
+        virtual const char* databaseVersion() = 0;
+        virtual const char* scriptName() = 0;
+        virtual const char* scriptSchema() = 0;
+        virtual const char* currentUser() = 0;
+        virtual const char* scopeUser() = 0;
+        virtual const char* currentSchema() = 0;
+        virtual const char* scriptCode() = 0;
+        virtual const unsigned long long sessionID() = 0;
+        virtual const char *sessionID_S() = 0;
+        virtual const unsigned long statementID() = 0;
+        virtual const unsigned int nodeCount() = 0;
+        virtual const unsigned int nodeID() = 0;
+        virtual const unsigned long long vmID() = 0;
+        virtual const unsigned long long memoryLimit() = 0;
+        virtual const VMTYPE vmType() = 0;
+        virtual const char *vmID_S() = 0;
+        virtual const ExecutionGraph::ConnectionInformationWrapper* connectionInformation(const char* connection_name) = 0;
+        virtual const char* moduleContent(const char* name) = 0;
+        virtual const unsigned int inputColumnCount() = 0;
+        virtual const char *inputColumnName(unsigned int col) = 0;
+        virtual const SWIGVM_datatype_e inputColumnType(unsigned int col) = 0;
+        virtual const char *inputColumnTypeName(unsigned int col) = 0;
+        virtual const unsigned int inputColumnSize(unsigned int col) = 0;
+        virtual const unsigned int inputColumnPrecision(unsigned int col) = 0;
+        virtual const unsigned int inputColumnScale(unsigned int col) = 0;
+        virtual const SWIGVM_itertype_e inputType() = 0;
+        virtual const unsigned int outputColumnCount() = 0;
+        virtual const char *outputColumnName(unsigned int col) = 0;
+        virtual const SWIGVM_datatype_e outputColumnType(unsigned int col) = 0;
+        virtual const char *outputColumnTypeName(unsigned int col) = 0;
+        virtual const unsigned int outputColumnSize(unsigned int col) = 0;
+        virtual const unsigned int outputColumnPrecision(unsigned int col) = 0;
+        virtual const unsigned int outputColumnScale(unsigned int col) = 0;
+        virtual const SWIGVM_itertype_e outputType() = 0;
+        virtual const bool isEmittedColumn(unsigned int col) = 0;
+        virtual const char* checkException() = 0;
+        virtual const char* pluginLanguageName() = 0;
+        virtual const char* pluginURI() = 0;
+        virtual const char* outputAddress() = 0;
+};
+
+
+
+class SWIGMetadata : public SWIGMetadataIf {
+    SWIGMetadataIf* impl=nullptr;
+    typedef SWIGVMContainers::SWIGMetadataIf* (*CREATE_METADATA_FUN)();
     public:
         SWIGMetadata()
         {
