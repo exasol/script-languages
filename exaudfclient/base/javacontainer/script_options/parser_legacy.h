@@ -16,10 +16,10 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
 
         virtual void parseForSingleOption(std::string & scriptCode, const std::string key,
                                         std::function<void(const std::string &option, size_t pos)> callback,
-                                        std::function<void(const std::string&)> throwException);
+                                        std::function<void(const std::string&)> throwException) override;
         virtual void parseForMultipleOptions(std::string & scriptCode, const std::string key,
                                                 std::function<void(const std::string &option, size_t pos)> callback,
-                                                std::function<void(const std::string&)> throwException);
+                                                std::function<void(const std::string&)> throwException) override;
 
     private:
         const std::string m_whitespace;

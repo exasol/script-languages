@@ -28,8 +28,8 @@ Extractor::Extractor(const std::string & scriptCode, std::function<void(const st
 , m_jvmOptionKeyword("%jvmoption") {}
 
 
-ScriptOptionsParser* Extractor::makeParser() {
-    return new ScriptOptionLinesParserLegacy();
+std::unique_ptr<ScriptOptionsParser> Extractor::makeParser() {
+    return std::make_unique<ScriptOptionLinesParserLegacy>();
 }
 
 void Extractor::extractImportScripts(ScriptOptionsParser *parser) {
