@@ -55,7 +55,7 @@ void Extractor::extractImportScript(std::unique_ptr<SWIGMetadata>& metaData, std
     const char *exception = metaData->checkException();
     if (exception)
         m_throwException("F-UDF-CL-SL-JAVA-1616: "+std::string(exception));
-    if (importedScriptChecksums.insert(scriptToMd5(importScriptId.c_str())).second) {
+    if (importedScriptChecksums.insert(scriptToMd5(importScriptCode)).second) {
         // Script has not been imported yet
         // If this imported script contains %import statements
         // they will be resolved in the recursion.
