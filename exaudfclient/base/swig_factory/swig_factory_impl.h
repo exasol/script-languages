@@ -7,7 +7,7 @@ namespace SWIGVMContainers {
 
 struct SwigFactoryImpl : public SwigFactory {
 
-    virtual SWIGMetadataIf* makeSwigMetadata();
+    virtual SWIGMetadataIf* makeSwigMetadata() override;
 
 };
 
