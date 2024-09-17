@@ -17,10 +17,13 @@ class SWIGMetadata;
 
 namespace JavaScriptOptions {
 
+class ParserFactory;
+
 class Extractor {
 
     public:
         Extractor(const std::string & scriptCode,
+                    ParserFactory & parserFactory,
                     std::function<void(const std::string&)> throwException);
 
         std::string&& moveModifiedScriptCode() {
@@ -57,6 +60,7 @@ class Extractor {
         std::string m_jvmOptionKeyword;
 
         Converter m_converter;
+        ParserFactory & m_parserFactory;
 };
 
 

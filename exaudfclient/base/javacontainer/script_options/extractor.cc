@@ -1,5 +1,5 @@
 #include "base/javacontainer/script_options/extractor.h"
-#include "base/javacontainer/script_options/parser_legacy.h"
+#include "base/javacontainer/script_options/parser_factory.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
 #include <openssl/md5.h>
 #include <string.h>
@@ -19,18 +19,15 @@ inline std::vector<unsigned char> scriptToMd5(const char *script) {
     return std::vector<unsigned char>(md5, md5 + sizeof(md5));
 }
 
-Extractor::Extractor(const std::string & scriptCode, std::function<void(const std::string&)> throwException)
+Extractor::Extractor(const std::string & scriptCode, ParserFactory & parserFactory,
+                     std::function<void(const std::string&)> throwException)
 : m_modifiedCode(scriptCode)
 , m_throwException(throwException)
 , m_jarKeyword("%jar")
 , m_scriptClassKeyword("%scriptclass")
 , m_importKeyword("%import")
-, m_jvmOptionKeyword("%jvmoption") {}
-
-
-std::unique_ptr<ScriptOptionsParser> Extractor::makeParser() {
-    return std::make_unique<ScriptOptionLinesParserLegacy>();
-}
+, m_jvmOptionKeyword("%jvmoption")
+, m_parserFactory(parserFactory) {}
 
 void Extractor::extractImportScripts(ScriptOptionsParser *parser) {
     std::unique_ptr<SWIGMetadata> metaData;
@@ -63,7 +60,7 @@ void Extractor::extractImportScript(std::unique_ptr<SWIGMetadata>& metaData, std
         // If this imported script contains %import statements
         // they will be resolved in the recursion.
         std::string importScriptCodeBuffer(importScriptCode);
-        std::unique_ptr<ScriptOptionsParser> newParser(makeParser());
+        std::unique_ptr<ScriptOptionsParser> newParser(m_parserFactory.makeParser());
         newParser->parseForMultipleOptions(importScriptCodeBuffer, m_importKeyword,
                                         [&](const std::string& value, size_t pos){extractImportScript(metaData,
                                                                                                       importScriptCodeBuffer,
@@ -75,7 +72,7 @@ void Extractor::extractImportScript(std::unique_ptr<SWIGMetadata>& metaData, std
 }
 
 void Extractor::extract() {
-        std::unique_ptr<ScriptOptionsParser> parser(makeParser());
+        std::unique_ptr<ScriptOptionsParser> parser(m_parserFactory.makeParser());
         parser->parseForSingleOption(m_modifiedCode, m_scriptClassKeyword,
                                         [&](const std::string& value, size_t pos){m_converter.convertScriptClassName(value);},
                                         [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1610" + msg);});
