@@ -11,10 +11,13 @@ struct SwigFactoryTestImpl : public SWIGVMContainers::SwigFactory {
 
     void addModule(const std::string key, const std::string script);
 
+    void setException(const std::string msg);
+
     virtual SWIGVMContainers::SWIGMetadataIf* makeSwigMetadata() override;
 
 private:
     std::map<std::string, std::string> m_moduleContent;
+    std::string m_exceptionMsg;
 };
 
 
