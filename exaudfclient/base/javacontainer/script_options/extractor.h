@@ -40,8 +40,6 @@ class Extractor {
 
         void extract();
     private:
-        std::unique_ptr<ScriptOptionsParser> makeParser();
-
 
         void extractImportScripts(ScriptOptionsParser* parser);
 
