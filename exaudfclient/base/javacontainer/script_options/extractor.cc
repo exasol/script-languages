@@ -33,31 +33,29 @@ ScriptOptionsParser* Extractor::makeParser() {
 }
 
 void Extractor::extractImportScripts(ScriptOptionsParser *parser) {
-    SWIGMetadata *metaData = NULL;
+    std::unique_ptr<SWIGMetadata> metaData;
     // Attention: We must hash the parent script before modifying it (adding the
     // package definition). Otherwise we don't recognize if the script imports its self
     std::set<std::vector<unsigned char> > importedScriptChecksums;
     importedScriptChecksums.insert(scriptToMd5(m_modifiedCode.c_str()));
     parser->parseForMultipleOptions(m_modifiedCode, m_importKeyword,
-                                    [&](const std::string& value, size_t pos){extractImportScript(&metaData,
+                                    [&](const std::string& value, size_t pos){extractImportScript(metaData,
                                                                                                     m_modifiedCode,
                                                                                                     value, pos,
                                                                                                     importedScriptChecksums);},
                                     [&](const std::string& msg){m_throwException("F-UDF-CL-SL-JAVA-1614" + msg);});
-    if (metaData)
-        delete metaData;
 }
 
-void Extractor::extractImportScript(SWIGMetadata** metaData, std::string & scriptCode,
+void Extractor::extractImportScript(std::unique_ptr<SWIGMetadata>& metaData, std::string & scriptCode,
                                         const std::string &importScriptId, size_t importScriptPos,
                                         std::set<std::vector<unsigned char> > & importedScriptChecksums) {
-    if (!(*metaData)) {
-        *metaData = new SWIGMetadata();
-        if (!(*metaData))
+    if (!metaData) {
+        metaData = std::make_unique<SWIGMetadata>();
+        if (!metaData)
             m_throwException("F-UDF-CL-SL-JAVA-1615: Failure while importing scripts");
     }
-    const char *importScriptCode = (*metaData)->moduleContent(importScriptId.c_str());
-    const char *exception = (*metaData)->checkException();
+    const char *importScriptCode = metaData->moduleContent(importScriptId.c_str());
+    const char *exception = metaData->checkException();
     if (exception)
         m_throwException("F-UDF-CL-SL-JAVA-1616: "+std::string(exception));
     if (importedScriptChecksums.insert(scriptToMd5(importScriptId.c_str())).second) {

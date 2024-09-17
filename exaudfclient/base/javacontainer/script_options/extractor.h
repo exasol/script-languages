@@ -42,7 +42,7 @@ class Extractor {
 
         void extractImportScripts(ScriptOptionsParser* parser);
 
-        void extractImportScript(SWIGMetadata** metaData, std::string & scriptCode,
+        void extractImportScript(std::unique_ptr<SWIGMetadata>& metaData, std::string & scriptCode,
                                         const std::string &importScriptId, size_t importScriptPos,
                                         std::set<std::vector<unsigned char> > & importedScriptChecksums);
 
