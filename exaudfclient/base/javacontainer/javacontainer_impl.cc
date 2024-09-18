@@ -25,12 +25,11 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
     JavaScriptOptions::ParserFactoryLegacy scriptOptionsParserFactory;
-    JavaScriptOptions::Extractor extractor(m_scriptCode, scriptOptionsParserFactory,
-                                            [&](const std::string &msg){throwException(msg);});
+    JavaScriptOptions::Extractor extractor(scriptOptionsParserFactory,
+                                           [&](const std::string &msg){throwException(msg);});
 
-    DBG_FUNC_CALL(cerr,extractor.extract());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
+    DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
 
-    m_scriptCode = std::move(extractor.moveModifiedScriptCode());
     DBG_FUNC_CALL(cerr,setClasspath());
 
     m_jvmOptions = std::move(extractor.moveJvmOptions());

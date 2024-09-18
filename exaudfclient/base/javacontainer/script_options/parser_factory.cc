@@ -6,8 +6,8 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-std::unique_ptr<ScriptOptionsParser> ParserFactoryLegacy::makeParser(std::string & scriptCode) {
-    return std::make_unique<ScriptOptionLinesParserLegacy>(scriptCode);
+std::unique_ptr<ScriptOptionsParser> ParserFactoryLegacy::makeParser() {
+    return std::make_unique<ScriptOptionLinesParserLegacy>();
 }
 
 } //namespace JavaScriptOptions

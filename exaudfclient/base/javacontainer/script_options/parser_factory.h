@@ -10,11 +10,11 @@ namespace JavaScriptOptions {
 struct ScriptOptionsParser;
 
 struct ParserFactory {
-    virtual std::unique_ptr<ScriptOptionsParser> makeParser(std::string & scriptCode) = 0;
+    virtual std::unique_ptr<ScriptOptionsParser> makeParser() = 0;
 };
 
 struct ParserFactoryLegacy : public ParserFactory {
-    std::unique_ptr<ScriptOptionsParser> makeParser(std::string & scriptCode) override;
+    std::unique_ptr<ScriptOptionsParser> makeParser() override;
 };
 
 } //namespace JavaScriptOptions

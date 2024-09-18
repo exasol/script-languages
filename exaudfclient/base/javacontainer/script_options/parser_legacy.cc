@@ -1,15 +1,82 @@
 #include "base/javacontainer/script_options/parser_legacy.h"
+#include "base/javacontainer/script_options/checksum.h"
 #include "base/script_options_parser/script_option_lines.h"
+#include "base/exaudflib/swig/swig_meta_data.h"
 
+#include <memory>
 
 namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-ScriptOptionLinesParserLegacy::ScriptOptionLinesParserLegacy(std::string & scriptCode)
+ScriptOptionLinesParserLegacy::ScriptOptionLinesParserLegacy()
 : m_whitespace(" \t\f\v")
 , m_lineend(";")
-, m_scriptCode(scriptCode) {}
+, m_scriptCode()
+, m_keywords() {}
+
+void ScriptOptionLinesParserLegacy::prepareScriptCode(const std::string & scriptCode) {
+    m_scriptCode = scriptCode;
+}
+
+void ScriptOptionLinesParserLegacy::extractImportScripts(std::function<void(const std::string&)> throwException) {
+    std::unique_ptr<SWIGMetadata> metaData;
+    // Attention: We must hash the parent script before modifying it (adding the
+    // package definition). Otherwise we don't recognize if the script imports its self
+    Checksum importedScriptChecksums;
+    importedScriptChecksums.addScript(m_scriptCode.c_str());
+    while (true) {
+        std::string newScript;
+        size_t scriptPos;
+        parseForSingleOption(m_keywords.importKeyword(),
+                             [&](const std::string& value, size_t pos){scriptPos = pos; newScript = value;},
+                             [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1614" + msg);});
+        if (!newScript.empty()) {
+            if (!metaData) {
+                metaData = std::make_unique<SWIGMetadata>();
+                if (!metaData)
+                    throwException("F-UDF-CL-SL-JAVA-1615: Failure while importing scripts");
+            }
+            const char *importScriptCode = metaData->moduleContent(newScript.c_str());
+            const char *exception = metaData->checkException();
+            if (exception)
+                throwException("F-UDF-CL-SL-JAVA-1616: " + std::string(exception));
+            if (importedScriptChecksums.addScript(importScriptCode)) {
+                // Script has not been imported yet
+                // If this imported script contains %import statements
+                // they will be resolved in the recursion.
+                m_scriptCode.insert(scriptPos, importScriptCode);
+            }
+        } else {
+            break;
+        }
+    }
+}
+
+void ScriptOptionLinesParserLegacy::parseForScriptClass(std::function<void(const std::string &option)> callback,
+                                 std::function<void(const std::string&)> throwException) {
+    parseForSingleOption(m_keywords.scriptClassKeyword(),
+                            [&](const std::string& value, size_t pos){callback(value);},
+                            [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1610" + msg);});
+}
+
+void ScriptOptionLinesParserLegacy::parseForJvmOptions(std::function<void(const std::string &option)> callback,
+                                 std::function<void(const std::string&)> throwException) {
+   parseForMultipleOptions(m_keywords.jvmOptionKeyword(),
+                            [&](const std::string& value, size_t pos){callback(value);},
+                            [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1612" + msg);});
+}
+
+void ScriptOptionLinesParserLegacy::parseForExternalJars(std::function<void(const std::string &option)> callback,
+                                 std::function<void(const std::string&)> throwException) {
+   parseForMultipleOptions(m_keywords.jarKeyword(),
+                            [&](const std::string& value, size_t pos){callback(value);},
+                            [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1613" + msg);});
+}
+
+std::string && ScriptOptionLinesParserLegacy::getScriptCode() {
+    return std::move(m_scriptCode);
+}
 
 void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keyword,
                             std::function<void(const std::string &option, size_t pos)> callback,
