@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      USE_BAZEL_VERSION=7.2.1
-
+      USE_BAZEL_VERSION: 7.2.1
     steps:
     - uses: actions/checkout@v4
 
@@ -33,7 +32,6 @@ jobs:
       run: |
         bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config java --config fast-binary-py3 --verbose_failures
       working-directory: ./exaudfclient/
-
     - name: Java Tests
       run: |
         bazel test //base/javacontainer/test/...
