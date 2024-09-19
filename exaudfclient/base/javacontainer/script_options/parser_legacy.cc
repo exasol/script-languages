@@ -25,6 +25,77 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(std::function<void(cons
     // package definition). Otherwise we don't recognize if the script imports its self
     Checksum importedScriptChecksums;
     importedScriptChecksums.addScript(m_scriptCode.c_str());
+    /*
+    The following while loop iteratively replaces import scripts in the script code. Each replacement is done in two steps:
+    1. Remove the "%import ..." option in the script code
+    2. Insert the new script code at the same location
+    It can happen that the imported scripts have again an "%import ..." option.
+    Those cases will be handled in the next iteration of the while loop, because the parser searches the options in
+    each iteration from the beginning of the (then modified) script code.
+    For example, lets assume the following Jave UDF, stored in member variable 'm_scriptCode':
+        %import other_script_A;
+        class MyJavaUdf {
+            static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                ctx.emit(\"Success!\");\n"
+            }
+        };
+    and 'other_script_A' is defined as (which will be retrieved over SWIGMetadata.moduleContent()):
+        %import other_script_B;
+        class OtherClassA {
+            static void doSomething() {
+            }
+        };
+    and other_script_B as:
+        %import other_script_A;
+        class OtherClassB {
+            static void doSomething() {
+            }
+        };
+    The first iteration of the while loop would modify the member variable m_scriptCode to:
+        %import other_script_B;
+        class OtherClassA {
+            static void doSomething() {
+            }
+        };
+        class MyJavaUdf {
+            static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                ctx.emit(\"Success!\");\n"
+            }
+        };
+    The second iteration of the while loop would modify the member variable m_scriptCode to:
+        The first iteration of the while loop would modify the member variable m_scriptCode to:
+        %import other_script_A;
+        class OtherClassB {
+            static void doSomething() {
+            }
+        };
+        class OtherClassA {
+            static void doSomething() {
+            }
+        };
+        class MyJavaUdf {
+            static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                ctx.emit(\"Success!\");\n"
+            }
+        };
+    The third iteration of the while loopt would modify the member variable m_scriptCode to:
+        class OtherClassB {
+            static void doSomething() {
+            }
+        };
+        class OtherClassA {
+            static void doSomething() {
+            }
+        };
+        class MyJavaUdf {
+            static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                ctx.emit(\"Success!\");\n"
+            }
+        };
+    because the content of "other_script_A" is already stored in the checksum,
+    and the parser only removes the script options keyword, but does not insert again the code of other_script_A.
+    The fourth iteration of the while loop would detect no further import option keywords and would break the loop.
+    */
     while (true) {
         std::string newScript;
         size_t scriptPos;
