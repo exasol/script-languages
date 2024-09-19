@@ -8,12 +8,10 @@
 
 
 #include "base/javacontainer/script_options/converter.h"
-#include "base/swig_factory/swig_factory.h"
-
 
 namespace SWIGVMContainers {
 
-class SWIGMetadataIf;
+struct SwigFactory;
 
 namespace JavaScriptOptions {
 
