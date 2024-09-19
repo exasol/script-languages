@@ -1,5 +1,4 @@
 #include "base/javacontainer/script_options/converter.h"
-#include "base/debug_message.h"
 #include <iostream>
 
 namespace SWIGVMContainers {
@@ -29,7 +28,6 @@ void Converter::convertExternalJar(const std::string & value) {
 }
 
 void Converter::convertScriptClassName(const std::string & value) {
-    DBGVAR(std::cerr, value);
     if (value != "") {
         m_jvmOptions.push_back("-Dexasol.scriptclass=" + value);
     }

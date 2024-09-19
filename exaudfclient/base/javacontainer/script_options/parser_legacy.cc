@@ -78,7 +78,7 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(std::function<void(cons
                 ctx.emit(\"Success!\");\n"
             }
         };
-    The third iteration of the while loopt would modify the member variable m_scriptCode to:
+    The third iteration of the while loop would modify the member variable m_scriptCode to:
         class OtherClassB {
             static void doSomething() {
             }
@@ -115,7 +115,7 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(std::function<void(cons
             if (importedScriptChecksums.addScript(importScriptCode)) {
                 // Script has not been imported yet
                 // If this imported script contains %import statements
-                // they will be resolved in the recursion.
+                // they will be resolved in the next iteration of the while loop.
                 m_scriptCode.insert(scriptPos, importScriptCode);
             }
         } else {
