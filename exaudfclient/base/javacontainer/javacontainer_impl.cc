@@ -12,7 +12,7 @@
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
 #include "base/javacontainer/script_options/extractor.h"
-#include "base/javacontainer/script_options/parser_factory.h"
+#include "base/javacontainer/script_options/parser_legacy.h"
 
 
 using namespace SWIGVMContainers;
@@ -24,8 +24,8 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
     stringstream ss;
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
-    JavaScriptOptions::ParserFactoryLegacy scriptOptionsParserFactory;
-    JavaScriptOptions::Extractor extractor(scriptOptionsParserFactory,
+    JavaScriptOptions::ScriptOptionLinesParserLegacy scriptOptionsParser;
+    JavaScriptOptions::Extractor extractor(scriptOptionsParser,
                                            [&](const std::string &msg){throwException(msg);});
 
     DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used

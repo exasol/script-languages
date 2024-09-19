@@ -96,7 +96,6 @@ void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keywo
     }
 }
 
-
 void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string keyword,
                             std::function<void(const std::string &option, size_t pos)> callback,
                             std::function<void(const std::string&)> throwException) {
@@ -116,8 +115,6 @@ void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string ke
         callback(option, pos);
     }
 }
-
-
 
 } //namespace JavaScriptOptions
 

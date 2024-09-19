@@ -1,28 +1,34 @@
 #include "base/javacontainer/script_options/extractor.h"
-#include "base/javacontainer/script_options/parser_factory.h"
+#include "base/javacontainer/script_options/parser.h"
 
+#include "base/debug_message.h"
+#include <iostream>
 
+#define EXTR_DBG_FUNC_CALL(f) DBG_FUNC_CALL(std::cerr, f)
 
 namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-
-
-Extractor::Extractor(ParserFactory & parserFactory,
+Extractor::Extractor(ScriptOptionsParser & parser,
                      std::function<void(const std::string&)> throwException)
 : m_throwException(throwException)
-, m_parserFactory(parserFactory) {}
+, m_parser(parser) {}
 
 
 void Extractor::extract(std::string & scriptCode) {
-    std::unique_ptr<ScriptOptionsParser> parser(m_parserFactory.makeParser());
-    parser->prepareScriptCode(scriptCode);
-    parser->parseForScriptClass( [&](const std::string& value){m_converter.convertScriptClassName(value);}, m_throwException);
-    parser->extractImportScripts(m_throwException);
-    parser->parseForJvmOptions( [&](const std::string& value){m_converter.convertScriptClassName(value);}, m_throwException);
-    parser->parseForExternalJars( [&](const std::string& value){m_converter.convertScriptClassName(value);}, m_throwException);
-    scriptCode = std::move(parser->getScriptCode());
+    m_parser.prepareScriptCode(scriptCode);
+    EXTR_DBG_FUNC_CALL(m_parser.parseForScriptClass( [&](const std::string& value){
+            EXTR_DBG_FUNC_CALL(m_converter.convertScriptClassName(value));
+        }, m_throwException));
+    EXTR_DBG_FUNC_CALL(m_parser.extractImportScripts(m_throwException));
+    EXTR_DBG_FUNC_CALL(m_parser.parseForJvmOptions( [&](const std::string& value){
+            EXTR_DBG_FUNC_CALL(m_converter.convertJvmOption(value));
+        }, m_throwException));
+    EXTR_DBG_FUNC_CALL(m_parser.parseForExternalJars( [&](const std::string& value){
+            EXTR_DBG_FUNC_CALL(m_converter.convertExternalJar(value));
+        }, m_throwException));
+    scriptCode = std::move(m_parser.getScriptCode());
 }
 
 } //namespace JavaScriptOptions
