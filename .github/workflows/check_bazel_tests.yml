@@ -29,6 +29,11 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y openjdk-11-jdk libzmq3-dev
+    - name: Build UDF client for Python and Java
+      run: |
+        bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config java --config fast-binary-py3 --verbose_failures
+      working-directory: ./exaudfclient/
+
     - name: Java Tests
       run: |
         bazel test //base/javacontainer/test/...
