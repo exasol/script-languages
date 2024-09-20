@@ -67,8 +67,6 @@ class SWIGMetadata : public SWIGMetadataIf {
             impl = create_SWIGMetaData();
 #endif
         }
-        /* hack: use this constructor to avoid cycling loading of this class */
-        SWIGMetadata(bool) {}
 
         virtual ~SWIGMetadata() {
 		if (impl!=nullptr) {
