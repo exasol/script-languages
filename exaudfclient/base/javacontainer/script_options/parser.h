@@ -38,6 +38,10 @@ struct ScriptOptionsParser {
     virtual void parseForExternalJars(std::function<void(const std::string &option)> callback,
                                       std::function<void(const std::string&)> throwException) = 0;
 
+    /*
+     Searches for the "%import" options and embeds the respective imported script code at the same location as
+     the option in the script code.
+    */
     virtual void extractImportScripts(std::function<void(const std::string&)> throwException) = 0;
 
     /*
