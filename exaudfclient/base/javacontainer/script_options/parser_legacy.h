@@ -3,6 +3,7 @@
 
 
 #include "base/javacontainer/script_options/parser.h"
+#include "base/javacontainer/script_options/keywords.h"
 
 
 namespace SWIGVMContainers {
@@ -14,35 +15,34 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
     public:
         ScriptOptionLinesParserLegacy();
 
-        void findExternalJarPaths(std::string & src_scriptCode,
-                                  std::vector<std::string>& jarPaths,
-                                  std::function<void(const std::string&)> throwException);
+        void prepareScriptCode(const std::string & scriptCode) override;
 
-        void getScriptClassName(std::string & src_scriptCode, std::string &scriptClassName,
-                                std::function<void(const std::string&)> throwException);
+        void parseForScriptClass(std::function<void(const std::string &option)> callback,
+                                 std::function<void(const std::string&)> throwException) override;
 
-        void getNextImportScript(std::string & src_scriptCode,
-                                 std::pair<std::string, size_t> & result,
-                                 std::function<void(const std::string&)> throwException);
+        void parseForJvmOptions(std::function<void(const std::string &option)> callback,
+                                std::function<void(const std::string&)> throwException) override;
 
+        void parseForExternalJars(std::function<void(const std::string &option)> callback,
+                                  std::function<void(const std::string&)> throwException) override;
 
-        void getExternalJvmOptions(std::string & src_scriptCode,
-                                   std::vector<std::string>& jvmOptions,
-                                   std::function<void(const std::string&)> throwException);
+        void extractImportScripts(std::function<void(const std::string&)> throwException) override;
+
+        std::string && getScriptCode() override;
 
     private:
-        std::string  callParserForSingleValue(std::string & src_scriptCode, size_t &pos, const std::string & keyword,
-                                              std::function<void(const std::string&)> throwException);
-        void  callParserForManyValues(std::string & src_scriptCode, const std::string & keyword,
-                                      std::vector<std::string>& result,
-                                      std::function<void(const std::string&)> throwException);
+        void parseForSingleOption(const std::string key,
+                                        std::function<void(const std::string &option, size_t pos)> callback,
+                                        std::function<void(const std::string&)> throwException);
+        void parseForMultipleOptions(const std::string key,
+                                                std::function<void(const std::string &option, size_t pos)> callback,
+                                                std::function<void(const std::string&)> throwException);
+
     private:
         const std::string m_whitespace;
         const std::string m_lineend;
-        const std::string m_jarKeyword;
-        const std::string m_scriptClassKeyword;
-        const std::string m_importKeyword;
-        const std::string m_jvmOptionKeyword;
+        std::string m_scriptCode;
+        Keywords m_keywords;
 };
 
 } //namespace JavaScriptOptions

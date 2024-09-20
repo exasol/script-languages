@@ -4,7 +4,7 @@
 
 extern "C" {
 
-SWIGVMContainers::SWIGMetadata* create_SWIGMetaData() {
+SWIGVMContainers::SWIGMetadataIf* create_SWIGMetaData() {
     return new SWIGVMContainers::SWIGMetadata_Impl();
 }
 
