@@ -148,6 +148,6 @@ sub run_install_command{
 }
 
 
-generate_pinned_file($file, $dry_run, $with_versions, $allow_no_version);
 my $channel_args = generate_channel_args($channel_file);
 run_install_command($file, $dry_run, $with_versions, $allow_no_version, $channel_args);
+generate_pinned_file($file, $dry_run, $with_versions, $allow_no_version);
