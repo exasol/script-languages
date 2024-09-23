@@ -19,5 +19,5 @@ cc_test(
         "//base/javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
-    data = ["test.jar"]
+    data = ["test.jar", "other_test.jar"]
 )
