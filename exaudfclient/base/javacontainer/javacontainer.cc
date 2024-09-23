@@ -4,9 +4,9 @@
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMach::JavaVMach(bool checkOnly) {
+JavaVMach::JavaVMach(bool checkOnly, SwigFactory& swigFactory) {
     try {
-        m_impl = new JavaVMImpl(checkOnly, false);
+        m_impl = new JavaVMImpl(checkOnly, false, swigFactory);
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF-CL-SL-JAVA-1000: "+std::string(err.what());

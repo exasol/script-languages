@@ -2,6 +2,7 @@
 #include "base/javacontainer/script_options/checksum.h"
 #include "base/script_options_parser/script_option_lines.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
+#include "base/swig_factory/swig_factory.h"
 
 #include <memory>
 
@@ -19,8 +20,9 @@ void ScriptOptionLinesParserLegacy::prepareScriptCode(const std::string & script
     m_scriptCode = scriptCode;
 }
 
-void ScriptOptionLinesParserLegacy::extractImportScripts(std::function<void(const std::string&)> throwException) {
-    std::unique_ptr<SWIGMetadata> metaData;
+void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFactory,
+                                                         std::function<void(const std::string&)> throwException) {
+    std::unique_ptr<SWIGMetadataIf> metaData;
     // Attention: We must hash the parent script before modifying it (adding the
     // package definition). Otherwise we don't recognize if the script imports its self
     Checksum importedScriptChecksums;
@@ -104,7 +106,7 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(std::function<void(cons
                              [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1614" + msg);});
         if (!newScript.empty()) {
             if (!metaData) {
-                metaData = std::make_unique<SWIGMetadata>();
+                metaData.reset(swigFactory.makeSwigMetadata());
                 if (!metaData)
                     throwException("F-UDF-CL-SL-JAVA-1615: Failure while importing scripts");
             }

@@ -13,19 +13,29 @@
 #include "base/javacontainer/javacontainer_impl.h"
 #include "base/javacontainer/script_options/extractor.h"
 #include "base/javacontainer/script_options/parser_legacy.h"
+#include "base/swig_factory/swig_factory.h"
 
 
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"), // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
-                                        m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL), m_needsCompilation(true) {
+JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory)
+: m_checkOnly(checkOnly)
+, m_exaJavaPath("")
+, m_localClasspath("/tmp") // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
+, m_scriptCode(SWIGVM_params->script_code)
+, m_exceptionThrown(false)
+, m_jvm(NULL)
+, m_env(NULL)
+, m_needsCompilation(true)
+, m_swigFactory(swigFactory)
+{
 
     stringstream ss;
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
     JavaScriptOptions::ScriptOptionLinesParserLegacy scriptOptionsParser;
-    JavaScriptOptions::Extractor extractor(scriptOptionsParser,
+    JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory,
                                            [&](const std::string &msg){throwException(msg);});
 
     DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used

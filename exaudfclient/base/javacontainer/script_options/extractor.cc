@@ -11,17 +11,18 @@ namespace SWIGVMContainers {
 namespace JavaScriptOptions {
 
 Extractor::Extractor(ScriptOptionsParser & parser,
+                     SwigFactory& swigFactory,
                      std::function<void(const std::string&)> throwException)
 : m_throwException(throwException)
-, m_parser(parser) {}
-
+, m_parser(parser)
+, m_swigFactory(swigFactory) {}
 
 void Extractor::extract(std::string & scriptCode) {
     m_parser.prepareScriptCode(scriptCode);
     EXTR_DBG_FUNC_CALL(m_parser.parseForScriptClass( [&](const std::string& value){
             EXTR_DBG_FUNC_CALL(m_converter.convertScriptClassName(value));
         }, m_throwException));
-    EXTR_DBG_FUNC_CALL(m_parser.extractImportScripts(m_throwException));
+    EXTR_DBG_FUNC_CALL(m_parser.extractImportScripts(m_swigFactory, m_throwException));
     EXTR_DBG_FUNC_CALL(m_parser.parseForJvmOptions( [&](const std::string& value){
             EXTR_DBG_FUNC_CALL(m_converter.convertJvmOption(value));
         }, m_throwException));

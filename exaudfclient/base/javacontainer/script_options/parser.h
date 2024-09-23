@@ -5,7 +5,10 @@
 #include <vector>
 #include <functional>
 
+
 namespace SWIGVMContainers {
+
+struct SwigFactory;
 
 namespace JavaScriptOptions {
 
@@ -42,7 +45,8 @@ struct ScriptOptionsParser {
      Searches for the "%import" options and embeds the respective imported script code at the same location as
      the option in the script code.
     */
-    virtual void extractImportScripts(std::function<void(const std::string&)> throwException) = 0;
+    virtual void extractImportScripts(SwigFactory & swigFactory,
+                                      std::function<void(const std::string&)> throwException) = 0;
 
     /*
      Returns the (eventually modified) script code.

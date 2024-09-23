@@ -15,12 +15,18 @@ struct JavaVMInternalStatus {
     std::vector<std::string> m_jvmOptions;
 };
 
+class SwigFactoryTestImpl;
+
 class JavaVMTest {
     public:
         JavaVMTest(std::string scriptCode);
 
+        JavaVMTest(std::string scriptCode, SwigFactoryTestImpl & swigFactory);
+
         const JavaVMInternalStatus& getJavaVMInternalStatus() {return javaVMInternalStatus;}
 
+    private:
+        void run(std::string scriptCode, SwigFactoryTestImpl & swigFactory);
     private:
         JavaVMInternalStatus javaVMInternalStatus;
 };
