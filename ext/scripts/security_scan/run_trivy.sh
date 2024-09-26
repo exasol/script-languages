@@ -9,13 +9,14 @@ fi
 
 TRIVY_CACHE_LOCATION="https://dli4ip9yror05.cloudfront.net"
 
-mkdir -p "$HOME/.cache/trivy/db" "$HOME/.cache/trivy/java-db"
-curl -o  "$HOME/.cache/trivy/db/metadata.json" "${TRIVY_CACHE_LOCATION}/db/metadata.json"
-curl -o  "$HOME/.cache/trivy/db/trivy.db" "${TRIVY_CACHE_LOCATION}/db/trivy.db"
-curl -o  "$HOME/.cache/trivy/java-db/metadata.json" "${TRIVY_CACHE_LOCATION}/java-db/metadata.json"
-curl -o  "$HOME/.cache/trivy/java-db/trivy-java.db" "${TRIVY_CACHE_LOCATION}/java-db/trivy-java.db"
 
+mkdir -p "$HOME/.cache/"
+pushd "$HOME/.cache/"
 
+curl -s -o trivy_cache.tar.gz "${TRIVY_CACHE_LOCATION}/trivy_cache.tar.gz"
+tar xf trivy_cache.tar.gz
+
+popd
 
 output_path=$1
 
