@@ -1,4 +1,4 @@
-#include "scriptoptionlines_ctpg.h"
+#include "script_option_lines_ctpg.h"
 #include "ctpg.hpp"
 #include <iostream>
 #include <string>
@@ -8,12 +8,14 @@ using namespace exaudf_ctpg;
 using namespace exaudf_ctpg::ftors;
 
 
+namespace ExecutionGraph
+{
+
 namespace OptionsLineParser
 {
 
 
-namespace Parser {
-
+namespace CTPG {
 
 
 struct Option {
@@ -24,6 +26,8 @@ struct Option {
 };
 
 using options_type = std::vector<Option>;
+
+namespace ParserInternals {
 
 auto empty_options()
 {
@@ -39,7 +43,6 @@ auto to_options(Option&& e)
 
 auto to_option(std::string_view key, std::string value, source_point sp_begin, source_point sp_end)
 {
-    std::cerr << "Found option:" << key << " - '" << value << "'" << std::endl;
     return Option{std::string(key), value, sp_begin, sp_end};
 }
 
@@ -53,7 +56,7 @@ auto&& add_option(Option&& e, options_type&& ob)
 
 constexpr char alpha_numeric_pattern[] = R"_([0-9a-zA-Z_]+)_";
 constexpr char option_char_pattern[] = R"_([^;])_";
-constexpr char whitespaces_pattern[] = R"_([ \x09]+)_";
+constexpr char whitespaces_pattern[] = R"_([ \x09 \x0c \x0b]+)_";
 
 
 constexpr char_term start_option_tag('%');
@@ -133,42 +136,60 @@ constexpr parser option_parser(
 );
 
 void parse(const std::string& code, options_type& result, std::function<void(const char*)> throwException) {
-
-    std::string::const_iterator it = code.begin();
-
-//
-//    for ( std::string & line : lines) {
-//        std::cerr << "Parsing line: '" << line << "'" << std::endl;
-//
-//        std::string t(line);
-//        std::cerr << "orig: " << reinterpret_cast<const void *>(line.c_str()) << std::endl;
-//        std::cerr << "cp: " << reinterpret_cast<const void *>(t.c_str()) << std::endl;
-//
-//        auto res = option_parser.parse(
-//            parse_options{}/*.set_verbose(true)*/.set_skip_whitespace(false),
-//            buffers::string_buffer(std::move(t)),
-//            std::cout);
-//
-//         std::cerr << "Parsing line: '" << line << "'" << std::endl;
-//        if (res.has_value())
-//        {
-//    //        std::cout << res.value() << std::endl;
-//
-//            for (const auto& w : res.value())
-//            {
-//                std::cout <<  w.key << " (" << w.value << ") pos: "<< w.start << "-" << w.end << std::endl;
-//            }
-//        }
-//    }
+    std::stringstream error_buffer;
+    auto res = option_parser.parse(
+        parse_options{}.set_skip_whitespace(false),
+        buffers::string_buffer(code.c_str()),
+        error_buffer);
+    if (res.has_value())
+    {
+        result = res.value();
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << "Error parsing script options: " << error_buffer.str();
+        throwException(ss.str().c_str());
+    }
 }
 
-} //namespace Parser
+} //namespace ParserInternals
 
-void parseOptions(const std::string& code, OptionsLineParser::ParserResult & result, std::function<void(const char*)> throwException) {
+void parseOptions(const std::string& code, options_map_t & result, std::function<void(const char*)> throwException) {
+    std::stringstream ss(code);
+    std::string line;
+    size_t current_index(0);
+    while(std::getline(ss, line, '\n')) {
+        if (!line.empty() && !std::all_of(line.begin(),line.end(), [](const char c) {return std::isspace(c);})) {
+            options_type parser_result;
+            ParserInternals::parse(line, parser_result, throwException);
+            for (const auto & option: parser_result)
+            {
+                ScriptOption entry = {
+                    .value = option.value,
+                    .idx_in_source = current_index + option.start.column - 1,
+                    .size = option.end.column - option.start.column + 1
+                };
+                auto it_in_result = result.find(option.key);
+                if (it_in_result == result.end())
+                {
+                    options_t new_options;
+                    new_options.push_back(entry);
+                    result.insert(std::make_pair(option.key, new_options));
+                }
+                else
+                {
+                    it_in_result->second.push_back(entry);
+                }
+            }
+        }
+        current_index += line.size() + 1;
+    }
 }
 
 
-
-
+} // namespace CTPG
 
 } // namespace OptionsLineParser
+
+} // namespace ExecutionGraph

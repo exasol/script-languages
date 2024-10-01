@@ -1,4 +1,4 @@
-#include "base/script_options_parser/script_option_lines.h"
+#include "base/script_options_parser/legacy/script_option_lines.h"
 #include <gtest/gtest.h>
 #include <string>
 #include <exception>

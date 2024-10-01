@@ -38,6 +38,6 @@ jobs:
       working-directory: ./exaudfclient/
     - name: Script Options Parser Tests
       run: |
-        bazel test //base/script_options_parser/test/...
+        bazel test //base/script_options_parser/...
       working-directory: ./exaudfclient/
 
