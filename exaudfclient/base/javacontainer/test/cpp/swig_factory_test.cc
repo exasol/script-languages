@@ -14,8 +14,8 @@ class SWIGMetadataTest : public SWIGVMContainers::SWIGMetadataIf {
 
 public:
     SWIGMetadataTest(const std::map<std::string, std::string> & moduleContent, const std::string & exceptionMsg)
-        : m_moduleContent(moduleContent)
-        , m_exceptionMsg(exceptionMsg) {}
+        : m_exceptionMsg(exceptionMsg)
+        , m_moduleContent(moduleContent) {}
     virtual const char* databaseName() { throw NotImplemented("databaseName"); return nullptr;}
     virtual const char* databaseVersion() { throw NotImplemented("databaseVersion"); return nullptr;}
     virtual const char* scriptName() { throw NotImplemented("scriptName"); return nullptr;}

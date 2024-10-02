@@ -369,7 +369,10 @@ TEST(JavaContainer, import_script_script_class_option_ignored) {
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
         "package com.exasol;\r\n"
-        "%scriptclass com.exasol.udf_profiling.UdfProfiler;\n"
+#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser incorrectly keeps imported scriptclass options
+        "%scriptclass com.exasol.udf_profiling.UdfProfiler;"
+#endif
+        "\n"
         "class OtherClass {\n"
         "static void doSomething() {\n\n"
         " }\n"

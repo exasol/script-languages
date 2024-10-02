@@ -17,7 +17,7 @@ ScriptOptionLinesParserLegacy::ScriptOptionLinesParserLegacy()
 : m_whitespace(" \t\f\v")
 , m_lineend(";")
 , m_scriptCode()
-, m_keywords() {}
+, m_keywords(true) {}
 
 void ScriptOptionLinesParserLegacy::prepareScriptCode(const std::string & scriptCode) {
     m_scriptCode = scriptCode;
@@ -142,7 +142,7 @@ void ScriptOptionLinesParserLegacy::parseForScriptClass(std::function<void(const
 
 void ScriptOptionLinesParserLegacy::parseForJvmOptions(std::function<void(const std::string &option)> callback) {
     try {
-       parseForMultipleOptions(m_keywords.jvmOptionKeyword(),
+       parseForMultipleOptions(m_keywords.jvmKeyword(),
                                 [&](const std::string& value, size_t pos){callback(value);});
     } catch(const ExecutionGraph::OptionParserException& ex) {
         Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1612");
@@ -162,7 +162,7 @@ std::string && ScriptOptionLinesParserLegacy::getScriptCode() {
     return std::move(m_scriptCode);
 }
 
-void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keyword,
+void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string & keyword,
                             std::function<void(const std::string &option, size_t pos)> callback) {
     size_t pos;
     try {
@@ -176,7 +176,7 @@ void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keywo
     }
 }
 
-void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string keyword,
+void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string & keyword,
                             std::function<void(const std::string &option, size_t pos)> callback) {
     size_t pos;
     while (true) {
