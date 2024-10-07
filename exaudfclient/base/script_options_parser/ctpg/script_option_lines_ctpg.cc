@@ -29,19 +29,19 @@ using options_type = std::vector<Option>;
 
 namespace ParserInternals {
 
-auto empty_options()
+const auto empty_options()
 {
     options_type ob;
     return ob;
 }
 
-auto to_options(Option&& e)
+const auto to_options(Option&& e)
 {
     options_type ob{e};
     return ob;
 }
 
-auto to_option(std::string_view key, std::string value, source_point sp_begin, source_point sp_end)
+const auto to_option(std::string_view key, std::string value, source_point sp_begin, source_point sp_end)
 {
     return Option{std::string(key), value, sp_begin, sp_end};
 }
@@ -56,7 +56,7 @@ auto&& add_option(Option&& e, options_type&& ob)
 
 constexpr char alpha_numeric_pattern[] = R"_([0-9a-zA-Z_]+)_";
 constexpr char option_char_pattern[] = R"_([^;])_";
-constexpr char whitespaces_pattern[] = R"_([ \x09 \x0c \x0b]+)_";
+constexpr char whitespaces_pattern[] = R"_([ \x09\x0c\x0b]+)_";
 
 
 constexpr char_term start_option_tag('%');
@@ -156,10 +156,13 @@ void parse(const std::string& code, options_type& result, std::function<void(con
 } //namespace ParserInternals
 
 void parseOptions(const std::string& code, options_map_t & result, std::function<void(const char*)> throwException) {
-    std::stringstream ss(code);
     std::string line;
-    size_t current_index(0);
-    while(std::getline(ss, line, '\n')) {
+    size_t current_pos = 0;
+
+    do {
+
+        const size_t new_pos = code.find_first_of("\r\n", current_pos);
+        line = code.substr(current_pos, new_pos);
         if (!line.empty() && !std::all_of(line.begin(),line.end(), [](const char c) {return std::isspace(c);})) {
             options_type parser_result;
             ParserInternals::parse(line, parser_result, throwException);
@@ -167,7 +170,7 @@ void parseOptions(const std::string& code, options_map_t & result, std::function
             {
                 ScriptOption entry = {
                     .value = option.value,
-                    .idx_in_source = current_index + option.start.column - 1,
+                    .idx_in_source = current_pos + option.start.column - 1,
                     .size = option.end.column - option.start.column + 1
                 };
                 auto it_in_result = result.find(option.key);
@@ -183,8 +186,11 @@ void parseOptions(const std::string& code, options_map_t & result, std::function
                 }
             }
         }
-        current_index += line.size() + 1;
-    }
+        if (new_pos == std::string::npos) {
+            break;
+        }
+        current_pos =  new_pos + 1;
+    } while(true);
 }
 
 
