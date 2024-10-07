@@ -50,7 +50,7 @@ std::vector<std::string> suffixes = {"", " ", "\t", "\f", "\v"}; //"" for case i
 std::vector<std::string> new_lines = {"", "\n", "\r", "\r\n"}; //"" for case if there is no newline
 std::vector<std::string> delimeters = {" ", "\t", "\f", "\v", " \t", "\t ", "\t\f", "\f\t", "\f ", " \f", "\t\v", "\v\t", "\v ", " \v", "\f\v", "\v\f", "  \t", " \t "};
 std::vector<std::string> keywords = {"import", "jvmoption", "scriptclass", "jar", "env"};
-std::vector<std::string> values = {"something", "com.mycompany.MyScriptClass", "LD_LIBRARY_PATH=/nvdriver", "-Xms128m -Xmx1024m -Xss512k", "/buckets/bfsdefault/default/my_code.jar"};
+std::vector<std::string> values = {"something", "com.mycompany.MyScriptClass", "LD_LIBRARY_PATH=/nvdriver", "-Xms128m -Xmx1024m -Xss512k", "/buckets/bfsdefault/default/my_code.jar", "something "};
 std::vector<std::string> payloads = {"anything", "\n\ndef my_func:\n\tpass", "class MyJava\n public static void Main() {\n};\n"};
 
 INSTANTIATE_TEST_SUITE_P(

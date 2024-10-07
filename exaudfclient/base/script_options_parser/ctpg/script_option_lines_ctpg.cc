@@ -59,8 +59,8 @@ constexpr char option_char_pattern[] = R"_([^;])_";
 constexpr char whitespaces_pattern[] = R"_([ \x09\x0c\x0b]+)_";
 
 
-constexpr char_term start_option_tag('%');
-constexpr char_term end_option_tag(';');
+constexpr char_term start_option_token('%');
+constexpr char_term end_option_token(';');
 constexpr regex_term<alpha_numeric_pattern> alpha_numeric("alpha_numeric");
 constexpr regex_term<option_char_pattern> option_char("option_char");
 constexpr regex_term<whitespaces_pattern> whitespaces("whitespace");
@@ -72,13 +72,11 @@ constexpr nterm<Option> option_element("option_element");
 constexpr nterm<int> rest("rest");
 constexpr nterm<std::string> option_value("option_value");
 
-constexpr nterm<std::string> option_key("option_key");
-
 
 constexpr parser option_parser(
     text,
-    terms(start_option_tag, semicolon_escape, whitespaces, end_option_tag, alpha_numeric, option_char),
-    nterms(text, option_key, option_value, options, option_element, rest),
+    terms(start_option_token, semicolon_escape, whitespaces, end_option_token, alpha_numeric, option_char),
+    nterms(text, option_value, options, option_element, rest),
     rules(
         text(rest)
             >= [] (skip) {return empty_options();},
@@ -90,9 +88,9 @@ constexpr parser option_parser(
             >= [](auto&& e) { return to_options(std::move(e)); },
         options(options, option_element)
             >= [](auto&& ob, auto&& e) { return add_option(std::move(e), std::move(ob)); },
-        option_element(start_option_tag, alpha_numeric, whitespaces, option_value, end_option_tag)
+        option_element(start_option_token, alpha_numeric, whitespaces, option_value, end_option_token)
             >= [](auto st, auto ok, skip, auto ov, auto e) { return to_option(ok.get_value(), ov, st.get_sp(), e.get_sp()); },
-        option_element(whitespaces, start_option_tag, alpha_numeric, whitespaces, option_value, end_option_tag)
+        option_element(whitespaces, start_option_token, alpha_numeric, whitespaces, option_value, end_option_token)
             >= [](skip, auto st, auto ok, skip, auto ov, auto e) { return to_option(ok.get_value(), ov, st.get_sp(), e.get_sp()); },
         option_value(alpha_numeric)
             >= [](auto o) { return std::string(o.get_value()); },
@@ -106,7 +104,7 @@ constexpr parser option_parser(
             >= [](auto&& ov, auto v) { return std::move(ov.append(v.get_value())); },
         option_value(option_value, semicolon_escape)
             >= [](auto&& ov, auto v) { return std::move(ov.append(";")); },
-        option_value(option_value, start_option_tag)
+        option_value(option_value, start_option_token)
             >= [](auto&& ov, auto v) { return std::move(ov.append("%")); },
         option_value(option_value, alpha_numeric)
             >= [](auto&& ov, auto v) { return std::move(ov.append(v.get_value())); },
@@ -118,7 +116,7 @@ constexpr parser option_parser(
             >= [](auto r) { return 0;},
         rest(semicolon_escape)
             >= [](auto r) { return 0;},
-        rest(end_option_tag)
+        rest(end_option_token)
             >= [](auto r) { return 0;},
         rest(option_char)
             >= [](auto r) { return 0;},
@@ -128,9 +126,9 @@ constexpr parser option_parser(
             >= [](auto r, skip) { return 0;},
         rest(rest, whitespaces)
             >= [](auto r, skip) { return 0;},
-        rest(rest, end_option_tag)
+        rest(rest, end_option_token)
             >= [](auto r, skip) { return 0;},
-        rest(rest, start_option_tag)
+        rest(rest, start_option_token)
             >= [](auto r, skip) { return 0;}
     )
 );
