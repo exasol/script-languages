@@ -55,14 +55,14 @@ auto&& add_option(Option&& e, options_type&& ob)
 
 
 constexpr char alpha_numeric_pattern[] = R"_([0-9a-zA-Z_]+)_";
-constexpr char option_char_pattern[] = R"_([^;])_";
+constexpr char not_semicolon_pattern[] = R"_([^;])_";
 constexpr char whitespaces_pattern[] = R"_([ \x09\x0c\x0b]+)_";
 
 
 constexpr char_term start_option_token('%');
 constexpr char_term end_option_token(';');
 constexpr regex_term<alpha_numeric_pattern> alpha_numeric("alpha_numeric");
-constexpr regex_term<option_char_pattern> option_char("option_char");
+constexpr regex_term<not_semicolon_pattern> not_semicolon("not_semicolon");
 constexpr regex_term<whitespaces_pattern> whitespaces("whitespace");
 constexpr string_term semicolon_escape(R"_(\;)_");
 
@@ -75,7 +75,7 @@ constexpr nterm<std::string> option_value("option_value");
 
 constexpr parser option_parser(
     text,
-    terms(start_option_token, semicolon_escape, whitespaces, end_option_token, alpha_numeric, option_char),
+    terms(start_option_token, semicolon_escape, whitespaces, end_option_token, alpha_numeric, not_semicolon),
     nterms(text, option_value, options, option_element, rest),
     rules(
         text(rest)
@@ -94,13 +94,13 @@ constexpr parser option_parser(
             >= [](skip, auto st, auto ok, skip, auto ov, auto e) { return to_option(ok.get_value(), ov, st.get_sp(), e.get_sp()); },
         option_value(alpha_numeric)
             >= [](auto o) { return std::string(o.get_value()); },
-        option_value(option_char)
+        option_value(not_semicolon)
             >= [](auto o) { return std::string(o.get_value()); },
         option_value(whitespaces)
             >= [](auto o) { return std::string(o.get_value()); },
         option_value(semicolon_escape)
             >= [](auto o) { return std::string(";"); },
-        option_value(option_value, option_char)
+        option_value(option_value, not_semicolon)
             >= [](auto&& ov, auto v) { return std::move(ov.append(v.get_value())); },
         option_value(option_value, semicolon_escape)
             >= [](auto&& ov, auto v) { return std::move(ov.append(";")); },
@@ -118,11 +118,11 @@ constexpr parser option_parser(
             >= [](auto r) { return 0;},
         rest(end_option_token)
             >= [](auto r) { return 0;},
-        rest(option_char)
+        rest(not_semicolon)
             >= [](auto r) { return 0;},
         rest(rest, alpha_numeric)
             >= [](auto r, skip) { return 0;},
-        rest(rest, option_char)
+        rest(rest, not_semicolon)
             >= [](auto r, skip) { return 0;},
         rest(rest, whitespaces)
             >= [](auto r, skip) { return 0;},
@@ -133,11 +133,11 @@ constexpr parser option_parser(
     )
 );
 
-void parse(const std::string& code, options_type& result, std::function<void(const char*)> throwException) {
+void parse(std::string&& code, options_type& result, std::function<void(const char*)> throwException) {
     std::stringstream error_buffer;
     auto res = option_parser.parse(
         parse_options{}.set_skip_whitespace(false),
-        buffers::string_buffer(code.c_str()),
+        buffers::string_buffer(std::move(code)),
         error_buffer);
     if (res.has_value())
     {
@@ -154,16 +154,16 @@ void parse(const std::string& code, options_type& result, std::function<void(con
 } //namespace ParserInternals
 
 void parseOptions(const std::string& code, options_map_t & result, std::function<void(const char*)> throwException) {
-    std::string line;
+
     size_t current_pos = 0;
 
     do {
 
         const size_t new_pos = code.find_first_of("\r\n", current_pos);
-        line = code.substr(current_pos, new_pos);
+        std::string line = code.substr(current_pos, new_pos);
         if (!line.empty() && !std::all_of(line.begin(),line.end(), [](const char c) {return std::isspace(c);})) {
             options_type parser_result;
-            ParserInternals::parse(line, parser_result, throwException);
+            ParserInternals::parse(std::move(line), parser_result, throwException);
             for (const auto & option: parser_result)
             {
                 ScriptOption entry = {

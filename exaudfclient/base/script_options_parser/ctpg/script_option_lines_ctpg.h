@@ -36,7 +36,7 @@ using options_t = std::vector<ScriptOption>;
 using options_map_t = std::map<std::string, options_t>;
 
 /*!
- * \brief parseOptions Extracts syntactically valid option lines of form %<option> <values> [<values>] from UDF scripts.
+ * \brief parseOptions Extracts syntactically valid options of form "%<option> <value>;" from UDF scripts.
  *
  * \param code Reference to string where the script code is stored.
  * \param result Result of all found options.
