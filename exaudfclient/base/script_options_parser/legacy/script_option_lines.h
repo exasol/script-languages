@@ -15,11 +15,11 @@ namespace ExecutionGraph
  * \param whitespace String of characters that should be treated as white space characters.
  * \param lineEnd String of characters that should be treated as line end characters.
  * \param pos If option is found, contains the start position of the option. Otherwise, contains std::string::npos.
- * \param throwException Function to be called to throw exception.
+ * \throws std::runtime_error if parser fails.
  *
  * \return String with the option line.
  */
-std::string extractOptionLine(std::string& code, const std::string option, const std::string whitespace, const std::string lineEnd, size_t& pos, std::function<void(const char*)> throwException);
+std::string extractOptionLine(std::string& code, const std::string option, const std::string whitespace, const std::string lineEnd, size_t& pos);
 
 } // namespace ExecutionGraph
 

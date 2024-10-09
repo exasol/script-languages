@@ -6,14 +6,6 @@
 const std::string whitespace = " \t\f\v";
 const std::string lineEnd = ";";
 
-class TestException : public std::runtime_error {
-    using std::runtime_error::runtime_error;
-};
-
-void throwException(const char* ex) {
-    throw TestException(std::string(ex));
-}
-
 using namespace ExecutionGraph;
 
 
@@ -27,7 +19,7 @@ TEST_P(ScriptOptionLinesWhitespaceTest, WhitespaceExtractOptionLineTest) {
     const std::string value = std::get<3>(GetParam());
     const std::string payload =  std::get<4>(GetParam());
     std::string code = prefix + option + value + lineEnd + suffix + "\n" + payload;
-    const std::string res = extractOptionLine(code, option, whitespace, lineEnd, pos, throwException);
+    const std::string res = extractOptionLine(code, option, whitespace, lineEnd, pos);
     EXPECT_EQ(res, value);
     EXPECT_EQ(code, prefix + suffix + "\n" + payload);
 }
@@ -53,7 +45,7 @@ TEST(ScriptOptionLinesTest, ignore_anything_other_than_whitepsace) {
     std::string code =
         "abc %option myoption;\n"
         "\nmycode";
-    const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos, throwException);
+    const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos);
     EXPECT_TRUE(res.empty());
 }
 
@@ -63,8 +55,8 @@ TEST(ScriptOptionLinesTest, need_line_end_character) {
         "%option myoption\n"
         "\nmycode";
    EXPECT_THROW({
-        const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos, throwException);
-    }, TestException );
+        const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos);
+    }, std::runtime_error );
 }
 
 TEST(ScriptOptionLinesTest, only_finds_the_first_option_same_key) {
@@ -72,7 +64,7 @@ TEST(ScriptOptionLinesTest, only_finds_the_first_option_same_key) {
     std::string code =
         "%option myoption; %option mysecondoption;\n"
         "\nmycode";
-    const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos, throwException);
+    const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos);
     const std::string expected_resulting_code =
         " %option mysecondoption;\n"
         "\nmycode";
@@ -86,7 +78,7 @@ TEST(ScriptOptionLinesTest, only_finds_the_first_option_different_key) {
     std::string code =
         "%option myoption; %otheroption mysecondoption;\n"
         "\nmycode";
-    const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos, throwException);
+    const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos);
     const std::string expected_resulting_code =
         " %otheroption mysecondoption;\n"
         "\nmycode";
@@ -103,8 +95,8 @@ TEST_P(ScriptOptionLinesInvalidOptionTest, value_is_mandatory) {
     const std::string invalid_option = GetParam();
     std::string code = invalid_option + "\nsomething";
     EXPECT_THROW({
-     const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos, throwException);
-    }, TestException );
+     const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos);
+    }, std::runtime_error );
 }
 
 std::vector<std::string> invalid_options = {"%option ;", "%option \n", "\n%option\n;", "%option\nvalue;"};
@@ -121,7 +113,7 @@ TEST(ScriptOptionLinesTest, ignores_any_other_option) {
         "%option myoption; %option mysecondoption;\n"
         "\nmycode";
     std::string code = original_code;
-    const std::string res = extractOptionLine(code, "%mythirdoption", whitespace, lineEnd, pos, throwException);
+    const std::string res = extractOptionLine(code, "%mythirdoption", whitespace, lineEnd, pos);
     EXPECT_TRUE(res.empty());
     EXPECT_EQ(code, original_code);
 }
@@ -136,7 +128,7 @@ TEST(ScriptOptionLinesTest, test_all_in_one_line_does_second_option_does_not_wor
     size_t pos;
     const std::string original_code = "%jar /buckets/bucketfs1/jars/exajdbc.jar; %jvmoption -Xms4m; class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;";
     std::string code = original_code;
-    const std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    const std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos);
     EXPECT_TRUE(res.empty());
     EXPECT_EQ(code, original_code);
 }
@@ -150,10 +142,10 @@ TEST(ScriptOptionLinesTest, test_all_in_one_line_does_first_option_does_work) {
     size_t pos;
     const std::string original_code = "%jar /buckets/bucketfs1/jars/exajdbc.jar; %jvmoption -Xms4m; class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;";
     std::string code = original_code;
-    std::string res = extractOptionLine(code, "%jar", whitespace, lineEnd, pos, throwException);
+    std::string res = extractOptionLine(code, "%jar", whitespace, lineEnd, pos);
     EXPECT_EQ(res, "/buckets/bucketfs1/jars/exajdbc.jar");
     EXPECT_EQ(code, " %jvmoption -Xms4m; class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;");
-    res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos);
     EXPECT_EQ(code, "  class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;");
 }
 
@@ -171,7 +163,7 @@ TEST(ScriptOptionLinesTest, test_values_must_not_contain_spaces) {
         " }\n"
         "}\n";
     std::string code = original_code;
-    std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos);
     const std::string expected_result_code =
         "\n\n"
         "class JVMOPTION_TEST_WITH_SPACE {\n"
@@ -193,14 +185,14 @@ TEST(ScriptOptionLinesTest, test_multiple_lines_with_code) {
         "%jar /buckets/bucketfs1/jars/exajdbc.jar; class DEF{};\n";
     std::string code = original_code;
 
-    std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos, throwException);
+    std::string res = extractOptionLine(code, "%jvmoption", whitespace, lineEnd, pos);
     EXPECT_EQ(res, "-Dhttp.agent=\"ABC DEF\"");
     std::string expected_result_code =
         " class Abc{};\n\n"
         "%jar /buckets/bucketfs1/jars/exajdbc.jar; class DEF{};\n";
     EXPECT_EQ(code, expected_result_code);
 
-    res = extractOptionLine(code, "%jar", whitespace, lineEnd, pos, throwException);
+    res = extractOptionLine(code, "%jar", whitespace, lineEnd, pos);
     EXPECT_EQ(res, "/buckets/bucketfs1/jars/exajdbc.jar");
     expected_result_code =
         " class Abc{};\n\n"

@@ -5,16 +5,6 @@
 #include <exception>
 
 
-
-class TestException : public std::runtime_error {
-    using std::runtime_error::runtime_error;
-};
-
-void throwException(const char* ex) {
-    throw TestException(std::string(ex));
-}
-
-
 using namespace ExecutionGraph::OptionsLineParser::CTPG;
 
 using ::testing::MatchesRegex;
@@ -37,7 +27,7 @@ TEST_P(ScriptOptionLinesWhitespaceTest, WhitespaceExtractOptionLineTest) {
     const std::string payload =  std::get<6>(GetParam());
     const std::string code = prefix + '%' + option + delimeter + value + ';' + suffix + new_line + payload;
     options_map_t result;
-    parseOptions(code, result, throwException);
+    parseOptions(code, result);
     ASSERT_EQ(result.size(), 1);
     const auto option_result = result.find(option);
     ASSERT_NE(option_result, result.end());
@@ -71,7 +61,7 @@ TEST(ScriptOptionLinesTest, ignore_anything_other_than_whitepsace) {
         "abc %option myoption;\n"
         "\nmycode";
     options_map_t result;
-    parseOptions(code, result, throwException);
+    parseOptions(code, result);
     EXPECT_TRUE(result.empty());
 }
 
@@ -83,15 +73,15 @@ TEST(ScriptOptionLinesTest, need_option_termination_character) {
     EXPECT_THROW({
         try
         {
-            parseOptions(code, result, throwException);
+            parseOptions(code, result);
         }
-        catch( const TestException& e )
+        catch( const std::runtime_error& e )
         {
             // and this tests that it has the correct message
             EXPECT_STREQ( e.what(), "Error parsing script options: [1:17] PARSE: Syntax error: Unexpected '<eof>'\n");
             throw;
         }
-    }, TestException );
+    }, std::runtime_error );
 }
 
 TEST(ScriptOptionLinesTest, finds_the_two_options_same_key) {
@@ -99,7 +89,7 @@ TEST(ScriptOptionLinesTest, finds_the_two_options_same_key) {
         "%some_option myoption; %some_option mysecondoption;\n"
         "\nmycode";
     options_map_t result;
-    parseOptions(code, result, throwException);
+    parseOptions(code, result);
     ASSERT_EQ(result.size(), 1);
     const auto option_result = result.find("some_option");
 
@@ -114,7 +104,7 @@ TEST(ScriptOptionLinesTest, finds_the_two_options_different_keys) {
         "%some_option myoption; %otheroption mysecondoption;\n"
         "\nmycode";
     options_map_t result;
-    parseOptions(code, result, throwException);
+    parseOptions(code, result);
     ASSERT_EQ(result.size(), 2);
     const auto option_result = result.find("some_option");
 
@@ -139,14 +129,14 @@ TEST_P(ScriptOptionLinesInvalidOptionTest, value_is_mandatory) {
     EXPECT_THROW({
         try
         {
-            parseOptions(code, result, throwException);
+            parseOptions(code, result);
         }
-        catch( const TestException& e )
+        catch( const std::runtime_error& e )
         {
             EXPECT_THAT( e.what(), MatchesRegex("^Error parsing script options.*PARSE: Syntax error: Unexpected.*$"));
             throw;
         }
-    }, TestException );
+    }, std::runtime_error );
 }
 
 const std::vector<std::string> invalid_options = {"%some_option ;", "%some_option \n", "\n%some_option\n;", "%some_option\nvalue;"};
@@ -164,7 +154,7 @@ TEST(ScriptOptionLinesTest, test_when_two_options_plus_code_in_same_line_then_op
     */
     const std::string code = "%jar /buckets/bucketfs1/jars/exajdbc.jar; %jvmoption -Xms4m; class JAVA_UDF_3 {static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {String host_name = ctx.getString(\"col1\");}}\n/\n;";
     options_map_t result;
-    parseOptions(code, result, throwException);
+    parseOptions(code, result);
     ASSERT_EQ(result.size(), 2);
 
     const auto jar_option_result = result.find("jar");
@@ -192,7 +182,7 @@ TEST(ScriptOptionLinesTest, test_values_can_contain_spaces) {
         " }\n"
         "}\n";
     options_map_t result;
-    parseOptions(code, result, throwException);
+    parseOptions(code, result);
     ASSERT_EQ(result.size(), 1);
 
     const auto jvm_option_result = result.find("jvmoption");
@@ -210,7 +200,7 @@ TEST(ScriptOptionLinesTest, test_multiple_lines_with_code) {
         "%jar /buckets/bucketfs1/jars/exajdbc.jar; class DEF{};\n";
 
     options_map_t result;
-    parseOptions(code, result, throwException);
+    parseOptions(code, result);
     ASSERT_EQ(result.size(), 2);
 
     const auto jvm_option_result = result.find("jvmoption");

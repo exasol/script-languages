@@ -45,9 +45,9 @@ using options_map_t = std::map<std::string, options_t>;
  * \param code Reference to string where the script code is stored.
  * \param result Result of all found options.
  * \param throwException Function to be called to throw exception.
- *
+ * \throws std::runtime_error if parsing fails
  */
-void parseOptions(const std::string& code, options_map_t & result, std::function<void(const char*)> throwException);
+void parseOptions(const std::string& code, options_map_t & result);
 
 } //namespace CTPG
 

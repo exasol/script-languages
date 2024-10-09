@@ -35,18 +35,21 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory)
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
     JavaScriptOptions::ScriptOptionLinesParserLegacy scriptOptionsParser;
-    JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory,
-                                           [&](const std::string &msg){throwException(msg);});
+    try {
+        JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory);
 
-    DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
+        DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
 
-    DBG_FUNC_CALL(cerr,setClasspath());
+        DBG_FUNC_CALL(cerr,setClasspath());
 
-    m_jvmOptions = std::move(extractor.moveJvmOptions());
+        m_jvmOptions = std::move(extractor.moveJvmOptions());
 
-    for (set<string>::iterator it = extractor.getJarPaths().begin(); it != extractor.getJarPaths().end();
-         ++it) {
-        addJarToClasspath(*it);
+        for (set<string>::iterator it = extractor.getJarPaths().begin(); it != extractor.getJarPaths().end();
+             ++it) {
+            addJarToClasspath(*it);
+        }
+    } catch(const std::runtime_error& ex) {
+        throwException(ex);
     }
 
     m_needsCompilation = checkNeedsCompilation();
