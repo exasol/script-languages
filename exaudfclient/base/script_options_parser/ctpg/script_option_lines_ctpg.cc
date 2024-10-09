@@ -53,11 +53,47 @@ auto&& add_option(Option&& e, options_type&& ob)
     return std::move(ob);
 }
 
+const auto convert_escape_seq(std::string_view escape_seq) {
+    std::string retVal;
+    if (escape_seq == R"_(\;)_") {
+        retVal = ";";
+    } else if (escape_seq == R"_(\n)_") {
+        retVal = "\n";
+    } else if (escape_seq == R"_(\r)_") {
+        retVal = "\r";
+    } else {
+        throw OptionParserException(std::string("Internal parser error: Unexpected escape sequence " + std::string(escape_seq)));
+    }
+
+    return retVal;
+}
+
+
+const auto convert_whitespace_escape_seq(std::string_view escape_seq) {
+    std::string retVal;
+    if (escape_seq == R"_(\ )_") {
+        retVal = " ";
+    } else if (escape_seq == R"_(\t)_") {
+        retVal = "\t";
+    } else if (escape_seq == R"_(\f)_") {
+        retVal = "\f";
+    } else if (escape_seq == R"_(\v)_") {
+        retVal = "\v";
+    } else {
+        throw OptionParserException(std::string("Internal parser error: Unexpected white space escape sequence " + std::string(escape_seq)));
+    }
+
+    return retVal;
+}
+
 
 
 constexpr char alpha_numeric_pattern[] = R"_([0-9a-zA-Z_]+)_";
 constexpr char not_semicolon_pattern[] = R"_([^;])_";
 constexpr char whitespaces_pattern[] = R"_([ \x09\x0c\x0b]+)_";
+constexpr char escape_pattern[] = R"_(\\;|\\n|\\r)_";
+constexpr char whitespace_escape_pattern[] = R"_(\\ |\\t|\\f|\\v)_";
+
 
 
 constexpr char_term start_option_token('%');
@@ -65,7 +101,8 @@ constexpr char_term end_option_token(';');
 constexpr regex_term<alpha_numeric_pattern> alpha_numeric("alpha_numeric");
 constexpr regex_term<not_semicolon_pattern> not_semicolon("not_semicolon");
 constexpr regex_term<whitespaces_pattern> whitespaces("whitespace");
-constexpr string_term semicolon_escape(R"_(\;)_");
+constexpr regex_term<escape_pattern> escape_seq("escape_seq");
+constexpr regex_term<whitespace_escape_pattern> whitespace_escape_seq("escape_seq");
 
 constexpr nterm<options_type> text("text");
 constexpr nterm<options_type> options("options");
@@ -76,7 +113,7 @@ constexpr nterm<std::string> option_value("option_value");
 
 constexpr parser option_parser(
     text,
-    terms(start_option_token, semicolon_escape, whitespaces, end_option_token, alpha_numeric, not_semicolon),
+    terms(start_option_token, escape_seq, whitespace_escape_seq, whitespaces, end_option_token, alpha_numeric, not_semicolon),
     nterms(text, option_value, options, option_element, rest),
     rules(
         text(rest)
@@ -97,14 +134,16 @@ constexpr parser option_parser(
             >= [](auto o) { return std::string(o.get_value()); },
         option_value(not_semicolon)
             >= [](auto o) { return std::string(o.get_value()); },
-        option_value(whitespaces)
-            >= [](auto o) { return std::string(o.get_value()); },
-        option_value(semicolon_escape)
-            >= [](auto o) { return std::string(";"); },
+        option_value(whitespace_escape_seq)
+            >= [](auto o) { return std::string(convert_whitespace_escape_seq(o.get_value())); },
+        option_value(escape_seq)
+            >= [](auto es) { return convert_escape_seq(es.get_value()); },
         option_value(option_value, not_semicolon)
             >= [](auto&& ov, auto v) { return std::move(ov.append(v.get_value())); },
-        option_value(option_value, semicolon_escape)
-            >= [](auto&& ov, auto v) { return std::move(ov.append(";")); },
+        option_value(option_value, whitespace_escape_seq)
+            >= [](auto&& ov, auto es) { return std::move(ov.append(es.get_value())); },
+        option_value(option_value, escape_seq)
+            >= [](auto&& ov, auto es) { return std::move(ov.append(convert_escape_seq(es.get_value()))); },
         option_value(option_value, start_option_token)
             >= [](auto&& ov, auto v) { return std::move(ov.append("%")); },
         option_value(option_value, alpha_numeric)
@@ -115,7 +154,9 @@ constexpr parser option_parser(
             >= [](auto r) { return 0;},
         rest(whitespaces)
             >= [](auto r) { return 0;},
-        rest(semicolon_escape)
+        rest(escape_seq)
+            >= [](auto r) { return 0;},
+        rest(whitespace_escape_seq)
             >= [](auto r) { return 0;},
         rest(end_option_token)
             >= [](auto r) { return 0;},
@@ -130,6 +171,10 @@ constexpr parser option_parser(
         rest(rest, end_option_token)
             >= [](auto r, skip) { return 0;},
         rest(rest, start_option_token)
+            >= [](auto r, skip) { return 0;},
+        rest(rest, escape_seq)
+            >= [](auto r, skip) { return 0;},
+        rest(rest, whitespace_escape_seq)
             >= [](auto r, skip) { return 0;}
     )
 );

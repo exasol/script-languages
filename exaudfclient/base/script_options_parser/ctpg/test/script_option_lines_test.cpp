@@ -215,3 +215,92 @@ TEST(ScriptOptionLinesTest, test_multiple_lines_with_code) {
     ASSERT_EQ(jar_option_result->second.size(), 1);
     ASSERT_EQ(jar_option_result->second[0], buildOption("/buckets/bucketfs1/jars/exajdbc.jar", 49, 41));
 }
+
+
+class ScriptOptionLinesEscapeSequenceTest : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
+
+TEST_P(ScriptOptionLinesEscapeSequenceTest, test_escape_seq_in_option_value) {
+    const std::pair<std::string, std::string> option_value = GetParam();
+    /**
+    Verify that the parser replaces escape sequences correctly.
+    */
+    const std::string code =
+        "%jvmoption " + option_value.first + "; class Abc{};\n"
+        "%jar /buckets/bucketfs1/jars/exajdbc.jar; class DEF{};\n";
+
+    options_map_t result;
+    parseOptions(code, result);
+    ASSERT_EQ(result.size(), 2);
+
+    const auto jvm_option_result = result.find("jvmoption");
+    ASSERT_NE(jvm_option_result, result.end());
+    ASSERT_EQ(jvm_option_result->second.size(), 1);
+    EXPECT_EQ(jvm_option_result->second[0].value, option_value.second);
+
+    const auto jar_option_result = result.find("jar");
+    ASSERT_NE(jar_option_result, result.end());
+    ASSERT_EQ(jar_option_result->second.size(), 1);
+    ASSERT_EQ(jar_option_result->second[0].value, "/buckets/bucketfs1/jars/exajdbc.jar");
+}
+
+/*
+ '\n' -> new line character
+ '\r' -> return character
+ '\;' -> semicolon
+ '\a' -> anything else should not be replaced.
+ */
+const std::vector<std::pair<std::string, std::string>> escape_sequences =
+        {
+            std::make_pair("-Dhttp.agent=ABC\\nDEF", "-Dhttp.agent=ABC\nDEF"),
+            std::make_pair("-Dhttp.agent=ABC\\rDEF", "-Dhttp.agent=ABC\rDEF"),
+            std::make_pair("-Dhttp.agent=ABC\\;DEF", "-Dhttp.agent=ABC;DEF"),
+            std::make_pair("-Dhttp.agent=ABC\\aDEF", "-Dhttp.agent=ABC\\aDEF"), //any other escape sequence must stay as is
+            std::make_pair("\\n-Dhttp.agent=ABCDEF", "\n-Dhttp.agent=ABCDEF"),
+            std::make_pair("\\r-Dhttp.agent=ABCDEF", "\r-Dhttp.agent=ABCDEF"),
+            std::make_pair("\\;-Dhttp.agent=ABCDEF", ";-Dhttp.agent=ABCDEF"),
+            std::make_pair("-Dhttp.agent=ABCDEF\\n", "-Dhttp.agent=ABCDEF\n"),
+            std::make_pair("-Dhttp.agent=ABCDEF\\r", "-Dhttp.agent=ABCDEF\r"),
+            std::make_pair("-Dhttp.agent=ABCDEF\\;", "-Dhttp.agent=ABCDEF;"),
+            std::make_pair("-Dhttp.agent=ABC\\ DEF", "-Dhttp.agent=ABC\\ DEF"), //escaped white space in middle of string must stay as is
+            std::make_pair("\\ -Dhttp.agent=ABCDEF", " -Dhttp.agent=ABCDEF"),
+            std::make_pair("\\  \t -Dhttp.agent=ABCDEF", "  \t -Dhttp.agent=ABCDEF"),
+            std::make_pair("\\t-Dhttp.agent=ABCDEF", "\t-Dhttp.agent=ABCDEF"),
+            std::make_pair("\\f-Dhttp.agent=ABCDEF", "\f-Dhttp.agent=ABCDEF"),
+            std::make_pair("\\v-Dhttp.agent=ABCDEF", "\v-Dhttp.agent=ABCDEF")
+        };
+
+INSTANTIATE_TEST_SUITE_P(
+    ScriptOptionLines,
+    ScriptOptionLinesEscapeSequenceTest,
+    ::testing::ValuesIn(escape_sequences)
+);
+
+class ScriptOptionLinesRestTest : public ::testing::TestWithParam<std::string> {};
+
+TEST_P(ScriptOptionLinesRestTest, test_rest_with_tokens) {
+    const std::string rest = GetParam();
+    /**
+    Verify that the parser correctly ignores character sequences containing special parser tokens
+    after the options in a line.
+    */
+    const std::string code =
+        "%jvmoption -Dhttp.agent=abc; class Abc{};" + rest;
+
+    options_map_t result;
+    parseOptions(code, result);
+    ASSERT_EQ(result.size(), 1);
+
+    const auto jvm_option_result = result.find("jvmoption");
+    ASSERT_NE(jvm_option_result, result.end());
+    ASSERT_EQ(jvm_option_result->second.size(), 1);
+    ASSERT_EQ(jvm_option_result->second[0], buildOption("-Dhttp.agent=abc", 0, 28));
+}
+
+const std::vector<std::string> rest_strings =
+        {"\\n", "\\r", "something %blabla;", ";", "\\;", "\\;blabla", "\\   blabla", "\\t blabla"};
+
+INSTANTIATE_TEST_SUITE_P(
+    ScriptOptionLines,
+    ScriptOptionLinesRestTest,
+    ::testing::ValuesIn(rest_strings)
+);
