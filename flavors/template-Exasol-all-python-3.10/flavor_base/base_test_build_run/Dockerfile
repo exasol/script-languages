@@ -27,12 +27,12 @@ RUN mkdir /exaudfclient /exaudf
 COPY /exaudfclient/ /exaudfclient/
 
 WORKDIR /exaudfclient/
-RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty -c dbg --config python --config test-binaries-py3"]
+RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty -c dbg --config python --config test-binaries"]
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base
-RUN ./test_udfclient.sh /exaudf/exaudfclient_py3
-RUN ./test_udfclient.sh /exaudf/exaudfclient_py3_static
+RUN ./test_udfclient.sh /exaudf/exaudfclient
+RUN ./test_udfclient.sh /exaudf/exaudfclient_static
 
 WORKDIR /
 RUN mkdir /exasol_emulator

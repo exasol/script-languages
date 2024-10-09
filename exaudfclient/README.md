@@ -1,6 +1,6 @@
 # What is the exaudfclient?
 
-The exaudfclient connects to the database via [ZeroMQ](http://zeromq.org/) and fetches the tuples which then get processed by the user-defined functions (UDFs). Currently, the exaudfclient supports UDFs in the language Python, Java and R. Further languages can be integrated via language binding between C/C++ and the desired langauge. Python 2/3, Java and R use [SWIG](http://www.swig.org/) for the language binding.
+The exaudfclient connects to the database via [ZeroMQ](http://zeromq.org/) and fetches the tuples which then get processed by the user-defined functions (UDFs). Currently, the exaudfclient supports UDFs in the language Python, Java and R. Further languages can be integrated via language binding between C/C++ and the desired langauge. Python 3, Java and R use [SWIG](http://www.swig.org/) for the language binding.
 
 # How to build the exaudfclient?
 
@@ -8,23 +8,23 @@ The exaudfclient connects to the database via [ZeroMQ](http://zeromq.org/) and f
 
 For the build system:
 
-- Open JDK 8
-- bazel-0.22.0 for more details see [Bazel documentation](https://docs.bazel.build/versions/master/install.html)
+- Open JDK 11
+- bazel-7.2.1 for more details see [Bazel documentation](https://docs.bazel.build/versions/master/install.html)
 
 The exaudfclient was tested with the following versions of its dependencies:
 
 - swig-2.0.4 or swig-3.0.12
-- protobuf 3.0.0 and 3.5.1
+- protobuf 3.12.4
     - we need both compiler and library, they must be in the same version
     - don't install two version, because then its possible that you compile against the wrong header or link against wrong library
-- zmq 4.2.5
+- zmq 4.3.4
 
 For the language support:
 
-- Python 2.7 or Python 3.6 for pythoncontainer
+- Python 3.10 for pythoncontainer
     - for Python 3 the build requires [Numpy](http://www.numpy.org/) and [Pandas](https://pandas.pydata.org/) in addition for the Pandas Dataframe Support
-- OpenJDK 9 or 11 for javacontainer
-- R 3.4 or 3.5 for the rcontainer
+- OpenJDK 11 for javacontainer
+- R 4.4 for the rcontainer
 
 ## Start a build
 
@@ -52,11 +52,11 @@ With Bazel defines you can specify which language support is actually compiled i
     --define benchmark=true # This language is only for test and development purpose and benchmarks the performance of the C++ Implementation
 
 
-The main targets are //:exaudfclient and //:exaudfclient_py3. The former one compiles with Python 2 support if Python is via defines enable. The later one instead compiles with Python 3 support.
+The main targets is //:exaudfclient.
 
 ## Visualizing the build dependencies
 
-Bazel allows to query the dependencies of a target. Furthermore, it can export the dependencies as .dot file. With Graphviz you can generate figures from the .dot file. The script visualize_deps.sh and visualize_all.sh wrap this process. The script visualize_all.sh visualizes the dependencies of the main targets //:exaudfclient and //:exaudfclient_py3. The script visualize_deps.sh visualizes the dependencies of given targets.
+Bazel allows to query the dependencies of a target. Furthermore, it can export the dependencies as .dot file. With Graphviz you can generate figures from the .dot file. The script visualize_deps.sh and visualize_all.sh wrap this process. The script visualize_all.sh visualizes the dependencies of the main targets //:exaudfclient. The script visualize_deps.sh visualizes the dependencies of given targets.
 
     visualize_deps.sh <targets>
 
