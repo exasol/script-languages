@@ -24,10 +24,8 @@ class LinkerNamespaceSanityTest(linker_namespace_base_test.LinkerNamespaceBaseTe
 
     def _setup_language_definition(self):
         lang = getScriptLanguagesFromArgs()
-        r_py2 = re.compile(r"exaudf/exaudfclient\b") # Match "...exaudf/exaudfclient ..."/"...exaudf/exaudfclient" but not "...exaudf/exaudfclient_py3"
-        lang_static = r_py2.sub("exaudf/exaudfclient_py2_static", lang)
-        r_py3 = re.compile(r"exaudf/exaudfclient_py3\b")
-        lang_static = r_py3.sub("exaudf/exaudfclient_py3_static", lang_static)
+        r_py3 = re.compile(r"exaudf/exaudfclient\b")
+        lang_static = r_py3.sub("exaudf/exaudfclient_static", lang)
         alter_session_query_str = "ALTER SESSION SET SCRIPT_LANGUAGES='%s'" % lang_static
         print(alter_session_query_str)
         self.query(alter_session_query_str)
