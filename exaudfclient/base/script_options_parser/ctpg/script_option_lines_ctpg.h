@@ -26,6 +26,10 @@ struct ScriptOption {
     bool operator==(const ScriptOption & right) const {
         return value == right.value && idx_in_source == right.idx_in_source && size == right.size;
     }
+    /*
+    Useful for gtest to print proper content when comparison fails.
+    Copied the example from https://github.com/google/googletest/blob/main/docs/advanced.md#teaching-googletest-how-to-print-your-values
+    */
     friend void PrintTo(const ScriptOption& option, std::ostream* os) {
         *os << "(" << option.value << "," << option.idx_in_source << "," << option.size << ")";
     }
