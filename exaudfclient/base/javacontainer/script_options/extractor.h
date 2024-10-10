@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <functional>
 #include <set>
 
 
@@ -21,8 +20,7 @@ class Extractor {
 
     public:
         Extractor(ScriptOptionsParser & parser,
-                  SwigFactory& swigFactory,
-                  std::function<void(const std::string&)> throwException);
+                  SwigFactory& swigFactory);
 
         const std::set<std::string> & getJarPaths() const {
             return m_converter.getJarPaths();
@@ -35,7 +33,6 @@ class Extractor {
         void extract(std::string & scriptCode);
 
     private:
-        std::function<void(const std::string&)> m_throwException;
 
         Converter m_converter;
         ScriptOptionsParser & m_parser;

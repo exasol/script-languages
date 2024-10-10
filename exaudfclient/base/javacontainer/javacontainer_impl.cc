@@ -8,7 +8,7 @@
 
 #include "exascript_java_jni_decl.h"
 
-#include "base/debug_message.h"
+#include "base/utils/debug_message.h"
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
 #include "base/javacontainer/script_options/extractor.h"
@@ -35,8 +35,8 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory)
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
     JavaScriptOptions::ScriptOptionLinesParserLegacy scriptOptionsParser;
-    JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory,
-                                           [&](const std::string &msg){throwException(msg);});
+
+    JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory);
 
     DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
 

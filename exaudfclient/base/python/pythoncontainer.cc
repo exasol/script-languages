@@ -9,7 +9,7 @@
 #include <Python.h>
 #include "exascript_python_int.h"
 #include "exascript_python.h"
-#include "base/debug_message.h"
+#include "base/utils/debug_message.h"
 
 #include "base/exaudflib/swig/script_data_transfer_objects.h"
 

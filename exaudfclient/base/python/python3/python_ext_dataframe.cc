@@ -1,6 +1,6 @@
 #include <algorithm>
 #include "base/exaudflib/swig/swig_common.h"
-#include "base/debug_message.h"
+#include "base/utils/debug_message.h"
 
 #include <Python.h>
 

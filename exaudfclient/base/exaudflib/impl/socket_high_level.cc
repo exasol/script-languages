@@ -7,7 +7,7 @@
 #include "base/exaudflib/swig/swig_common.h"
 #include "base/exaudflib/vm/swig_vm.h"
 #include <sys/resource.h>
-#include "base/debug_message.h"
+#include "base/utils/debug_message.h"
 
 namespace exaudflib {
     namespace socket_high_level {

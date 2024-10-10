@@ -17,27 +17,21 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
 
         void prepareScriptCode(const std::string & scriptCode) override;
 
-        void parseForScriptClass(std::function<void(const std::string &option)> callback,
-                                 std::function<void(const std::string&)> throwException) override;
+        void parseForScriptClass(std::function<void(const std::string &option)> callback) override;
 
-        void parseForJvmOptions(std::function<void(const std::string &option)> callback,
-                                std::function<void(const std::string&)> throwException) override;
+        void parseForJvmOptions(std::function<void(const std::string &option)> callback) override;
 
-        void parseForExternalJars(std::function<void(const std::string &option)> callback,
-                                  std::function<void(const std::string&)> throwException) override;
+        void parseForExternalJars(std::function<void(const std::string &option)> callback) override;
 
-        void extractImportScripts(SwigFactory & swigFactory,
-                                  std::function<void(const std::string&)> throwException) override;
+        void extractImportScripts(SwigFactory & swigFactory) override;
 
         std::string && getScriptCode() override;
 
     private:
         void parseForSingleOption(const std::string key,
-                                        std::function<void(const std::string &option, size_t pos)> callback,
-                                        std::function<void(const std::string&)> throwException);
+                                        std::function<void(const std::string &option, size_t pos)> callback);
         void parseForMultipleOptions(const std::string key,
-                                                std::function<void(const std::string &option, size_t pos)> callback,
-                                                std::function<void(const std::string&)> throwException);
+                                                std::function<void(const std::string &option, size_t pos)> callback);
 
     private:
         const std::string m_whitespace;

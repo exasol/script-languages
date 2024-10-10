@@ -6,19 +6,13 @@ exports_files(["filter_swig_code.py", "build_integrated.py",
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
 
-cc_library(
-    name = "debug_message_h",
-    hdrs = [
-        "debug_message.h"
-    ],
-)
 
 cc_library(
     name = "load_dynamic",
     srcs = [
         "load_dynamic.cc"
     ],
-    deps = ["//base/exaudflib:header", "//base:debug_message_h", "//base/exaudflib:exaudflib-deps"],
+    deps = ["//base/exaudflib:header", "//base/utils:utils", "//base/exaudflib:exaudflib-deps"],
     defines = VM_ENABLED_DEFINES,
 )
 

@@ -3,8 +3,11 @@
 #include "base/script_options_parser/legacy/script_option_lines.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
 #include "base/swig_factory/swig_factory.h"
+#include "base/utils/exceptions.h"
+#include "base/script_options_parser/exception.h"
 
 #include <memory>
+
 
 namespace SWIGVMContainers {
 
@@ -20,8 +23,7 @@ void ScriptOptionLinesParserLegacy::prepareScriptCode(const std::string & script
     m_scriptCode = scriptCode;
 }
 
-void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFactory,
-                                                         std::function<void(const std::string&)> throwException) {
+void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFactory) {
     std::unique_ptr<SWIGMetadataIf> metaData;
     // Attention: We must hash the parent script before modifying it (adding the
     // package definition). Otherwise we don't recognize if the script imports its self
@@ -101,19 +103,22 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFacto
     while (true) {
         std::string newScript;
         size_t scriptPos;
-        parseForSingleOption(m_keywords.importKeyword(),
-                             [&](const std::string& value, size_t pos){scriptPos = pos; newScript = value;},
-                             [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1614" + msg);});
+        try {
+            parseForSingleOption(m_keywords.importKeyword(),
+                                 [&](const std::string& value, size_t pos){scriptPos = pos; newScript = value;});
+        } catch (const ExecutionGraph::OptionParserException & ex) {
+            Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1614");
+        }
         if (!newScript.empty()) {
             if (!metaData) {
                 metaData.reset(swigFactory.makeSwigMetadata());
                 if (!metaData)
-                    throwException("F-UDF-CL-SL-JAVA-1615: Failure while importing scripts");
+                    throw std::runtime_error("F-UDF-CL-SL-JAVA-1615: Failure while importing scripts");
             }
             const char *importScriptCode = metaData->moduleContent(newScript.c_str());
             const char *exception = metaData->checkException();
             if (exception)
-                throwException("F-UDF-CL-SL-JAVA-1616: " + std::string(exception));
+                throw std::runtime_error("F-UDF-CL-SL-JAVA-1616: " + std::string(exception));
             if (importedScriptChecksums.addScript(importScriptCode)) {
                 // Script has not been imported yet
                 // If this imported script contains %import statements
@@ -126,25 +131,31 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFacto
     }
 }
 
-void ScriptOptionLinesParserLegacy::parseForScriptClass(std::function<void(const std::string &option)> callback,
-                                 std::function<void(const std::string&)> throwException) {
+void ScriptOptionLinesParserLegacy::parseForScriptClass(std::function<void(const std::string &option)> callback) {
+    try {
     parseForSingleOption(m_keywords.scriptClassKeyword(),
-                            [&](const std::string& value, size_t pos){callback(value);},
-                            [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1610" + msg);});
+                            [&](const std::string& value, size_t pos){callback(value);});
+    } catch (const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1610");
+    }
 }
 
-void ScriptOptionLinesParserLegacy::parseForJvmOptions(std::function<void(const std::string &option)> callback,
-                                 std::function<void(const std::string&)> throwException) {
-   parseForMultipleOptions(m_keywords.jvmOptionKeyword(),
-                            [&](const std::string& value, size_t pos){callback(value);},
-                            [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1612" + msg);});
+void ScriptOptionLinesParserLegacy::parseForJvmOptions(std::function<void(const std::string &option)> callback) {
+    try {
+       parseForMultipleOptions(m_keywords.jvmOptionKeyword(),
+                                [&](const std::string& value, size_t pos){callback(value);});
+    } catch(const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1612");
+    }
 }
 
-void ScriptOptionLinesParserLegacy::parseForExternalJars(std::function<void(const std::string &option)> callback,
-                                 std::function<void(const std::string&)> throwException) {
-   parseForMultipleOptions(m_keywords.jarKeyword(),
-                            [&](const std::string& value, size_t pos){callback(value);},
-                            [&](const std::string& msg){throwException("F-UDF-CL-SL-JAVA-1613" + msg);});
+void ScriptOptionLinesParserLegacy::parseForExternalJars(std::function<void(const std::string &option)> callback) {
+    try {
+       parseForMultipleOptions(m_keywords.jarKeyword(),
+                                [&](const std::string& value, size_t pos){callback(value);});
+    } catch(const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1613");
+    }
 }
 
 std::string && ScriptOptionLinesParserLegacy::getScriptCode() {
@@ -152,40 +163,32 @@ std::string && ScriptOptionLinesParserLegacy::getScriptCode() {
 }
 
 void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keyword,
-                            std::function<void(const std::string &option, size_t pos)> callback,
-                            std::function<void(const std::string&)> throwException) {
+                            std::function<void(const std::string &option, size_t pos)> callback) {
     size_t pos;
-    const std::string option =
-      ExecutionGraph::extractOptionLine(
-          m_scriptCode,
-          keyword,
-          m_whitespace,
-          m_lineend,
-          pos,
-          [&](const char* msg){throwException(std::string("F-UDF-CL-SL-JAVA-1606: ") + msg);}
-          );
-    if (option != "") {
-        callback(option, pos);
+    try {
+        const std::string option =
+          ExecutionGraph::extractOptionLine(m_scriptCode, keyword, m_whitespace, m_lineend, pos);
+        if (option != "") {
+            callback(option, pos);
+        }
+    } catch(const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1606");
     }
 }
 
 void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string keyword,
-                            std::function<void(const std::string &option, size_t pos)> callback,
-                            std::function<void(const std::string&)> throwException) {
+                            std::function<void(const std::string &option, size_t pos)> callback) {
     size_t pos;
     while (true) {
-        const std::string option =
-          ExecutionGraph::extractOptionLine(
-              m_scriptCode,
-              keyword,
-              m_whitespace,
-              m_lineend,
-              pos,
-              [&](const char* msg){throwException(std::string("F-UDF-CL-SL-JAVA-1607: ") + msg);}
-              );
-        if (option == "")
-            break;
-        callback(option, pos);
+        try {
+            const std::string option =
+              ExecutionGraph::extractOptionLine(m_scriptCode, keyword, m_whitespace, m_lineend, pos);
+            if (option == "")
+                break;
+            callback(option, pos);
+        } catch(const ExecutionGraph::OptionParserException& ex) {
+            Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1607");
+        }
     }
 }
 

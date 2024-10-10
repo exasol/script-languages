@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include "base/script_options_parser/exception.h"
 
 using namespace exaudf_ctpg;
 using namespace exaudf_ctpg::ftors;
@@ -133,7 +134,7 @@ constexpr parser option_parser(
     )
 );
 
-void parse(std::string&& code, options_type& result, std::function<void(const char*)> throwException) {
+void parse(std::string&& code, options_type& result) {
     std::stringstream error_buffer;
     auto res = option_parser.parse(
         parse_options{}.set_skip_whitespace(false),
@@ -147,13 +148,13 @@ void parse(std::string&& code, options_type& result, std::function<void(const ch
     {
         std::stringstream ss;
         ss << "Error parsing script options: " << error_buffer.str();
-        throwException(ss.str().c_str());
+        throw OptionParserException(ss.str());
     }
 }
 
 } //namespace ParserInternals
 
-void parseOptions(const std::string& code, options_map_t & result, std::function<void(const char*)> throwException) {
+void parseOptions(const std::string& code, options_map_t & result) {
 
     size_t current_pos = 0;
 
@@ -163,7 +164,7 @@ void parseOptions(const std::string& code, options_map_t & result, std::function
         std::string line = code.substr(current_pos, new_pos);
         if (!line.empty() && !std::all_of(line.begin(),line.end(), [](const char c) {return std::isspace(c);})) {
             options_type parser_result;
-            ParserInternals::parse(std::move(line), parser_result, throwException);
+            ParserInternals::parse(std::move(line), parser_result);
             for (const auto & option: parser_result)
             {
                 ScriptOption entry = {
