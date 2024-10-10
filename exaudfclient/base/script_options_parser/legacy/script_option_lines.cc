@@ -1,6 +1,7 @@
 #include "script_option_lines.h"
 #include <string>
 #include <sstream>
+#include "base/script_options_parser/exception.h"
 
 
 
@@ -62,27 +63,27 @@ std::string extractOptionLine(std::string& code, const std::string option, const
             if (firstPos == std::string::npos) {
                 std::stringstream ss;
                 ss << "No values found for " << option << " statement";
-                throw std::runtime_error(ss.str().c_str());
+                throw OptionParserException(ss.str().c_str());
             }
             // Find the end of line.
             size_t lastPos = code.find_first_of(lineEnd + "\r\n", firstPos);
             if (lastPos == std::string::npos || code.compare(lastPos, lineEnd.length(), lineEnd) != 0) {
                 std::stringstream ss;
                 ss << "End of " << option << " statement not found";
-                throw std::runtime_error(ss.str().c_str());
+                throw OptionParserException(ss.str().c_str());
             }
             // If no values were found
             if (firstPos >= lastPos) {
                 std::stringstream ss;
                 ss << "No values found for " << option << " statement";
-                throw std::runtime_error(ss.str().c_str());
+                throw OptionParserException(ss.str().c_str());
             }
             // If no values were found
             size_t optionsEnd = code.find_last_not_of(whitespace, lastPos - 1);
             if (optionsEnd == std::string::npos || optionsEnd < firstPos) {
                 std::stringstream ss;
                 ss << "No values found for " << option << " statement";
-                throw std::runtime_error(ss.str().c_str());
+                throw OptionParserException(ss.str().c_str());
             }
             result = code.substr(firstPos, optionsEnd - firstPos + 1);
             code.erase(startPos, lastPos - startPos + 1);

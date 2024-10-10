@@ -1,7 +1,7 @@
 #include "base/javacontainer/script_options/extractor.h"
 #include "base/javacontainer/script_options/parser.h"
 
-#include "base/debug_message.h"
+#include "base/utils/debug_message.h"
 #include <iostream>
 
 #define EXTR_DBG_FUNC_CALL(f) DBG_FUNC_CALL(std::cerr, f)

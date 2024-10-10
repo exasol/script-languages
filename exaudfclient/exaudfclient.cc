@@ -24,7 +24,7 @@
 #include "streaming_container/streamingcontainer.h"
 #endif
 #include <functional>
-#include "base/debug_message.h"
+#include "base/utils/debug_message.h"
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>

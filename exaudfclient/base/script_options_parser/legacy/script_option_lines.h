@@ -2,10 +2,10 @@
 #define SCRIPTOPTIONLINES_H
 
 #include <string>
-#include <functional>
 
 namespace ExecutionGraph
 {
+
 
 /*!
  * \brief extractOptionLine Extracts syntactically valid option lines of form %<option> <values> [<values>] from UDF scripts.

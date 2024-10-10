@@ -3,10 +3,10 @@
 #include "base/script_options_parser/legacy/script_option_lines.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
 #include "base/swig_factory/swig_factory.h"
+#include "base/utils/exceptions.h"
+#include "base/script_options_parser/exception.h"
 
 #include <memory>
-#include <stdexcept>
-
 
 
 namespace SWIGVMContainers {
@@ -106,8 +106,8 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFacto
         try {
             parseForSingleOption(m_keywords.importKeyword(),
                                  [&](const std::string& value, size_t pos){scriptPos = pos; newScript = value;});
-        } catch (const std::runtime_error & ex) {
-            throw std::runtime_error(std::string("F-UDF-CL-SL-JAVA-1614 ") +  ex.what());
+        } catch (const ExecutionGraph::OptionParserException & ex) {
+            Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1614");
         }
         if (!newScript.empty()) {
             if (!metaData) {
@@ -135,8 +135,8 @@ void ScriptOptionLinesParserLegacy::parseForScriptClass(std::function<void(const
     try {
     parseForSingleOption(m_keywords.scriptClassKeyword(),
                             [&](const std::string& value, size_t pos){callback(value);});
-    } catch (const std::runtime_error& ex) {
-        throw std::runtime_error(std::string("F-UDF-CL-SL-JAVA-1610") + ex.what());
+    } catch (const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1610");
     }
 }
 
@@ -144,8 +144,8 @@ void ScriptOptionLinesParserLegacy::parseForJvmOptions(std::function<void(const 
     try {
        parseForMultipleOptions(m_keywords.jvmOptionKeyword(),
                                 [&](const std::string& value, size_t pos){callback(value);});
-    } catch(const std::runtime_error& ex) {
-        throw std::runtime_error(std::string("F-UDF-CL-SL-JAVA-1612") + ex.what());
+    } catch(const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1612");
     }
 }
 
@@ -153,8 +153,8 @@ void ScriptOptionLinesParserLegacy::parseForExternalJars(std::function<void(cons
     try {
        parseForMultipleOptions(m_keywords.jarKeyword(),
                                 [&](const std::string& value, size_t pos){callback(value);});
-    } catch(const std::runtime_error& ex) {
-        throw std::runtime_error(std::string("F-UDF-CL-SL-JAVA-1613") + ex.what());
+    } catch(const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1613");
     }
 }
 
@@ -171,8 +171,8 @@ void ScriptOptionLinesParserLegacy::parseForSingleOption(const std::string keywo
         if (option != "") {
             callback(option, pos);
         }
-    } catch(const std::runtime_error& ex) {
-        throw std::runtime_error(std::string("F-UDF-CL-SL-JAVA-1606") + ex.what());
+    } catch(const ExecutionGraph::OptionParserException& ex) {
+        Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1606");
     }
 }
 
@@ -186,8 +186,8 @@ void ScriptOptionLinesParserLegacy::parseForMultipleOptions(const std::string ke
             if (option == "")
                 break;
             callback(option, pos);
-        } catch(const std::runtime_error& ex) {
-            throw std::runtime_error(std::string("F-UDF-CL-SL-JAVA-1607") + ex.what());
+        } catch(const ExecutionGraph::OptionParserException& ex) {
+            Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1607");
         }
     }
 }

@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <exception>
+#include "base/script_options_parser/exception.h"
 
 const std::string whitespace = " \t\f\v";
 const std::string lineEnd = ";";
@@ -56,7 +57,7 @@ TEST(ScriptOptionLinesTest, need_line_end_character) {
         "\nmycode";
    EXPECT_THROW({
         const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos);
-    }, std::runtime_error );
+    }, OptionParserException );
 }
 
 TEST(ScriptOptionLinesTest, only_finds_the_first_option_same_key) {
@@ -96,7 +97,7 @@ TEST_P(ScriptOptionLinesInvalidOptionTest, value_is_mandatory) {
     std::string code = invalid_option + "\nsomething";
     EXPECT_THROW({
      const std::string res = extractOptionLine(code, "%option", whitespace, lineEnd, pos);
-    }, std::runtime_error );
+    }, OptionParserException );
 }
 
 std::vector<std::string> invalid_options = {"%option ;", "%option \n", "\n%option\n;", "%option\nvalue;"};

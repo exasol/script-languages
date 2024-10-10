@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include "base/script_options_parser/exception.h"
 
 using namespace exaudf_ctpg;
 using namespace exaudf_ctpg::ftors;
@@ -147,7 +148,7 @@ void parse(std::string&& code, options_type& result) {
     {
         std::stringstream ss;
         ss << "Error parsing script options: " << error_buffer.str();
-        throw std::runtime_error(ss.str());
+        throw OptionParserException(ss.str());
     }
 }
 

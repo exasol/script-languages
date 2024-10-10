@@ -3,8 +3,10 @@
 #include <gmock/gmock.h>
 #include <string>
 #include <exception>
+#include "base/script_options_parser/exception.h"
 
 
+using namespace ExecutionGraph;
 using namespace ExecutionGraph::OptionsLineParser::CTPG;
 
 using ::testing::MatchesRegex;
@@ -75,13 +77,13 @@ TEST(ScriptOptionLinesTest, need_option_termination_character) {
         {
             parseOptions(code, result);
         }
-        catch( const std::runtime_error& e )
+        catch( const OptionParserException& e )
         {
             // and this tests that it has the correct message
             EXPECT_STREQ( e.what(), "Error parsing script options: [1:17] PARSE: Syntax error: Unexpected '<eof>'\n");
             throw;
         }
-    }, std::runtime_error );
+    }, OptionParserException );
 }
 
 TEST(ScriptOptionLinesTest, finds_the_two_options_same_key) {
@@ -131,12 +133,12 @@ TEST_P(ScriptOptionLinesInvalidOptionTest, value_is_mandatory) {
         {
             parseOptions(code, result);
         }
-        catch( const std::runtime_error& e )
+        catch( const OptionParserException& e )
         {
             EXPECT_THAT( e.what(), MatchesRegex("^Error parsing script options.*PARSE: Syntax error: Unexpected.*$"));
             throw;
         }
-    }, std::runtime_error );
+    }, OptionParserException );
 }
 
 const std::vector<std::string> invalid_options = {"%some_option ;", "%some_option \n", "\n%some_option\n;", "%some_option\nvalue;"};

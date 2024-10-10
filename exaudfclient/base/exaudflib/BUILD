@@ -94,5 +94,5 @@ cc_library(
             "impl/swig/swig_general_iterator.h", "impl/swig/swig_general_iterator.cc"],
     defines = VM_ENABLED_DEFINES,
     linkstatic = False, # Needs to be false, because otherwise we might get missing symbols when loading exaudflib_complete.so
-    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//base:debug_message_h"],
+    deps = [":exaudflib-deps", ":zmqcontainer", "@zmq//:zmq", ":header", "//base/utils:utils"],
 )

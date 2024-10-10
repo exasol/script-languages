@@ -6,7 +6,7 @@
 #include <atomic>
 
 
-#include "base/debug_message.h"
+#include "base/utils/debug_message.h"
 
 namespace exaudflib {
     namespace check {

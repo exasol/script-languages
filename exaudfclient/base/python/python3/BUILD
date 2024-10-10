@@ -92,7 +92,7 @@ cc_library(
     hdrs = [":exascript_python_int", ":filter_swig_code_exascript_python_h"],
     include_prefix = ".",
     deps = ["@python3//:python3",":exascript_python","//base/exaudflib:header",
-            "//base:debug_message_h", "//base/python:pythoncontainer_header"],
+            "//base/utils:utils", "//base/python:pythoncontainer_header"],
     alwayslink=True,
 )
 
@@ -109,5 +109,5 @@ cc_binary(
     linkshared = 1,
     srcs = [":python_ext_dataframe.cc"],
     deps = ["@python3//:python3","@numpy//:numpy",
-           "//base/exaudflib:header", "//base:debug_message_h"],
+           "//base/exaudflib:header", "//base/utils:utils"],
 )
