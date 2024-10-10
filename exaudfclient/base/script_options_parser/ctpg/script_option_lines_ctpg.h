@@ -15,8 +15,6 @@ namespace OptionsLineParser
 namespace CTPG
 {
 
-class ParserResult;
-
 struct ScriptOption {
     std::string value;
     size_t idx_in_source;

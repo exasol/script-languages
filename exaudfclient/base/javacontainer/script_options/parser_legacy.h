@@ -28,9 +28,9 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
         std::string && getScriptCode() override;
 
     private:
-        void parseForSingleOption(const std::string key,
+        void parseForSingleOption(const std::string& key,
                                         std::function<void(const std::string &option, size_t pos)> callback);
-        void parseForMultipleOptions(const std::string key,
+        void parseForMultipleOptions(const std::string& key,
                                                 std::function<void(const std::string &option, size_t pos)> callback);
 
     private:

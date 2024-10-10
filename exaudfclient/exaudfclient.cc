@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
     } else if (strcmp(argv[2], "lang=java")==0)
     {
 #ifdef ENABLE_JAVA_VM
-        vmMaker = [&](){return new SWIGVMContainers::JavaVMach(false, swigFactory);};
+        vmMaker = [&](){return new SWIGVMContainers::JavaVMach(false, swigFactory, false);};
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Java support");
 #endif

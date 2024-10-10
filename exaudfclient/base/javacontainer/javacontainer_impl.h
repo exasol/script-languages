@@ -14,10 +14,14 @@ class JavaVMTest;
 
 namespace SWIGVMContainers {
 
+namespace JavaScriptOptions {
+    struct ScriptOptionsParser;
+}
+
 class JavaVMImpl {
     public:
         friend class ::JavaVMTest;
-        JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory);
+        JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory, bool useCTPGParser);
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
@@ -37,6 +41,7 @@ class JavaVMImpl {
         void throwException(const std::string& ex);
         void setJvmOptions();
         void addJarToClasspath(const std::string& path);
+        void parseScriptOptions(JavaScriptOptions::ScriptOptionsParser & scriptOptionsParser, SwigFactory& swigFactory);
         bool m_checkOnly;
         std::string m_exaJavaPath;
         std::string m_localClasspath;

@@ -14,7 +14,7 @@ class SwigFactory;
 
 class JavaVMach: public SWIGVM {
     public:
-        JavaVMach(bool checkOnly, SwigFactory& swigFactory);
+        JavaVMach(bool checkOnly, SwigFactory& swigFactory, bool useCTPGParser);
         virtual ~JavaVMach() {}
         virtual void shutdown();
         virtual bool run();

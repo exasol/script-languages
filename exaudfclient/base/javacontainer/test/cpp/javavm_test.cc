@@ -20,7 +20,11 @@ JavaVMTest::JavaVMTest(std::string scriptCode, SwigFactoryTestImpl & swigFactory
 void JavaVMTest::run(std::string scriptCode, SwigFactoryTestImpl & swigFactory) {
     char* script_code = ::strdup(scriptCode.c_str());
     SWIGVMContainers::SWIGVM_params->script_code = script_code;
-    SWIGVMContainers::JavaVMImpl javaVMImpl(false, true, swigFactory);
+    bool useCTPGParser = false;
+#ifdef USE_CTPG_PARSER
+    useCTPGParser = true;
+#endif
+    SWIGVMContainers::JavaVMImpl javaVMImpl(false, true, swigFactory, useCTPGParser);
     javaVMInternalStatus.m_exaJavaPath = javaVMImpl.m_exaJavaPath;
     javaVMInternalStatus.m_localClasspath = javaVMImpl.m_localClasspath;
     javaVMInternalStatus.m_scriptCode = javaVMImpl.m_scriptCode;
