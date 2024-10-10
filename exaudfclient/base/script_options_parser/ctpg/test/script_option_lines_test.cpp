@@ -247,6 +247,8 @@ TEST_P(ScriptOptionLinesEscapeSequenceTest, test_escape_seq_in_option_value) {
  '\n' -> new line character
  '\r' -> return character
  '\;' -> semicolon
+ '\ ' or '\t' or '\f' or '\v' at start of option value -> replaced by the respective white space character
+ '\ ' or '\t' or '\f' or '\v' in the middle of option value -> should not be replaced
  '\a' -> anything else should not be replaced.
  */
 const std::vector<std::pair<std::string, std::string>> escape_sequences =
