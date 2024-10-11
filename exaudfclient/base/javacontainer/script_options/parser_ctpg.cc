@@ -96,7 +96,9 @@ std::string && ScriptOptionLinesParserCTPG::getScriptCode() {
 void ScriptOptionLinesParserCTPG::parse() {
     if (m_needParsing) {
         if(!m_foundOptions.empty()) {
-            throw std::logic_error("F-UDF-CL-SL-JAVA-1620 Internal error. Parser result is not empty.");
+            throw std::logic_error(
+                "F-UDF-CL-SL-JAVA-1620 Internal error. Parser result is not empty. "
+                "Please open a bug ticket at https://github.com/exasol/script-languages-release/issues/new.");
         }
         try {
             ExecutionGraph::OptionsLineParser::CTPG::parseOptions(m_scriptCode, m_foundOptions);
@@ -126,7 +128,7 @@ void ScriptOptionLinesParserCTPG::parseForSingleOption(const std::string key, st
     if (optionIt != m_foundOptions.end()) {
         if (optionIt->second.size() != 1) {
             std::stringstream ss;
-            ss << "F-UDF-CL-SL-JAVA-1628 found " << optionIt->second.size() <<  key << " options" << std::endl;
+            ss << "F-UDF-CL-SL-JAVA-1628 found " << optionIt->second.size() << " instances for script option key '" << key << "' but expected at most one." << std::endl;
             throw std::invalid_argument(ss.str());
         }
         callback(optionIt->second[0].value);

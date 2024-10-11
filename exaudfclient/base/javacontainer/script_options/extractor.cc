@@ -18,7 +18,7 @@ Extractor::Extractor(ScriptOptionsParser & parser,
 void Extractor::extract(std::string & scriptCode) {
     m_parser.prepareScriptCode(scriptCode);
     EXTR_DBG_FUNC_CALL(m_parser.parseForScriptClass( [&](const std::string& value){
-            EXTR_DBG_FUNC_CALL(m_converter.convertScriptClassName(value));
+            EXTR_DBG_FUNC_CALL(m_converter.convertScriptClassName(value)); // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
         }));
     EXTR_DBG_FUNC_CALL(m_parser.extractImportScripts(m_swigFactory));
     EXTR_DBG_FUNC_CALL(m_parser.parseForJvmOptions( [&](const std::string& value){

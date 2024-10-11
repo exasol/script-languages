@@ -61,7 +61,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory, boo
 void JavaVMImpl::parseScriptOptions(JavaScriptOptions::ScriptOptionsParser & scriptOptionsParser, SwigFactory& swigFactory) {
     JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory);
 
-    DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
+    DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));
 
     DBG_FUNC_CALL(cerr,setClasspath());
 
