@@ -22,8 +22,19 @@ ScriptImporter::ScriptImporter(SwigFactory & swigFactory, Keywords & keywords)
 , m_metaData()
 , m_keywords(keywords) {}
 
-void ScriptImporter::importScript(std::string & scriptCode, ctpg_parser::options_map_t & options) {
+void ScriptImporter::importScript(std::string & scriptCode,
+                                    ctpg_parser::options_map_t & options) {
+    importScript(scriptCode, options, 0);
+}
+
+void ScriptImporter::importScript(std::string & scriptCode,
+                                    ctpg_parser::options_map_t & options,
+                                    const size_t recursionDepth) {
     const auto optionIt = options.find(std::string(m_keywords.importKeyword()));
+
+    if (recursionDepth >= cMaxRecursionDepth) {
+        throw std::runtime_error("F-UDF-CL-SL-JAVA-1633: Maximal recursion depth for importing scripts reached.");
+    }
     if (optionIt != options.end()) {
         m_importedScriptChecksums.addScript(scriptCode.c_str());
         //Sort options from first in script to last in script
@@ -45,7 +56,7 @@ void ScriptImporter::importScript(std::string & scriptCode, ctpg_parser::options
         for (const auto & option: optionIt->second) {
             const char *importScriptCode = findImportScript(option.value);
             std::string importScriptCodeStr;
-            if (m_importedScriptChecksums.addScript(importScriptCode)) {
+            if (m_importedScriptChecksums.addScript(importScriptCode) ) {
                 // Script has not been imported yet
                 // If this imported script contains %import statements
                 // they will be resolved in the next recursion.
@@ -56,7 +67,7 @@ void ScriptImporter::importScript(std::string & scriptCode, ctpg_parser::options
                     Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1630");
                 }
                 importScriptCodeStr.assign(importScriptCode);
-                importScript(importScriptCodeStr, newOptions);
+                importScript(importScriptCodeStr, newOptions, recursionDepth + 1);
             }
             ReplacedScripts replacedScript = {.script = std::move(importScriptCodeStr), .origPos = option.idx_in_source, .origLen = option.size };
             replacedScripts.push_back(std::move(replacedScript));

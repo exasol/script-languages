@@ -21,16 +21,20 @@ class ScriptImporter {
     public:
         ScriptImporter(SwigFactory & swigFactory, Keywords & keywords);
 
-        void importScript(std::string & scriptCode,
-                            ExecutionGraph::OptionsLineParser::CTPG::options_map_t & options);
+        void importScript(std::string & scriptCode, ExecutionGraph::OptionsLineParser::CTPG::options_map_t & options);
 
     private:
-        const char* findImportScript(const std::string & scriptKey);
+        void importScript(std::string & scriptCode,
+                            ExecutionGraph::OptionsLineParser::CTPG::options_map_t & options,
+                            const size_t recursionDepth);
+         const char* findImportScript(const std::string & scriptKey);
     private:
         Checksum m_importedScriptChecksums;
         SwigFactory & m_swigFactory;
         std::unique_ptr<SWIGMetadataIf> m_metaData;
         Keywords & m_keywords;
+        //The empirical maximal value for recursion depth is ~26000. So we choose 20000 to have a certain buffer.
+        const size_t cMaxRecursionDepth = 20000;
 };
 
 } //namespace CTPG
