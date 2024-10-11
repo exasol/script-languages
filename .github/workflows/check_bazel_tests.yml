@@ -6,7 +6,6 @@ on:
       - master
   pull_request:
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,7 +14,37 @@ jobs:
       USE_BAZEL_VERSION: 7.2.1
     steps:
     - uses: actions/checkout@v4
-
+    - matrix:
+        test:
+          - "//base/javacontainer/test:ExaStackTraceCleanerTest"
+          - "//base/javacontainer/test:javacontainer-test-legacy-parser"
+          - "//base/javacontainer/test:javacontainer-test-ctpg-parser"
+          - "//base/javacontainer/script_options/..."
+          - "//base/exaudflib/test/..."
+          - "//base/script_options_parser/ctpg/..."
+          - "//base/script_options_parser/legacy/..."
+        additional_args: [""]
+        include:
+          - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
+            additional_args: ["--run_under='valgrind'"]
+          - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
+            additional_args: ["--run_under='valgrind'"]
+          - test: "//base/javacontainer/test:javacontainer-test-ctpg-parser"
+            additional_args: ["--run_under='valgrind'"]
+          - test: "//base/script_options_parser/ctpg/..."
+            additional_args: ["--run_under='valgrind'"]
+          - test: "//base/script_options_parser/legacy/..."
+            additional_args: ["--run_under='valgrind'"]
+          - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
+            additional_args: ["--config asan"]
+          - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
+            additional_args: ["--config asan"]
+          - test: "//base/javacontainer/test:javacontainer-test-ctpg-parser"
+            additional_args: ["--config asan"]
+          - test: "//base/script_options_parser/ctpg/..."
+            additional_args: ["--config asan"]
+          - test: "//base/script_options_parser/legacy/..."
+            additional_args: ["--config asan"]
 
     - name: Search for duplicated error codes
       run: bash find_duplicate_error_codes.sh
@@ -28,16 +57,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y openjdk-11-jdk libzmq3-dev
-    - name: Java Tests
+    - name: Run tests
       run: |
-        bazel test //base/javacontainer/test/...
+        bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
       working-directory: ./exaudfclient/
-    - name: ExaudfLib Tests
-      run: |
-        bazel test //base/exaudflib/test/...
-      working-directory: ./exaudfclient/
-    - name: Script Options Parser Tests
-      run: |
-        bazel test //base/script_options_parser/...
-      working-directory: ./exaudfclient/
-
