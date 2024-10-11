@@ -29,11 +29,9 @@ jobs:
           - test: "//base/javacontainer/test:javacontainer-test-ctpg-parser"
             additional_args: "--run_under='valgrind'"
           - test: "//base/script_options_parser/ctpg/..."
-            additional_args: "--run_under='valgrind'"
+            additional_args: "--run_under='valgrind' --test_timeout=3600"
           - test: "//base/script_options_parser/legacy/..."
             additional_args: "--run_under='valgrind'"
-          - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
-            additional_args: "--config asan"
           - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
             additional_args: "--config asan"
           - test: "//base/javacontainer/test:javacontainer-test-ctpg-parser"
@@ -63,3 +61,8 @@ jobs:
       run: |
         bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
       working-directory: ./exaudfclient/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: "test_logs_${{ matrix.test }}_${{ matrix.additional_args }}"
+        path: /home/runner/.cache/bazel/_bazel_runner/**/test.log
