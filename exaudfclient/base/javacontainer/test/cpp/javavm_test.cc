@@ -32,6 +32,6 @@ void JavaVMTest::run(std::string scriptCode, SwigFactoryTestImpl & swigFactory) 
     javaVMInternalStatus.m_classpath = javaVMImpl.m_classpath;
     javaVMInternalStatus.m_jvmOptions = javaVMImpl.m_jvmOptions;
     javaVMInternalStatus.m_needsCompilation = javaVMImpl.m_needsCompilation;
-    delete script_code;
+    ::free(script_code);
 }
 
