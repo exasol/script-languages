@@ -9,12 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      USE_BAZEL_VERSION: 7.2.1
-    steps:
-    - uses: actions/checkout@v4
-    - matrix:
+    strategy:
+     matrix:
         test:
           - "//base/javacontainer/test:ExaStackTraceCleanerTest"
           - "//base/javacontainer/test:javacontainer-test-legacy-parser"
@@ -46,6 +42,11 @@ jobs:
           - test: "//base/script_options_parser/legacy/..."
             additional_args: ["--config asan"]
 
+
+    env:
+      USE_BAZEL_VERSION: 7.2.1
+    steps:
+    - uses: actions/checkout@v4
     - name: Search for duplicated error codes
       run: bash find_duplicate_error_codes.sh
 
