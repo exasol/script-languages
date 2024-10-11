@@ -68,4 +68,4 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: "${{ matrix.name }}"
-        path: /home/runner/.cache/bazel/_bazel_runner/**/test.log
+        path: /home/runner/.cache/bazel/_bazel_runner/*/execroot/_main/bazel-out/k8-dbg/testlogs/base/**/test.log
