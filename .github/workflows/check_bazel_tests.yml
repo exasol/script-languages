@@ -22,25 +22,25 @@ jobs:
         additional_args: [""]
         include:
           - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
-            additional_args: ["--run_under='valgrind'"]
+            additional_args: "--run_under='valgrind'"
           - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
-            additional_args: ["--run_under='valgrind'"]
+            additional_args: "--run_under='valgrind'"
           - test: "//base/javacontainer/test:javacontainer-test-ctpg-parser"
-            additional_args: ["--run_under='valgrind'"]
+            additional_args: "--run_under='valgrind'"
           - test: "//base/script_options_parser/ctpg/..."
-            additional_args: ["--run_under='valgrind'"]
+            additional_args: "--run_under='valgrind'"
           - test: "//base/script_options_parser/legacy/..."
-            additional_args: ["--run_under='valgrind'"]
+            additional_args: "--run_under='valgrind'"
           - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
-            additional_args: ["--config asan"]
+            additional_args: "--config asan"
           - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
-            additional_args: ["--config asan"]
+            additional_args: "--config asan"
           - test: "//base/javacontainer/test:javacontainer-test-ctpg-parser"
-            additional_args: ["--config asan"]
+            additional_args: "--config asan"
           - test: "//base/script_options_parser/ctpg/..."
-            additional_args: ["--config asan"]
+            additional_args: "--config asan"
           - test: "//base/script_options_parser/legacy/..."
-            additional_args: ["--config asan"]
+            additional_args: "--config asan"
 
 
     env:
