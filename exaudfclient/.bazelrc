@@ -21,3 +21,8 @@ build:asan --copt -g
 build:asan --copt -fno-omit-frame-pointer
 build:asan --linkopt -fsanitize=address
 build:asan -c dbg
+build:valgrind --copt -O1
+build:valgrind -c dbg
+build:valgrind --copt -g
+build:valgrind --strip=never
+build:valgrind --copt -DVALGRIND_ACTIVE
