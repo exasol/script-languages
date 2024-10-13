@@ -1,12 +1,14 @@
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
+#include "base/javacontainer/script_options/parser.h"
 
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMach::JavaVMach(bool checkOnly, SwigFactory& swigFactory, bool useCTPGParser) {
+JavaVMach::JavaVMach(bool checkOnly, SwigFactory& swigFactory,
+                     std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser) {
     try {
-        m_impl = new JavaVMImpl(checkOnly, false, swigFactory, useCTPGParser);
+        m_impl = new JavaVMImpl(checkOnly, false, swigFactory, std::move(scriptOptionsParser));
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF-CL-SL-JAVA-1000: "+std::string(err.what());

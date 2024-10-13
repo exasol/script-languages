@@ -106,7 +106,8 @@ cc_library(
 
 cc_library(
     name = "javacontainer",
-    srcs = [":javacontainer.cc", ":javacontainer.h", ":javacontainer_impl.cc", ":javacontainer_impl.h", ":dummy"],
+    srcs = [":javacontainer.cc", ":javacontainer.h", ":javacontainer_impl.cc", ":javacontainer_impl.h",
+            ":javacontainer_builder.h", ":javacontainer_builder.cc", ":dummy"],
     hdrs = [":filter_swig_code_exascript_java_h", "exascript_java_jni_decl.h"],
     deps = ["@java//:java", ":exascript_java", "//base/exaudflib:header",
             "//base/utils:utils","//base/javacontainer/script_options:java_script_option_lines",

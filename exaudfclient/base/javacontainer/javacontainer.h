@@ -4,6 +4,7 @@
 
 #include "base/exaudflib/vm/swig_vm.h"
 #include <string.h>
+#include <memory>
 
 #ifdef ENABLE_JAVA_VM
 
@@ -12,9 +13,18 @@ namespace SWIGVMContainers {
 class JavaVMImpl;
 class SwigFactory;
 
+namespace JavaScriptOptions {
+
+struct ScriptOptionsParser;
+
+}
+
 class JavaVMach: public SWIGVM {
     public:
-        JavaVMach(bool checkOnly, SwigFactory& swigFactory, bool useCTPGParser);
+        /*
+         * scriptOptionsParser: JavaVMach takes ownership of ScriptOptionsParser pointer.
+         */
+        JavaVMach(bool checkOnly, SwigFactory& swigFactory, std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
         virtual ~JavaVMach() {}
         virtual void shutdown();
         virtual bool run();

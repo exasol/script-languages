@@ -15,6 +15,8 @@ class ScriptOptionLinesParserCTPG : public ScriptOptionsParser {
     public:
         ScriptOptionLinesParserCTPG();
 
+        virtual ~ScriptOptionLinesParserCTPG() {};
+
         void prepareScriptCode(const std::string & scriptCode) override;
 
         void parseForScriptClass(std::function<void(const std::string &option)> callback) override;

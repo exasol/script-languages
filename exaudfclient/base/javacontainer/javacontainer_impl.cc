@@ -20,7 +20,8 @@
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory, bool useCTPGParser)
+JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory,
+                       std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser)
 : m_checkOnly(checkOnly)
 , m_exaJavaPath("")
 , m_localClasspath("/tmp") // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
@@ -35,13 +36,8 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory, boo
     stringstream ss;
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
-    if (useCTPGParser) {
-        JavaScriptOptions::ScriptOptionLinesParserCTPG parser;
-        parseScriptOptions(parser, swigFactory);
-    } else {
-        JavaScriptOptions::ScriptOptionLinesParserLegacy parser;
-        parseScriptOptions(parser, swigFactory);
-    }
+    JavaScriptOptions::ScriptOptionLinesParserCTPG parser;
+    parseScriptOptions(std::move(scriptOptionsParser), swigFactory);
 
     m_needsCompilation = checkNeedsCompilation();
     if (m_needsCompilation) {
@@ -58,8 +54,9 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory, boo
     }
 }
 
-void JavaVMImpl::parseScriptOptions(JavaScriptOptions::ScriptOptionsParser & scriptOptionsParser, SwigFactory& swigFactory) {
-    JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory);
+void JavaVMImpl::parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser,
+                                    SwigFactory& swigFactory) {
+    JavaScriptOptions::Extractor extractor(*scriptOptionsParser, swigFactory);
 
     DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));
 

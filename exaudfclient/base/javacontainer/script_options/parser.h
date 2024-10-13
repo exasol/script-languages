@@ -13,6 +13,7 @@ struct SwigFactory;
 namespace JavaScriptOptions {
 
 struct ScriptOptionsParser {
+    virtual ~ScriptOptionsParser() {};
     /*
     Passes the script code for parsing to the parser. The parser might modify the script code, because it will remove
     known options.

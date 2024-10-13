@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <memory>
 
 #include "base/exaudflib/vm/swig_vm.h"
 #include <jni.h>
@@ -21,7 +22,11 @@ namespace JavaScriptOptions {
 class JavaVMImpl {
     public:
         friend class ::JavaVMTest;
-        JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory, bool useCTPGParser);
+        /*
+         * scriptOptionsParser: JavaVMach takes ownership of ScriptOptionsParser pointer.
+         */
+        JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory,
+                   std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
@@ -41,7 +46,8 @@ class JavaVMImpl {
         void throwException(const std::string& ex);
         void setJvmOptions();
         void addJarToClasspath(const std::string& path);
-        void parseScriptOptions(JavaScriptOptions::ScriptOptionsParser & scriptOptionsParser, SwigFactory& swigFactory);
+        void parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser,
+                                SwigFactory& swigFactory);
         bool m_checkOnly;
         std::string m_exaJavaPath;
         std::string m_localClasspath;

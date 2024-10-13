@@ -15,6 +15,8 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
     public:
         ScriptOptionLinesParserLegacy();
 
+        virtual ~ScriptOptionLinesParserLegacy() {};
+
         void prepareScriptCode(const std::string & scriptCode) override;
 
         void parseForScriptClass(std::function<void(const std::string &option)> callback) override;
