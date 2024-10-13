@@ -181,10 +181,6 @@ constexpr parser option_parser(
 
 void parse(std::string&& code, options_type& result) {
 
-    //inject a memory problem
-    char buffer[100];
-    buffer[100] = 0;
-
     std::stringstream error_buffer;
     auto res = option_parser.parse(
         parse_options{}.set_skip_whitespace(false),
