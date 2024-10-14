@@ -29,6 +29,14 @@ const char* buildNewScriptCode(size_t currentIdx) {
 }
 
 TEST(ScriptImporterTest, max_recursion_depth) {
+    /**
+       This test checks that running an infinite recursion of the script import will result in the expected exception.
+       For that, the test creates new "import scripts" on the fly:
+       Whenever the parser finds a new 'import script' option,
+       it calls SWIGVMContainers::SWIGMetadataIf::moduleContent().
+       The mocked implementation redirects this request to `buildNewScriptCode()` which creates a
+       new dummy import script with another '%import ...` option.
+     */
 
     size_t currentIdx = 0;
     SwigFactoryTestImpl swigFactoryTest([&](const char* scriptKey) {
