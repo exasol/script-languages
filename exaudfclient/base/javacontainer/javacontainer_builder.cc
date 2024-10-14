@@ -12,7 +12,9 @@ JavaContainerBuilder::JavaContainerBuilder()
 : m_parser() {}
 
 JavaContainerBuilder& JavaContainerBuilder::useCtpgParser(const bool useCtpgParser) {
-    m_parser = std::make_unique<JavaScriptOptions::ScriptOptionLinesParserCTPG>(std::make_unique<SwigFactoryImpl>());
+    if (useCtpgParser) {
+        m_parser = std::make_unique<JavaScriptOptions::ScriptOptionLinesParserCTPG>(std::make_unique<SwigFactoryImpl>());
+    }
     return *this;
 }
 
