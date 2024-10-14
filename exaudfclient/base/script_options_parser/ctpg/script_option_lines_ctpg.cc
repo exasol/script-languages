@@ -205,30 +205,36 @@ void parseOptions(const std::string& code, options_map_t & result) {
     size_t current_pos = 0;
 
     do {
+        const size_t new_option_start_pos = code.find_first_of("%", current_pos);
+        if (new_option_start_pos == std::string::npos)
+            break;
+        current_pos = code.find_last_of("\r\n", new_option_start_pos);
+        if (std::string::npos == current_pos)
+            current_pos = 0;
+        else
+            current_pos++;
 
         const size_t new_pos = code.find_first_of("\r\n", current_pos);
         std::string line = code.substr(current_pos, new_pos);
-        if (!line.empty() && !std::all_of(line.begin(),line.end(), [](const char c) {return std::isspace(c);})) {
-            options_type parser_result;
-            ParserInternals::parse(std::move(line), parser_result);
-            for (const auto & option: parser_result)
+        options_type parser_result;
+        ParserInternals::parse(std::move(line), parser_result);
+        for (const auto & option: parser_result)
+        {
+            ScriptOption entry = {
+                .value = option.value,
+                .idx_in_source = current_pos + option.start.column - 1,
+                .size = option.end.column - option.start.column + 1
+            };
+            auto it_in_result = result.find(option.key);
+            if (it_in_result == result.end())
             {
-                ScriptOption entry = {
-                    .value = option.value,
-                    .idx_in_source = current_pos + option.start.column - 1,
-                    .size = option.end.column - option.start.column + 1
-                };
-                auto it_in_result = result.find(option.key);
-                if (it_in_result == result.end())
-                {
-                    options_t new_options;
-                    new_options.push_back(entry);
-                    result.insert(std::make_pair(option.key, new_options));
-                }
-                else
-                {
-                    it_in_result->second.push_back(entry);
-                }
+                options_t new_options;
+                new_options.push_back(entry);
+                result.insert(std::make_pair(option.key, new_options));
+            }
+            else
+            {
+                it_in_result->second.push_back(entry);
             }
         }
         if (new_pos == std::string::npos) {
