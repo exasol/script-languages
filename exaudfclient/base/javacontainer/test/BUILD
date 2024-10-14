@@ -13,6 +13,9 @@ java_test(
 JAVACONTAINER_TEST_SRCS = ["cpp/javacontainer_test.cc", "cpp/exaudf_wrapper.cc", "cpp/javavm_test.cc", "cpp/javavm_test.h",
             "cpp/swig_factory_test.h", "cpp/swig_factory_test.cc"]
 
+JAVACONTAINER_PERF_TEST_SRCS = ["cpp/javacontainer_perf_test.cc", "cpp/exaudf_wrapper.cc", "cpp/javavm_test.cc", "cpp/javavm_test.h",
+            "cpp/swig_factory_test.h", "cpp/swig_factory_test.cc"]
+
 cc_test(
     name = "javacontainer-test-legacy-parser",
     srcs = JAVACONTAINER_TEST_SRCS,
@@ -26,6 +29,28 @@ cc_test(
 cc_test(
     name = "javacontainer-test-ctpg-parser",
     srcs = JAVACONTAINER_TEST_SRCS + ["cpp/javacontainer_ctpg_test.cc"],
+    deps = [
+        "//base/javacontainer:javacontainer",
+        "@googletest//:gtest_main",
+    ],
+    defines = ["USE_CTPG_PARSER"],
+    data = ["test.jar", "other_test.jar"]
+)
+
+
+cc_test(
+    name = "javacontainer-perf-test-legacy-parser",
+    srcs = JAVACONTAINER_PERF_TEST_SRCS,
+    deps = [
+        "//base/javacontainer:javacontainer",
+        "@googletest//:gtest_main",
+    ],
+    data = ["test.jar", "other_test.jar"]
+)
+
+cc_test(
+    name = "javacontainer-perf-test-ctpg-parser",
+    srcs = JAVACONTAINER_PERF_TEST_SRCS,
     deps = [
         "//base/javacontainer:javacontainer",
         "@googletest//:gtest_main",
