@@ -39,18 +39,19 @@ TEST(ScriptImporterTest, max_recursion_depth) {
      */
 
     size_t currentIdx = 0;
-    SwigFactoryTestImpl swigFactoryTest([&](const char* scriptKey) {
+    std::unique_ptr<SWIGVMContainers::SwigFactory> swigFactory =
+            std::make_unique<SwigFactoryTestImpl>([&](const char* scriptKey) {
                         checkIndex(currentIdx, scriptKey);
                         return buildNewScriptCode(++currentIdx);
                        });
-    ScriptOptionLinesParserCTPG parser;
+    ScriptOptionLinesParserCTPG parser(std::move(swigFactory));
 
     const std::string code = buildNewScriptCode(currentIdx);
     parser.prepareScriptCode(code);
     EXPECT_THROW({
         try
         {
-            parser.extractImportScripts(swigFactoryTest);
+            parser.extractImportScripts();
         }
         catch( const std::runtime_error& e )
         {

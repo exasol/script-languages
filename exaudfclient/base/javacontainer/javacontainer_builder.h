@@ -8,7 +8,6 @@
 namespace SWIGVMContainers {
 
 class JavaVMach;
-struct SwigFactory;
 
 namespace JavaScriptOptions {
 
@@ -18,7 +17,7 @@ struct ScriptOptionsParser;
 
 class JavaContainerBuilder {
     public:
-        JavaContainerBuilder(SwigFactory& swigFactory);
+        JavaContainerBuilder();
 
         JavaContainerBuilder& useCtpgParser(const bool value);
 
@@ -26,8 +25,6 @@ class JavaContainerBuilder {
 
     private:
         std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> m_parser;
-        SwigFactory& m_swigFactory;
-
 };
 
 } //namespace SWIGVMContainers

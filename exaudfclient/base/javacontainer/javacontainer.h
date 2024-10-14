@@ -11,7 +11,6 @@
 namespace SWIGVMContainers {
 
 class JavaVMImpl;
-class SwigFactory;
 
 namespace JavaScriptOptions {
 
@@ -24,7 +23,7 @@ class JavaVMach: public SWIGVM {
         /*
          * scriptOptionsParser: JavaVMach takes ownership of ScriptOptionsParser pointer.
          */
-        JavaVMach(bool checkOnly, SwigFactory& swigFactory, std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
+        JavaVMach(bool checkOnly, std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
         virtual ~JavaVMach() {}
         virtual void shutdown();
         virtual bool run();

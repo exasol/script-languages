@@ -10,8 +10,6 @@
 
 namespace SWIGVMContainers {
 
-struct SwigFactory;
-
 namespace JavaScriptOptions {
 
 class ScriptOptionsParser;
@@ -19,8 +17,7 @@ class ScriptOptionsParser;
 class Extractor {
 
     public:
-        Extractor(ScriptOptionsParser & parser,
-                  SwigFactory& swigFactory);
+        Extractor(ScriptOptionsParser & parser);
 
         const std::set<std::string> & getJarPaths() const {
             return m_converter.getJarPaths();
@@ -36,8 +33,6 @@ class Extractor {
 
         Converter m_converter;
         ScriptOptionsParser & m_parser;
-
-        SwigFactory& m_swigFactory;
 };
 
 

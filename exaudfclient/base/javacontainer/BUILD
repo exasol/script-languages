@@ -111,7 +111,7 @@ cc_library(
     hdrs = [":filter_swig_code_exascript_java_h", "exascript_java_jni_decl.h"],
     deps = ["@java//:java", ":exascript_java", "//base/exaudflib:header",
             "//base/utils:utils","//base/javacontainer/script_options:java_script_option_lines",
-            "//base/swig_factory:swig_factory_if"],
+            "//base/swig_factory:swig_factory"],
 #    copts= ["-O0","-fno-lto"],
     alwayslink=True,
 )

@@ -4,16 +4,18 @@
 #include "base/javacontainer/script_options/parser.h"
 #include "base/javacontainer/script_options/keywords.h"
 #include "base/script_options_parser/ctpg/script_option_lines_ctpg.h"
-
+#include <memory>
 
 namespace SWIGVMContainers {
+
+struct SwigFactory;
 
 namespace JavaScriptOptions {
 
 class ScriptOptionLinesParserCTPG : public ScriptOptionsParser {
 
     public:
-        ScriptOptionLinesParserCTPG();
+        ScriptOptionLinesParserCTPG(std::unique_ptr<SwigFactory> swigFactory);
 
         virtual ~ScriptOptionLinesParserCTPG() {};
 
@@ -25,7 +27,7 @@ class ScriptOptionLinesParserCTPG : public ScriptOptionsParser {
 
         void parseForExternalJars(std::function<void(const std::string &option)> callback) override;
 
-        void extractImportScripts(SwigFactory & swigFactory) override;
+        void extractImportScripts() override;
 
         std::string && getScriptCode() override;
 
@@ -42,6 +44,7 @@ class ScriptOptionLinesParserCTPG : public ScriptOptionsParser {
         Keywords m_keywords;
         ExecutionGraph::OptionsLineParser::CTPG::options_map_t m_foundOptions;
         bool m_needParsing;
+        std::unique_ptr<SwigFactory> m_swigFactory;
 };
 
 } //namespace JavaScriptOptions

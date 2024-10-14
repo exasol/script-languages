@@ -5,31 +5,29 @@
 #include "base/javacontainer/script_options/parser_legacy.h"
 #include <string.h>
 
-
-SwigFactoryTestImpl & defaultSwigFactory() {
-    static SwigFactoryTestImpl swigFactory;
-    return swigFactory;
+std::unique_ptr<SwigFactoryTestImpl> makeDefaultSwigFactory() {
+    return std::make_unique<SwigFactoryTestImpl>();
 }
 
 JavaVMTest::JavaVMTest(std::string scriptCode) : javaVMInternalStatus() {
-    run(scriptCode, defaultSwigFactory());
+    run(scriptCode, std::move(makeDefaultSwigFactory()));
 }
 
-JavaVMTest::JavaVMTest(std::string scriptCode, SwigFactoryTestImpl & swigFactory) : javaVMInternalStatus() {
-    run(scriptCode, swigFactory);
+JavaVMTest::JavaVMTest(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl> swigFactory) : javaVMInternalStatus() {
+    run(scriptCode, std::move(swigFactory));
 }
 
-void JavaVMTest::run(std::string scriptCode, SwigFactoryTestImpl & swigFactory) {
+void JavaVMTest::run(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl> swigFactory) {
     char* script_code = ::strdup(scriptCode.c_str());
     SWIGVMContainers::SWIGVM_params->script_code = script_code;
 #ifndef USE_CTPG_PARSER
     std::unique_ptr<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserLegacy> parser =
-         std::make_unique<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserLegacy>();
+         std::make_unique<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserLegacy>(std::move(swigFactory));
 #else
     std::unique_ptr<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserCTPG> parser =
-         std::make_unique<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserCTPG>();
+         std::make_unique<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserCTPG>(std::move(swigFactory));
 #endif
-    SWIGVMContainers::JavaVMImpl javaVMImpl(false, true, swigFactory, std::move(parser));
+    SWIGVMContainers::JavaVMImpl javaVMImpl(false, true, std::move(parser));
     javaVMInternalStatus.m_exaJavaPath = javaVMImpl.m_exaJavaPath;
     javaVMInternalStatus.m_localClasspath = javaVMImpl.m_localClasspath;
     javaVMInternalStatus.m_scriptCode = javaVMImpl.m_scriptCode;

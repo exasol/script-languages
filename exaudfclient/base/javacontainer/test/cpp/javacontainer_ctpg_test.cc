@@ -4,6 +4,7 @@
 #include "base/javacontainer/test/cpp/javavm_test.h"
 #include "base/javacontainer/test/cpp/swig_factory_test.h"
 #include <string.h>
+#include <memory>
 
 class JavaContainerEscapeSequenceTest : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
 
@@ -72,7 +73,7 @@ TEST(JavaContainer, import_script_with_escaped_options) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    std::unique_ptr<SwigFactoryTestImpl> swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_script_code =
         "%jvmoption -Dsomeotheroption=\"DE\\nF\";\n\n"
@@ -81,8 +82,8 @@ TEST(JavaContainer, import_script_with_escaped_options) {
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script", other_script_code);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script", other_script_code);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =

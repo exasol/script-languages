@@ -13,17 +13,18 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-ScriptOptionLinesParserLegacy::ScriptOptionLinesParserLegacy()
+ScriptOptionLinesParserLegacy::ScriptOptionLinesParserLegacy(std::unique_ptr<SwigFactory> swigFactory)
 : m_whitespace(" \t\f\v")
 , m_lineend(";")
 , m_scriptCode()
-, m_keywords(true) {}
+, m_keywords(true)
+, m_swigFactory(std::move(swigFactory)) {}
 
 void ScriptOptionLinesParserLegacy::prepareScriptCode(const std::string & scriptCode) {
     m_scriptCode = scriptCode;
 }
 
-void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFactory) {
+void ScriptOptionLinesParserLegacy::extractImportScripts() {
     std::unique_ptr<SWIGMetadataIf> metaData;
     // Attention: We must hash the parent script before modifying it (adding the
     // package definition). Otherwise we don't recognize if the script imports its self
@@ -111,7 +112,7 @@ void ScriptOptionLinesParserLegacy::extractImportScripts(SwigFactory & swigFacto
         }
         if (!newScript.empty()) {
             if (!metaData) {
-                metaData.reset(swigFactory.makeSwigMetadata());
+                metaData.reset(m_swigFactory->makeSwigMetadata());
                 if (!metaData)
                     throw std::runtime_error("F-UDF-CL-SL-JAVA-1615: Failure while importing scripts");
             }

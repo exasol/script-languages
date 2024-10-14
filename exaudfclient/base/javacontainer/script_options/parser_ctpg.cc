@@ -2,6 +2,7 @@
 #include "base/javacontainer/script_options/parser_ctpg_script_importer.h"
 #include "base/utils/exceptions.h"
 #include "base/script_options_parser/exception.h"
+#include "base/swig_factory/swig_factory.h"
 #include <sstream>
 
 
@@ -11,10 +12,11 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-ScriptOptionLinesParserCTPG::ScriptOptionLinesParserCTPG()
+ScriptOptionLinesParserCTPG::ScriptOptionLinesParserCTPG(std::unique_ptr<SwigFactory> swigFactory)
 : m_scriptCode()
 , m_keywords(false)
-, m_needParsing(true) {}
+, m_needParsing(true)
+, m_swigFactory(std::move(swigFactory)) {}
 
 void ScriptOptionLinesParserCTPG::prepareScriptCode(const std::string & scriptCode) {
     m_scriptCode = scriptCode;
@@ -44,7 +46,7 @@ void ScriptOptionLinesParserCTPG::parseForExternalJars(std::function<void(const 
     }
 }
 
-void ScriptOptionLinesParserCTPG::extractImportScripts(SwigFactory & swigFactory) {
+void ScriptOptionLinesParserCTPG::extractImportScripts() {
 
     try {
         parse();
@@ -54,7 +56,7 @@ void ScriptOptionLinesParserCTPG::extractImportScripts(SwigFactory & swigFactory
 
     const auto optionIt = m_foundOptions.find(m_keywords.importKeyword());
     if (optionIt != m_foundOptions.end()) {
-        CTPG::ScriptImporter scriptImporter(swigFactory, m_keywords);
+        CTPG::ScriptImporter scriptImporter(*m_swigFactory, m_keywords);
         scriptImporter.importScript(m_scriptCode, m_foundOptions);
         //The imported scripts will change the location of the other options in m_foundOptions
         //Also there might be new JVM / External Jar options

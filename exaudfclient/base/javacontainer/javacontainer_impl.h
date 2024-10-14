@@ -23,10 +23,10 @@ class JavaVMImpl {
     public:
         friend class ::JavaVMTest;
         /*
-         * scriptOptionsParser: JavaVMach takes ownership of ScriptOptionsParser pointer.
+         * scriptOptionsParser: JavaVMImpl takes ownership of ScriptOptionsParser pointer.
          */
-        JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory,
-                   std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
+        JavaVMImpl(bool checkOnly, bool noJNI,
+                    std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
@@ -46,8 +46,7 @@ class JavaVMImpl {
         void throwException(const std::string& ex);
         void setJvmOptions();
         void addJarToClasspath(const std::string& path);
-        void parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser,
-                                SwigFactory& swigFactory);
+        void parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
         bool m_checkOnly;
         std::string m_exaJavaPath;
         std::string m_localClasspath;
@@ -59,7 +58,6 @@ class JavaVMImpl {
         JavaVM *m_jvm;
         JNIEnv *m_env;
         bool m_needsCompilation;
-        SwigFactory& m_swigFactory;
 };
 
 } //namespace SWIGVMContainers

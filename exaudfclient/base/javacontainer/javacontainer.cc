@@ -5,10 +5,9 @@
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMach::JavaVMach(bool checkOnly, SwigFactory& swigFactory,
-                     std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser) {
+JavaVMach::JavaVMach(bool checkOnly, std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser) {
     try {
-        m_impl = new JavaVMImpl(checkOnly, false, swigFactory, std::move(scriptOptionsParser));
+        m_impl = new JavaVMImpl(checkOnly, false, std::move(scriptOptionsParser));
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF-CL-SL-JAVA-1000: "+std::string(err.what());
