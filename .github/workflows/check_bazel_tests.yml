@@ -26,7 +26,7 @@ jobs:
           sudo apt-get install -y openjdk-11-jdk libzmq3-dev
       - name: Build
         run: |
-          bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config java --config fast-binary --verbose_failures
+          bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config fast-binary --verbose_failures
         working-directory: ./exaudfclient/
 
   tests:
