@@ -79,7 +79,6 @@ jobs:
           BAZEL_PACKAGE_VERSION: "7.2.1"
       - name: Run tests
         run: |
-          source "$UDF_CLIENT_ENV_FILE"
           bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
         working-directory: ./exaudfclient/
 
