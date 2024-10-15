@@ -7,7 +7,29 @@ on:
   pull_request:
 
 jobs:
+  env:
+    USE_BAZEL_VERSION: 7.2.1
   build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Search for duplicated error codes
+      run: bash find_duplicate_error_codes.sh
+
+    - name: Install bazel
+      run: | 
+        curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
+        chmod +x bazel
+    - name: Install JDK and ZMQ
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openjdk-11-jdk libzmq3-dev
+    - name: Build
+      run: |
+        bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config java --config fast-binary --verbose_failures
+      working-directory: ./exaudfclient/
+
+  tests:
     runs-on: ubuntu-latest
     strategy:
      fail-fast: false
@@ -43,15 +65,8 @@ jobs:
             name: "script_options_parser_ctpg_with_asan"
           - test: "--config=asan //base/script_options_parser/legacy/..."
             name: "script_options_parser_legacy_with_asan"
-
-
-    env:
-      USE_BAZEL_VERSION: 7.2.1
     steps:
     - uses: actions/checkout@v4
-    - name: Search for duplicated error codes
-      run: bash find_duplicate_error_codes.sh
-
     - name: Install bazel
       run: | 
         curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
