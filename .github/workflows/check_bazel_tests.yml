@@ -23,7 +23,7 @@ jobs:
       - name: Install JDK and ZMQ
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk libzmq3-dev python3
+          sudo apt-get install -y openjdk-11-jdk libzmq3-dev python3 protobuf-compiler
       - name: Build
         run: |
           bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config fast-binary --verbose_failures
@@ -31,6 +31,11 @@ jobs:
         env:
           PYTHON3_PREFIX: /usr
           PYTHON3_VERSION: python3.10
+          ZMQ_LIBRARY_PREFIX: /usr/lib/x86_64-linux-gnu/
+          ZMQ_INCLUDE_PREFIX: /usr/include
+          PROTOBUF_LIBRARY_PREFIX: /usr/lib/x86_64-linux-gnu
+          PROTOBUF_INCLUDE_PREFIX: /usr/include/
+          PROTOBUF_BIN: /usr/bin/protoc
 
   tests:
     runs-on: ubuntu-latest
