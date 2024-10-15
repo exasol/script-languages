@@ -6,9 +6,9 @@ on:
       - master
   pull_request:
 
+env:
+  USE_BAZEL_VERSION: 7.2.1
 jobs:
-  env:
-    USE_BAZEL_VERSION: 7.2.1
   build:
     runs-on: ubuntu-latest
     steps:
