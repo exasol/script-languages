@@ -29,8 +29,8 @@ jobs:
           bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config fast-binary --verbose_failures
         working-directory: ./exaudfclient/
         env:
-          - PYTHON3_PREFIX: /usr
-          - PYTHON3_VERSION: python3.10
+          PYTHON3_PREFIX: /usr
+          PYTHON3_VERSION: python3.10
 
   tests:
     runs-on: ubuntu-latest
