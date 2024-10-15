@@ -12,22 +12,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Search for duplicated error codes
-      run: bash find_duplicate_error_codes.sh
+      - uses: actions/checkout@v4
+      - name: Search for duplicated error codes
+        run: bash find_duplicate_error_codes.sh
 
-    - name: Install bazel
-      run: | 
-        curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
-        chmod +x bazel
-    - name: Install JDK and ZMQ
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk libzmq3-dev
-    - name: Build
-      run: |
-        bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config java --config fast-binary --verbose_failures
-      working-directory: ./exaudfclient/
+      - name: Install bazel
+        run: | 
+          curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
+          chmod +x bazel
+      - name: Install JDK and ZMQ
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jdk libzmq3-dev
+      - name: Build
+        run: |
+          bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config java --config fast-binary --verbose_failures
+        working-directory: ./exaudfclient/
 
   tests:
     runs-on: ubuntu-latest
@@ -66,22 +66,22 @@ jobs:
           - test: "--config=asan //base/script_options_parser/legacy/..."
             name: "script_options_parser_legacy_with_asan"
     steps:
-    - uses: actions/checkout@v4
-    - name: Install bazel
-      run: | 
-        curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
-        chmod +x bazel
-    - name: Install JDK and ZMQ
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk libzmq3-dev valgrind
-    - name: Run tests
-      run: |
-        bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
-      working-directory: ./exaudfclient/
+      - uses: actions/checkout@v4
+      - name: Install bazel
+        run: | 
+          curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
+          chmod +x bazel
+      - name: Install JDK and ZMQ
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jdk libzmq3-dev valgrind
+      - name: Run tests
+        run: |
+          bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
+        working-directory: ./exaudfclient/
 
-    - uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: "${{ matrix.name }}"
-        path: /home/runner/.cache/bazel/_bazel_runner/*/execroot/_main/bazel-out/k8-dbg/testlogs/**/test.log
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: "${{ matrix.name }}"
+          path: /home/runner/.cache/bazel/_bazel_runner/*/execroot/_main/bazel-out/k8-dbg/testlogs/**/test.log
