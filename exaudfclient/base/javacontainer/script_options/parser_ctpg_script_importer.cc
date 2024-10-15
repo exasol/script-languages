@@ -72,7 +72,7 @@ void ScriptImporter::importScript(std::string & scriptCode,
             ReplacedScripts replacedScript = {.script = std::move(importScriptCodeStr), .origPos = option.idx_in_source, .origLen = option.size };
             replacedScripts.push_back(std::move(replacedScript));
         }
-        //No replace the imported script bodies from end to start. Doing it in forward order would invalidate the offsets of later import scripts.
+        //Now replace the imported script bodies from end to start. Doing it in forward order would invalidate the offsets of later import scripts.
         for (auto optionIt = replacedScripts.rbegin(); optionIt != replacedScripts.rend(); optionIt++) {
             scriptCode.replace(optionIt->origPos, optionIt->origLen, optionIt->script);
         }
