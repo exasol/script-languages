@@ -17,6 +17,8 @@ inline ScriptOption buildOption(const char* value, size_t idx, size_t len) {
     return option;
 }
 
+#ifndef VALGRIND_ACTIVE
+
 class ScriptOptionLinesWhitespaceTest : public ::testing::TestWithParam<std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string>> {};
 
 TEST_P(ScriptOptionLinesWhitespaceTest, WhitespaceExtractOptionLineTest) {
@@ -57,6 +59,8 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::ValuesIn(payloads)
     )
 );
+
+#endif //VALGRIND_ACTIVE
 
 TEST(ScriptOptionLinesTest, ignore_anything_other_than_whitepsace) {
     const std::string code =

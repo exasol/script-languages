@@ -12,14 +12,14 @@
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
 #include "base/javacontainer/script_options/extractor.h"
-#include "base/javacontainer/script_options/parser_legacy.h"
-#include "base/swig_factory/swig_factory.h"
+#include "base/javacontainer/script_options/parser.h"
 
 
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory)
+JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
+                        std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser)
 : m_checkOnly(checkOnly)
 , m_exaJavaPath("")
 , m_localClasspath("/tmp") // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
@@ -28,26 +28,12 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory)
 , m_jvm(NULL)
 , m_env(NULL)
 , m_needsCompilation(true)
-, m_swigFactory(swigFactory)
 {
 
     stringstream ss;
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
-    JavaScriptOptions::ScriptOptionLinesParserLegacy scriptOptionsParser;
-
-    JavaScriptOptions::Extractor extractor(scriptOptionsParser, swigFactory);
-
-    DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
-
-    DBG_FUNC_CALL(cerr,setClasspath());
-
-    m_jvmOptions = std::move(extractor.moveJvmOptions());
-
-    for (set<string>::iterator it = extractor.getJarPaths().begin(); it != extractor.getJarPaths().end();
-         ++it) {
-        addJarToClasspath(*it);
-    }
+    parseScriptOptions(std::move(scriptOptionsParser));
 
     m_needsCompilation = checkNeedsCompilation();
     if (m_needsCompilation) {
@@ -61,6 +47,21 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory)
         if (m_needsCompilation) {
             DBG_FUNC_CALL(cerr,compileScript());
         }
+    }
+}
+
+void JavaVMImpl::parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser) {
+    JavaScriptOptions::Extractor extractor(*scriptOptionsParser);
+
+    DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));
+
+    DBG_FUNC_CALL(cerr,setClasspath());
+
+    m_jvmOptions = std::move(extractor.moveJvmOptions());
+
+    for (set<string>::iterator it = extractor.getJarPaths().begin(); it != extractor.getJarPaths().end();
+         ++it) {
+        addJarToClasspath(*it);
     }
 }
 

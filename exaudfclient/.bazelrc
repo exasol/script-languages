@@ -13,3 +13,16 @@ build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --
 build:no-tty --curses=no --color=no
 build:debug-build --sandbox_debug --config=verbose
 build:no-symlinks --symlink_prefix=/
+build:asan --strip=never
+build:asan --copt -fsanitize=address
+build:asan --copt -DADDRESS_SANITIZER
+build:asan --copt -O1
+build:asan --copt -g
+build:asan --copt -fno-omit-frame-pointer
+build:asan --linkopt -fsanitize=address
+build:asan -c dbg
+build:valgrind --copt -O1
+build:valgrind -c dbg
+build:valgrind --copt -g
+build:valgrind --strip=never
+build:valgrind --copt -DVALGRIND_ACTIVE

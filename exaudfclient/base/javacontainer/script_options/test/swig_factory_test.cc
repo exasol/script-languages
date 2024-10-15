@@ -1,4 +1,4 @@
-#include "base/javacontainer/test/cpp/swig_factory_test.h"
+#include "base/javacontainer/script_options/test/swig_factory_test.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
 
 #include <stdexcept>
@@ -13,9 +13,7 @@ public:
 class SWIGMetadataTest : public SWIGVMContainers::SWIGMetadataIf {
 
 public:
-    SWIGMetadataTest(const std::map<std::string, std::string> & moduleContent, const std::string & exceptionMsg)
-        : m_exceptionMsg(exceptionMsg)
-        , m_moduleContent(moduleContent) {}
+    SWIGMetadataTest(std::function<const char*(const char*)> callback): m_callback(callback)  {}
     virtual const char* databaseName() { throw NotImplemented("databaseName"); return nullptr;}
     virtual const char* databaseVersion() { throw NotImplemented("databaseVersion"); return nullptr;}
     virtual const char* scriptName() { throw NotImplemented("scriptName"); return nullptr;}
@@ -40,11 +38,7 @@ public:
         throw NotImplemented("connectionInformation"); return nullptr;
     }
     virtual const char* moduleContent(const char* name) {
-        auto it = m_moduleContent.find(std::string(name));
-        if (m_moduleContent.end() == it) {
-            throw std::invalid_argument("Script not found.");
-        }
-        return it->second.c_str();
+        return m_callback(name);
     }
     virtual const unsigned int inputColumnCount() { throw NotImplemented("inputColumnCount"); return 0;}
     virtual const char *inputColumnName(unsigned int col) {
@@ -94,35 +88,18 @@ public:
         return SWIGVMContainers::EXACTLY_ONCE;
     }
     virtual const bool isEmittedColumn(unsigned int col) { throw NotImplemented("isEmittedColumn"); return false;}
-    virtual const char* checkException() {
-        if (m_exceptionMsg.empty()) {
-            return nullptr;
-        }
-        return m_exceptionMsg.c_str();
-    }
+    virtual const char* checkException() { return nullptr;}
     virtual const char* pluginLanguageName() { throw NotImplemented("pluginLanguageName"); return nullptr;}
     virtual const char* pluginURI() { throw NotImplemented("pluginURI"); return nullptr;}
     virtual const char* outputAddress() { throw NotImplemented("outputAddress"); return nullptr;}
 
 private:
-    std::string m_exceptionMsg;
-
-    std::map<std::string, std::string> m_moduleContent;
+    std::function<const char*(const char*)> m_callback;
 };
 
-
-
-SwigFactoryTestImpl::SwigFactoryTestImpl() {}
-
-
-void SwigFactoryTestImpl::addModule(const std::string key, const std::string script) {
-    m_moduleContent.insert(std::make_pair(key, script));
-}
-
-void SwigFactoryTestImpl::setException(const std::string msg) {
-    m_exceptionMsg = msg;
-}
+SwigFactoryTestImpl::SwigFactoryTestImpl(std::function<const char*(const char*)> callback)
+: m_callback(callback) {}
 
 SWIGVMContainers::SWIGMetadataIf* SwigFactoryTestImpl::makeSwigMetadata() {
-    return new SWIGMetadataTest(m_moduleContent, m_exceptionMsg);
+    return new SWIGMetadataTest(m_callback);
 }

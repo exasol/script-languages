@@ -6,6 +6,7 @@ namespace SWIGVMContainers {
 struct SWIGMetadataIf;
 
 struct SwigFactory {
+    virtual ~SwigFactory() {};
 
     virtual SWIGMetadataIf* makeSwigMetadata() = 0;
 

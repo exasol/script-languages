@@ -8,11 +8,10 @@
 
 namespace SWIGVMContainers {
 
-struct SwigFactory;
-
 namespace JavaScriptOptions {
 
 struct ScriptOptionsParser {
+    virtual ~ScriptOptionsParser() {};
     /*
     Passes the script code for parsing to the parser. The parser might modify the script code, because it will remove
     known options.
@@ -42,7 +41,7 @@ struct ScriptOptionsParser {
      Searches for the "%import" options and embeds the respective imported script code at the same location as
      the option in the script code.
     */
-    virtual void extractImportScripts(SwigFactory & swigFactory) = 0;
+    virtual void extractImportScripts() = 0;
 
     /*
      Returns the (eventually modified) script code.

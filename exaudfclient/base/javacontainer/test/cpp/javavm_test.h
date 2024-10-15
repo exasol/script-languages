@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <memory>
 
 struct JavaVMInternalStatus {
     std::string m_exaJavaPath;
@@ -21,12 +22,12 @@ class JavaVMTest {
     public:
         JavaVMTest(std::string scriptCode);
 
-        JavaVMTest(std::string scriptCode, SwigFactoryTestImpl & swigFactory);
+        JavaVMTest(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl> swigFactory);
 
         const JavaVMInternalStatus& getJavaVMInternalStatus() {return javaVMInternalStatus;}
 
     private:
-        void run(std::string scriptCode, SwigFactoryTestImpl & swigFactory);
+        void run(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl> swigFactory);
     private:
         JavaVMInternalStatus javaVMInternalStatus;
 };

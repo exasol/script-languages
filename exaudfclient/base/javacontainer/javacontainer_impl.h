@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <memory>
 
 #include "base/exaudflib/vm/swig_vm.h"
 #include <jni.h>
@@ -14,10 +15,18 @@ class JavaVMTest;
 
 namespace SWIGVMContainers {
 
+namespace JavaScriptOptions {
+    struct ScriptOptionsParser;
+}
+
 class JavaVMImpl {
     public:
         friend class ::JavaVMTest;
-        JavaVMImpl(bool checkOnly, bool noJNI, SwigFactory& swigFactory);
+        /*
+         * scriptOptionsParser: JavaVMImpl takes ownership of ScriptOptionsParser pointer.
+         */
+        JavaVMImpl(bool checkOnly, bool noJNI,
+                    std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
@@ -37,6 +46,7 @@ class JavaVMImpl {
         void throwException(const std::string& ex);
         void setJvmOptions();
         void addJarToClasspath(const std::string& path);
+        void parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
         bool m_checkOnly;
         std::string m_exaJavaPath;
         std::string m_localClasspath;
@@ -48,7 +58,6 @@ class JavaVMImpl {
         JavaVM *m_jvm;
         JNIEnv *m_env;
         bool m_needsCompilation;
-        SwigFactory& m_swigFactory;
 };
 
 } //namespace SWIGVMContainers

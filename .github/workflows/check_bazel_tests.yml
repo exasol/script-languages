@@ -6,38 +6,84 @@ on:
       - master
   pull_request:
 
-
+env:
+  USE_BAZEL_VERSION: 7.2.1
+  UDF_CLIENT_ENV_FILE: /tmp/.udf_client_env
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    env:
-      USE_BAZEL_VERSION: 7.2.1
+    runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Search for duplicated error codes
+        run: bash find_duplicate_error_codes.sh
 
+      - name: Install UDF Client Dependencies
+        run: |
+          sudo bash scripts/installUdfClientDeps.sh "$UDF_CLIENT_ENV_FILE"
+      - name: Build
+        run: |
+          source "$UDF_CLIENT_ENV_FILE"
+          bazel build --lockfile_mode=off --config no-tty -c dbg --config python --config java --config fast-binary --verbose_failures
+        working-directory: ./exaudfclient/
 
-    - name: Search for duplicated error codes
-      run: bash find_duplicate_error_codes.sh
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+     fail-fast: false
+     matrix:
+        include:
+          - test: "//base/javacontainer/test:ExaStackTraceCleanerTest"
+            name: "ExaStackTraceCleanerTest"
+          - test: "//base/javacontainer/test:javacontainer-test-legacy-parser"
+            name: "javacontainer-test-legacy-parser"
+          - test: "//base/javacontainer/test:javacontainer-test-ctpg-parser"
+            name: "javacontainer-test-ctpg-parser"
+          - test: "//base/javacontainer/script_options/..."
+            name: "javacontainer-script_options"
+          - test: "//base/exaudflib/test/..."
+            name: "exaudflib"
+          - test: "//base/script_options_parser/ctpg/..."
+            name: "script_options_parser_ctpg"
+          - test: "//base/script_options_parser/legacy/..."
+            name: "script_options_parser_legacy"
+          - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/javacontainer/test:javacontainer-test-legacy-parser"
+            name: "javacontainer-test-legacy-parser-with-valgrind"
+          - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/javacontainer/test:javacontainer-test-ctpg-parser"
+            name: "javacontainer-test-ctpg-parser-with-valgrind"
+          - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/script_options_parser/ctpg/..."
+            name: "script_options_parser_ctpg_with_valgrind"
+          - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/script_options_parser/legacy/..."
+            name: "script_options_parser_legacy_with_valgrind"
+          - test: "--config=asan //base/javacontainer/test:javacontainer-test-legacy-parser"
+            name: "javacontainer-test-legacy-parser-with-asan"
+          - test: "--config=asan //base/javacontainer/test:javacontainer-test-ctpg-parser"
+            name: "javacontainer-test-ctpg-parser-with-asan"
+          - test: "--config=asan //base/script_options_parser/ctpg/..."
+            name: "script_options_parser_ctpg_with_asan"
+          - test: "--config=asan //base/script_options_parser/legacy/..."
+            name: "script_options_parser_legacy_with_asan"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install JDK and ZMQ
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jdk libzmq3-dev valgrind
+      - name: Install bazel
+        run: | 
+          BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
+          BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
+          curl -L --output /tmp/"$BAZEL_PACKAGE_FILE" "$BAZEL_PACKAGE_URL"
+          sudo apt install -y "/tmp/$BAZEL_PACKAGE_FILE"
+          rm "/tmp/$BAZEL_PACKAGE_FILE"
+        env:
+          BAZEL_PACKAGE_VERSION: "7.2.1"
+      - name: Run tests
+        run: |
+          bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
+        working-directory: ./exaudfclient/
 
-    - name: Install bazel
-      run: | 
-        curl -L -o bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
-        chmod +x bazel
-    - name: Install JDK and ZMQ
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk libzmq3-dev
-    - name: Java Tests
-      run: |
-        bazel test //base/javacontainer/test/...
-      working-directory: ./exaudfclient/
-    - name: ExaudfLib Tests
-      run: |
-        bazel test //base/exaudflib/test/...
-      working-directory: ./exaudfclient/
-    - name: Script Options Parser Tests
-      run: |
-        bazel test //base/script_options_parser/...
-      working-directory: ./exaudfclient/
-
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: "${{ matrix.name }}"
+          path: /home/runner/.cache/bazel/_bazel_runner/*/execroot/_main/bazel-out/k8-dbg/testlogs/**/test.log

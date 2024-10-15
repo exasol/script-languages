@@ -5,6 +5,7 @@
 #include "base/javacontainer/test/cpp/swig_factory_test.h"
 #include <string.h>
 
+
 TEST(JavaContainer, basic_jar) {
     const std::string script_code = "%scriptclass com.exasol.udf_profiling.UdfProfiler;\n"
                                     "%jar base/javacontainer/test/test.jar;";
@@ -123,15 +124,15 @@ TEST(JavaContainer, simple_import_script) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_script_code =
         "class OtherClass {\n"
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script", other_script_code);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script", other_script_code);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
@@ -164,7 +165,7 @@ TEST(JavaContainer, import_script_with_recursion) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_script_code =
         "%import other_script;\n\n"
@@ -172,8 +173,8 @@ TEST(JavaContainer, import_script_with_recursion) {
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script", other_script_code);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script", other_script_code);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
@@ -205,7 +206,7 @@ TEST(JavaContainer, import_script_with_jvmoption) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_script_code =
         "%jvmoption -Dhttp.agent=\"ABC\";\n\n"
@@ -213,8 +214,8 @@ TEST(JavaContainer, import_script_with_jvmoption) {
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script", other_script_code);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script", other_script_code);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
@@ -247,7 +248,7 @@ TEST(JavaContainer, multiple_import_scripts) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_scipt_code_A =
         "%import other_script_B;\n\n"
@@ -266,10 +267,10 @@ TEST(JavaContainer, multiple_import_scripts) {
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script_A", other_scipt_code_A);
-    swigFactory.addModule("other_script_B", other_scipt_code_B);
-    swigFactory.addModule("other_script_C", other_scipt_code_C);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script_A", other_scipt_code_A);
+    swigFactory->addModule("other_script_B", other_scipt_code_B);
+    swigFactory->addModule("other_script_C", other_scipt_code_C);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
@@ -312,7 +313,7 @@ TEST(JavaContainer, import_script_with_mixed_options) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_script_code =
         "%jvmoption -Dsomeotheroption=\"DEF\";\n\n"
@@ -321,8 +322,8 @@ TEST(JavaContainer, import_script_with_mixed_options) {
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script", other_script_code);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script", other_script_code);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
@@ -355,7 +356,7 @@ TEST(JavaContainer, import_script_script_class_option_ignored) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_script_code =
         "%scriptclass com.exasol.udf_profiling.UdfProfiler;\n"
@@ -363,13 +364,16 @@ TEST(JavaContainer, import_script_script_class_option_ignored) {
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script", other_script_code);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script", other_script_code);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
         "package com.exasol;\r\n"
-        "%scriptclass com.exasol.udf_profiling.UdfProfiler;\n"
+#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser incorrectly keeps imported scriptclass options
+        "%scriptclass com.exasol.udf_profiling.UdfProfiler;"
+#endif
+        "\n"
         "class OtherClass {\n"
         "static void doSomething() {\n\n"
         " }\n"
@@ -398,7 +402,7 @@ TEST(JavaContainer, import_scripts_deep_recursion) {
         "	ctx.emit(\"Success!\");\n"
         " }\n"
         "}\n";
-    SwigFactoryTestImpl swigFactory;
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
 
     const std::string other_scipt_code_A =
         "%import other_script_B;\n\n"
@@ -424,11 +428,11 @@ TEST(JavaContainer, import_scripts_deep_recursion) {
         "static void doSomething() {\n\n"
         " }\n"
         "}\n";
-    swigFactory.addModule("other_script_A", other_scipt_code_A);
-    swigFactory.addModule("other_script_B", other_scipt_code_B);
-    swigFactory.addModule("other_script_C", other_scipt_code_C);
-    swigFactory.addModule("other_script_D", other_scipt_code_D);
-    JavaVMTest vm(script_code, swigFactory);
+    swigFactory->addModule("other_script_A", other_scipt_code_A);
+    swigFactory->addModule("other_script_B", other_scipt_code_B);
+    swigFactory->addModule("other_script_C", other_scipt_code_C);
+    swigFactory->addModule("other_script_D", other_scipt_code_D);
+    JavaVMTest vm(script_code, std::move(swigFactory));
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =

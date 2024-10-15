@@ -9,20 +9,16 @@ namespace JavaScriptOptions {
 
 class Keywords {
     public:
-        Keywords()
-            : m_jarKeyword("%jar")
-            , m_scriptClassKeyword("%scriptclass")
-            , m_importKeyword("%import")
-            , m_jvmOptionKeyword("%jvmoption") {}
-        const std::string & jarKeyword() { return m_jarKeyword; }
+        Keywords(bool withScriptOptionsPrefix);
         const std::string & scriptClassKeyword() { return m_scriptClassKeyword; }
         const std::string & importKeyword() { return m_importKeyword; }
-        const std::string & jvmOptionKeyword() { return m_jvmOptionKeyword; }
+        const std::string & jvmKeyword() { return m_jvmKeyword; }
+        const std::string & jarKeyword() { return m_jarKeyword; }
     private:
         std::string m_jarKeyword;
         std::string m_scriptClassKeyword;
         std::string m_importKeyword;
-        std::string m_jvmOptionKeyword;
+        std::string m_jvmKeyword;
 };
 
 } //namespace JavaScriptOptions
