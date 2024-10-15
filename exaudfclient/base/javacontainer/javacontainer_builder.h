@@ -2,12 +2,11 @@
 #define JAVACONTAINER_BUILDER_H
 
 #include <memory>
+#include "base/javacontainer/javacontainer.h"
 
 #ifdef ENABLE_JAVA_VM
 
 namespace SWIGVMContainers {
-
-class JavaVMach;
 
 namespace JavaScriptOptions {
 
@@ -24,7 +23,7 @@ class JavaContainerBuilder {
         JavaVMach* build();
 
     private:
-        std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> m_parser;
+        bool m_useCtpgParser;
 };
 
 } //namespace SWIGVMContainers
