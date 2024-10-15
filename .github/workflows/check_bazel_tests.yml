@@ -19,7 +19,7 @@ jobs:
 
       - name: Install UDF Client Dependencies
         run: |
-          bash scripts/installUdfClientDeps.sh "$UDF_CLIENT_ENV_FILE"
+          sudo bash scripts/installUdfClientDeps.sh "$UDF_CLIENT_ENV_FILE"
       - name: Build
         run: |
           source "$UDF_CLIENT_ENV_FILE"
@@ -66,7 +66,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install UDF Client Dependencies
         run: |
-          bash scripts/installUdfClientDeps.sh "$UDF_CLIENT_ENV_FILE"
+          sudo bash scripts/installUdfClientDeps.sh "$UDF_CLIENT_ENV_FILE"
       - name: Run tests
         run: |
           source "$UDF_CLIENT_ENV_FILE"
