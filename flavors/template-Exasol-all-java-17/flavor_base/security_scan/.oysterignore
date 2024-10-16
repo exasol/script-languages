@@ -1,0 +1,2 @@
+#ignore false positive for CURL, the underlying Ubuntu package already includes a fix for this CVE
+CVE-2022-27774
