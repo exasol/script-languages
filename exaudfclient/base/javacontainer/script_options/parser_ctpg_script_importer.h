@@ -16,6 +16,8 @@ namespace JavaScriptOptions {
 
 namespace CTPG {
 
+
+
 class ScriptImporter {
 
     public:
@@ -24,16 +26,29 @@ class ScriptImporter {
         void importScript(std::string & scriptCode, ExecutionGraph::OptionsLineParser::CTPG::options_map_t & options);
 
     private:
+         struct ReplacedScripts {
+            ReplacedScripts(ReplacedScripts&&) = default;
+            std::string script;
+            size_t origPos;
+            size_t origLen;
+        };
+
+    private:
         void importScript(std::string & scriptCode,
                             ExecutionGraph::OptionsLineParser::CTPG::options_map_t & options,
                             const size_t recursionDepth);
          const char* findImportScript(const std::string & scriptKey);
+
+         void replaceScripts(const ExecutionGraph::OptionsLineParser::CTPG::options_map_t::mapped_type & option_values,
+                             const size_t recursionDepth,
+                             std::vector<ReplacedScripts> &result);
+
     private:
         Checksum m_importedScriptChecksums;
         SwigFactory & m_swigFactory;
         std::unique_ptr<SWIGMetadataIf> m_metaData;
         Keywords & m_keywords;
-        //The empirical maximal value for recursion depth is ~26000. So we choose 20000 to have a certain buffer.
+        //The empirical maximal value for recursion depth is ~18000. So we choose 10000 to have a certain buffer.
         const size_t cMaxRecursionDepth = 20000;
 };
 
