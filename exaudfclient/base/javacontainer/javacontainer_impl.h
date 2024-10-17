@@ -41,9 +41,6 @@ class JavaVMImpl {
         void addLocalClasspath();
         bool checkNeedsCompilation();
         void setClasspath();
-        void throwException(const char *message);
-        void throwException(const std::exception& ex);
-        void throwException(const std::string& ex);
         void setJvmOptions();
         void addJarToClasspath(const std::string& path);
         void parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
@@ -53,7 +50,6 @@ class JavaVMImpl {
         std::string m_scriptCode;
         std::string m_exaJarPath;
         std::string m_classpath;
-        bool m_exceptionThrown;
         std::vector<std::string> m_jvmOptions;
         JavaVM *m_jvm;
         JNIEnv *m_env;
