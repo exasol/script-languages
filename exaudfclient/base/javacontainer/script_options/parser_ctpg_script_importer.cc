@@ -27,6 +27,30 @@ void ScriptImporter::importScript(std::string & scriptCode,
     importScript(scriptCode, options, 0);
 }
 
+void ScriptImporter::replaceScripts(const ExecutionGraph::OptionsLineParser::CTPG::options_map_t::mapped_type & option_values,
+                    const size_t recursionDepth,
+                    std::vector<ReplacedScripts> &result) {
+    for (const auto & option: option_values) {
+        const char *importScriptCode = findImportScript(option.value);
+        std::string importScriptCodeStr;
+        if (m_importedScriptChecksums.addScript(importScriptCode) ) {
+            // Script has not been imported yet
+            // If this imported script contains %import statements
+            // they will be resolved in the next recursion.
+            ctpg_parser::options_map_t newOptions;
+            try {
+                ExecutionGraph::OptionsLineParser::CTPG::parseOptions(importScriptCode, newOptions);
+            } catch(const ExecutionGraph::OptionParserException & ex) {
+                Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1630");
+            }
+            importScriptCodeStr.assign(importScriptCode);
+            importScript(importScriptCodeStr, newOptions, recursionDepth + 1);
+        }
+        ReplacedScripts replacedScript = {.script = std::move(importScriptCodeStr), .origPos = option.idx_in_source, .origLen = option.size };
+        result.push_back(std::move(replacedScript));
+    }
+}
+
 void ScriptImporter::importScript(std::string & scriptCode,
                                     ctpg_parser::options_map_t & options,
                                     const size_t recursionDepth) {
@@ -43,35 +67,11 @@ void ScriptImporter::importScript(std::string & scriptCode,
                                   {
                                       return first.idx_in_source < second.idx_in_source;
                                   });
-        struct ReplacedScripts {
-            ReplacedScripts(ReplacedScripts&&) = default;
-            std::string script;
-            size_t origPos;
-            size_t origLen;
-        };
         std::vector<ReplacedScripts> replacedScripts;
         replacedScripts.reserve(optionIt->second.size());
         //In order to continue compatibility with legacy implementation we must collect import scripts in forward direction
         //but then replace in reverse direction (in order to keep consistency of positions)
-        for (const auto & option: optionIt->second) {
-            const char *importScriptCode = findImportScript(option.value);
-            std::string importScriptCodeStr;
-            if (m_importedScriptChecksums.addScript(importScriptCode) ) {
-                // Script has not been imported yet
-                // If this imported script contains %import statements
-                // they will be resolved in the next recursion.
-                ctpg_parser::options_map_t newOptions;
-                try {
-                    ExecutionGraph::OptionsLineParser::CTPG::parseOptions(importScriptCode, newOptions);
-                } catch(const ExecutionGraph::OptionParserException & ex) {
-                    Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1630");
-                }
-                importScriptCodeStr.assign(importScriptCode);
-                importScript(importScriptCodeStr, newOptions, recursionDepth + 1);
-            }
-            ReplacedScripts replacedScript = {.script = std::move(importScriptCodeStr), .origPos = option.idx_in_source, .origLen = option.size };
-            replacedScripts.push_back(std::move(replacedScript));
-        }
+        replaceScripts(optionIt->second, recursionDepth, replacedScripts);
         //Now replace the imported script bodies from end to start. Doing it in forward order would invalidate the offsets of later import scripts.
         for (auto optionIt = replacedScripts.rbegin(); optionIt != replacedScripts.rend(); optionIt++) {
             scriptCode.replace(optionIt->origPos, optionIt->origLen, optionIt->script);
