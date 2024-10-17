@@ -15,8 +15,8 @@ TEST(JavaContainerPerformance, large_inline_java_udf_test) {
         "class JVMOPTION_TEST_WITH_SPACE {\n"
         "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n";
 
-    for (uint32_t idxLine(0); idxLine < NumInlineJavaLines; idxLine++) {
-        for (uint32_t idxWord(0); idxWord < NumInlineJavaWordsPerLine; idxWord++)
+    for (uint32_t idxLine(0); idxLine < NumInlineJavaLines; ++idxLine) {
+        for (uint32_t idxWord(0); idxWord < NumInlineJavaWordsPerLine; ++idxWord)
             script_code.append("somecode ");
         script_code.append("\n");
     }
@@ -31,8 +31,8 @@ TEST(JavaContainerPerformance, large_inline_single_line_full_java_udf_test) {
         "class JVMOPTION_TEST_WITH_SPACE {"
         "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {";
 
-    for (uint32_t idxLine(0); idxLine < NumInlineJavaLines; idxLine++) {
-        for (uint32_t idxWord(0); idxWord < NumInlineJavaWordsPerLine; idxWord++)
+    for (uint32_t idxLine(0); idxLine < NumInlineJavaLines; ++idxLine) {
+        for (uint32_t idxWord(0); idxWord < NumInlineJavaWordsPerLine; ++idxWord)
             script_code.append("somecode ");
 
     }
@@ -47,8 +47,8 @@ TEST(JavaContainerPerformance, large_inline_single_line_slim_java_udf_test) {
         "class JVMOPTION_TEST_WITH_SPACE {"
         "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {";
 
-    for (uint32_t idxLine(0); idxLine < NumInlineJavaLines / 10; idxLine++) {
-        for (uint32_t idxWord(0); idxWord < NumInlineJavaWordsPerLine / 10; idxWord++)
+    for (uint32_t idxLine(0); idxLine < NumInlineJavaLines / 10; ++idxLine) {
+        for (uint32_t idxWord(0); idxWord < NumInlineJavaWordsPerLine / 10; ++idxWord)
             script_code.append("someco%de ; \\t");
 
     }
