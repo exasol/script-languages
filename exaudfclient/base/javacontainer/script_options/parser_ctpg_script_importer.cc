@@ -77,13 +77,12 @@ void ScriptImporter::importScript(std::string & scriptCode,
                                   {
                                       return first.idx_in_source < second.idx_in_source;
                                   });
-        std::vector<CollectedScript> collectedScript;
-        collectedScript.reserve(optionIt->second.size());
-        //In order to continue compatibility with legacy implementation we must collect import scripts in forward direction
-        //but then replace in reverse direction (in order to keep consistency of positions)
-        collectImportScripts(optionIt->second, recursionDepth, collectedScript);
-        //Now replace the imported script bodies
-        replaceImportScripts(scriptCode, collectedScript);
+        std::vector<CollectedScript> collectedScripts;
+        collectedScripts.reserve(optionIt->second.size());
+        //In order to continue compatibility with legacy implementation
+        //we must collect import scripts in forward direction but then replace in reverse direction.
+        collectImportScripts(optionIt->second, recursionDepth, collectedScripts);
+        replaceImportScripts(scriptCode, collectedScripts);
     }
 }
 
