@@ -40,9 +40,9 @@ class ScriptImporter {
                             const size_t recursionDepth);
          const char* findImportScript(const std::string & scriptKey);
 
-         void replaceScripts(const OptionValues_t & option_values,
-                             const size_t recursionDepth,
-                             std::vector<ReplacedScripts> &result);
+         void collectImportScripts(const OptionValues_t & option_values,
+                                   const size_t recursionDepth,
+                                   std::vector<ReplacedScripts> &result);
 
         Checksum m_importedScriptChecksums;
         SwigFactory & m_swigFactory;

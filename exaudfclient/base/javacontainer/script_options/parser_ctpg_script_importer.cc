@@ -27,9 +27,9 @@ void ScriptImporter::importScript(std::string & scriptCode,
     importScript(scriptCode, options, 0);
 }
 
-void ScriptImporter::replaceScripts(const ScriptImporter::OptionValues_t & option_values,
-                    const size_t recursionDepth,
-                    std::vector<ReplacedScripts> &result) {
+void ScriptImporter::collectImportScripts(const ScriptImporter::OptionValues_t & option_values,
+                                          const size_t recursionDepth,
+                                          std::vector<ReplacedScripts> &result) {
     for (const auto & option: option_values) {
         const char *importScriptCode = findImportScript(option.value);
         std::string importScriptCodeStr;
@@ -71,7 +71,7 @@ void ScriptImporter::importScript(std::string & scriptCode,
         replacedScripts.reserve(optionIt->second.size());
         //In order to continue compatibility with legacy implementation we must collect import scripts in forward direction
         //but then replace in reverse direction (in order to keep consistency of positions)
-        replaceScripts(optionIt->second, recursionDepth, replacedScripts);
+        collectImportScripts(optionIt->second, recursionDepth, replacedScripts);
         //Now replace the imported script bodies from end to start. Doing it in forward order would invalidate the offsets of later import scripts.
         for (auto optionIt = replacedScripts.rbegin(); optionIt != replacedScripts.rend(); optionIt++) {
             scriptCode.replace(optionIt->origPos, optionIt->origLen, optionIt->script);
