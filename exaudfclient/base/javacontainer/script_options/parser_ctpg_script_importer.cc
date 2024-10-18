@@ -29,7 +29,7 @@ void ScriptImporter::importScript(std::string & scriptCode,
 
 void ScriptImporter::collectImportScripts(const ScriptImporter::OptionValues_t & option_values,
                                           const size_t recursionDepth,
-                                          std::vector<ReplacedScripts> &result) {
+                                          std::vector<CollectedScript> &result) {
     for (const auto & option: option_values) {
         const char *importScriptCode = findImportScript(option.value);
         std::string importScriptCodeStr;
@@ -46,7 +46,7 @@ void ScriptImporter::collectImportScripts(const ScriptImporter::OptionValues_t &
             importScriptCodeStr.assign(importScriptCode);
             importScript(importScriptCodeStr, newOptions, recursionDepth + 1);
         }
-        ReplacedScripts replacedScript = {.script = std::move(importScriptCodeStr), .origPos = option.idx_in_source, .origLen = option.size };
+        CollectedScript replacedScript = {.script = std::move(importScriptCodeStr), .origPos = option.idx_in_source, .origLen = option.size };
         result.push_back(std::move(replacedScript));
     }
 }
@@ -67,13 +67,13 @@ void ScriptImporter::importScript(std::string & scriptCode,
                                   {
                                       return first.idx_in_source < second.idx_in_source;
                                   });
-        std::vector<ReplacedScripts> replacedScripts;
-        replacedScripts.reserve(optionIt->second.size());
+        std::vector<CollectedScript> CollectedScript;
+        CollectedScript.reserve(optionIt->second.size());
         //In order to continue compatibility with legacy implementation we must collect import scripts in forward direction
         //but then replace in reverse direction (in order to keep consistency of positions)
-        collectImportScripts(optionIt->second, recursionDepth, replacedScripts);
+        collectImportScripts(optionIt->second, recursionDepth, CollectedScript);
         //Now replace the imported script bodies from end to start. Doing it in forward order would invalidate the offsets of later import scripts.
-        for (auto optionIt = replacedScripts.rbegin(); optionIt != replacedScripts.rend(); optionIt++) {
+        for (auto optionIt = CollectedScript.rbegin(); optionIt != CollectedScript.rend(); optionIt++) {
             scriptCode.replace(optionIt->origPos, optionIt->origLen, optionIt->script);
         }
     }

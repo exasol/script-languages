@@ -26,8 +26,8 @@ class ScriptImporter {
         void importScript(std::string & scriptCode, ExecutionGraph::OptionsLineParser::CTPG::options_map_t & options);
 
     private:
-         struct ReplacedScripts {
-            ReplacedScripts(ReplacedScripts&&) = default;
+         struct CollectedScript {
+            CollectedScript(CollectedScript&&) = default;
             std::string script;
             size_t origPos;
             size_t origLen;
@@ -42,7 +42,7 @@ class ScriptImporter {
 
          void collectImportScripts(const OptionValues_t & option_values,
                                    const size_t recursionDepth,
-                                   std::vector<ReplacedScripts> &result);
+                                   std::vector<CollectedScript> &result);
 
         Checksum m_importedScriptChecksums;
         SwigFactory & m_swigFactory;
