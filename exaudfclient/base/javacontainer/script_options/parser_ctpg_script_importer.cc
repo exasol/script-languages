@@ -27,7 +27,7 @@ void ScriptImporter::importScript(std::string & scriptCode,
     importScript(scriptCode, options, 0);
 }
 
-void ScriptImporter::replaceScripts(const ExecutionGraph::OptionsLineParser::CTPG::options_map_t::mapped_type & option_values,
+void ScriptImporter::replaceScripts(const ScriptImporter::OptionValues_t & option_values,
                     const size_t recursionDepth,
                     std::vector<ReplacedScripts> &result) {
     for (const auto & option: option_values) {
@@ -82,13 +82,15 @@ void ScriptImporter::importScript(std::string & scriptCode,
 const char* ScriptImporter::findImportScript(const std::string & scriptKey) {
     if (!m_metaData) {
         m_metaData.reset(m_swigFactory.makeSwigMetadata());
-        if (!m_metaData)
+        if (!m_metaData) {
             throw std::runtime_error("F-UDF-CL-SL-JAVA-1631: Failure while importing scripts");
+        }
     }
     const char *importScriptCode = m_metaData->moduleContent(scriptKey.c_str());
     const char *exception = m_metaData->checkException();
-    if (exception)
+    if (exception) {
         throw std::runtime_error("F-UDF-CL-SL-JAVA-1632: " + std::string(exception));
+    }
     return importScriptCode;
 }
 

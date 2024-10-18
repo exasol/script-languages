@@ -186,12 +186,10 @@ void parse(std::string&& code, options_type& result) {
         parse_options{}.set_skip_whitespace(false),
         buffers::string_buffer(std::move(code)),
         error_buffer);
-    if (res.has_value())
-    {
+    if (res.has_value()) {
         result = res.value();
     }
-    else
-    {
+    else {
         std::stringstream ss;
         ss << "Error parsing script options: " << error_buffer.str();
         throw OptionParserException(ss.str());
@@ -205,7 +203,7 @@ struct LinePositions {
     size_t mEndPos;
 };
 
-inline std::optional<const LinePositions> getNextLine(const size_t current_pos, const std::string & scriptCode) {
+inline std::optional<LinePositions> getNextLine(const size_t current_pos, const std::string & scriptCode) {
     /**
      * Find first of occurence of '%', starting search from position 'current_pos'.
      * If no '%' is found, return an empty result.
@@ -218,13 +216,16 @@ inline std::optional<const LinePositions> getNextLine(const size_t current_pos, 
      */
     std::optional<LinePositions> retVal;
     const size_t new_option_start_pos = scriptCode.find_first_of("%", current_pos);
-    if (new_option_start_pos == std::string::npos)
+    if (new_option_start_pos == std::string::npos) {
         return retVal;
+    }
     size_t line_start_pos = scriptCode.find_last_of("\r\n", new_option_start_pos);
-    if (std::string::npos == line_start_pos)
+    if (std::string::npos == line_start_pos) {
         line_start_pos = 0;
-    else
+    }
+    else {
         line_start_pos++;
+    }
 
     const size_t line_end_pos = scriptCode.find_first_of("\r\n", line_start_pos);
     retVal = LinePositions{ .mStartPos = line_start_pos, .mEndPos = line_end_pos};
@@ -234,30 +235,25 @@ inline std::optional<const LinePositions> getNextLine(const size_t current_pos, 
 void parseOptions(const std::string& code, options_map_t & result) {
 
     size_t current_pos = 0;
+    std::optional<LinePositions> currentLinePositions = getNextLine(current_pos, code);
+    while (currentLinePositions) {
 
-    do {
-        const std::optional<const LinePositions> currentLinePositions = getNextLine(current_pos, code);
-        if (!currentLinePositions)
-            break;
         std::string line = code.substr(currentLinePositions->mStartPos, currentLinePositions->mEndPos);
         options_type parser_result;
         ParserInternals::parse(std::move(line), parser_result);
-        for (const auto & option: parser_result)
-        {
+        for (const auto & option: parser_result) {
             ScriptOption entry = {
                 .value = option.value,
                 .idx_in_source = currentLinePositions->mStartPos + option.start.column - 1,
                 .size = option.end.column - option.start.column + 1
             };
             auto it_in_result = result.find(option.key);
-            if (it_in_result == result.end())
-            {
+            if (it_in_result == result.end()) {
                 options_t new_options;
                 new_options.push_back(entry);
                 result.insert(std::make_pair(option.key, new_options));
             }
-            else
-            {
+            else {
                 it_in_result->second.push_back(entry);
             }
         }
@@ -265,7 +261,9 @@ void parseOptions(const std::string& code, options_map_t & result) {
             break;
         }
         current_pos =  currentLinePositions->mEndPos + 1;
-    } while(true);
+
+        currentLinePositions = getNextLine(current_pos, code);
+    }
 }
 
 
