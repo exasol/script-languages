@@ -186,12 +186,10 @@ void parse(std::string&& code, options_type& result) {
         parse_options{}.set_skip_whitespace(false),
         buffers::string_buffer(std::move(code)),
         error_buffer);
-    if (res.has_value())
-    {
+    if (res.has_value()) {
         result = res.value();
     }
-    else
-    {
+    else {
         std::stringstream ss;
         ss << "Error parsing script options: " << error_buffer.str();
         throw OptionParserException(ss.str());
@@ -200,48 +198,72 @@ void parse(std::string&& code, options_type& result) {
 
 } //namespace ParserInternals
 
+struct LinePositions {
+    size_t mStartPos;
+    size_t mEndPos;
+};
+
+inline std::optional<LinePositions> getNextLine(const size_t current_pos, const std::string & scriptCode) {
+    /**
+     * Find first of occurence of '%', starting search from position 'current_pos'.
+     * If no '%' is found, return an empty result.
+     * If '%' is found, search backwards from '%' for '\n' or \r':
+     *  1. If not found, '%' was found in the first line. Then we can set 'new_option_start_pos'=0
+     *  2. If found, set new_option_start_pos to position 1 char behind pos of found '\n' or '\r'.
+     * Then search forward for next occurence of '\n' or \r' and assign to var 'line_end_pos':
+        1. If not found, 'line_end_pos' will get assigned std::string::npos (std::string::substr(...,npos), returns substring until end of string
+        2. If found, 'line_end_pos' will assigned to position of line end of line where '%' was found
+     */
+    std::optional<LinePositions> retVal;
+    const size_t new_option_start_pos = scriptCode.find_first_of("%", current_pos);
+    if (new_option_start_pos == std::string::npos) {
+        return retVal;
+    }
+    size_t line_start_pos = scriptCode.find_last_of("\r\n", new_option_start_pos);
+    if (std::string::npos == line_start_pos) {
+        line_start_pos = 0;
+    }
+    else {
+        line_start_pos++;
+    }
+
+    const size_t line_end_pos = scriptCode.find_first_of("\r\n", line_start_pos);
+    retVal = LinePositions{ .mStartPos = line_start_pos, .mEndPos = line_end_pos};
+    return retVal;
+}
+
 void parseOptions(const std::string& code, options_map_t & result) {
 
     size_t current_pos = 0;
+    std::optional<LinePositions> currentLinePositions = getNextLine(current_pos, code);
+    while (currentLinePositions) {
 
-    do {
-        const size_t new_option_start_pos = code.find_first_of("%", current_pos);
-        if (new_option_start_pos == std::string::npos)
-            break;
-        current_pos = code.find_last_of("\r\n", new_option_start_pos);
-        if (std::string::npos == current_pos)
-            current_pos = 0;
-        else
-            current_pos++;
-
-        const size_t new_pos = code.find_first_of("\r\n", current_pos);
-        std::string line = code.substr(current_pos, new_pos);
+        std::string line = code.substr(currentLinePositions->mStartPos, currentLinePositions->mEndPos);
         options_type parser_result;
         ParserInternals::parse(std::move(line), parser_result);
-        for (const auto & option: parser_result)
-        {
+        for (const auto & option: parser_result) {
             ScriptOption entry = {
                 .value = option.value,
-                .idx_in_source = current_pos + option.start.column - 1,
+                .idx_in_source = currentLinePositions->mStartPos + option.start.column - 1,
                 .size = option.end.column - option.start.column + 1
             };
             auto it_in_result = result.find(option.key);
-            if (it_in_result == result.end())
-            {
+            if (it_in_result == result.end()) {
                 options_t new_options;
                 new_options.push_back(entry);
                 result.insert(std::make_pair(option.key, new_options));
             }
-            else
-            {
+            else {
                 it_in_result->second.push_back(entry);
             }
         }
-        if (new_pos == std::string::npos) {
+        if (currentLinePositions->mEndPos == std::string::npos) {
             break;
         }
-        current_pos =  new_pos + 1;
-    } while(true);
+        current_pos =  currentLinePositions->mEndPos + 1;
+
+        currentLinePositions = getNextLine(current_pos, code);
+    }
 }
 
 
