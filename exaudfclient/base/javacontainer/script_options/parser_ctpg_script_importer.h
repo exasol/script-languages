@@ -44,6 +44,9 @@ class ScriptImporter {
                                    const size_t recursionDepth,
                                    std::vector<CollectedScript> &result);
 
+         void replaceImportScripts(std::string & scriptCode,
+                                   const std::vector<CollectedScript> &collectedImportScripts);
+
         Checksum m_importedScriptChecksums;
         SwigFactory & m_swigFactory;
         std::unique_ptr<SWIGMetadataIf> m_metaData;

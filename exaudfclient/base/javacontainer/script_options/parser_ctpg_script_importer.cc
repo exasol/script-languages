@@ -51,6 +51,16 @@ void ScriptImporter::collectImportScripts(const ScriptImporter::OptionValues_t &
     }
 }
 
+void ScriptImporter::replaceImportScripts(std::string & scriptCode,
+                                          const std::vector<CollectedScript> &collectedImportScripts) {
+    //Replace the imported script bodies from end to start.
+    //Doing it in forward order would invalidate the offsets of later import scripts.
+    for (auto optionIt = collectedImportScripts.crbegin(); optionIt != collectedImportScripts.crend(); optionIt++) {
+        scriptCode.replace(optionIt->origPos, optionIt->origLen, optionIt->script);
+    }
+}
+
+
 void ScriptImporter::importScript(std::string & scriptCode,
                                     ctpg_parser::options_map_t & options,
                                     const size_t recursionDepth) {
@@ -67,15 +77,13 @@ void ScriptImporter::importScript(std::string & scriptCode,
                                   {
                                       return first.idx_in_source < second.idx_in_source;
                                   });
-        std::vector<CollectedScript> CollectedScript;
-        CollectedScript.reserve(optionIt->second.size());
+        std::vector<CollectedScript> collectedScript;
+        collectedScript.reserve(optionIt->second.size());
         //In order to continue compatibility with legacy implementation we must collect import scripts in forward direction
         //but then replace in reverse direction (in order to keep consistency of positions)
-        collectImportScripts(optionIt->second, recursionDepth, CollectedScript);
-        //Now replace the imported script bodies from end to start. Doing it in forward order would invalidate the offsets of later import scripts.
-        for (auto optionIt = CollectedScript.rbegin(); optionIt != CollectedScript.rend(); optionIt++) {
-            scriptCode.replace(optionIt->origPos, optionIt->origLen, optionIt->script);
-        }
+        collectImportScripts(optionIt->second, recursionDepth, collectedScript);
+        //Now replace the imported script bodies
+        replaceImportScripts(scriptCode, collectedScript);
     }
 }
 
