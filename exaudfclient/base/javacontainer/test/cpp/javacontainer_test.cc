@@ -2,8 +2,11 @@
 #include "include/gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "base/javacontainer/test/cpp/javavm_test.h"
+#include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/test/cpp/swig_factory_test.h"
 #include <string.h>
+
+using ::testing::MatchesRegex;
 
 
 TEST(JavaContainer, basic_jar) {
@@ -22,6 +25,46 @@ TEST(JavaContainer, basic_jar) {
                                                             "-Djava.class.path=/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar",
                                                             "-XX:+UseSerialGC" };
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_jvmOptions, expectedJVMOptions);
+}
+
+TEST(JavaContainer, basic_jar_script_class_with_white_spaces) {
+    const std::string script_code = "%scriptclass com.exasol.udf_profiling.UdfProfiler\t    ;\n"
+                                    "%jar base/javacontainer/test/test.jar;";
+    JavaVMTest vm(script_code);
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, "\n");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/base/javacontainer/exaudf_deploy.jar");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar");
+    EXPECT_FALSE(vm.getJavaVMInternalStatus().m_needsCompilation);
+    const std::vector<std::string> expectedJVMOptions = { "-Dexasol.scriptclass=com.exasol.udf_profiling.UdfProfiler",
+                                                            "-Xms128m", "-Xmx128m", "-Xss512k",
+                                                            "-XX:ErrorFile=/tmp/hs_err_pid%p.log",
+                                                            "-Djava.class.path=/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar",
+                                                            "-XX:+UseSerialGC" };
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_jvmOptions, expectedJVMOptions);
+}
+
+
+TEST(JavaContainer, basic_jar_with_white_spaces) {
+    const std::string script_code = "%jar base/javacontainer/test/test.jar \t ;";
+
+#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser removes trailing white spaces.
+    JavaVMTest vm(script_code);
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar");
+#else
+    EXPECT_THROW({
+        try
+        {
+            JavaVMTest vm(script_code);
+        }
+        catch( const SWIGVMContainers::JavaVMach::exception& e )
+        {
+            EXPECT_THAT( e.what(), MatchesRegex("^.*Java VM cannot find 'base/javacontainer/test/test\\.jar \t ': No such file or directory$"));
+            throw;
+        }
+    }, SWIGVMContainers::JavaVMach::exception );
+#endif
 }
 
 
@@ -118,6 +161,47 @@ TEST(JavaContainer, quoted_jvm_option) {
 TEST(JavaContainer, simple_import_script) {
     const std::string script_code =
         "%import other_script;\n\n"
+        "%jvmoption -Dhttp.agent=\"ABC\";\n\n"
+        "class JVMOPTION_TEST {\n"
+        "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n"
+        "	ctx.emit(\"Success!\");\n"
+        " }\n"
+        "}\n";
+    auto swigFactory = std::make_unique<SwigFactoryTestImpl>();
+
+    const std::string other_script_code =
+        "class OtherClass {\n"
+        "static void doSomething() {\n\n"
+        " }\n"
+        "}\n";
+    swigFactory->addModule("other_script", other_script_code);
+    JavaVMTest vm(script_code, std::move(swigFactory));
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJavaPath, "/exaudf/base/javacontainer");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
+    const std::string expected_script_code =
+        "package com.exasol;\r\n"
+        "class OtherClass {\n"
+        "static void doSomething() {\n\n"
+        " }\n"
+        "}\n\n\n\n\n"
+        "class JVMOPTION_TEST {\n"
+        "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n"
+        "\tctx.emit(\"Success!\");\n"
+         " }\n}\n";
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_scriptCode, expected_script_code);
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_exaJarPath, "/exaudf/base/javacontainer/exaudf_deploy.jar");
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/tmp:/exaudf/base/javacontainer/exaudf_deploy.jar");
+    EXPECT_TRUE(vm.getJavaVMInternalStatus().m_needsCompilation);
+    const std::vector<std::string> expectedJVMOptions = {   "-Dhttp.agent=\"ABC\"", "-Xms128m", "-Xmx128m", "-Xss512k",
+                                                            "-XX:ErrorFile=/tmp/hs_err_pid%p.log",
+                                                            "-Djava.class.path=/tmp:/exaudf/base/javacontainer/exaudf_deploy.jar",
+                                                            "-XX:+UseSerialGC" };
+    EXPECT_EQ(vm.getJavaVMInternalStatus().m_jvmOptions, expectedJVMOptions);
+}
+
+TEST(JavaContainer, simple_import_script_with_white_space) {
+    const std::string script_code =
+        "%import other_script\t ;\n\n"
         "%jvmoption -Dhttp.agent=\"ABC\";\n\n"
         "class JVMOPTION_TEST {\n"
         "static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {\n\n"
