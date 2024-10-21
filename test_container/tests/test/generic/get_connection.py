@@ -48,6 +48,12 @@ class GetConnectionTest(udf.TestCase):
                 SELECT fn1.print_connection('FOO')
                 ''')
 
+    @requires('PRINT_CONNECTION_V2')
+    def test_print_existing_connection_v2(self):
+            rows = self.query('''
+                SELECT fn1.print_connection_v2('FOOCONN')
+                ''')
+            self.assertRowsEqual([('password', 'a', 'b', 'c')], rows)
 
 class GetConnectionAccessControlTest(udf.TestCase):
     def setUp(self):
