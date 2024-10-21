@@ -18,7 +18,7 @@ class JavaContainerBuilder {
     public:
         JavaContainerBuilder();
 
-        JavaContainerBuilder& useCtpgParser(const bool value);
+        JavaContainerBuilder& useCtpgParser();
 
         JavaVMach* build();
 

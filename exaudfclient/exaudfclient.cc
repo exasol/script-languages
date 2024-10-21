@@ -129,6 +129,9 @@ int main(int argc, char **argv) {
         cerr << "Usage: " << argv[0] << " <socket> lang=python|lang=r|lang=java|lang=streaming|lang=benchmark" << endl;
         return 1;
     }
+    const char* script_options_parser_env_val = ::getenv("SCRIPT_OPTIONS_PARSER_VERSION");
+    const bool useCtpgScriptOptionsParser = script_options_parser_env_val != 0 &&
+                                            ::strcmp(script_options_parser_env_val, "2") == 0;
 #endif
 
     if (::setenv("HOME", "/tmp", 1) == -1)
@@ -160,7 +163,11 @@ int main(int argc, char **argv) {
     } else if (strcmp(argv[2], "lang=java")==0)
     {
 #ifdef ENABLE_JAVA_VM
-        vmMaker = [&](){return SWIGVMContainers::JavaContainerBuilder().build();};
+        if (useCtpgScriptOptionsParser) {
+                vmMaker = [&](){return SWIGVMContainers::JavaContainerBuilder().useCtpgParser().build();};
+        } else {
+            vmMaker = [&](){return SWIGVMContainers::JavaContainerBuilder().build();};
+        }
 #else
         throw SWIGVM::exception("this exaudfclient has been compilied without Java support");
 #endif
