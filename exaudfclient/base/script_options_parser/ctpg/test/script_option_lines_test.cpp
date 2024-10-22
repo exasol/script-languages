@@ -84,7 +84,27 @@ TEST(ScriptOptionLinesTest, need_option_termination_character) {
         catch( const OptionParserException& e )
         {
             // and this tests that it has the correct message
-            EXPECT_STREQ( e.what(), "Error parsing script options: [1:17] PARSE: Syntax error: Unexpected '<eof>'\n");
+            EXPECT_STREQ( e.what(), "Error parsing script options at line 0: [1:17] PARSE: Syntax error: Unexpected '<eof>'\n");
+            throw;
+        }
+    }, OptionParserException );
+}
+
+TEST(ScriptOptionLinesTest, need_option_termination_character_second_line) {
+    const std::string code =
+        "%optionA myoption;\n"
+        "%optionB myoption\n"
+        "\nmycode";
+    options_map_t result;
+    EXPECT_THROW({
+        try
+        {
+            parseOptions(code, result);
+        }
+        catch( const OptionParserException& e )
+        {
+            // and this tests that it has the correct message
+            EXPECT_STREQ( e.what(), "Error parsing script options at line 1: [1:18] PARSE: Syntax error: Unexpected '<eof>'\n");
             throw;
         }
     }, OptionParserException );

@@ -190,9 +190,7 @@ void parse(std::string&& code, options_type& result) {
         result = res.value();
     }
     else {
-        std::stringstream ss;
-        ss << "Error parsing script options: " << error_buffer.str();
-        throw OptionParserException(ss.str());
+        throw OptionParserException(error_buffer.str());
     }
 }
 
@@ -238,9 +236,18 @@ void parseOptions(const std::string& code, options_map_t & result) {
     std::optional<LinePositions> currentLinePositions = getNextLine(current_pos, code);
     while (currentLinePositions) {
 
-        std::string line = code.substr(currentLinePositions->mStartPos, currentLinePositions->mEndPos);
+        std::string line = code.substr(currentLinePositions->mStartPos,
+                                        currentLinePositions->mEndPos - currentLinePositions->mStartPos);
         options_type parser_result;
-        ParserInternals::parse(std::move(line), parser_result);
+        try {
+            ParserInternals::parse(std::move(line), parser_result);
+        } catch(OptionParserException& ex) {
+            const std::string::difference_type lineNumber =
+                std::count(code.begin(), code.begin()+currentLinePositions->mStartPos, '\n');
+            std::stringstream ss;
+            ss << "Error parsing script options at line " << lineNumber << ": " << ex.what();
+            throw  OptionParserException(ss.str());
+        }
         for (const auto & option: parser_result) {
             ScriptOption entry = {
                 .value = option.value,
