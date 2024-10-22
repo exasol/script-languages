@@ -10,8 +10,8 @@ namespace SWIGVMContainers {
 JavaContainerBuilder::JavaContainerBuilder()
 : m_useCtpgParser(false) {}
 
-JavaContainerBuilder& JavaContainerBuilder::useCtpgParser(const bool useCtpgParser) {
-    m_useCtpgParser = useCtpgParser;
+JavaContainerBuilder& JavaContainerBuilder::useCtpgParser() {
+    m_useCtpgParser = true;
     return *this;
 }
 
