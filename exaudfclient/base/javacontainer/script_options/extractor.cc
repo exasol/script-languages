@@ -22,9 +22,16 @@ void Extractor::extract(std::string & scriptCode) {
     EXTR_DBG_FUNC_CALL(m_parser.parseForJvmOptions( [&](const std::string& value){
             EXTR_DBG_FUNC_CALL(m_converter.convertJvmOption(value));
         }));
-    EXTR_DBG_FUNC_CALL(m_parser.parseForExternalJars( [&](const std::string& value){
-            EXTR_DBG_FUNC_CALL(m_converter.convertExternalJar(value));
-        }));
+
+    if (m_parser.supportsEscapeSequences()) {
+        EXTR_DBG_FUNC_CALL(m_parser.parseForExternalJars( [&](const std::string& value){
+                EXTR_DBG_FUNC_CALL(m_converter.convertExternalJarWithEscapeSequences(value));
+            }));
+    } else {
+        EXTR_DBG_FUNC_CALL(m_parser.parseForExternalJars( [&](const std::string& value){
+                EXTR_DBG_FUNC_CALL(m_converter.convertExternalJar(value));
+            }));
+    }
     scriptCode = std::move(m_parser.getScriptCode());
 }
 

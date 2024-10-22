@@ -47,6 +47,11 @@ struct ScriptOptionsParser {
      Returns the (eventually modified) script code.
     */
     virtual std::string && getScriptCode() = 0;
+
+    /*
+     Returns true if parser supports escape sequences.
+     */
+    virtual bool supportsEscapeSequences() = 0;
 };
 
 } //namespace JavaScriptOptions

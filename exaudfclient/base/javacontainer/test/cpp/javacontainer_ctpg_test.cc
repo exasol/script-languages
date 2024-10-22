@@ -3,10 +3,15 @@
 #include "gmock/gmock.h"
 #include "base/javacontainer/test/cpp/javavm_test.h"
 #include "base/javacontainer/test/cpp/swig_factory_test.h"
+#include "base/javacontainer/javacontainer.h"
+#include "base/javacontainer/script_options/converter.h"
 #include <string.h>
 #include <memory>
 
+using ::testing::MatchesRegex;
+
 class JavaContainerEscapeSequenceTest : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
+
 
 TEST_P(JavaContainerEscapeSequenceTest, quoted_jvm_option) {
 const std::pair<std::string, std::string> option_value = GetParam();
@@ -106,4 +111,20 @@ TEST(JavaContainer, import_script_with_escaped_options) {
                                                             "-Djava.class.path=/tmp:/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/other_test.jar:base/javacontainer/test/test.jar",
                                                             "-XX:+UseSerialGC" };
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_jvmOptions, expectedJVMOptions);
+}
+
+TEST(JavaContainer, basic_jar_with_quoted_white_spaces) {
+    const std::string script_code = "%jar \"base/javacontainer/test/test.jar \t \";";
+
+    EXPECT_THROW({
+        try
+        {
+            JavaVMTest vm(script_code);
+        }
+        catch( const SWIGVMContainers::JavaVMach::exception& e )
+        {
+            EXPECT_THAT( e.what(), MatchesRegex("^.*Java VM cannot find 'base/javacontainer/test/test\\.jar \t ': No such file or directory$"));
+            throw;
+        }
+    }, SWIGVMContainers::JavaVMach::exception );
 }

@@ -7,6 +7,7 @@
 #define PRINT_ERROR_MESSAGE( os, error_code, error_message ) \
   (os) << (error_code) << ":" << error_message << std::endl
 
+#define NDEBUG 1
 #ifndef NDEBUG
 
 #define DBG_EXCEPTION( os, ex ) \

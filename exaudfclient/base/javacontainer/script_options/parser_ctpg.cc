@@ -3,6 +3,7 @@
 #include "base/utils/exceptions.h"
 #include "base/script_options_parser/exception.h"
 #include "base/swig_factory/swig_factory.h"
+#include "base/javacontainer/script_options/string_ops.h"
 #include <sstream>
 
 

@@ -21,6 +21,8 @@ class Converter {
     
         void convertExternalJar(const std::string & value);
 
+        void convertExternalJarWithEscapeSequences(const std::string & value);
+
         void convertScriptClassName(const std::string & value);
 
         void convertJvmOption(const std::string & value);

@@ -31,6 +31,8 @@ class ScriptOptionLinesParserCTPG : public ScriptOptionsParser {
 
         std::string && getScriptCode() override;
 
+        bool supportsEscapeSequences() override { return true; }
+
     private:
         void parse();
 

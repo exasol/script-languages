@@ -27,6 +27,15 @@ cc_test(
 )
 
 cc_test(
+    name = "javacontainer-test-converter",
+    srcs =  ["cpp/exaudf_wrapper.cc", "cpp/converter_test.cc"],
+    deps = [
+        "//base/javacontainer:javacontainer",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "javacontainer-test-ctpg-parser",
     srcs = JAVACONTAINER_TEST_SRCS + ["cpp/javacontainer_ctpg_test.cc"],
     deps = [
