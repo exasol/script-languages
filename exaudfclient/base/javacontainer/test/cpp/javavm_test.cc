@@ -18,8 +18,7 @@ JavaVMTest::JavaVMTest(std::string scriptCode, std::unique_ptr<SwigFactoryTestIm
 }
 
 void JavaVMTest::run(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl> swigFactory) {
-    char* script_code = ::strdup(scriptCode.c_str());
-    SWIGVMContainers::SWIGVM_params->script_code = script_code;
+    SWIGVMContainers::SWIGVM_params->script_code = scriptCode.data();
 #ifndef USE_CTPG_PARSER
     std::unique_ptr<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserLegacy> parser =
          std::make_unique<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserLegacy>(std::move(swigFactory));
@@ -35,6 +34,5 @@ void JavaVMTest::run(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl
     javaVMInternalStatus.m_classpath = javaVMImpl.m_classpath;
     javaVMInternalStatus.m_jvmOptions = javaVMImpl.m_jvmOptions;
     javaVMInternalStatus.m_needsCompilation = javaVMImpl.m_needsCompilation;
-    ::free(script_code);
 }
 
