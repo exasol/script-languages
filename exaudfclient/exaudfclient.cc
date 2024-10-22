@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     const char* script_options_parser_env_val = ::getenv("SCRIPT_OPTIONS_PARSER_VERSION");
-    const bool useCtpgScriptOptionsParser = script_options_parser_env_val != 0 &&
+    const bool useCtpgScriptOptionsParser = script_options_parser_env_val != nullptr &&
                                             ::strcmp(script_options_parser_env_val, "2") == 0;
 #endif
 
