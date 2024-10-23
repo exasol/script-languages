@@ -3,15 +3,10 @@
 #include "gmock/gmock.h"
 #include "base/javacontainer/test/cpp/javavm_test.h"
 #include "base/javacontainer/test/cpp/swig_factory_test.h"
-#include "base/javacontainer/javacontainer.h"
-#include "base/javacontainer/script_options/converter.h"
 #include <string.h>
 #include <memory>
 
-using ::testing::MatchesRegex;
-
 class JavaContainerEscapeSequenceTest : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
-
 
 TEST_P(JavaContainerEscapeSequenceTest, quoted_jvm_option) {
 const std::pair<std::string, std::string> option_value = GetParam();
