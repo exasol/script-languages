@@ -1,7 +1,8 @@
 
 #include "include/gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "base/javacontainer/script_options/converter.h"
+#include "base/javacontainer/script_options/converter_legacy.h"
+#include "base/javacontainer/script_options/converter_v2.h"
 
 using namespace SWIGVMContainers::JavaScriptOptions;
 
@@ -12,10 +13,9 @@ TEST_P(ConverterJarTest, jar) {
     const std::pair<std::string, std::set<std::string>> option_value = GetParam();
     const std::string jar_option_value = option_value.first;
 
-    Converter converter;
+    ConverterLegacy converter;
     converter.convertExternalJar(option_value.first);
     ASSERT_EQ(converter.getJarPaths(), option_value.second);
-
 }
 
 const std::vector<std::pair<std::string, std::set<std::string>>> jar_strings =
@@ -40,20 +40,16 @@ TEST_P(ConverterJarEscapeSequenceTest, jar) {
     const std::string jar_option_value = option_value.first;
     std::cerr << "DEBUG: " << jar_option_value << std::endl;
 
-    Converter converter;
-    converter.convertExternalJarWithEscapeSequences(option_value.first);
+    ConverterV2 converter;
+    converter.convertExternalJar(option_value.first);
     ASSERT_EQ(converter.getJarPaths(), option_value.second);
 }
 
 const std::vector<std::pair<std::string, std::set<std::string>>> jar_escape_sequences =
         {
             std::make_pair("test.jar:test2.jar", std::set<std::string>({"test.jar", "test2.jar"})),
-            std::make_pair("\"test.jar:test2.jar\"", std::set<std::string>({"test.jar", "test2.jar"})),
-            std::make_pair("\"test.jar:test2.jar", std::set<std::string>({"\"test.jar", "test2.jar"})),
-            std::make_pair("t\\:est.jar:test2.jar", std::set<std::string>({"t\\:est.jar", "test2.jar"})),
-            std::make_pair("\\:test.jar:test2.jar", std::set<std::string>({"\\:test.jar", "test2.jar"})),
-            std::make_pair("test.jar\\\\:test2.jar", std::set<std::string>({"test.jar\\\\", "test2.jar"})),
-            std::make_pair("test.jar\\\\\\:", std::set<std::string>({"test.jar\\\\\\:"})),
+            std::make_pair("\"test.jar:test2.jar\"", std::set<std::string>({"\"test.jar", "test2.jar\""})),
+            std::make_pair("t\\:est.jar:test2.jar", std::set<std::string>({"t\\", "est.jar", "test2.jar"})),
         };
 
 INSTANTIATE_TEST_SUITE_P(

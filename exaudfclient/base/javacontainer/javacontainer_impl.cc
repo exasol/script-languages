@@ -12,14 +12,13 @@
 #include "base/javacontainer/javacontainer.h"
 #include "base/javacontainer/javacontainer_impl.h"
 #include "base/javacontainer/script_options/extractor.h"
-#include "base/javacontainer/script_options/parser.h"
 
 
 using namespace SWIGVMContainers;
 using namespace std;
 
 JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
-                        std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser)
+                        std::unique_ptr<JavaScriptOptions::Extractor> extractor)
 : m_checkOnly(checkOnly)
 , m_exaJavaPath("")
 , m_localClasspath("/tmp") // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
@@ -32,7 +31,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
     stringstream ss;
     m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
 
-    parseScriptOptions(std::move(scriptOptionsParser));
+    parseScriptOptions(std::move(extractor));
 
     m_needsCompilation = checkNeedsCompilation();
     if (m_needsCompilation) {
@@ -49,16 +48,15 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
     }
 }
 
-void JavaVMImpl::parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser) {
-    JavaScriptOptions::Extractor extractor(*scriptOptionsParser);
+void JavaVMImpl::parseScriptOptions(std::unique_ptr<JavaScriptOptions::Extractor> extractor) {
 
-    DBG_FUNC_CALL(cerr,extractor.extract(m_scriptCode));
+    DBG_FUNC_CALL(cerr,extractor->extract(m_scriptCode));
 
     DBG_FUNC_CALL(cerr,setClasspath());
 
-    m_jvmOptions = std::move(extractor.moveJvmOptions());
+    m_jvmOptions = std::move(extractor->moveJvmOptions());
 
-    for (set<string>::iterator it = extractor.getJarPaths().begin(); it != extractor.getJarPaths().end();
+    for (set<string>::iterator it = extractor->getJarPaths().begin(); it != extractor->getJarPaths().end();
          ++it) {
         addJarToClasspath(*it);
     }

@@ -14,7 +14,7 @@ class JavaVMImpl;
 
 namespace JavaScriptOptions {
 
-struct ScriptOptionsParser;
+struct Extractor;
 
 }
 
@@ -23,7 +23,7 @@ class JavaVMach: public SWIGVM {
         /*
          * scriptOptionsParser: JavaVMach takes ownership of ScriptOptionsParser pointer.
          */
-        JavaVMach(bool checkOnly, std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
+        JavaVMach(bool checkOnly, std::unique_ptr<JavaScriptOptions::Extractor> extractor);
         virtual ~JavaVMach() {}
         virtual void shutdown();
         virtual bool run();

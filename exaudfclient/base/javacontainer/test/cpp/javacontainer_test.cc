@@ -48,9 +48,22 @@ TEST(JavaContainer, basic_jar_script_class_with_white_spaces) {
 
 TEST(JavaContainer, basic_jar_with_white_spaces) {
     const std::string script_code = "%jar base/javacontainer/test/test.jar \t ;";
-
+#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser removes trailing white spaces.
     JavaVMTest vm(script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar");
+#else
+    EXPECT_THROW({
+        try
+        {
+            JavaVMTest vm(script_code);
+        }
+        catch( const SWIGVMContainers::JavaVMach::exception& e )
+        {
+            EXPECT_THAT( e.what(), MatchesRegex("^.*Java VM cannot find 'base/javacontainer/test/test\\.jar \t ': No such file or directory$"));
+            throw;
+        }
+    }, SWIGVMContainers::JavaVMach::exception );
+#endif
 }
 
 

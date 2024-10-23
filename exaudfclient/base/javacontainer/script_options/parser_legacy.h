@@ -32,8 +32,6 @@ class ScriptOptionLinesParserLegacy : public ScriptOptionsParser {
 
         std::string && getScriptCode() override;
 
-        bool supportsEscapeSequences() override { return false; }
-
     private:
         void parseForSingleOption(const std::string& key,
                                         std::function<void(const std::string &option, size_t pos)> callback);

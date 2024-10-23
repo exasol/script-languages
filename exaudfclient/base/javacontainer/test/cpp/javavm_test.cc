@@ -1,8 +1,7 @@
 #include "base/javacontainer/test/cpp/javavm_test.h"
 #include "base/javacontainer/test/cpp/swig_factory_test.h"
 #include "base/javacontainer/javacontainer_impl.h"
-#include "base/javacontainer/script_options/parser_ctpg.h"
-#include "base/javacontainer/script_options/parser_legacy.h"
+#include "base/javacontainer/script_options/extractor_impl.h"
 #include <string.h>
 
 std::unique_ptr<SwigFactoryTestImpl> makeDefaultSwigFactory() {
@@ -20,13 +19,13 @@ JavaVMTest::JavaVMTest(std::string scriptCode, std::unique_ptr<SwigFactoryTestIm
 void JavaVMTest::run(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl> swigFactory) {
     SWIGVMContainers::SWIGVM_params->script_code = scriptCode.data();
 #ifndef USE_CTPG_PARSER
-    std::unique_ptr<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserLegacy> parser =
-         std::make_unique<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserLegacy>(std::move(swigFactory));
+    std::unique_ptr<SWIGVMContainers::JavaScriptOptions::tExtractorLegacy> extractor =
+         std::make_unique<SWIGVMContainers::JavaScriptOptions::tExtractorLegacy>(std::move(swigFactory));
 #else
-    std::unique_ptr<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserCTPG> parser =
-         std::make_unique<SWIGVMContainers::JavaScriptOptions::ScriptOptionLinesParserCTPG>(std::move(swigFactory));
+    std::unique_ptr<SWIGVMContainers::JavaScriptOptions::tExtractorV2> extractor =
+         std::make_unique<SWIGVMContainers::JavaScriptOptions::tExtractorV2>(std::move(swigFactory));
 #endif
-    SWIGVMContainers::JavaVMImpl javaVMImpl(false, true, std::move(parser));
+    SWIGVMContainers::JavaVMImpl javaVMImpl(false, true, std::move(extractor));
     javaVMInternalStatus.m_exaJavaPath = javaVMImpl.m_exaJavaPath;
     javaVMInternalStatus.m_localClasspath = javaVMImpl.m_localClasspath;
     javaVMInternalStatus.m_scriptCode = javaVMImpl.m_scriptCode;

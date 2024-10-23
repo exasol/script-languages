@@ -4,11 +4,6 @@
 #include <string>
 #include <vector>
 #include <set>
-#include <memory>
-
-#include "base/javacontainer/script_options/parser.h"
-
-
 
 namespace SWIGVMContainers {
 
@@ -19,17 +14,13 @@ class Converter {
     public:
         Converter();
     
-        void convertExternalJar(const std::string & value);
-
-        void convertExternalJarWithEscapeSequences(const std::string & value);
+        virtual void convertExternalJar(const std::string & value) = 0;
 
         void convertScriptClassName(const std::string & value);
 
         void convertJvmOption(const std::string & value);
 
-        const std::set<std::string> & getJarPaths() const {
-            return m_jarPaths;
-        }
+        virtual const std::set<std::string> & getJarPaths() const = 0;
 
         std::vector<std::string>&& moveJvmOptions() {
             return std::move(m_jvmOptions);
@@ -38,12 +29,9 @@ class Converter {
     private:
 
         std::vector<std::string> m_jvmOptions;
-        
-        std::set<std::string> m_jarPaths;
 
         const std::string m_whitespace;
 };
-
 
 
 
