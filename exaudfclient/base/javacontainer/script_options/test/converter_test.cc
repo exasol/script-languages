@@ -7,9 +7,9 @@
 using namespace SWIGVMContainers::JavaScriptOptions;
 
 
-class ConverterJarTest : public ::testing::TestWithParam<std::pair<std::string, std::set<std::string>>> {};
+class LegacyConverterJarTest : public ::testing::TestWithParam<std::pair<std::string, std::set<std::string>>> {};
 
-TEST_P(ConverterJarTest, jar) {
+TEST_P(LegacyConverterJarTest, jar) {
     const std::pair<std::string, std::set<std::string>> option_value = GetParam();
     const std::string jar_option_value = option_value.first;
 
@@ -27,15 +27,15 @@ const std::vector<std::pair<std::string, std::set<std::string>>> jar_strings =
 
 INSTANTIATE_TEST_SUITE_P(
     Converter,
-    ConverterJarTest,
+    LegacyConverterJarTest,
     ::testing::ValuesIn(jar_strings)
 );
 
 
 
-class ConverterJarEscapeSequenceTest : public ::testing::TestWithParam<std::pair<std::string, std::set<std::string>>> {};
+class ConverterV2JarTest : public ::testing::TestWithParam<std::pair<std::string, std::set<std::string>>> {};
 
-TEST_P(ConverterJarEscapeSequenceTest, jar) {
+TEST_P(ConverterV2JarTest, jar) {
     const std::pair<std::string, std::set<std::string>> option_value = GetParam();
     const std::string jar_option_value = option_value.first;
     std::cerr << "DEBUG: " << jar_option_value << std::endl;
@@ -54,6 +54,6 @@ const std::vector<std::pair<std::string, std::set<std::string>>> jar_escape_sequ
 
 INSTANTIATE_TEST_SUITE_P(
     Converter,
-    ConverterJarEscapeSequenceTest,
+    ConverterV2JarTest,
     ::testing::ValuesIn(jar_escape_sequences)
 );
