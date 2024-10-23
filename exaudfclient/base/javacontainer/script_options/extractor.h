@@ -6,35 +6,19 @@
 #include <set>
 
 
-#include "base/javacontainer/script_options/converter.h"
-
 namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-class ScriptOptionsParser;
+struct Extractor {
+    virtual ~Extractor() {}
 
-class Extractor {
+    virtual const std::set<std::string> & getJarPaths() const  = 0;
 
-    public:
-        Extractor(ScriptOptionsParser & parser);
+    virtual std::vector<std::string>&& moveJvmOptions() = 0;
 
-        const std::set<std::string> & getJarPaths() const {
-            return m_converter.getJarPaths();
-        }
-
-        std::vector<std::string>&& moveJvmOptions() {
-            return std::move(m_converter.moveJvmOptions());
-        }
-
-        void extract(std::string & scriptCode);
-
-    private:
-
-        Converter m_converter;
-        ScriptOptionsParser & m_parser;
+    virtual void extract(std::string & scriptCode) = 0;
 };
-
 
 } //namespace JavaScriptOptions
 

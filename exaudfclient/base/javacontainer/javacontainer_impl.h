@@ -16,7 +16,7 @@ class JavaVMTest;
 namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
-    struct ScriptOptionsParser;
+    struct Extractor;
 }
 
 class JavaVMImpl {
@@ -25,8 +25,7 @@ class JavaVMImpl {
         /*
          * scriptOptionsParser: JavaVMImpl takes ownership of ScriptOptionsParser pointer.
          */
-        JavaVMImpl(bool checkOnly, bool noJNI,
-                    std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
+        JavaVMImpl(bool checkOnly, bool noJNI, std::unique_ptr<JavaScriptOptions::Extractor> extractor);
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
@@ -43,7 +42,7 @@ class JavaVMImpl {
         void setClasspath();
         void setJvmOptions();
         void addJarToClasspath(const std::string& path);
-        void parseScriptOptions(std::unique_ptr<JavaScriptOptions::ScriptOptionsParser> scriptOptionsParser);
+        void parseScriptOptions(std::unique_ptr<JavaScriptOptions::Extractor> extractor);
         bool m_checkOnly;
         std::string m_exaJavaPath;
         std::string m_localClasspath;

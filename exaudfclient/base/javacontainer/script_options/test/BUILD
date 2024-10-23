@@ -8,3 +8,11 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "javacontainer-test-converter",
+    srcs =  ["converter_test.cc"],
+    deps = [
+        "//base/javacontainer/script_options:java_script_option_lines",
+        "@googletest//:gtest_main",
+    ],
+)
