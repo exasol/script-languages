@@ -1,6 +1,4 @@
 #include "base/javacontainer/script_options/extractor_impl.h"
-#include "base/javacontainer/script_options/parser.h"
-
 #include "base/utils/debug_message.h"
 #include <iostream>
 
@@ -16,8 +14,8 @@ ExtractorImpl<TParser, TConverter>::ExtractorImpl(std::unique_ptr<SwigFactory> s
 , m_converter() {}
 
 template<typename TParser, typename TConverter>
-inline const std::set<std::string> & ExtractorImpl<TParser, TConverter>::getJarPaths() const {
-    return m_converter.getJarPaths();
+inline void ExtractorImpl<TParser, TConverter>::iterateJarPaths(std::function<void(const std::string &option)> callback) const {
+    m_converter.iterateJarPaths(callback);
 }
 
 template<typename TParser, typename TConverter>

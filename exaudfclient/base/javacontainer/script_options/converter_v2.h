@@ -21,13 +21,15 @@ class ConverterV2 : public Converter {
     
         void convertExternalJar(const std::string & value);
 
-        const std::set<std::string> & getJarPaths() const {
-            return m_jarPaths;
+        void iterateJarPaths(std::function<void(const std::string &option)> callback) const override {
+            for (const auto & jar : m_jarPaths) {
+                callback(jar);
+            }
         }
 
     private:
         
-        std::set<std::string> m_jarPaths;
+        std::vector<std::string> m_jarPaths;
 
 };
 

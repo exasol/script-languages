@@ -31,6 +31,9 @@ inline void trim(std::string &s) {
     rtrim(s);
 }
 
+void removeQuotesSafely(std::string & s, const std::string & whitespaces);
+
+
 } //namespace StringOps
 
 

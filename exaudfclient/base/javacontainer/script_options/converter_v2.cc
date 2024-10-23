@@ -11,23 +11,19 @@ ConverterV2::ConverterV2()
 , m_jarPaths() {}
 
 void ConverterV2::convertExternalJar(const std::string & value) {
-    std::string formattedValue(value);
-    StringOps::trim(formattedValue);
-    if (formattedValue.size() > 1 && formattedValue.front() == '\"' && formattedValue.back() == '\"') {
-        formattedValue = formattedValue.substr(1, formattedValue.size()-2);
-    }
-
+    std::string unquotedValue(value);
+    StringOps::removeQuotesSafely(unquotedValue, m_whitespace);
     for (size_t start = 0, delim = 0; ; start = delim + 1) {
-        delim = formattedValue.find(":", start);
+        delim = unquotedValue.find(":", start);
         if (delim != std::string::npos) {
-            std::string jar = formattedValue.substr(start, delim - start);
-            if (m_jarPaths.find(jar) == m_jarPaths.end())
-                m_jarPaths.insert(jar);
+            std::string jar = unquotedValue.substr(start, delim - start);
+            StringOps::removeQuotesSafely(jar, m_whitespace);
+            m_jarPaths.push_back(jar);
         }
         else {
-            std::string jar = formattedValue.substr(start);
-            if (m_jarPaths.find(jar) == m_jarPaths.end())
-                m_jarPaths.insert(jar);
+            std::string jar = unquotedValue.substr(start);
+            StringOps::removeQuotesSafely(jar, m_whitespace);
+            m_jarPaths.push_back(jar);
             break;
         }
     }

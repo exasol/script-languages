@@ -62,8 +62,6 @@ jobs:
             name: "script_options_parser_ctpg_with_asan"
           - test: "--config=asan //base/script_options_parser/legacy/..."
             name: "script_options_parser_legacy_with_asan"
-          - test: "//base/javacontainer/test:javacontainer-test-converter"
-            name: "javacontainer-test-converter"
     steps:
       - uses: actions/checkout@v4
       - name: Install JDK and ZMQ

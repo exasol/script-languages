@@ -55,11 +55,7 @@ void JavaVMImpl::parseScriptOptions(std::unique_ptr<JavaScriptOptions::Extractor
     DBG_FUNC_CALL(cerr,setClasspath());
 
     m_jvmOptions = std::move(extractor->moveJvmOptions());
-
-    for (set<string>::iterator it = extractor->getJarPaths().begin(); it != extractor->getJarPaths().end();
-         ++it) {
-        addJarToClasspath(*it);
-    }
+    extractor->iterateJarPaths([&](const std::string& s) { addJarToClasspath(s);});
 }
 
 void JavaVMImpl::shutdown() {

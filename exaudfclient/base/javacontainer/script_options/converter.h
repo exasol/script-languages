@@ -3,7 +3,8 @@
 
 #include <string>
 #include <vector>
-#include <set>
+#include <functional>
+#include <iterator>
 
 namespace SWIGVMContainers {
 
@@ -20,17 +21,18 @@ class Converter {
 
         void convertJvmOption(const std::string & value);
 
-        virtual const std::set<std::string> & getJarPaths() const = 0;
+        virtual void iterateJarPaths(std::function<void(const std::string &option)> callback) const = 0;
 
         std::vector<std::string>&& moveJvmOptions() {
             return std::move(m_jvmOptions);
         }
 
-    private:
+    protected:
+        const std::string m_whitespace;
 
+    private:
         std::vector<std::string> m_jvmOptions;
 
-        const std::string m_whitespace;
 };
 
 

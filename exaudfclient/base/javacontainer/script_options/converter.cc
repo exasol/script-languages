@@ -7,8 +7,8 @@ namespace SWIGVMContainers {
 namespace JavaScriptOptions {
 
 Converter::Converter()
-: m_jvmOptions()
-, m_whitespace(" \t\f\v") {}
+: m_whitespace(" \t\f\v")
+, m_jvmOptions() {}
 
 void Converter::convertScriptClassName(const std::string & value) {
     std::string trimmedValue(value);

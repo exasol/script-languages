@@ -25,3 +25,30 @@ TEST(StringOpsTest, trimWithNoneASCII) {
     EXPECT_EQ(sample, "\xa0Hello World\xa0");
 }
 
+class QuotedTest : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
+
+TEST_P(QuotedTest, test) {
+    const std::pair<std::string, std::string> quoted_strings = GetParam();
+    std::string quoted_string = quoted_strings.first;
+    StringOps::removeQuotesSafely(quoted_string, " \t");
+    EXPECT_EQ(quoted_string, quoted_strings.second);
+}
+
+const std::vector<std::pair<std::string, std::string>> quoted_strings =
+        {
+            std::make_pair("string", "string"),
+            std::make_pair("\"string", "\"string"),
+            std::make_pair("\"string\"", "string"),
+            std::make_pair("\"string'", "\"string'"),
+            std::make_pair("'string'", "string"),
+            std::make_pair("'    string     '", "    string     "),
+            std::make_pair("'  '  string     '", "  '  string     "),
+            std::make_pair("     '  '  string     '", "  '  string     "),
+            std::make_pair(" aaa    '  '  string     '", " aaa    '  '  string     '"),
+        };
+
+INSTANTIATE_TEST_SUITE_P(
+    QuotedTest,
+    QuotedTest,
+    ::testing::ValuesIn(quoted_strings)
+);
