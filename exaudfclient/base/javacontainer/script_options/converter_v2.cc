@@ -1,7 +1,7 @@
 #include "base/javacontainer/script_options/converter_v2.h"
 #include "base/javacontainer/script_options/string_ops.h"
 #include <iostream>
-#include <istream>
+#include <sstream>
 
 namespace SWIGVMContainers {
 
