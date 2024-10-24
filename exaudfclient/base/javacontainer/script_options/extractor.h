@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <set>
+#include <functional>
 
 
 namespace SWIGVMContainers {
@@ -11,9 +11,12 @@ namespace SWIGVMContainers {
 namespace JavaScriptOptions {
 
 struct Extractor {
+
+    typedef std::function<void(const std::string &option)> tJarIteratorCallback;
+
     virtual ~Extractor() {}
 
-    virtual const std::set<std::string> & getJarPaths() const  = 0;
+    virtual void iterateJarPaths(tJarIteratorCallback callback) const = 0;
 
     virtual std::vector<std::string>&& moveJvmOptions() = 0;
 
