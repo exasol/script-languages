@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <set>
 #include <memory>
 
 #include "base/javacontainer/script_options/converter.h"
@@ -21,13 +20,11 @@ class ConverterV2 : public Converter {
     
         void convertExternalJar(const std::string & value);
 
-        const std::set<std::string> & getJarPaths() const {
-            return m_jarPaths;
-        }
+        void iterateJarPaths(std::function<void(const std::string &option)> callback) const override;
 
     private:
         
-        std::set<std::string> m_jarPaths;
+        std::vector<std::string> m_jarPaths;
 
 };
 

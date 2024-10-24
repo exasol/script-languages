@@ -16,9 +16,18 @@ void ConverterLegacy::convertExternalJar(const std::string& value) {
     std::string jar;
 
     while (std::getline(stream, jar, ':')) {
-        m_jarPaths.insert(jar);
+        if (m_jarPaths.find(jar) == m_jarPaths.end()) {
+            m_jarPaths.insert(jar);
+        }
     }
 }
+
+void ConverterLegacy::iterateJarPaths(std::function<void(const std::string &option)> callback) const {
+    for (const auto & jar: m_jarPaths) {
+        callback(jar);
+    }
+}
+
 
 
 } //namespace JavaScriptOptions

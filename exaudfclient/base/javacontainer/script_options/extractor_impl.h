@@ -24,7 +24,7 @@ class ExtractorImpl : public Extractor {
 
         ExtractorImpl(std::unique_ptr<SwigFactory> swigFactory);
 
-        const std::set<std::string> & getJarPaths() const override;
+        virtual void iterateJarPaths(std::function<void(const std::string &option)> callback) const override;
         std::vector<std::string>&& moveJvmOptions() override;
 
         void extract(std::string & scriptCode);

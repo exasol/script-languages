@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <set>
+#include <functional>
 
 namespace SWIGVMContainers {
 
@@ -24,7 +24,7 @@ class Converter {
 
         virtual void convertExternalJar(const std::string & value) = 0;
 
-        virtual const std::set<std::string> & getJarPaths() const = 0;
+        virtual void iterateJarPaths(std::function<void(const std::string &option)> callback) const = 0;
 
 
     private:

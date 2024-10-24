@@ -16,12 +16,12 @@ ExtractorImpl<TParser, TConverter>::ExtractorImpl(std::unique_ptr<SwigFactory> s
 , m_converter() {}
 
 template<typename TParser, typename TConverter>
-inline const std::set<std::string> & ExtractorImpl<TParser, TConverter>::getJarPaths() const {
-    return m_converter.getJarPaths();
+void ExtractorImpl<TParser, TConverter>::iterateJarPaths(std::function<void(const std::string &option)> callback) const {
+    return m_converter.iterateJarPaths(callback);
 }
 
 template<typename TParser, typename TConverter>
-inline std::vector<std::string>&& ExtractorImpl<TParser, TConverter>::moveJvmOptions() {
+std::vector<std::string>&& ExtractorImpl<TParser, TConverter>::moveJvmOptions() {
     return std::move(m_converter.moveJvmOptions());
 }
 
