@@ -16,7 +16,7 @@ void ConverterLegacy::convertExternalJar(const std::string& value) {
     std::string jar;
 
     while (std::getline(stream, jar, ':')) {
-        m_jarPaths.insert(jar); // If m_jarPaths is a Set or you make it a Set, uniqueness implicitly is taken care of
+        m_jarPaths.insert(jar);
     }
 }
 
