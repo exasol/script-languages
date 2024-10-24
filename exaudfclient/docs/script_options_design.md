@@ -13,12 +13,12 @@ The purpose of this document is to provide an in-depth implementation view of th
 
 ## Design Requirements
 
-This section outlines the specific design requirements linked to the high-level requirements, detailing the solutions and methods to achieve them.
+This section outlines the specific design requirements linked to the high-level requirements, detailing the implementation and methods to achieve them.
 
 ### Parser Implementation
 `dsn~parser-implementation~1`
 
-Implementation of the parser using [ctpg](https://github.com/peter-winter/ctpg), an open-source parser library. This library will be used to define Lexer and Parser Rules in C++ code, ensuring no additional runtime dependencies exist.
+Implement the parser using [ctpg](https://github.com/peter-winter/ctpg), an open-source parser library. This library will be used to define Lexer and Parser Rules in C++ code, ensuring no additional runtime dependencies exist.
 
 Needs: req
 Covers:
@@ -118,7 +118,7 @@ This section provides a high-level overview of the system architecture for the U
 
 ## Detailed Design
 
-### Parser Component Design
+### Parser Component Implementation
 
 1. **Lexer Rules**
    - Define tokens for `%optionKey`, `optionValue`, and whitespace characters including `\t`, `\v`, `\f`.
@@ -134,15 +134,11 @@ This section provides a high-level overview of the system architecture for the U
    - Implement logic to detect and discard additional %scriptclass options, maintaining only the first instance.
    - Ensure %jar options follow the syntax of Java CLASSPATH and remove duplicates while preserving order using a set/list combination.
 
-### Integration Component Design
+### Integration Component Implementation
 
 1. **Namespace Embedding**
    - Ensure the parser is embedded within the custom C++ namespace of the UDF Client to meet linker requirements.
 
 2. **Swig Metadata Interaction**
    - Implement methods to interact with the Swig Metadata object for processing %import options.
-   - Replace found %import options with the referenced script code and manage any nested Script Options within the imported code, ignoring %scriptclass options.
-
-## Conclusion
-
-This design document outlines the detailed implementation for the new Exasol UDF Client Script Options parser, ensuring it meets all high-level and design requirements, integrates seamlessly into the existing environment, and provides robust handling of all specified Script Options.
+   - Replace found %import options with the referenced script code and manage any nested Script Options within the imported
