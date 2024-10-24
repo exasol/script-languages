@@ -14,17 +14,18 @@ class Converter {
     public:
         Converter();
     
-        virtual void convertExternalJar(const std::string & value) = 0;
-
         void convertScriptClassName(const std::string & value);
 
         void convertJvmOption(const std::string & value);
 
-        virtual const std::set<std::string> & getJarPaths() const = 0;
-
         std::vector<std::string>&& moveJvmOptions() {
             return std::move(m_jvmOptions);
         }
+
+        virtual void convertExternalJar(const std::string & value) = 0;
+
+        virtual const std::set<std::string> & getJarPaths() const = 0;
+
 
     private:
 

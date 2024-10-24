@@ -56,9 +56,8 @@ void JavaVMImpl::parseScriptOptions(std::unique_ptr<JavaScriptOptions::Extractor
 
     m_jvmOptions = std::move(extractor->moveJvmOptions());
 
-    for (set<string>::iterator it = extractor->getJarPaths().begin(); it != extractor->getJarPaths().end();
-         ++it) {
-        addJarToClasspath(*it);
+    for (const auto & jar :  extractor->getJarPaths()) {
+        addJarToClasspath(jar);
     }
 }
 
