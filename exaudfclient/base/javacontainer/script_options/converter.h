@@ -12,6 +12,8 @@ namespace JavaScriptOptions {
 class Converter {
 
     public:
+        typedef std::function<void(const std::string &option)> tJarIteratorCallback;
+
         Converter();
     
         void convertScriptClassName(const std::string & value);
@@ -24,7 +26,8 @@ class Converter {
 
         virtual void convertExternalJar(const std::string & value) = 0;
 
-        virtual void iterateJarPaths(std::function<void(const std::string &option)> callback) const = 0;
+
+        virtual void iterateJarPaths(tJarIteratorCallback callback) const = 0;
 
 
     private:

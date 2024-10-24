@@ -11,9 +11,12 @@ namespace SWIGVMContainers {
 namespace JavaScriptOptions {
 
 struct Extractor {
+
+    typedef std::function<void(const std::string &option)> tJarIteratorCallback;
+
     virtual ~Extractor() {}
 
-    virtual void iterateJarPaths(std::function<void(const std::string &option)> callback) const = 0;
+    virtual void iterateJarPaths(tJarIteratorCallback callback) const = 0;
 
     virtual std::vector<std::string>&& moveJvmOptions() = 0;
 

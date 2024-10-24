@@ -16,7 +16,7 @@ ExtractorImpl<TParser, TConverter>::ExtractorImpl(std::unique_ptr<SwigFactory> s
 , m_converter() {}
 
 template<typename TParser, typename TConverter>
-void ExtractorImpl<TParser, TConverter>::iterateJarPaths(std::function<void(const std::string &option)> callback) const {
+void ExtractorImpl<TParser, TConverter>::iterateJarPaths(Extractor::tJarIteratorCallback callback) const {
     return m_converter.iterateJarPaths(callback);
 }
 

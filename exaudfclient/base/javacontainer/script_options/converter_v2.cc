@@ -20,7 +20,7 @@ void ConverterV2::convertExternalJar(const std::string & value) {
     }
 }
 
-void ConverterV2::iterateJarPaths(std::function<void(const std::string &option)> callback) const {
+void ConverterV2::iterateJarPaths(Converter::tJarIteratorCallback callback) const {
     for (const auto & jar: m_jarPaths) {
         callback(jar);
     }
