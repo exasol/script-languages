@@ -110,19 +110,3 @@ TEST(JavaContainer, import_script_with_escaped_options) {
                                                             "-XX:+UseSerialGC" };
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_jvmOptions, expectedJVMOptions);
 }
-
-TEST(JavaContainer, basic_jars_order_remains) {
-    const std::string script_code = "%jar base/javacontainer/test/test1.jar:base/javacontainer/test/abc.jar;";
-
-    EXPECT_THROW({
-        try
-        {
-            JavaVMTest vm(script_code);
-        }
-        catch( const SWIGVMContainers::JavaVMach::exception& e )
-        {
-            EXPECT_THAT( e.what(), MatchesRegex("^.*Java VM cannot find 'base/javacontainer/test/test1\\.jar': No such file or directory$"));
-            throw;
-        }
-    }, SWIGVMContainers::JavaVMach::exception );
-}

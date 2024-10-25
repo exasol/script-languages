@@ -67,6 +67,35 @@ TEST(JavaContainer, basic_jar_with_white_spaces) {
 #endif
 }
 
+TEST(JavaContainer, basic_jars_ordering) {
+    /*
+     * This test validates correct behavior of collecting the %jar options in Extractor V1/V2.
+     * Both jar files referenced in `script_code` do not exist.
+     * The JavaVM will throw an exception with the first JAR file it gets from Extractor.
+     * For extractor V21 Our assumption is that the exception will be for `base/javacontainer/test/abc.jar`
+     * as this is alphabetically the first JAR file. (re-ordering)
+     * For extractor V2: Our assumption is that the exception will be for `base/javacontainer/test/test1.jar`
+     * as this is the first JAR file. (no re-ordering)
+     */
+    const std::string script_code = "%jar base/javacontainer/test/test1.jar:base/javacontainer/test/abc.jar;";
+
+#ifndef USE_CTPG_PARSER
+    const char* regexExpectedException = "^.*Java VM cannot find 'base/javacontainer/test/abc\\.jar': No such file or directory$";
+#else
+    const char* regexExpectedException = "^.*Java VM cannot find 'base/javacontainer/test/test1\\.jar': No such file or directory$";
+#endif
+    EXPECT_THROW({
+        try
+        {
+            JavaVMTest vm(script_code);
+        }
+        catch( const SWIGVMContainers::JavaVMach::exception& e )
+        {
+            EXPECT_THAT( e.what(), MatchesRegex("^.*Java VM cannot find 'base/javacontainer/test/test1\\.jar': No such file or directory$"));
+            throw;
+        }
+    }, SWIGVMContainers::JavaVMach::exception );
+}
 
 TEST(JavaContainer, basic_inline) {
     const std::string script_code = "import java.time.LocalDateTime;"

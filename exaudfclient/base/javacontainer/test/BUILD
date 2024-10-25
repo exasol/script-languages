@@ -28,7 +28,7 @@ cc_test(
 
 cc_test(
     name = "javacontainer-test-ctpg-parser",
-    srcs = JAVACONTAINER_TEST_SRCS + ["cpp/javacontainer_ctpg_test.cc"],
+    srcs = JAVACONTAINER_TEST_SRCS + ["cpp/javacontainer_extractor_v2_test.cc"],
     deps = [
         "//base/javacontainer:javacontainer",
         "@googletest//:gtest_main",
