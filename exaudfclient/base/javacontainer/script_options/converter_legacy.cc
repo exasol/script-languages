@@ -16,9 +16,7 @@ void ConverterLegacy::convertExternalJar(const std::string& value) {
     std::string jar;
 
     while (std::getline(stream, jar, ':')) {
-        if (m_jarPaths.find(jar) == m_jarPaths.end()) {
-            m_jarPaths.insert(jar);
-        }
+        m_jarPaths.insert(jar);
     }
 }
 

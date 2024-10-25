@@ -22,9 +22,9 @@ TEST_P(LegacyConverterJarTest, jar) {
 
 const std::vector<std::pair<std::string, std::vector<std::string>>> jar_strings =
         {
-            std::make_pair("test.jar:test2.jar", std::vector<std::string>({"test.jar", "test2.jar"})),
-            std::make_pair("test.jar:test.jar", std::vector<std::string>({"test.jar"})),
-            std::make_pair("testDEF.jar:testABC.jar", std::vector<std::string>({"testABC.jar", "testDEF.jar"})),
+            std::make_pair("test.jar:test2.jar", std::vector<std::string>({"test.jar", "test2.jar"})), //basic splitting
+            std::make_pair("test.jar:test.jar", std::vector<std::string>({"test.jar"})), //filter duplicates
+            std::make_pair("testDEF.jar:testABC.jar", std::vector<std::string>({"testABC.jar", "testDEF.jar"})), //alphabetical order
         };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -49,15 +49,15 @@ TEST_P(ConverterV2JarTest, jar) {
     ASSERT_EQ(result, option_value.second);
 }
 
-const std::vector<std::pair<std::string, std::vector<std::string>>> jar_escape_sequences =
+const std::vector<std::pair<std::string, std::vector<std::string>>> jar_strings_v2 =
         {
-            std::make_pair("test.jar:test2.jar", std::vector<std::string>({"test.jar", "test2.jar"})),
-            std::make_pair("test.jar:test.jar", std::vector<std::string>({"test.jar", "test.jar"})),
-            std::make_pair("testDEF.jar:testABC.jar", std::vector<std::string>({"testDEF.jar", "testABC.jar"})),
+            std::make_pair("test.jar:test2.jar", std::vector<std::string>({"test.jar", "test2.jar"})), //basic splitting
+            std::make_pair("test.jar:test.jar", std::vector<std::string>({"test.jar", "test.jar"})), //keep duplicates
+            std::make_pair("testDEF.jar:testABC.jar", std::vector<std::string>({"testDEF.jar", "testABC.jar"})), //maintain order
         };
 
 INSTANTIATE_TEST_SUITE_P(
     Converter,
     ConverterV2JarTest,
-    ::testing::ValuesIn(jar_escape_sequences)
+    ::testing::ValuesIn(jar_strings_v2)
 );
