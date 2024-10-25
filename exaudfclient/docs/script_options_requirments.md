@@ -189,6 +189,7 @@ Covers:
 `req~java-scriptclass-option-handling-v1~1`
 
 The Java parser handler must correctly identify the first `%scriptclass` option and remove only this single instance from the script code. Any further occurrences of `%scriptclass` option shall stay in the source script code.
+The value should be handled according to the [Java specification for identifies](https://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.8).
 
 Needs: dsn
 
@@ -202,6 +203,7 @@ Covers:
 `req~java-scriptclass-option-handling-v2~1`
 
 The Java parser handler must correctly identify the first `%scriptclass` option and remove any additional occurrences of this option within the script code.
+The value should be handled according to the [Java specification for identifies](https://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.8).
 
 Needs: dsn
 
@@ -251,6 +253,7 @@ Covers:
 
 Depends: 
 - `req~white-spaces-script-options-parsing-v2~1`
+
 ### Java %jvmoption Handling
 `req~java-jvmoption-handling~1`
 
@@ -261,11 +264,12 @@ Needs: dsn
 Covers:
 - `feat~java-specific-script-options~1`
 
-### Java %import Option Handling
+### Java %import Option Replace Referenced Sripts
 `req~java-import-option-replace-referenced-scripts~1`
 
 For each found %import option, the Java parser handler must request and replace the referenced scripts recursively. This means,
 if the referenced scripts contain also `%import` options, the implementation must replace those, too.
+The referenced script name should be handled according to the [Exasol SQL identifier specification](https://docs.exasol.com/db/latest/sql_references/basiclanguageelements.htm#SQLidentifier).
 
 Needs: dsn
 
