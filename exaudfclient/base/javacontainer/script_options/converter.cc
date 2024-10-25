@@ -1,5 +1,5 @@
 #include "base/javacontainer/script_options/converter.h"
-#include "base/javacontainer/script_options/string_ops.h"
+
 #include <iostream>
 
 namespace SWIGVMContainers {
@@ -11,10 +11,8 @@ Converter::Converter()
 , m_whitespace(" \t\f\v") {}
 
 void Converter::convertScriptClassName(const std::string & value) {
-    std::string trimmedValue(value);
-    StringOps::trim(trimmedValue);
     if (value != "") {
-        m_jvmOptions.push_back("-Dexasol.scriptclass=" + trimmedValue);
+        m_jvmOptions.push_back("-Dexasol.scriptclass=" + value);
     }
 }
 

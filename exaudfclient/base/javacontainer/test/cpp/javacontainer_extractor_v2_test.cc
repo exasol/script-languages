@@ -110,3 +110,19 @@ TEST(JavaContainer, import_script_with_escaped_options) {
                                                             "-XX:+UseSerialGC" };
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_jvmOptions, expectedJVMOptions);
 }
+
+TEST(JavaContainer, basic_jar_with_trailing_escape) {
+    const std::string script_code = "%scriptclass com.exasol.udf_profiling.UdfProfiler;\n"
+                                    "%jar base/javacontainer/test/test.jar\\t\t;";
+    EXPECT_THROW({
+        try
+        {
+            JavaVMTest vm(script_code);
+        }
+        catch( const SWIGVMContainers::JavaVMach::exception& e )
+        {
+            EXPECT_THAT( e.what(), MatchesRegex("^.*Java VM cannot find 'base/javacontainer/test/test\\.jar\t': No such file or directory$"));
+            throw;
+        }
+    }, SWIGVMContainers::JavaVMach::exception );
+}

@@ -21,7 +21,7 @@ inline void ltrim(std::string &s) {
 }
 
 inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [&](unsigned char ch) {
         return !std::isspace(ch);
     }).base(), s.end());
 }
@@ -30,6 +30,8 @@ inline void trim(std::string &s) {
     ltrim(s);
     rtrim(s);
 }
+
+void replaceTrailingEscapeWhitespaces(std::string & s);
 
 } //namespace StringOps
 
