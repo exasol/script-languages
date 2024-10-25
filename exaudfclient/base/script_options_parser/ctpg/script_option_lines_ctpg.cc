@@ -54,36 +54,38 @@ auto&& add_option(Option&& e, options_type&& ob)
 }
 
 const auto convert_escape_seq(std::string_view escape_seq) {
-    const std::map<std::string_view, std::string_view> escapeMap = {
-        {R"_(\;)_", ";"},
-        {R"_(\n)_", "\n"},
-        {R"_(\r)_", "\r"},
-        {R"_(\\)_", "\\"}
-    };
-
-    const auto it = escapeMap.find(escape_seq);
-    if (it != escapeMap.end()) {
-        return it->second;
+    std::string_view retVal;
+    if (escape_seq == R"_(\;)_") {
+        retVal = ";";
+    } else if (escape_seq == R"_(\n)_") {
+        retVal = "\n";
+    } else if (escape_seq == R"_(\r)_") {
+        retVal = "\r";
+    } else if (escape_seq == R"_(\\)_") {
+        retVal = "\\";
     } else {
         throw OptionParserException(std::string("Internal parser error: Unexpected escape sequence " + std::string(escape_seq)));
     }
+
+    return retVal;
 }
 
 
 const auto convert_whitespace_escape_seq(std::string_view escape_seq) {
-    const std::map<std::string_view, std::string_view> escapeMap = {
-        {R"_(\ )_", " "},
-        {R"_(\t)_", "\t"},
-        {R"_(\f)_", "\f"},
-        {R"_(\v)_", "\v"}
-    };
-
-    const auto it = escapeMap.find(escape_seq);
-    if (it != escapeMap.end()) {
-        return it->second;
+    std::string_view retVal;
+    if (escape_seq == R"_(\ )_") {
+        retVal = " ";
+    } else if (escape_seq == R"_(\t)_") {
+        retVal = "\t";
+    } else if (escape_seq == R"_(\f)_") {
+        retVal = "\f";
+    } else if (escape_seq == R"_(\v)_") {
+        retVal = "\v";
     } else {
         throw OptionParserException(std::string("Internal parser error: Unexpected white space escape sequence " + std::string(escape_seq)));
     }
+
+    return retVal;
 }
 
 
