@@ -137,7 +137,7 @@ Covers:
 Depends:
  - `req~white-spaces~1`
 
-### Multiple and Options
+### Multiple Options
 `req~multiple-options-management~1`
 
 The parser must collect multiple Script Options with the same key. Note: the specific handling depends on the option handler.
