@@ -17,6 +17,10 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
+/**
+ * Concrete implementation for the Extractor class.
+ * Given template parameter TParser and TConverter define concrete behavior.
+ */
 template<typename TParser, typename TConverter>
 class ExtractorImpl : public Extractor {
 

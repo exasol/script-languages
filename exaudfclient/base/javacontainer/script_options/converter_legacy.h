@@ -14,6 +14,11 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
+/**
+ * This class is a specialization for the generic converter class.
+ * It implements conversion of the jar option according to the requirements in the old
+ * parser implementation.
+ */
 class ConverterLegacy : public Converter {
 
     public:

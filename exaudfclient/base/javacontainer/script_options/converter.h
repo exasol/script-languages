@@ -9,6 +9,11 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
+/**
+ * This class retrieves the raw Java script option values (scriptclass, jvmoption, jar)
+ * and converts them to the proper format expected by the JvmContainerImpl class.
+ * Besides the converter functions it provides methods to access the converted values.
+ */
 class Converter {
 
     public:
@@ -26,9 +31,7 @@ class Converter {
 
         virtual void convertExternalJar(const std::string & value) = 0;
 
-
         virtual void iterateJarPaths(tJarIteratorCallback callback) const = 0;
-
 
     private:
 
