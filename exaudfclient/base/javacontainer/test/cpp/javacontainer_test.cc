@@ -72,7 +72,7 @@ TEST(JavaContainer, basic_jars_ordering) {
      * This test validates correct behavior of collecting the %jar options in Extractor V1/V2.
      * Both jar files referenced in `script_code` do not exist.
      * The JavaVM will throw an exception with the first JAR file it gets from Extractor.
-     * For extractor V1 Our assumption is that the exception will be for `base/javacontainer/test/abc.jar`
+     * For extractor V1: Our assumption is that the exception will be for `base/javacontainer/test/abc.jar`
      * as this is alphabetically the first JAR file. (re-ordering)
      * For extractor V2: Our assumption is that the exception will be for `base/javacontainer/test/test1.jar`
      * as this is the first JAR file. (no re-ordering)
