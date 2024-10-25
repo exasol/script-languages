@@ -61,6 +61,8 @@ const auto convert_escape_seq(std::string_view escape_seq) {
         retVal = "\n";
     } else if (escape_seq == R"_(\r)_") {
         retVal = "\r";
+    } else if (escape_seq == R"_(\\)_") {
+        retVal = "\\";
     } else {
         throw OptionParserException(std::string("Internal parser error: Unexpected escape sequence " + std::string(escape_seq)));
     }
@@ -91,7 +93,7 @@ const auto convert_whitespace_escape_seq(std::string_view escape_seq) {
 constexpr char alpha_numeric_pattern[] = R"_([0-9a-zA-Z_]+)_";
 constexpr char not_semicolon_pattern[] = R"_([^;])_";
 constexpr char whitespaces_pattern[] = R"_([ \x09\x0c\x0b]+)_";
-constexpr char escape_pattern[] = R"_(\\;|\\n|\\r)_";
+constexpr char escape_pattern[] = R"_(\\;|\\n|\\r|\\\\)_";
 constexpr char whitespace_escape_pattern[] = R"_(\\ |\\t|\\f|\\v)_";
 
 
