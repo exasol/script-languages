@@ -17,7 +17,7 @@ JAVACONTAINER_PERF_TEST_SRCS = ["cpp/javacontainer_perf_test.cc", "cpp/exaudf_wr
             "cpp/swig_factory_test.h", "cpp/swig_factory_test.cc"]
 
 cc_test(
-    name = "javacontainer-test-extractor-v1",
+    name = "javacontainer-test-extractor-legacy",
     srcs = JAVACONTAINER_TEST_SRCS,
     deps = [
         "//base/javacontainer:javacontainer",
