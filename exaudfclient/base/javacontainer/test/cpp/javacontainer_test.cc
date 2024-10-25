@@ -49,7 +49,7 @@ TEST(JavaContainer, basic_jar_script_class_with_white_spaces) {
 TEST(JavaContainer, basic_jar_with_white_spaces) {
     const std::string script_code = "%jar base/javacontainer/test/test.jar \t ;";
 
-#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser removes trailing white spaces.
+#ifndef USE_EXTRACTOR_V2 //The parsers behave differently: The legacy parser removes trailing white spaces.
     JavaVMTest vm(script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar");
 #else
@@ -79,7 +79,7 @@ TEST(JavaContainer, basic_jars_ordering) {
      */
     const std::string script_code = "%jar base/javacontainer/test/test1.jar:base/javacontainer/test/abc.jar;";
 
-#ifndef USE_CTPG_PARSER
+#ifndef USE_EXTRACTOR_V2
     const char* regexExpectedException = "^.*Java VM cannot find 'base/javacontainer/test/abc\\.jar': No such file or directory$";
 #else
     const char* regexExpectedException = "^.*Java VM cannot find 'base/javacontainer/test/test1\\.jar': No such file or directory$";
@@ -91,7 +91,7 @@ TEST(JavaContainer, basic_jars_ordering) {
         }
         catch( const SWIGVMContainers::JavaVMach::exception& e )
         {
-            EXPECT_THAT( e.what(), MatchesRegex("^.*Java VM cannot find 'base/javacontainer/test/test1\\.jar': No such file or directory$"));
+            EXPECT_THAT( e.what(), MatchesRegex(regexExpectedException));
             throw;
         }
     }, SWIGVMContainers::JavaVMach::exception );
@@ -524,7 +524,7 @@ TEST(JavaContainer, import_script_script_class_option_ignored) {
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
         "package com.exasol;\r\n"
-#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser incorrectly keeps imported scriptclass options
+#ifndef USE_EXTRACTOR_V2 //The parsers behave differently: The legacy parser incorrectly keeps imported scriptclass options
         "%scriptclass com.exasol.udf_profiling.UdfProfiler;"
 #endif
         "\n"

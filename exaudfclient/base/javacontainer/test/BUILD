@@ -33,7 +33,7 @@ cc_test(
         "//base/javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
-    defines = ["USE_CTPG_PARSER"],
+    defines = ["USE_EXTRACTOR_V2"],
     data = ["test.jar", "other_test.jar"]
 )
 
@@ -55,6 +55,6 @@ cc_test(
         "//base/javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
-    defines = ["USE_CTPG_PARSER"],
+    defines = ["USE_EXTRACTOR_V2"],
     data = ["test.jar", "other_test.jar"]
 )
