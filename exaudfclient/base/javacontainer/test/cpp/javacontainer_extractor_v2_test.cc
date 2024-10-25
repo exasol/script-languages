@@ -3,8 +3,11 @@
 #include "gmock/gmock.h"
 #include "base/javacontainer/test/cpp/javavm_test.h"
 #include "base/javacontainer/test/cpp/swig_factory_test.h"
+#include "base/javacontainer/javacontainer.h"
 #include <string.h>
 #include <memory>
+
+using ::testing::MatchesRegex;
 
 class JavaContainerEscapeSequenceTest : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
 

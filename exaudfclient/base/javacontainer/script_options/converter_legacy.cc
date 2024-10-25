@@ -2,6 +2,7 @@
 #include "base/javacontainer/script_options/string_ops.h"
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 namespace SWIGVMContainers {
 
@@ -19,6 +20,11 @@ void ConverterLegacy::convertExternalJar(const std::string& value) {
         m_jarPaths.insert(jar);
     }
 }
+
+void ConverterLegacy::iterateJarPaths(Converter::tJarIteratorCallback callback) const {
+    std::for_each(m_jarPaths.begin(), m_jarPaths.end(), callback);
+}
+
 
 
 } //namespace JavaScriptOptions

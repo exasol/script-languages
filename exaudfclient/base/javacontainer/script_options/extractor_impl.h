@@ -17,6 +17,10 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
+/**
+ * Concrete implementation for the Extractor class.
+ * Given template parameter TParser and TConverter define concrete behavior.
+ */
 template<typename TParser, typename TConverter>
 class ExtractorImpl : public Extractor {
 
@@ -24,7 +28,7 @@ class ExtractorImpl : public Extractor {
 
         ExtractorImpl(std::unique_ptr<SwigFactory> swigFactory);
 
-        const std::set<std::string> & getJarPaths() const override;
+        virtual void iterateJarPaths(tJarIteratorCallback callback) const override;
         std::vector<std::string>&& moveJvmOptions() override;
 
         void extract(std::string & scriptCode);

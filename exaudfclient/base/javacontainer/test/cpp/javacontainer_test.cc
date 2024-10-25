@@ -49,7 +49,7 @@ TEST(JavaContainer, basic_jar_script_class_with_white_spaces) {
 TEST(JavaContainer, basic_jar_with_white_spaces) {
     const std::string script_code = "%jar base/javacontainer/test/test.jar \t ;";
 
-#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser removes trailing white spaces.
+#ifndef USE_EXTRACTOR_V2 //The parsers behave differently: The legacy parser removes trailing white spaces.
     JavaVMTest vm(script_code);
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_classpath, "/exaudf/base/javacontainer/exaudf_deploy.jar:base/javacontainer/test/test.jar");
 #else
@@ -67,6 +67,35 @@ TEST(JavaContainer, basic_jar_with_white_spaces) {
 #endif
 }
 
+TEST(JavaContainer, basic_jars_ordering) {
+    /*
+     * This test validates correct behavior of collecting the %jar options in Extractor V1/V2.
+     * Both jar files referenced in `script_code` do not exist.
+     * The JavaVM will throw an exception with the first JAR file it gets from Extractor.
+     * For extractor V1: Our assumption is that the exception will be for `base/javacontainer/test/abc.jar`
+     * as this is alphabetically the first JAR file. (re-ordering)
+     * For extractor V2: Our assumption is that the exception will be for `base/javacontainer/test/test1.jar`
+     * as this is the first JAR file. (no re-ordering)
+     */
+    const std::string script_code = "%jar base/javacontainer/test/test1.jar:base/javacontainer/test/abc.jar;";
+
+#ifndef USE_EXTRACTOR_V2
+    const char* regexExpectedException = "^.*Java VM cannot find 'base/javacontainer/test/abc\\.jar': No such file or directory$";
+#else
+    const char* regexExpectedException = "^.*Java VM cannot find 'base/javacontainer/test/test1\\.jar': No such file or directory$";
+#endif
+    EXPECT_THROW({
+        try
+        {
+            JavaVMTest vm(script_code);
+        }
+        catch( const SWIGVMContainers::JavaVMach::exception& e )
+        {
+            EXPECT_THAT( e.what(), MatchesRegex(regexExpectedException));
+            throw;
+        }
+    }, SWIGVMContainers::JavaVMach::exception );
+}
 
 TEST(JavaContainer, basic_inline) {
     const std::string script_code = "import java.time.LocalDateTime;"
@@ -495,7 +524,7 @@ TEST(JavaContainer, import_script_script_class_option_ignored) {
     EXPECT_EQ(vm.getJavaVMInternalStatus().m_localClasspath, "/tmp");
     const std::string expected_script_code =
         "package com.exasol;\r\n"
-#ifndef USE_CTPG_PARSER //The parsers behave differently: The legacy parser incorrectly keeps imported scriptclass options
+#ifndef USE_EXTRACTOR_V2 //The parsers behave differently: The legacy parser incorrectly keeps imported scriptclass options
         "%scriptclass com.exasol.udf_profiling.UdfProfiler;"
 #endif
         "\n"

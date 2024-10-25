@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <set>
 #include <memory>
 
 #include "base/javacontainer/script_options/converter.h"
@@ -14,6 +13,11 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
+/**
+ * This class is a specialization for the generic converter class.
+ * It implements conversion of the jar option according to the requirements in the new
+ * parser implementation.
+ */
 class ConverterV2 : public Converter {
 
     public:
@@ -21,13 +25,11 @@ class ConverterV2 : public Converter {
     
         void convertExternalJar(const std::string & value);
 
-        const std::set<std::string> & getJarPaths() const {
-            return m_jarPaths;
-        }
+        void iterateJarPaths(tJarIteratorCallback callback) const override;
 
     private:
         
-        std::set<std::string> m_jarPaths;
+        std::vector<std::string> m_jarPaths;
 
 };
 

@@ -3,15 +3,22 @@
 
 #include <string>
 #include <vector>
-#include <set>
+#include <functional>
 
 namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
+/**
+ * This class retrieves the raw Java script option values (scriptclass, jvmoption, jar)
+ * and converts them to the proper format expected by the JvmContainerImpl class.
+ * Besides the converter functions it provides methods to access the converted values.
+ */
 class Converter {
 
     public:
+        typedef std::function<void(const std::string &option)> tJarIteratorCallback;
+
         Converter();
     
         void convertScriptClassName(const std::string & value);
@@ -24,8 +31,7 @@ class Converter {
 
         virtual void convertExternalJar(const std::string & value) = 0;
 
-        virtual const std::set<std::string> & getJarPaths() const = 0;
-
+        virtual void iterateJarPaths(tJarIteratorCallback callback) const = 0;
 
     private:
 

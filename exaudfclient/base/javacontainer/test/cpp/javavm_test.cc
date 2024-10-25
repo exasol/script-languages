@@ -18,7 +18,7 @@ JavaVMTest::JavaVMTest(std::string scriptCode, std::unique_ptr<SwigFactoryTestIm
 
 void JavaVMTest::run(std::string scriptCode, std::unique_ptr<SwigFactoryTestImpl> swigFactory) {
     SWIGVMContainers::SWIGVM_params->script_code = scriptCode.data();
-#ifndef USE_CTPG_PARSER
+#ifndef USE_EXTRACTOR_V2
     std::unique_ptr<SWIGVMContainers::JavaScriptOptions::tExtractorLegacy> extractor =
          std::make_unique<SWIGVMContainers::JavaScriptOptions::tExtractorLegacy>(std::move(swigFactory));
 #else
