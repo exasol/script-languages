@@ -173,7 +173,7 @@ class JavaJar(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'No values found for %jar statement'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:5\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+               "Error parsing script options at line 1: \[1:5\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_jar_path(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -187,7 +187,7 @@ class JavaJar(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'End of %jar statement not found'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:5\] PARSE: Syntax error: Unexpected \'not_semicolon\'")))
+               "Error parsing script options at line 1: \[1:5\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_jar_path2(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -207,7 +207,7 @@ class JavaJar(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'No values found for %jar statement'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:6\] PARSE: Syntax error: Unexpected \';\'")))
+               "Error parsing script options at line 1: \[1:6\] PARSE: Syntax error: Unexpected \';\'")))
     def test_jar_path3(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -227,7 +227,7 @@ class JavaJar(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'End of %jar statement not found'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:20\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+               "Error parsing script options at line 1: \[1:20\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_jar_path_end(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -431,7 +431,7 @@ class JavaJvmOption(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'No values found for %jvmoption statement'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:11\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+               "Error parsing script options at line 1: \[1:11\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_jvm_opt(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -445,7 +445,7 @@ class JavaJvmOption(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'End of %jvmoption statement not found'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:11\] PARSE: Syntax error: Unexpected \'not_semicolon\'")))
+               "Error parsing script options at line 1: \[1:11\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_jvm_opt2(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -465,7 +465,7 @@ class JavaJvmOption(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'No values found for %jvmoption statement'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:12\] PARSE: Syntax error: Unexpected \';\'")))
+               "Error parsing script options at line 1: \[1:12\] PARSE: Syntax error: Unexpected \';\'")))
     def test_jvm_opt3(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -485,7 +485,7 @@ class JavaJvmOption(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'End of %jvmoption statement not found'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:20\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+               "Error parsing script options at line 1: \[1:20\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_jvm_opt4(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT

@@ -67,7 +67,7 @@ class ScriptImport(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'No values found for %import statement'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:8\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+               "Error parsing script options at line 1: \[1:8\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_preprocessed_Import_missing_script_name(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -81,7 +81,7 @@ class ScriptImport(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'End of %import statement not found'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:8\] PARSE: Syntax error: Unexpected \'not_semicolon\'")))
+               "Error parsing script options at line 1: \[1:8\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_preprocessed_Import_missing_script_name2(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -101,7 +101,7 @@ class ScriptImport(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'No values found for %import statement'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:9\] PARSE: Syntax error: Unexpected \';\'")))
+               "Error parsing script options at line 1: \[1:9\] PARSE: Syntax error: Unexpected \';\'")))
     def test_preprocessed_Import_missing_script_name3(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
@@ -121,7 +121,7 @@ class ScriptImport(udf.TestCase):
 
     @useData(((legacy_env_declaration, 'End of %import statement not found'),
               (ctpg_parser_env_declaration,
-               "Error parsing script options: \[1:10\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+               "Error parsing script options at line 1: \[1:10\] PARSE: Syntax error: Unexpected \'<eof>\'")))
     def test_preprocessed_Import_missing_import_end(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
