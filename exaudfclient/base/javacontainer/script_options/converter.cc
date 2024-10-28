@@ -11,9 +11,11 @@ Converter::Converter()
 , m_whitespace(" \t\f\v") {}
 
 void Converter::convertScriptClassName(const std::string & value) {
-    if (value != "") {
-        m_jvmOptions.push_back("-Dexasol.scriptclass=" + value);
+
+    if (value.empty()) {
+        return;
     }
+    m_jvmOptions.push_back("-Dexasol.scriptclass=" + value);
 }
 
 void Converter::convertJvmOption(const std::string & value) {

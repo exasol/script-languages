@@ -32,7 +32,6 @@ TEST_P(ReplaceTrailingEscapeWhitespacesTest, s) {
 
     std::string str = underTest.first;
     StringOps::replaceTrailingEscapeWhitespaces(str);
-    std::cerr << "str='" << str << "' underTest.second='" << underTest.second << "'" << std::endl;
     ASSERT_EQ(str, underTest.second);
 }
 
@@ -48,7 +47,10 @@ const std::vector<std::pair<std::string, std::string>> replace_trailing_escape_w
             std::make_pair("hello world\\\\\\t\t", std::string("hello world\\\t")),
             std::make_pair("hello world\\\\\\\\t\t", std::string("hello world\\\\t")),
             std::make_pair("hello worl\td\\\\\\\\t\t", std::string("hello worl\td\\\\t")),
+            std::make_pair("t\t ", std::string("t")),
+            std::make_pair("hello worl\td\\\\\\\\", std::string("hello worl\td\\\\\\\\")), //If no whitespace escape sequence, backslashes are not interpreted as backslash escape sequence
         };
+
 
 INSTANTIATE_TEST_SUITE_P(
     StringOpsTest,

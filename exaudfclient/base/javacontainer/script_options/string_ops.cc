@@ -1,5 +1,6 @@
 #include "base/javacontainer/script_options/string_ops.h"
 #include <regex>
+#include <iostream>
 
 namespace SWIGVMContainers {
 
@@ -9,7 +10,7 @@ namespace StringOps {
 
 inline uint32_t countBackslashesBackwards(const std::string & s, size_t pos) {
     uint32_t retVal(0);
-    while (pos >= 0 && s[pos--] == '\\') retVal++;
+    while (pos >= 0 && s.at(pos--) == '\\') retVal++;
     return retVal;
 }
 
@@ -32,7 +33,7 @@ inline size_t replaceBackslashSequencesAndWhitespaceSequence(std::string & s, si
 }
 
 inline size_t replaceCharAtPositionAndBackslashes(std::string & s, size_t pos, const char* replacement) {
-    const uint32_t nBackslashes = countBackslashesBackwards(s, pos-1);
+    const size_t nBackslashes =  (pos > 0) ? countBackslashesBackwards(s, pos-1) : 0;
 
     const size_t backslashStartIdx = pos-nBackslashes;
     if(nBackslashes % 2 == 0) {
@@ -51,7 +52,7 @@ void replaceTrailingEscapeWhitespaces(std::string & s) {
             if (s.size() > 1) {
                 if(s[lastNoneWhitespaceIdx] == 't') {
                     firstWhitespaceAfterNoneWhitespaceIdx = replaceCharAtPositionAndBackslashes(s, lastNoneWhitespaceIdx, "\t");
-                } else if (s[lastNoneWhitespaceIdx] == '\\' && s[lastNoneWhitespaceIdx+1] == ' ') {
+                } else if (s[lastNoneWhitespaceIdx] == '\\' && lastNoneWhitespaceIdx < (s.size() - 1) && s.at(lastNoneWhitespaceIdx+1) == ' ') {
                     firstWhitespaceAfterNoneWhitespaceIdx = replaceCharAtPositionAndBackslashes(s, lastNoneWhitespaceIdx+1, " ");
                 } else if (s[lastNoneWhitespaceIdx] == 'f') {
                     firstWhitespaceAfterNoneWhitespaceIdx = replaceCharAtPositionAndBackslashes(s, lastNoneWhitespaceIdx, "\f");
