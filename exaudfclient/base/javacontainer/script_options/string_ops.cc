@@ -1,6 +1,5 @@
 #include "base/javacontainer/script_options/string_ops.h"
 #include <regex>
-#include <iostream>
 
 namespace SWIGVMContainers {
 
@@ -14,47 +13,55 @@ inline uint32_t countBackslashesBackwards(const std::string & s, size_t pos) {
     return retVal;
 }
 
+inline size_t replaceOnlyBackslashSequencesButKeepChar(std::string & s, size_t backslashStartIdx, size_t nBackslashes) {
+    const uint32_t nHalfBackslashes = (nBackslashes>>1);
+    if (nHalfBackslashes > 0) {
+        s = s.erase(backslashStartIdx, nHalfBackslashes );
+    }
+    const size_t newBackslashEndIdx = backslashStartIdx + nHalfBackslashes;
+    return newBackslashEndIdx + 1; //+1 because of the last None-Whitespace character we need to keep
+}
+
+inline size_t replaceBackslashSequencesAndWhitespaceSequence(std::string & s, size_t backslashStartIdx,
+                                                                size_t nBackslashes, const char* replacement) {
+    const uint32_t nHalfBackslashes = (nBackslashes>>1);
+    s = s.erase(backslashStartIdx, nHalfBackslashes+1 ); //Delete also backslash of whitespace escape sequence
+    const size_t newBackslashEndIdx = backslashStartIdx + nHalfBackslashes;
+    s = s.replace(newBackslashEndIdx, 1, replacement);
+    return newBackslashEndIdx + 1; //+1 because of the replaced whitespace character
+}
+
 inline size_t replaceCharAtPositionAndBackslashes(std::string & s, size_t pos, const char* replacement) {
-    std::cerr << "Called replaceCharAtPositionAndBackslashes with pos=" << pos << " replacement='" << replacement << "'" << std::endl;
     const uint32_t nBackslashes = countBackslashesBackwards(s, pos-1);
-    std::cerr << "nBackslashes=" << nBackslashes << std::endl;
-    size_t rtrimIdx = std::string::npos;
+
+    const size_t backslashStartIdx = pos-nBackslashes;
     if(nBackslashes % 2 == 0) {
-        //<replacement> does not belong to an escape sequence
-        //Delete half of the backslashes because they belong to the escape sequences
-        if (nBackslashes > 0) {
-            s = s.erase(pos-nBackslashes, (nBackslashes>>1) );
-        }
-        rtrimIdx = pos + 1 - (nBackslashes>>1);
+        return replaceOnlyBackslashSequencesButKeepChar(s, backslashStartIdx, nBackslashes);
     }
     else {
-        //<replacement> does belong to an escape sequence
-        //Delete half of the backslashes because they belong to the escape sequences + 1 of the <replacement>
-        s = s.erase(pos-nBackslashes, (nBackslashes>>1)+1 );
-        s = s.replace(pos - (nBackslashes>>1) - 1, 1, replacement);
-        rtrimIdx = pos - (nBackslashes>>1);
+        return replaceBackslashSequencesAndWhitespaceSequence(s, backslashStartIdx, nBackslashes, replacement);
     }
-    return rtrimIdx;
 }
 
 void replaceTrailingEscapeWhitespaces(std::string & s) {
     if (s.size() > 0) {
-        const size_t lastIdx = s.find_last_not_of(" \t\v\f");
-        if (lastIdx != std::string::npos) {
-            size_t rtrimIdx = lastIdx + 1;
+        const size_t lastNoneWhitespaceIdx = s.find_last_not_of(" \t\v\f");
+        if (lastNoneWhitespaceIdx != std::string::npos) {
+            size_t firstWhitespaceAfterNoneWhitespaceIdx = lastNoneWhitespaceIdx + 1;
             if (s.size() > 1) {
-                if(s[lastIdx] == 't') {
-                    rtrimIdx = replaceCharAtPositionAndBackslashes(s, lastIdx, "\t");
-                } else if (s[lastIdx] == '\\' && s[lastIdx+1] == ' ') {
-                    rtrimIdx = replaceCharAtPositionAndBackslashes(s, lastIdx+1, " ");
-                } else if (s[lastIdx] == 'f') {
-                    rtrimIdx = replaceCharAtPositionAndBackslashes(s, lastIdx, "\f");
-                } else if (s[lastIdx] == 'v') {
-                    rtrimIdx = replaceCharAtPositionAndBackslashes(s, lastIdx, "\v");
+                if(s[lastNoneWhitespaceIdx] == 't') {
+                    firstWhitespaceAfterNoneWhitespaceIdx = replaceCharAtPositionAndBackslashes(s, lastNoneWhitespaceIdx, "\t");
+                } else if (s[lastNoneWhitespaceIdx] == '\\' && s[lastNoneWhitespaceIdx+1] == ' ') {
+                    firstWhitespaceAfterNoneWhitespaceIdx = replaceCharAtPositionAndBackslashes(s, lastNoneWhitespaceIdx+1, " ");
+                } else if (s[lastNoneWhitespaceIdx] == 'f') {
+                    firstWhitespaceAfterNoneWhitespaceIdx = replaceCharAtPositionAndBackslashes(s, lastNoneWhitespaceIdx, "\f");
+                } else if (s[lastNoneWhitespaceIdx] == 'v') {
+                    firstWhitespaceAfterNoneWhitespaceIdx = replaceCharAtPositionAndBackslashes(s, lastNoneWhitespaceIdx, "\v");
                 }
             }
-            if (rtrimIdx != std::string::npos && rtrimIdx < s.size()) {
-                s = s.substr(0, rtrimIdx);
+            if (firstWhitespaceAfterNoneWhitespaceIdx != std::string::npos &&
+                firstWhitespaceAfterNoneWhitespaceIdx < s.size()) {
+                s = s.substr(0, firstWhitespaceAfterNoneWhitespaceIdx); //Right Trim the string
             }
         } else {
             s = "";
