@@ -271,6 +271,7 @@ TEST_P(ScriptOptionLinesEscapeSequenceTest, test_escape_seq_in_option_value) {
  '\n' -> new line character
  '\r' -> return character
  '\;' -> semicolon
+ '\\' -> backslash
  '\ ' or '\t' or '\f' or '\v' at start of option value -> replaced by the respective white space character
  '\ ' or '\t' or '\f' or '\v' in the middle of option value -> should not be replaced
  '\a' -> anything else should not be replaced.
@@ -280,13 +281,17 @@ const std::vector<std::pair<std::string, std::string>> escape_sequences =
             std::make_pair("-Dhttp.agent=ABC\\nDEF", "-Dhttp.agent=ABC\nDEF"),
             std::make_pair("-Dhttp.agent=ABC\\rDEF", "-Dhttp.agent=ABC\rDEF"),
             std::make_pair("-Dhttp.agent=ABC\\;DEF", "-Dhttp.agent=ABC;DEF"),
+            std::make_pair("-Dhttp.agent=ABC\\\\rDEF", "-Dhttp.agent=ABC\\rDEF"),
             std::make_pair("-Dhttp.agent=ABC\\aDEF", "-Dhttp.agent=ABC\\aDEF"), //any other escape sequence must stay as is
             std::make_pair("\\n-Dhttp.agent=ABCDEF", "\n-Dhttp.agent=ABCDEF"),
             std::make_pair("\\r-Dhttp.agent=ABCDEF", "\r-Dhttp.agent=ABCDEF"),
             std::make_pair("\\;-Dhttp.agent=ABCDEF", ";-Dhttp.agent=ABCDEF"),
+            std::make_pair("\\\\r-Dhttp.agent=ABCDEF", "\\r-Dhttp.agent=ABCDEF"),
             std::make_pair("-Dhttp.agent=ABCDEF\\n", "-Dhttp.agent=ABCDEF\n"),
             std::make_pair("-Dhttp.agent=ABCDEF\\r", "-Dhttp.agent=ABCDEF\r"),
             std::make_pair("-Dhttp.agent=ABCDEF\\;", "-Dhttp.agent=ABCDEF;"),
+            std::make_pair("-Dhttp.agent=ABCDEF\\\\;", "-Dhttp.agent=ABCDEF\\"),
+            std::make_pair("-Dhttp.agent=ABCDEF\\\\\\;", "-Dhttp.agent=ABCDEF\\;"),
             std::make_pair("-Dhttp.agent=ABC\\ DEF", "-Dhttp.agent=ABC\\ DEF"), //escaped white space in middle of string must stay as is
             std::make_pair("\\ -Dhttp.agent=ABCDEF", " -Dhttp.agent=ABCDEF"),
             std::make_pair("\\  \t -Dhttp.agent=ABCDEF", "  \t -Dhttp.agent=ABCDEF"),
