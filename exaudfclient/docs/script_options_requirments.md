@@ -39,7 +39,6 @@ This section details the high-level requirements for the new parser system, link
 `req~general-script-options-parsing~1`
 
 The parser must correctly identify and handle Script Options with the syntax `%<optionKey><white spaces><optionValue>;`.
-The separator between
 
 Needs: dsn
 
@@ -51,7 +50,7 @@ Covers:
 
 The following is the list of white spaces:
 |======================================================= 
-| Name         | C/Python/Java | ASCII Dec | ASCII Hex | 
+| Name         | C syntax      | ASCII Dec | ASCII Hex | 
 | tabulator    | '\t'          | 9         | 0x09      |
 | vertical tab | '\v'          | 11         | 0x0b     |
 | form feed    | '\f'          | 12         | 0x0c     |
@@ -64,10 +63,24 @@ Covers:
 - `feat~general-script-options-parsing~1`
 
 
+### White Spaces Separator
+`req~white-spaces-separator~1`
+
+A Script Options can have one or more white spaces between the Script Option Key `<optionKey>` and Script Option Value `<<optionValue>`.
+The parser must recognize those white spaces as separator(s).
+
+Needs: dsn
+
+Covers:
+- `feat~general-script-options-parsing~1`
+
+Depends:
+ - `req~white-spaces~1`
+
 ### Leading White Spaces Options Parsing
 `req~leading-white-spaces-script-options-parsing~1`
 
-The parser must recognize Script Options for lines starting with white space characters. 
+The parser must recognize Script Options for lines starting with white space characters before the Script Options.
 
 Needs: dsn
 
