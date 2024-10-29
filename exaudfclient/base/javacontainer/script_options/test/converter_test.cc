@@ -40,7 +40,6 @@ class ConverterV2JarTest : public ::testing::TestWithParam<std::pair<std::string
 TEST_P(ConverterV2JarTest, jar) {
     const std::pair<std::string, std::vector<std::string>> option_value = GetParam();
     const std::string jar_option_value = option_value.first;
-    std::cerr << "DEBUG: " << jar_option_value << std::endl;
 
     ConverterV2 converter;
     converter.convertExternalJar(option_value.first);

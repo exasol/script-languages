@@ -31,6 +31,8 @@ inline void trim(std::string &s) {
     rtrim(s);
 }
 
+void replaceTrailingEscapeWhitespaces(std::string & s);
+
 } //namespace StringOps
 
 

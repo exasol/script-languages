@@ -3,6 +3,7 @@
 #include "base/utils/exceptions.h"
 #include "base/script_options_parser/exception.h"
 #include "base/swig_factory/swig_factory.h"
+#include "base/javacontainer/script_options/string_ops.h"
 #include <sstream>
 
 
@@ -24,7 +25,11 @@ void ScriptOptionLinesParserCTPG::prepareScriptCode(const std::string & scriptCo
 
 void ScriptOptionLinesParserCTPG::parseForScriptClass(std::function<void(const std::string &option)> callback) {
     try {
-        parseForSingleOption(m_keywords.scriptClassKeyword(), callback);
+        parseForSingleOption(m_keywords.scriptClassKeyword(), [&](const std::string &option) {
+            std::string trimmedValue(option);
+            StringOps::trim(trimmedValue);
+            callback(trimmedValue);
+        });
     } catch(const ExecutionGraph::OptionParserException& ex) {
         Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1623");
     }
@@ -40,7 +45,11 @@ void ScriptOptionLinesParserCTPG::parseForJvmOptions(std::function<void(const st
 
 void ScriptOptionLinesParserCTPG::parseForExternalJars(std::function<void(const std::string &option)> callback) {
     try {
-        parseForMultipleOption(m_keywords.jarKeyword(), callback);
+        parseForMultipleOption(m_keywords.jarKeyword(), [callback] (const std::string &option) {
+            std::string formattedValue(option);
+            StringOps::replaceTrailingEscapeWhitespaces(formattedValue);
+            callback(formattedValue);
+        });
     } catch(const ExecutionGraph::OptionParserException& ex) {
         Utils::rethrow(ex, "F-UDF-CL-SL-JAVA-1625");
     }
