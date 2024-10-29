@@ -60,22 +60,22 @@ class JavaExtJarFileReferences(udf.TestCase):
             r_upload.raise_for_status()
         return f"/buckets/bfsdefault/myudfs/jar_references_test/java_jar_ref_test/{expected_jar_in_script_option}"
 
-    @useData([("java_jar.jar", "java_jar.jar",1), ("java_jar.jar\ ", "java_jar.jar ", 2),
-              (r"java_jar.jar\  ", r"java_jar.jar ", 3), ("java_jar.jar\\t", "java_jar.jar\t", 4),
-              ("java_jar.jar ", "java_jar.jar", 5)])
-    def test_jar_references(self, expected_jar_in_script_option, uploaded_jar, idx):
+    @useData([("java_jar.jar", "java_jar.jar"), ("java_jar.jar\ ", "java_jar.jar "),
+              (r"java_jar.jar\  ", r"java_jar.jar "), ("java_jar.jar\\t", "java_jar.jar\t"),
+              ("java_jar.jar ", "java_jar.jar")])
+    def test_jar_references(self, expected_jar_in_script_option, uploaded_jar):
         """
         Install the jar file with the specific file name in BucketFS, and then create the UDF
         which uses this JAR file name. The JAR filename in the UDF (%jar) needs to be properly encoded.
         """
         bucketfs_path = self.upload_to_bucketfs(self.jar_target, expected_jar_in_script_option, uploaded_jar)
         self.query(udf.fixindent(f'''
-            CREATE JAVA SCALAR SCRIPT JAVA_TEST_JAR_UDF_{idx}() RETURNS INT AS
+            CREATE OR REPLACE JAVA SCALAR SCRIPT JAVA_TEST_JAR_UDF() RETURNS INT AS
             %scriptclass com.exasol.slc.testudf.Main;
             %env SCRIPT_OPTIONS_PARSER_VERSION=2;
             %jar {bucketfs_path};
             '''))
-        rows = self.query(f"SELECT JAVA_TEST_JAR_UDF_{idx}()")
+        rows = self.query(f"SELECT JAVA_TEST_JAR_UDF()")
         self.assertGreaterEqual(rows[0][0], 11)
 
 
