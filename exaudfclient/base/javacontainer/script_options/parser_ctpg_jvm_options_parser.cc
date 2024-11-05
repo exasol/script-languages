@@ -63,6 +63,8 @@ constexpr parser jvm_option_parser(
             >= [] () {return tJvmOptions();},
         text(option_element)
             >= [](auto&& e) { return to_options(std::move(e)); },
+        text(text, whitespaces)
+            >= [](auto&& ob, skip) { return std::move(ob); },
         text(text, whitespaces, option_element)
             >= [](auto&& ob, skip, auto&& e) { return add_option(std::move(e), std::move(ob)); },
         option_element(not_separator)
