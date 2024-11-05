@@ -75,11 +75,12 @@ TEST_P(ConverterV2JvmOptionsTest, jvm_option) {
 
 const std::vector<std::pair<std::string, std::vector<std::string>>> jvm_options_strings_v2 =
         {
-            std::make_pair("optionA=abc optionB=def", std::vector<std::string>({"optionA=abc", "optionB=def"})), //basic splitting
-            std::make_pair("optionA=abc\\ def optionB=ghi", std::vector<std::string>({"optionA=abc def", "optionB=ghi"})), //with escaped whitespace
-            std::make_pair("optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})), //with escaped whitespace
-            std::make_pair("   optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})), //with escaped whitespace
-            std::make_pair("   \\\\optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"\\optionA=abc\tdef", "optionB=ghi"})), //with escaped whitespace
+            std::make_pair("optionA=abc optionB=def", std::vector<std::string>({"optionA=abc", "optionB=def"})),
+            std::make_pair("optionA=abc\\ def optionB=ghi", std::vector<std::string>({"optionA=abc def", "optionB=ghi"})),
+            std::make_pair("optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef\\\\\t\t optionB=ghi", std::vector<std::string>({"optionA=abc\tdef\\", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef\\\\\\t\\t optionB=ghi", std::vector<std::string>({"optionA=abc\tdef\\\t\t", "optionB=ghi"}))
         };
 
 INSTANTIATE_TEST_SUITE_P(
