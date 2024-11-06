@@ -19,7 +19,7 @@ This section lists the key features of the new UDF Client Script Options parser 
 ### General Script Options Parsing
 `feat~general-script-options-parsing~1`
 
-Script Options must be parsed according to syntax definition.
+Script Options must be parsed according to a given syntax definition.
 Developers can add additional Options in an easy and consistent way.
 
 Needs: req
@@ -27,7 +27,7 @@ Needs: req
 ### Java-specific Script Options
 `feat~java-specific-script-options~1`
 
-The parser must process all Java specific options correctly.
+The parser must process all Java-specific options correctly.
 
 Needs: req
 
@@ -48,7 +48,7 @@ Covers:
 ### White Spaces
 `req~white-spaces~1`
 
-The following is the list of white spaces:
+The parser must treat the following list of white spaces as token separator:
 |======================================================= 
 | Name         | C syntax      | ASCII Dec | ASCII Hex | 
 | tabulator    | '\t'          | 9         | 0x09      |
@@ -80,7 +80,7 @@ Depends:
 ### Leading White Spaces Options Parsing
 `req~leading-white-spaces-script-options-parsing~1`
 
-The parser must recognize Script Options for lines starting with white space characters before the Script Options.
+The parser must accept Script Options for lines starting with any number of white space characters before the Script Options.
 
 Needs: dsn
 
@@ -225,11 +225,19 @@ Tags: V2
 Covers:
 - `feat~java-specific-script-options~1`
 
+### Java %jar Option Handling Multiple Options
+`req~java-jar-option-handling-multiple-options~1`
+
+The Java parser handler must find multiple %jar options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`.
+The Java parser handler shall split the entries by the colon character.
+
+Covers:
+- `feat~java-specific-script-options~1`
+
 ### Java %jar Option Handling V1
 `req~java-jar-option-handling-v1~1`
 
-The Java parser handler must find multiple %jar options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`.
-The Java parser handler shall split the entries by the colon character. The Java parser handler shall identify duplicated files and order the result of all `%jar` options alphabetically.
+The Java parser handler shall identify duplicated files and order the result of all `%jar` options alphabetically.
 
 Needs: dsn
 
@@ -238,11 +246,13 @@ Tags: V1
 Covers:
 - `feat~java-specific-script-options~1`
 
+Depends:
+- `req~java-jar-option-handling-multiple-options~1`
+
 ### Java %jar Option Handling V2
 `req~java-jar-option-handling-v2~1`
 
-The Java parser handler must find multiple %jar options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`.
-The Java parser handler shall split the entries by the colon character. The Java parser handler must keep duplicates. The order of the entries must not change.
+The Java parser handler must keep duplicates. The order of the entries must not change.
 
 Needs: dsn
 
@@ -251,10 +261,13 @@ Tags: V2
 Covers:
 - `feat~java-specific-script-options~1`
 
+Depends:
+- `req~java-jar-option-handling-multiple-options~1`
+
 ### Java %jar Option Trailing White Space Handling
 `req~java-jar-option-trailing-white-space-handling~1`
 
-The Java parser handler must remove trailing white spaces for `%jar` option values if they are part of the escape sequence '\ '. Escape sequences at the end of a found `%jar` option of the form `\ ` must be replaced with ' '.
+The Java parser handler must remove trailing white spaces for `%jar` option values if they are not part of the escape sequence '\ '. Escape sequences at the end of a found `%jar` option of the form `\ ` must be replaced with ' '.
 This approach provides backwards compatibility for most existing UDF's from customers.
 
 Needs: dsn
@@ -280,8 +293,16 @@ Covers:
 ### Java %import Option Replace Referenced Sripts
 `req~java-import-option-replace-referenced-scripts~1`
 
-For each found %import option, the Java parser handler must request and replace the referenced scripts recursively. This means,
-if the referenced scripts contain also `%import` options, the implementation must replace those, too.
+For each found `%import` option, the Java parser handler must request and replace the referenced scripts recursively. This means, if the referenced scripts contain also `%import` options, the implementation must replace those, too.
+
+Needs: dsn
+
+Covers:
+- `feat~java-specific-script-options~1`
+
+### Java %import Option Referenced Sripts Name
+`req~java-import-option-referenced-scripts-name~1`
+
 The referenced script name should be handled according to the [Exasol SQL identifier specification](https://docs.exasol.com/db/latest/sql_references/basiclanguageelements.htm#SQLidentifier).
 
 Needs: dsn
@@ -292,9 +313,10 @@ Covers:
 ### Java %import Option Handling
 `req~java-import-option-handling~1`
 
-For each found %import option, the Java parser handler must handle nested Script Options appropriately:
+For each found `%import` option, the Java parser handler must handle nested Script Options appropriately:
 1. `%scriptclass` option must be ignored, but removed from the script code.
 2. All other options must be handled as if they were part of the source script.
+3. Already imported scripts must not be imported again, but the `%import` statement must be removed
 
 Needs: dsn
 
@@ -307,6 +329,7 @@ Covers:
 The new parser must be implemented using an existing, open-source parser that supports definition of Lexer and Parser Rules in C++ code without additional runtime dependencies.
 The implementation needs to be Open Source because the projects where the parser will be used are mainly Open Source, too. 
 It is important to avoid additional runtime dependencies, as this would complicate the setup and maintenance of the runtime environment of the UDF client (aka Script Languages Container).
+Also, the license of the library must allow usage in closed source, i.g. MIT License.
 
 
 Needs: dsn
