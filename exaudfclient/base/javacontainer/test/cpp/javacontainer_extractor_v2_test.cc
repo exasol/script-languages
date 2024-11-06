@@ -56,7 +56,12 @@ const std::vector<std::pair<std::string, std::string>> escape_sequences =
             std::make_pair("\\ -Dhttp.agent=ABCDEF", "-Dhttp.agent=ABCDEF"),
             std::make_pair("\\t-Dhttp.agent=ABCDEF", "-Dhttp.agent=ABCDEF"),
             std::make_pair("\\f-Dhttp.agent=ABCDEF", "-Dhttp.agent=ABCDEF"),
-            std::make_pair("\\v-Dhttp.agent=ABCDEF", "-Dhttp.agent=ABCDEF")
+            std::make_pair("\\v-Dhttp.agent=ABCDEF", "-Dhttp.agent=ABCDEF"),
+            std::make_pair("\\v-Dhttp.agent=ABC\\tDEF", "-Dhttp.agent=ABC\tDEF"),
+            std::make_pair("\\v-Dhttp.agent=ABC\\ DEF", "-Dhttp.agent=ABC DEF"),
+            std::make_pair("\\v-Dhttp.agent=ABC\\fDEF", "-Dhttp.agent=ABC\fDEF"),
+            std::make_pair("\\v-Dhttp.agent=ABC\\vDEF", "-Dhttp.agent=ABC\vDEF"),
+            std::make_pair("\\v-Dhttp.agent=\"ABC\\tDEF\"", "-Dhttp.agent=\"ABC\tDEF\"")
         };
 
 INSTANTIATE_TEST_SUITE_P(

@@ -23,7 +23,9 @@ class ConverterV2 : public Converter {
     public:
         ConverterV2();
     
-        void convertExternalJar(const std::string & value);
+        void convertExternalJar(const std::string & value) override;
+
+        void convertJvmOption(const std::string & value)  override;
 
         void iterateJarPaths(tJarIteratorCallback callback) const override;
 

@@ -686,6 +686,26 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'unknown error'):
             rows = self.query('SELECT test_jvm_opt_invalid_stack_size() FROM dual')
 
+    @useData([("-Dmyoption=Hello\ World", "Hello World"), ("-Dmyoption=\"Hello\ World\"", "\"Hello World\""),
+              ("-Dmyoption=Hello\\tWorld", "Hello\tWorld"), ("-Dmyoption=Hello\\vWorld", "Hello\vWorld"),
+              ("-Dmyoption=Hello\\\\World", "Hello\\World"), ("-Dmyoption=Hello\\fWorld", "Hello\fWorld"),
+              ("-Dmyoption=Hello\ World\\t\\t   ", "Hello World\t\t")])
+    def test_jvm_opt_escape_sequence(self, jvm_option_value, expected_return_value):
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE java SCALAR SCRIPT
+                test_jvm_opt_with_escape()
+                RETURNS VARCHAR(10000) AS
+                %env SCRIPT_OPTIONS_PARSER_VERSION=2;
+                %jvmoption ''' + jvm_option_value + ''';
+                class TEST_JVM_OPT_WITH_ESCAPE {
+                    static String run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                        return System.getProperty("myoption");
+                    }
+                }
+                '''))
+        self.assertRowsEqual([(expected_return_value,)],
+                             self.query('''SELECT test_jvm_opt_with_escape()'''))
+
 
 class JavaScriptClass(udf.TestCase):
 

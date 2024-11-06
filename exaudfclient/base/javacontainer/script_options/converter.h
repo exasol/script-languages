@@ -23,7 +23,7 @@ class Converter {
     
         void convertScriptClassName(const std::string & value);
 
-        void convertJvmOption(const std::string & value);
+        virtual void convertJvmOption(const std::string & value) = 0;
 
         std::vector<std::string>&& moveJvmOptions() {
             return std::move(m_jvmOptions);
@@ -33,7 +33,7 @@ class Converter {
 
         virtual void iterateJarPaths(tJarIteratorCallback callback) const = 0;
 
-    private:
+    protected:
 
         std::vector<std::string> m_jvmOptions;
 

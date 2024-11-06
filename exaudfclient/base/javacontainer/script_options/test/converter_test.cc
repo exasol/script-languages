@@ -60,3 +60,33 @@ INSTANTIATE_TEST_SUITE_P(
     ConverterV2JarTest,
     ::testing::ValuesIn(jar_strings_v2)
 );
+
+class ConverterV2JvmOptionsTest : public ::testing::TestWithParam<std::pair<std::string, std::vector<std::string>>> {};
+
+TEST_P(ConverterV2JvmOptionsTest, jvm_option) {
+    const std::pair<std::string, std::vector<std::string>> option_value = GetParam();
+    const std::string jvm_option_value = option_value.first;
+
+    ConverterV2 converter;
+    converter.convertJvmOption(option_value.first);
+    std::vector<std::string> result = std::move(converter.moveJvmOptions());
+    ASSERT_EQ(result, option_value.second);
+}
+
+const std::vector<std::pair<std::string, std::vector<std::string>>> jvm_options_strings_v2 =
+        {
+            std::make_pair("optionA=abc optionB=def", std::vector<std::string>({"optionA=abc", "optionB=def"})),
+            std::make_pair("optionA=abc\\ def optionB=ghi", std::vector<std::string>({"optionA=abc def", "optionB=ghi"})),
+            std::make_pair("optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef\\\\\t\t optionB=ghi", std::vector<std::string>({"optionA=abc\tdef\\", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef\\\\\\t\\t optionB=ghi", std::vector<std::string>({"optionA=abc\tdef\\\t\t", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef\\\\\\t\\t optionB=ghi   ", std::vector<std::string>({"optionA=abc\tdef\\\t\t", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef\\\\\\t\\t optionB=ghi\\ \\t   ", std::vector<std::string>({"optionA=abc\tdef\\\t\t", "optionB=ghi \t"}))
+        };
+
+INSTANTIATE_TEST_SUITE_P(
+    Converter,
+    ConverterV2JvmOptionsTest,
+    ::testing::ValuesIn(jvm_options_strings_v2)
+);

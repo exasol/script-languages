@@ -24,7 +24,9 @@ class ConverterLegacy : public Converter {
     public:
         ConverterLegacy();
     
-        void convertExternalJar(const std::string & value);
+        void convertExternalJar(const std::string & value) override;
+
+        void convertJvmOption(const std::string & value)  override;
 
         void iterateJarPaths(tJarIteratorCallback callback) const override;
 
