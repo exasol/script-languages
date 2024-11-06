@@ -80,7 +80,8 @@ const std::vector<std::pair<std::string, std::vector<std::string>>> jvm_options_
             std::make_pair("optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})),
             std::make_pair("   optionA=abc\\tdef optionB=ghi", std::vector<std::string>({"optionA=abc\tdef", "optionB=ghi"})),
             std::make_pair("   optionA=abc\\tdef\\\\\t\t optionB=ghi", std::vector<std::string>({"optionA=abc\tdef\\", "optionB=ghi"})),
-            std::make_pair("   optionA=abc\\tdef\\\\\\t\\t optionB=ghi", std::vector<std::string>({"optionA=abc\tdef\\\t\t", "optionB=ghi"}))
+            std::make_pair("   optionA=abc\\tdef\\\\\\t\\t optionB=ghi", std::vector<std::string>({"optionA=abc\tdef\\\t\t", "optionB=ghi"})),
+            std::make_pair("   optionA=abc\\tdef\\\\\\t\\t optionB=ghi   ", std::vector<std::string>({"optionA=abc\tdef\\\t\t", "optionB=ghi"}))
         };
 
 INSTANTIATE_TEST_SUITE_P(
