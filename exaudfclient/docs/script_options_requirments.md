@@ -138,7 +138,7 @@ All white spaces between the option key and option value are to be ignored. The 
 - '\f' => <form feed> character
 - '\v' => <vertical tab> character
 
-White spaces between the option value and the terminating ";" shall remain.
+White spaces between the option value and the terminating ";" shall be interpreted as part of the value.
 
 Needs: dsn
 
@@ -153,7 +153,10 @@ Depends:
 ### Multiple Options
 `req~multiple-options-management~1`
 
-The parser must collect multiple Script Options with the same key. Note: the specific handling depends on the option handler.
+The parser must collect multiple Script Options with the same key.
+
+Comment: 
+"Collecting" in this context means that a merging strategy must be applied. We don't want multiple options with the same key to result in simply overwriting or discarding values. Please note that the specific handling depends on the individual option handler.
 
 Needs: dsn
 
@@ -228,8 +231,7 @@ Covers:
 ### Java %jar Option Handling Multiple Options
 `req~java-jar-option-handling-multiple-options~1`
 
-The Java parser handler must find multiple %jar options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`.
-The Java parser handler shall split the entries by the colon character.
+The Java parser handler must find multiple `%jar` options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`. The Java parser handler shall split the entries by the colon character.
 
 Covers:
 - `feat~java-specific-script-options~1`
@@ -237,7 +239,7 @@ Covers:
 ### Java %jar Option Handling V1
 `req~java-jar-option-handling-v1~1`
 
-The Java parser handler shall identify duplicated files and order the result of all `%jar` options alphabetically.
+The Java parser handler shall unify duplicated files and order the result of all `%jar` options alphabetically.
 
 Needs: dsn
 
@@ -283,7 +285,7 @@ Depends:
 ### Java %jvmoption Handling
 `req~java-jvmoption-handling~1`
 
-The Java parser handler must find multiple %jvmoption options, allowing duplicates and maintaining order.
+The Java parser handler must find multiple `%jvmoption` options, allowing duplicates and maintaining order.
 
 Needs: dsn
 
