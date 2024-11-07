@@ -166,7 +166,7 @@ Covers:
 ### Duplicate Options Management
 `req~multiple-options-management~1`
 
-The parser must collect multiple Script Options with the same key and value. Note: the specific handling depends on the option handler.
+The parser must collect multiple Script Options with the same key and same/different value. Note: the specific handling depends on the option handler.
 
 Needs: dsn
 
@@ -176,7 +176,7 @@ Covers:
 ### Script Option Removal
 `req~script-option-removal~1`
 
-The parser handler must remove found known Script Options from the original script code. Successfully parsed Script Options, which are not recognized by the parser handler shall remain in the script code.
+The parser handler must remove found known Script Options from the original script code. 
 
 Needs: dsn
 
@@ -184,6 +184,31 @@ Covers:
 - `feat~general-script-options-parsing~1`
 - `feat~java-specific-script-options~1`
 
+### Script Option Unknown Options Behavior V1
+`req~script-option-unknown-options-behvaior-v1~1`
+
+Unknown script options must remain untouched in the script code. The Java compiler is supposed to throw an error message during the compilation. 
+
+Needs: dsn
+
+Covers:
+- `feat~general-script-options-parsing~1`
+- `feat~java-specific-script-options~1`
+
+Tags: V1
+
+### Script Option Unknown Options Behavior V2
+`req~script-option-unknown-options-behvaior-v2~1`
+
+The parser handler must detect unknown script options and throw an exception if such an options is found. 
+
+Needs: dsn
+
+Covers:
+- `feat~general-script-options-parsing~1`
+- `feat~java-specific-script-options~1`
+
+Tags: V2
 
 ### Escape Sequence Script Options Parsing
 `req~escape-sequence-script-options-parsing~1`
@@ -325,14 +350,10 @@ Needs: dsn
 Covers:
 - `feat~java-specific-script-options~1`
 
-### Existing Parser Library Dependencies
-`req~existing-parser-library-dependencies~1`
+### Existing Parser Library License
+`req~existing-parser-library-license~1`
 
-The new parser must be implemented using an existing, open-source parser that supports definition of Lexer and Parser Rules in C++ code without additional runtime dependencies.
-The implementation needs to be Open Source because the projects where the parser will be used are mainly Open Source, too. 
-It is important to avoid additional runtime dependencies, as this would complicate the setup and maintenance of the runtime environment of the UDF client (aka Script Languages Container).
-Also, the license of the library must allow usage in closed source, i.g. MIT License.
-
+The parser needs to be usable in open source and closed source projects.
 
 Needs: dsn
 
