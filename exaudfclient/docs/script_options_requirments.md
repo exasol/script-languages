@@ -63,20 +63,6 @@ Covers:
 - `feat~general-script-options-parsing~1`
 
 
-### White Spaces Separator
-`req~white-spaces-separator~1`
-
-A Script Options can have one or more white spaces between the Script Option Key `<optionKey>` and Script Option Value `<<optionValue>`.
-The parser must recognize those white spaces as separator(s).
-
-Needs: dsn
-
-Covers:
-- `feat~general-script-options-parsing~1`
-
-Depends:
- - `req~white-spaces~1`
-
 ### Leading White Spaces Options Parsing
 `req~leading-white-spaces-script-options-parsing~1`
 
@@ -138,7 +124,7 @@ All white spaces between the option key and option value are to be ignored. The 
 - '\f' => <form feed> character
 - '\v' => <vertical tab> character
 
-White spaces between the option value and the terminating ";" shall be interpreted as part of the value.
+White spaces in the middle of the option value and between the option value and the terminating ";" shall be interpreted as part of the value.
 
 Needs: dsn
 
@@ -257,6 +243,7 @@ Covers:
 `req~java-jar-option-handling-multiple-options~1`
 
 The Java parser handler must find multiple `%jar` options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`. The Java parser handler shall split the entries by the colon character.
+Compare [OpenJdk implementation](https://github.com/AdoptOpenJDK/openjdk-jdk11/blob/19fb8f93c59dfd791f62d41f332db9e306bc1422/src/java.base/share/classes/jdk/internal/loader/URLClassPath.java#L174) of parsing the classpath.
 
 Covers:
 - `feat~java-specific-script-options~1`
