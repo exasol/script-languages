@@ -199,7 +199,7 @@ Tags: V2
 ### Escape Sequence Script Options Parsing
 `req~escape-sequence-script-options-parsing~1`
 
-The following rules for escape sequences at any place within a script optionValue are to be applied:
+The following rules for escape sequences at any place within a script option value are to be applied:
 - '\n' => <line feed> character
 - '\r' => <carriage return> character
 - '\;' => ';' character
@@ -324,8 +324,23 @@ Needs: dsn
 Covers:
 - `feat~java-specific-script-options~1`
 
-### Java %import Option Handling
-`req~java-import-option-handling~1`
+### Java %import Option Handling V1
+`req~java-import-option-handling-v1~1`
+
+For each found `%import` option, the Java parser handler must handle nested Script Options appropriately:
+1. `%scriptclass` option must be ignored.
+2. All other options must be handled as if they were part of the source script.
+3. Already imported scripts must not be imported again, but the `%import` statement must be removed
+
+Needs: dsn
+
+Tags: V1
+
+Covers:
+- `feat~java-specific-script-options~1`
+
+### Java %import Option Handling V2
+`req~java-import-option-handling-v2~1`
 
 For each found `%import` option, the Java parser handler must handle nested Script Options appropriately:
 1. `%scriptclass` option must be ignored, but removed from the script code.
@@ -334,6 +349,8 @@ For each found `%import` option, the Java parser handler must handle nested Scri
 
 Needs: dsn
 
+Tags: V2
+
 Covers:
 - `feat~java-specific-script-options~1`
 
@@ -341,18 +358,6 @@ Covers:
 `req~existing-parser-library-license~1`
 
 The parser needs to be usable in open source and closed source projects.
-
-Needs: dsn
-
-Tags: V2
-
-Covers:
-- `feat~general-script-options-parsing~1`
-
-### Existing Parser Linker Namespace Compatibility
-`req~existing-parser-linker-namespace-compatibility~1`
-
-Ideally, the new parser should allow encapsulation in a custom C++ namespace, in order to avoid possible linker namespace conflicts with customer libraries.
 
 Needs: dsn
 
