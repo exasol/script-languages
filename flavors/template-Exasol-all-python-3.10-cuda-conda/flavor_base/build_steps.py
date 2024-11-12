@@ -3,17 +3,6 @@ from typing import Dict
 from exasol.slc.internal.tasks.build.docker_flavor_image_task import (DockerFlavorAnalyzeImageTask)
 
 
-class AnalyzeNVidiaDriverDeps(DockerFlavorAnalyzeImageTask):
-
-    def get_build_step(self) -> str:
-        return "nvidia_driver_deps"
-
-    def get_additional_build_directories_mapping(self) -> Dict[str, str]:
-        return {"01_nodoc": "ext/01_nodoc", "scripts": "ext/scripts"}
-
-    def get_path_in_flavor(self):
-        return "flavor_base"
-
 class AnalyzeCondaDeps(DockerFlavorAnalyzeImageTask):
 
     def get_build_step(self) -> str:
@@ -24,9 +13,6 @@ class AnalyzeCondaDeps(DockerFlavorAnalyzeImageTask):
 
     def get_path_in_flavor(self):
         return "flavor_base"
-
-    def requires_tasks(self):
-        return {"nvidia_driver_deps": AnalyzeNVidiaDriverDeps}
 
 class AnalyzeUDFClientDeps(DockerFlavorAnalyzeImageTask):
 
