@@ -95,7 +95,9 @@ Depends:
 ### Multiple Line Script Options Parsing
 `req~multiple-lines-script-options-parsing~1`
 
-The parser must recognize Script Options at any line in the given script code. This is especially important because the `%import` option (see requirement `req~java-import-option-replace-referenced-scripts~1`) might replace options with Java code in the final script code.
+The parser must recognize Script Options at any line in the given script code. 
+
+Rationale: This is especially important because the `%import` option (see requirement `req~java-import-option-replace-referenced-scripts~1`) might replace options with Java code in the final script code.
 
 Needs: dsn
 
@@ -121,14 +123,15 @@ Depends:
 ### White Spaces Options Parsing V2
 `req~white-spaces-script-options-parsing-v2~1`
 
-All white spaces between the option key and option value are to be ignored. The following rules for escape sequences at **the start** of a script optionValue are to be applied:
+All white spaces between the option key and option value are to be ignored. The following rules for escape sequences at **the start** of a script option value are to be applied:
 - '\ ' => space character
 - '\t' => <tab> character
 - '\f' => <form feed> character
 - '\v' => <vertical tab> character
 
 White spaces in the middle of the option value and between the option value and the terminating ";" shall be interpreted as part of the value.
-The rationale is that the new version of the parser should be as much as possible backwards compatible to V1, because it will simplify migration of existing UDF's.
+
+Rationale: The new version of the parser should be as much as possible backwards compatible to V1, because it will simplify migration of existing UDF's.
 
 Needs: dsn
 
