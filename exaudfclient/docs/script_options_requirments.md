@@ -12,6 +12,9 @@ Database Administrators manage the database environment and ensure the efficient
 ### Data Scientist
 Data Scientists develop and deploy UDFs in languages such as Java, Python, or R to process and analyze data within Exasol.
 
+### Developer
+Developers who integrates the Script Options parser library into other software.
+
 ## Features
 
 This section lists the key features of the new UDF Client Script Options parser which you would highlight in a product leaflet.
@@ -92,7 +95,7 @@ Depends:
 ### Multiple Line Script Options Parsing
 `req~multiple-lines-script-options-parsing~1`
 
-The parser must recognize Script Options at any line in the given script code.
+The parser must recognize Script Options at any line in the given script code. This is especially important because the `%import` option (see requirement `req~java-import-option-replace-referenced-scripts~1`) might replace options with Java code in the final script code.
 
 Needs: dsn
 
@@ -125,6 +128,7 @@ All white spaces between the option key and option value are to be ignored. The 
 - '\v' => <vertical tab> character
 
 White spaces in the middle of the option value and between the option value and the terminating ";" shall be interpreted as part of the value.
+The rationale is that the new version of the parser should be as much as possible backwards compatible to V1, because it will simplify migration of existing UDF's.
 
 Needs: dsn
 
