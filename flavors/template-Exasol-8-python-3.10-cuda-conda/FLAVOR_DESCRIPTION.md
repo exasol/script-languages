@@ -1,4 +1,4 @@
-# Details for template-Exasol-all-python-3.8-cuda-conda flavor
+# Details for template-Exasol-8-python-3.10-cuda-conda flavor
 
 ## Packages
 
