@@ -4,7 +4,6 @@
 
 **Remarks:** The packages are grouped by there main usage and their type.
 
-- [NVIDIA Driver dependencies](flavor_base/nvidia_driver_deps/packages/apt_get_packages)
 - UDFclient dependencies
   - [Conda Packages](flavor_base/udfclient_deps/packages/conda_packages)
   - [Conda Channels](flavor_base/udfclient_deps/packages/conda_channels)
