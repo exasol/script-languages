@@ -361,7 +361,7 @@ Covers:
 ### Existing Parser Library License
 `req~existing-parser-library-license~1`
 
-The parser needs to be usable in open source and closed source projects.
+Developers must be able to use the parser in open source and closed source projects.
 
 Needs: dsn
 
