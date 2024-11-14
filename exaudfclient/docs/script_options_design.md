@@ -2,18 +2,101 @@
 
 This document details the design aspects of the new Exasol UDF Client Script Options parser, based on the high-level requirements outlined in the System Requirement Specification.
 
-## Introduction
+## Acknowledgments
 
-The purpose of this document is to provide an in-depth implementation view of the UDF Client Script Options parser, ensuring it meets all specified high-level requirements and integrates seamlessly into the existing Exasol environment. The parser needs to be implemented in C++.
+This document's section structure is derived from the "[arc42](https://arc42.org/)" architectural template by Dr. Gernot Starke, Dr. Peter Hruschka.
 
 ## Constraints
 
 - The parser implementation must be in C++.
 - The chosen parser implementation is [ctpg](https://github.com/peter-winter/ctpg), which supports the definition of Lexer and Parser Rules in C++ code.
+- The selected parser should allow easy encapsulation in a custom C++ namespace (UDF client linker namespace constraint)
+- The selected parser should not depend on additional runtime dependencies
+- The selected parser should have minimal compile time dependencies, i.e. no additional shared libraries or tools to generate C++ code
 
-## Design Requirements
+### Requirement Overview
 
-This section outlines the specific design requirements linked to the high-level requirements, detailing the implementation and methods to achieve them.
+Please refer to the [System Requirement Specification](script_options_requirments.md) for user-level requirements.
+
+## Building Blocks
+
+### Overall Architecture
+
+#### Component Overview
+
+![Components](diagrams/OveralScriptOptionalsBuildingBlocks.png)
+
+At the very high level there can be distinguished between the generic "Script Options Parser" module which parses a UDF script code and returns the found script options, and the "Script Options Parser Handler" which converts the Java UDF specific script options. In both modules there are specific implementation for the legacy parser and the new CTPG based parser.
+
+### Script Options Parser
+
+The parser component can be used to parse any script code (Java, Python, R) for any script options. It provides simplistic interfaces, which are different between the two versions, which accept the script code as input and return the found script option(s). 
+
+#### Legacy Parser
+
+The legacy parser (V1) parser searches for one specific script option. The parser starts from beginning of the script code. If found, the parser immediately removes the script option from the script code and returns the option value. It validates the 
+
+#### V2 Parser
+
+The new parser uses the [CTPG libary](https://github.com/peter-winter/ctpg) which fulfills the technical constraints: It comes as a single C++ header file and does not require any runtime dependencies. The grammar and lexical rules can be defined in pure C++ and the parser is constructed during compile time, thus not having any performance overhead at runtime. 
+It is important to use a parser generator implementation which allows the definition of grammar and lexical rules, in order to achieve the new requirements regarding recognizing escape sequences in the script option values. Also, the clear definition of those rules makes the implementation better understandable. 
+
+As the parser needs to find script options in any given script code, the generated parser must accept any strings which are not script options and ignore those. In order to achieve this, the lexer rules need to be as simple as possible, in order to avoid collisions.
+
+It is important to emphasize that in contrast to the legacy parser, the caller is responsible for removing the script options from the script code.
+The interface provides a method which accepts the script code as input and returns a map with all found script options in the whole code. Each key in the map points to a list of all option values plus the start and end position of the option for this specific option key.
+
+### Parser Handler
+
+The parser handler uses the Script Options parser to query for specific options which are part of [Exasol's Java UDF specification](https://docs.exasol.com/db/latest/database_concepts/udf_scripts/java.htm):
+1. JVM Options
+2. JAR Options
+3. Import Script Options
+4. ScriptClass Option
+
+Because the new parser implementation parses all script options at once, and because some of the system requirements differ between both version, the Parser Handler implementations are also very different between the legacy and the ctpg based one. However, both implementations provide the same interface to the Java VM in the UDF Framework:
+
+![Exctractor](diagrams/ScriptOptionsExtractorInterface.png)
+
+Note that variable `script_code` is passed per reference. This is because the Parser Handler might modify the script code:
+1. Remove the script options
+2. Replace any found `import` script option with the respective scripts.
+
+The following sequence diagram shows how the Java VM implementation uses the Parser Handler to extract the script options.
+
+![ExctractSequenceDiagram](diagrams/ScriptOptionsParserHandlerSequence.png)
+
+#### Legacy Parser Handler
+
+![LegacyParserHandler](diagrams/LegacyParserHandler.png)
+
+The `ScriptOptionsLinesParserLegacy` class uses the Parser to search for Java specific script options and forwards the found options to class `ConverterLegacy`, which uses a common implementation for the conversion of the options.
+Class `tLegacyExtractor` connects `ScriptOptionsLinesParserLegacy` to `ConverterLegacy` and then orchestrates the parsing sequence. 
+
+`ScriptOptionsLinesParserLegacy` also implements the import of foreign scripts. The import script algorithm iteratively replaces foreign scripts. The algorithm is described in the following pseudocode snippet:
+```
+while True:
+ call Script Option Parser to search for next import script option starting from beginning of script code
+ if found:
+   if checksum of foreign script is not in the md5 hashset:
+      insert the script code into the md5 hashset
+      insert the foreign script on the same position as the import script option was found
+ else if not found:
+   break
+```
+
+#### CTPG based Parser Handler
+
+![CTPGParserHandler](diagrams/CTPGParserHandler.png)
+
+The `ScriptOptionsLinesParserCTPG` class uses the new CTPG basedParser to search for **all** Java specific script options at once. Then it forwards the found options to class `ConverterV2`, which uses a common implementation for the conversion of the options.
+Class `tLegacyExtractor` connects `ScriptOptionsLinesParserLegacy` to `ConverterLegacy` and then orchestrates the parsing sequence. 
+
+## Runtime
+
+## Cross-cutting Concerns
+
+## Design Decisions
 
 ### Parser Implementation
 `dsn~parser-implementation~1`
@@ -96,49 +179,52 @@ Needs: req
 Covers:
 - `req~new-parser-integration~1`
 
-## Architecture Overview
+## Quality Scenarios
 
-This section provides a high-level overview of the system architecture for the UDF Client Script Options parser.
+## Risks
 
-### System Context
+### Overall
 
-#### External Interfaces
-- **UDF Client**: Communicates with the parser to process script options within UDFs.
-- **Exasol Database**: Provides the data environment where UDF scripts are executed.
+#### Efficient Handling of Large Data Volumes
 
-### Components
+DLHC must efficiently handle large data volumes within acceptable time frames.
 
-#### Parser Component
-- Implemented using the [ctpg](https://github.com/peter-winter/ctpg) parser library with Lexer and Parser rules defined in C++.
-- Manages the identification, handling, and removal of Script Options, including Java-specific options like %scriptclass, %jar, %jvmoption, and %import.
+##### Mitigation
 
-#### Integration Component
-- Ensures the parser is embedded within the UDF Client namespace without runtime dependencies.
-- Handles interaction with the Swig Metadata object for processing %import options.
+The most critical part is importing many large Parquet files into the Exasol database. We implement loading of Parquet files in ExaLoader directly in the database:
+* This reduces the number of components involved in the import to a minimum: ExaLoader reads Parquet files directly from the source and inserts directly into the database. No other external system is involved other than the storage system (S3).
+* ExaLoader can import multiple data files in parallel.
 
-## Detailed Design
+#### Inefficient Handling of Delta Table Reorg
 
-### Parser Component Implementation
+Data reorganization of a Delta table (compaction of existing files etc.) requires DLHC to delete and re-import large amounts.
 
-1. **Lexer Rules**
-   - Define tokens for `%optionKey`, `optionValue`, and whitespace characters including `\t`, `\v`, `\f`.
+##### Mitigation
 
-2. **Parser Rules**
-   - Define the grammar for identifying and processing Script Options.
-   - Handle multiple options with the same key and manage duplicates as specified.
-   - Implement rules to replace escape sequences (e.g., `\\`, `\n`, `\r`) in option values.
-   - Ensure leading white spaces in option values are interpreted correctly.
+* We accept the risk and assume that reorganization is usually not done or only on a limited number of data files.
+* Operator guide explains that data reorganization will basically require a complete re-import of the complete data.
 
-3. **Option Handling**
-   - Define a map of lists to collect and store Script Options by their keys.
-   - Implement logic to detect and discard additional %scriptclass options, maintaining only the first instance.
-   - Ensure %jar options follow the syntax of Java CLASSPATH and remove duplicates while preserving order using a set/list combination.
+#### Delta Table Column Mapping
 
-### Integration Component Implementation
+[Column Mapping](https://github.com/delta-io/delta/blob/master/PROTOCOL.md#column-mapping) (feature `columnMapping`) allows renaming columns without rewriting data files. Parquet files will contain **physical column names** like `col-a7f4159c-53be-4cb0-b81a-f7e5240cfc49`. The mapping from physical column names to user visible logical column names is stored in the Delta log.
 
-1. **Namespace Embedding**
-   - Ensure the parser is embedded within the custom C++ namespace of the UDF Client to meet linker requirements.
+Physical column names are consistent over time across multiple files.
 
-2. **Swig Metadata Interaction**
-   - Implement methods to interact with the Swig Metadata object for processing %import options.
-   - Replace found %import options with the referenced script code and manage any nested Script Options within the imported
+See also [Databricks Documentation](https://docs.databricks.com/en/delta/column-mapping.html).
+
+##### Mitigation
+
+* DLHC must specify **physical column names** in `IMPORT` statements
+
+
+## Delimitations
+
+### Time-Travel Queries
+
+DLHC does not support time-travel queries on the imported data.
+
+### Parallel Import of Parquet Row Groups
+
+It would be possible for ExaLoader to import a single large Parquet file in parallel by splitting it into its row groups. We assume that data files are usually not larger than 130MB. This means that parallelizing the import on row-group level is not required because parallelizing on file level is enough.
+
+See [Row Group Parallelization](#row-group-parallelization).
