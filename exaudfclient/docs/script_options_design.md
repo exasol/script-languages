@@ -168,7 +168,8 @@ Implement the parser using [ctpg](https://github.com/peter-winter/ctpg), an open
 
 Needs: req
 Covers:
-- `req~new-parser-implementation~1`
+- `req~general-script-options-parsing~1`
+
 
 ### Lexer and Parser Rules
 `dsn~lexer-parser-rules~1`
@@ -178,6 +179,7 @@ Define the Lexer rules to tokenize `%optionKey`, `optionValue`, and allowed whit
 Needs: req
 Covers:
 - `req~general-script-options-parsing~1`
+- `req~white-spaces~1`
 
 ### Handling Multiple and Duplicate Options
 `dsn~handling-multiple-duplicate-options~1`
