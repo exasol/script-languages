@@ -76,11 +76,12 @@ Class `tLegacyExtractor` connects `ScriptOptionsLinesParserLegacy` to `Converter
 `ScriptOptionsLinesParserLegacy` also implements the import of foreign scripts. The import script algorithm iteratively replaces foreign scripts. The algorithm is described in the following pseudocode snippet:
 ```
 while True:
- call Script Option Parser to search for next import script option starting from beginning of script code
- if found:
-   if checksum of foreign script is not in the md5 hashset:
-      insert the script code into the md5 hashset
-      insert the foreign script on the same position as the import script option was found
+ next_import_option, position = ScriptOptionsLegacyParser.parse(script_code, "%import")
+ if next_import_option_value != "":
+   foreign_script_code = resolve_foreign_script_somehow(next_import_option.value)
+   if not md5_hashset.has(foreign_script_code):
+      md5_hashset.add(foreign_script_code)
+      script_code.replaceAt(position, lenght(next_import_option), foreign_script_code) 
  else if not found:
    break
 ```
@@ -89,8 +90,70 @@ while True:
 
 ![CTPGParserHandler](diagrams/CTPGParserHandler.png)
 
-The `ScriptOptionsLinesParserCTPG` class uses the new CTPG basedParser to search for **all** Java specific script options at once. Then it forwards the found options to class `ConverterV2`, which uses a common implementation for the conversion of the options.
-Class `tLegacyExtractor` connects `ScriptOptionsLinesParserLegacy` to `ConverterLegacy` and then orchestrates the parsing sequence. 
+The `ScriptOptionsLinesParserCTPG` class uses the new CTPG basedParser to search for **all** Java specific script options at once. Then it forwards the found options to class `ConverterV2`, which uses a common implementation for the conversion of the options. `ConverterV2` also implements the functions to convert Jvm otions and JAR options.   
+Class `tExtractorV2` connects `ScriptOptionsLinesParserCTPG` to `ConverterV2` and then orchestrates the parsing sequence.
+`ScriptOptionsLinesParserCTPG` uses an instance of `ScriptImporter` to import foreign scripts. Because the new parser collects all script options at once, but backwards compatibility with existing UDF scripts must be ensured, there is an additional level of complexity in the import script algorithm. The algorithm is described in the following pseudocode snippet:
+```
+function import(script_code, options_map)
+ import_option = options_map.find("import")
+ if found:
+    sorted_import_option = sort(import_option) //import options according to their location in the script, increasing order
+    collectedScripts = list() //list of (script_code, location, size)
+    for each import_option in sorted_import_option:
+       import_script_code = resolve_foreign_script_somehow(import_option.value)
+       if not md5_hashset.has(import_script_code):
+          md5_hashset.add(import_script_code)
+          new_options_map = ScriptOptionsCTPGParser.parse(import_script_code)
+          new_script_code = ""
+          import(new_script_code, new_options_map)
+          collectedScripts.add(new_script_code, import_option.position, import_option.length_of_script_option) 
+    for foreign_script in reverse(collectedScripts):
+       script_code.replaceAt(foreign_script.position, foreign_script.length_of_script_option, foreign_script.foreign_script) 
+```
+
+The scripts need to be replaced in reverse order because otherwise the locations of import options later in the script would get invalidated by the replacement.
+
+The following example demonstrates the flow of the algorithm:
+
+_Main UDF_:
+```
+%import other_script_A;
+%import other_script_C;
+class JVMOPTION_TEST {
+    static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        ctx.emit(\"Success!\");
+    }
+}
+```
+
+_other_script_A_:
+```
+%import other_script_B;
+class OtherClassA {
+    static void doSomething() {}
+}
+```
+
+_other_script_B_:
+```
+class OtherClassB {
+    static void doSomething() {}
+}
+```
+
+_other_script_C_:
+```
+%import other_script_A
+class OtherClassC {
+    static void doSomething() {}
+}
+```
+
+The following diagram shows how the scripts are collected in the recursive algorithm:
+
+![V2ImportScriptFlow](diagrams/V2ImportScriptFlow.png)
+
+
 
 ## Runtime
 
