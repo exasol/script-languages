@@ -8,7 +8,7 @@ oft_version="4.1.0"
 
 base_dir="$1"
 shift 1
-src_dir="$2"
+src_dir="$1"
 shift 1
 additional_options=$@
 readonly base_dir
