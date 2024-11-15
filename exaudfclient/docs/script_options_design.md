@@ -317,13 +317,12 @@ Covers:
 Tags: V2
 
 ### Unknown Options Check
-`req~script-option-unknown-options-behvaior-v2~1`
+`dsn~script-option-unknown-options-behvaior-v2~1`
 
-Implement a check which verifies that only known script options are found. Otherwise, raise an exception with information about the position and name of the unknown option.
-
+Implement a check in class `ScriptOptionLinesParserCTPG` which verifies that only known script options are found. Otherwise, raise an exception with information about the position and name of the unknown option.
 
 Covers:
-- `req~script-option-removal~1`
+- `req~script-option-unknown-options-behavior-v2~1`
 
 Tags: V2
 
@@ -334,7 +333,7 @@ Implement a function in the `Converter` class which adds the script class option
 
 
 Covers:
-- `req~java-scriptclass-option-handling~1`
+- `req~java-scriptclass-option-handling-v2~1`
 
 Tags: V2
 
@@ -374,6 +373,21 @@ Covers:
 
 Tags: V2
 
+### Java %jvmoption Whitespace Handling
+`dsn~java-jvmoption-whitespace-handling~1`
+
+Define the Lexer rules to tokenize whitespace sequences.
+Implement rules which split JVM options by those token.
+
+
+Depends:
+- `dsn~java-jvmoption-handling~1`
+
+Covers:
+- `req~java-jvmoption-whitespace-handling~1`
+
+Tags: V2
+
 ### Java %jvmoption Whitespace Escape Handling
 `dsn~java-jvmoption-whitespace-esacape-handling~1`
 
@@ -385,13 +399,11 @@ Define the Lexer rules to tokenize whitespace escape sequences:
 
 Implement rules which replace those white space escape tokens which are part of a Jvm option.
 
-
-
 Depends:
-- `req~java-jvmoption-handling~1`
+- `dsn~java-jvmoption-handling~1`
 
 Covers:
-- `req~java-jvmoption-whitespace-handling~1`
+- req~java-jvmoption-whitespace-escape-handling-v2~1
 
 Tags: V2
 
@@ -404,8 +416,6 @@ The algorithm should work according to  [section CTPG based Script Import Algori
 
 Covers:
 - `req~java-import-option-replace-referenced-scripts~1`
-- `feat~java-specific-script-options~1`
-- `feat~java-specific-script-options~1`
 
 Tags: V2
 
@@ -444,4 +454,4 @@ The performance must not be slower than the old implementation.
 
 ##### Mitigation
 
-`dsn~ignore-lines-without-script-options~1` tries to mitigate this risk.
+Design decision `dsn~ignore-lines-without-script-options~1` tries to mitigate this risk.

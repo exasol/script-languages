@@ -192,7 +192,7 @@ Covers:
 Tags: V1
 
 ### Script Option Unknown Options Behavior V2
-`req~script-option-unknown-options-behvaior-v2~1`
+`req~script-option-unknown-options-behavior-v2~1`
 
 The parser handler must detect unknown script options and throw an exception if such an options is found. 
 
