@@ -23,5 +23,5 @@ fi
 java -jar "$oft_jar" trace \
     $additional_options \
     -a feat,req,dsn \
-    "$base_dir/doc" \
+    "$base_dir/docs" \
     "$base_dir/$src_dir"
