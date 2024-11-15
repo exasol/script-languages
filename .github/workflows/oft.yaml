@@ -1,0 +1,27 @@
+name: Check Bazel Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name:
+        run:
+
+      - name: Run HTML Report
+        run: |
+          bash .github/workflow/scripts/run_oft.sh ./exaudfclient base -o html -f ./oft_report.html || echo failed
+      - name: Run Plaintext Report
+        run: |
+          bash .github/workflow/scripts/run_oft.sh ./exaudfclient base
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "oft_report.html"
+          path: oft_report.html
