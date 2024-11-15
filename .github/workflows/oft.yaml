@@ -1,4 +1,4 @@
-name: Check Bazel Tests
+name: OFT Report
 
 on:
   push:
