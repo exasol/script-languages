@@ -13,10 +13,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run HTML Report
         run: |
-          bash .github/workflow/scripts/run_oft.sh ./exaudfclient base -o html -f ./oft_report.html || echo failed
+          bash .github/workflows/scripts/run_oft.sh ./exaudfclient base -o html -f ./oft_report.html || echo failed
       - name: Run Plaintext Report
         run: |
-          bash .github/workflow/scripts/run_oft.sh ./exaudfclient base
+          bash .github/workflows/scripts/run_oft.sh ./exaudfclient base
       - uses: actions/upload-artifact@v4
         if: always()
         with:
