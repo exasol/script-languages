@@ -250,11 +250,14 @@ Covers:
 ### Java %jar Option Handling Multiple Options
 `req~java-jar-option-handling-multiple-options~1`
 
+Needs: dsn
+
 The Java parser handler must find multiple `%jar` options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`. The Java parser handler shall split the entries by the colon character.
 Compare [OpenJdk implementation](https://github.com/AdoptOpenJDK/openjdk-jdk11/blob/19fb8f93c59dfd791f62d41f332db9e306bc1422/src/java.base/share/classes/jdk/internal/loader/URLClassPath.java#L174) of parsing the classpath.
 
 Covers:
 - `feat~java-specific-script-options~1`
+
 
 ### Java %jar Option Handling V1
 `req~java-jar-option-handling-v1~1`

@@ -403,7 +403,7 @@ Depends:
 - `dsn~java-jvmoption-handling~1`
 
 Covers:
-- req~java-jvmoption-whitespace-escape-handling-v2~1
+- `req~java-jvmoption-whitespace-escape-handling-v2~1`
 
 Tags: V2
 
@@ -416,6 +416,7 @@ The algorithm should work according to  [section CTPG based Script Import Algori
 
 Covers:
 - `req~java-import-option-replace-referenced-scripts~1`
+- `req~java-import-option-referenced-scripts-name~1`
 
 Tags: V2
 
@@ -423,7 +424,6 @@ Tags: V2
 `dsn~java-import-option-resolve-foreign-script-options~1`
 
 After all `%import` script options are replaced in the script code, the parser must re-run in order to also detect script options which are part of the imported scripts. 
-
 
 Covers:
 - `req~java-import-option-handling-v2~1`
