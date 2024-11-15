@@ -11,9 +11,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name:
-        run:
-
       - name: Run HTML Report
         run: |
           bash .github/workflow/scripts/run_oft.sh ./exaudfclient base -o html -f ./oft_report.html || echo failed
