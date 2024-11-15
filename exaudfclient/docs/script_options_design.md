@@ -92,6 +92,8 @@ while True:
 
 The `ScriptOptionsLinesParserCTPG` class uses the new CTPG basedParser to search for **all** Java specific script options at once. Then it forwards the found options to class `ConverterV2`, which uses a common implementation for the conversion of the options. `ConverterV2` also implements the functions to convert Jvm otions and JAR options.   
 Class `tExtractorV2` connects `ScriptOptionsLinesParserCTPG` to `ConverterV2` and then orchestrates the parsing sequence.
+
+##### CTPG based Script Import Algorithm
 `ScriptOptionsLinesParserCTPG` uses an instance of `ScriptImporter` to import foreign scripts. Because the new parser collects all script options at once, but backwards compatibility with existing UDF scripts must be ensured, there is an additional level of complexity in the import script algorithm. The algorithm is described in the following pseudocode snippet:
 ```
 function import(script_code, options_map)
@@ -159,7 +161,7 @@ The following diagram shows how the scripts are collected in the recursive algor
 
 ## Cross-cutting Concerns
 
-## Design Decisions
+## Design Decisions for V2
 
 ### Parser Implementation
 `dsn~parser-implementation~1`
@@ -169,71 +171,255 @@ Implement the parser using [ctpg](https://github.com/peter-winter/ctpg), an open
 Needs: req
 Covers:
 - `req~general-script-options-parsing~1`
+- `req~existing-parser-library-license~1`
+
+Tags: V2
 
 
-### Lexer and Parser Rules
+### Lexer and Parser Rules Option
 `dsn~lexer-parser-rules~1`
 
-Define the Lexer rules to tokenize `%optionKey`, `optionValue`, and allowed whitespace characters, including `\t`, `\v`, and `\f`. The Parser rules will define the grammar to correctly identify Script Options, manage multiple options with the same key, and handle duplicates.
+Lexer and Parser rules to recognize `%optionKey`, `optionValue`, with whitespace characters as separator. The Parser rules will define the grammar to correctly identify Script Options, manage multiple options with the same key, and handle duplicates.
 
 Needs: req
 Covers:
 - `req~general-script-options-parsing~1`
 - `req~white-spaces~1`
+- `req~leading-white-spaces-script-options-parsing~1`
+
+Depends:
+- `dsn~parser-implementation~1`
+
+Tags: V2
+
+### Lexer and Parser Rules Not an option
+`dsn~lexer-parser-rules-not-an-option~1`
+
+Lexer and Parser rules to recognize anything what is not an option.
+
+Needs: req
+Covers:
+- `req~ignore-none-script-options~1`
+
+Depends:
+- `dsn~parser-implementation~1`
+
+Tags: V2
+
+### Run Parser line-by-line
+`dsn~run-parser-line-by-line~1`
+
+The parser must be executed line-by-line, because script options can be placed at any location in the UDF. Every found map of options must be added to the resulting map.
+
+Needs: req
+Covers:
+- `req~multiple-lines-script-options-parsing~1`
+
+Depends:
+- `dsn~parser-implementation~1`
+
+Tags: V2
+
+### Ignore lines without script options
+`dsn~ignore-lines-without-script-options~1`
+
+In order to avoid lower performance compared to the old implementation, the parser must run only on lines which contain a `%` character.
+
+Needs: req
+Covers:
+- `req~multiple-lines-script-options-parsing~1`
+
+Depends:
+- `dsn~parser-implementation~1`
+
+Tags: V2
+
 
 ### Handling Multiple and Duplicate Options
 `dsn~handling-multiple-duplicate-options~1`
 
-Create a mechanism within the parser to collect and aggregate multiple Script Options with the same key. Use a data structure (e.g., a map of lists) to store options by key and ensure duplicates are handled according to specified rules for different options.
+Create a mechanism within the parser to collect and aggregate multiple Script Options with the same key.
+The parser must return an associative container of the format:
+```
+{
+<option key A> => list(<option_value A.1>, <option_value A.2>,..., <option_value A.n>),
+<option key B> => list(<option_value B.1>, <option_value B.2>,..., <option_value B.m>)
+}
+```   
+
 
 Needs: req
 Covers:
-- `req~multiple-duplicate-options-management~1`
+- `req~multiple-options-management~1`
+- `req~duplicate-options-management~1`
+
+Tags: V2
+
+### Lexer and Parser Rules Whitespace Sequences
+`dsn~lexer-parser-rules-whitespace-sequences~1`
+
+Define the Lexer rules to tokenize whitespace sequences, and parser rules to recognize those white space characters as option separator.
+For white space character within an option value, those must be added as is to the result option value.
+For white space character in anything else, what is not an option, those white space characters must be ignored.
+
+Needs: req
+
+Covers:
+- `req~white-spaces-script-options-parsing-v2~1`
+Depends:
+- `dsn~parser-implementation~1`
+
+Tags: V2
+
+### Lexer and Parser Rules Whitespace Escape Sequences
+`dsn~lexer-parser-rules-whitespace-escape-sequences~1`
+
+Define the Lexer rules to tokenize whitespace escape sequences:
+- '\ ' => space character
+- '\t' => <tab> character
+- '\f' => <form feed> character
+- '\v' => <vertical tab> character
+
+Implement rules which replace those white space escape tokens only at the beginning of an option value. Add parser rules to ignore those tokens in anything else, which is not a script option. Those token are not expected to be part of an option key.
+
+Needs: req
+Covers:
+- `req~leading-white-spaces-script-options-parsing~1`
+Depends:
+- `dsn~parser-implementation~1`
+
+Tags: V2
+
+### Lexer and Parser Rules Escape Sequences
+`dsn~lexer-parser-rules-escape-sequences~1`
+
+Define the Lexer rules to tokenize '\n', '\r', '\; sequences, and parser rules to replace those sequences with <line feed>, <carriage return> or ';' characters. 
+Implement rules which replace those token at any location in an option value. Add parser rules to ignore those tokens in anything else, which is not a script option. Those token are not expected to be part of an option key.
+
+Needs: req
+Covers:
+- `req~escape-sequence-script-options-parsing~1`
+Depends:
+- `dsn~parser-implementation~1`
+
+Tags: V2
 
 ### Script Option Removal Mechanism
-`dsn~script-option-removal-mechanism~1`
+`dsn~script-option-removal~1`
 
-Implement a method to remove identified Script Options from the original script code. This method will traverse the code, identify Script Options using defined tokens, and replace them with whitespace to ensure the cleaned script executes smoothly.
+Implement a method in class `ScriptOptionLinesParserCTPG` which removes *all* identified Script Options from the original script code at once. This method be executed after the import scripts are replaced. The algorithm must replace the script options in reverse order in order to maintain consistency of internal list of positions.
+
+Needs: req
+Covers:
+- `req~script-option-removal~1`
+- `req~java-scriptclass-option-handling-v2~1`
+
+Tags: V2
+
+### Unknown Options Check
+`req~script-option-unknown-options-behvaior-v2~1`
+
+Implement a check which verifies that only known script options are found. Otherwise, raise an exception with information about the position and name of the unknown option.
 
 Needs: req
 Covers:
 - `req~script-option-removal~1`
 
+Tags: V2
+
 ### Java %scriptclass Option Handling in Design
 `dsn~java-scriptclass-option-handling~1`
 
-Design logic to correctly identify a single %scriptclass option within the script. Additional occurrences of %scriptclass will be removed from the script code. Use a flag to mark the first occurrence and ensure subsequent ones are discarded.
+Implement a function in the `Converter` class which adds the script class option to the JVM Options list.
 
 Needs: req
 Covers:
 - `req~java-scriptclass-option-handling~1`
 
-### Java %jar Option Handling in Design
-`dsn~java-jar-option-handling~1`
+Tags: V2
 
-Design the parser to collect and handle multiple %jar options. Ensure that they follow the Java CLASSPATH environment variable syntax (colon-separated values), remove duplicates, and maintain the order specified in the script by using sets and lists.
+### Java %jar Option Collection
+`dsn~java-jar-option-collection~1`
+
+Implement an algorithm in class `ConverterV2` to split the given Jar option value by colon (':') and then collect the found Jar options in a list. 
 
 Needs: req
 Covers:
-- `req~java-jar-option-handling~1`
+- `req~java-jar-option-handling-v2~1`
+- `req~java-jar-option-handling-multiple-options~1`
 
-### Java %jvmoption Handling in Design
+Tags: V2
+
+### Java %jar Option Whitespace Handling
+`dsn~java-jar-option-whitespace-handling~1`
+
+Implement an algorithm in class `ScriptOptionLinesParserCTPG` which replaces trailing white space escape sequences in a Jar option value with the respective white space character. 
+
+Needs: req
+Covers:
+- `req~java-jar-option-trailing-white-space-handling~1`
+
+Tags: V2
+
+
+### Java %jvmoption Handling
 `dsn~java-jvmoption-handling~1`
 
-Create a way for the parser to collect multiple %jvmoption options, allowing duplicates and preserving the order specified. This can be achieved using a list to store the options as they are parsed.
+Implement an algorithm in class `ConverterV2` which uses the `CTPG` library to parse and split a Jvm option value by white space characters.
 
 Needs: req
 Covers:
 - `req~java-jvmoption-handling~1`
+- `req~java-jvmoption-whitespace-handling~1`
 
-### Java %import Option Handling in Design
-`dsn~java-import-option-handling~1`
+Tags: V2
 
-Implement logic to process %import options by interacting with the Swig Metadata object. The parser will replace the found %import Script Option with the referenced script code and handle nested %jar, %jvmoption, and %import options, ignoring %scriptclass options in imported scripts.
+### Java %jvmoption Whitespace Escape Handling
+`dsn~java-jvmoption-whitespace-esacape-handling~1`
+
+Define the Lexer rules to tokenize whitespace escape sequences:
+- '\ ' => space character
+- '\t' => <tab> character
+- '\f' => <form feed> character
+- '\v' => <vertical tab> character
+
+Implement rules which replace those white space escape tokens which are part of a Jvm option.
+
+Needs: req
+
+Depends:
+- `req~java-jvmoption-handling~1`
+
+Covers:
+- `req~java-jvmoption-whitespace-handling~1`
+
+Tags: V2
+
+### Java %import Option Replacement
+`dsn~java-import-option-replacement~1`
+
+Implement logic to process %import options by interacting with the Swig Metadata object.
+The algorithm should work according to  [section CTPG based Script Import Algorithm](#CTPG-based-Script-Import-Algorithm). 
 
 Needs: req
 Covers:
-- `req~java-import-option-handling~1`
+- `req~java-import-option-replace-referenced-scripts~1`
+- `feat~java-specific-script-options~1`
+- `feat~java-specific-script-options~1`
+
+Tags: V2
+
+### Java %import Option resolve foreign Script Options
+`dsn~java-import-option-resolve-foreign-script-options~1`
+
+After all `%import` script options are replaced in the script code, the parser must re-run in order to also detect script options which are part of the imported scripts. 
+
+Needs: req
+Covers:
+- `req~java-import-option-handling-v2~1`
+
+
+Tags: V2
 
 ### General Parser Integration
 `dsn~general-parser-integration~1`
@@ -242,7 +428,9 @@ Ensure that the new parser integrates seamlessly into the Exasol UDF Client envi
 
 Needs: req
 Covers:
-- `req~new-parser-integration~1`
+- `req~general-script-options-parsing~1`
+
+Tags: V2
 
 ## Quality Scenarios
 
@@ -250,46 +438,10 @@ Covers:
 
 ### Overall
 
-#### Efficient Handling of Large Data Volumes
+#### Efficient Parser implementation
 
-DLHC must efficiently handle large data volumes within acceptable time frames.
-
-##### Mitigation
-
-The most critical part is importing many large Parquet files into the Exasol database. We implement loading of Parquet files in ExaLoader directly in the database:
-* This reduces the number of components involved in the import to a minimum: ExaLoader reads Parquet files directly from the source and inserts directly into the database. No other external system is involved other than the storage system (S3).
-* ExaLoader can import multiple data files in parallel.
-
-#### Inefficient Handling of Delta Table Reorg
-
-Data reorganization of a Delta table (compaction of existing files etc.) requires DLHC to delete and re-import large amounts.
+The performance must not be slower than the old implementation.
 
 ##### Mitigation
 
-* We accept the risk and assume that reorganization is usually not done or only on a limited number of data files.
-* Operator guide explains that data reorganization will basically require a complete re-import of the complete data.
-
-#### Delta Table Column Mapping
-
-[Column Mapping](https://github.com/delta-io/delta/blob/master/PROTOCOL.md#column-mapping) (feature `columnMapping`) allows renaming columns without rewriting data files. Parquet files will contain **physical column names** like `col-a7f4159c-53be-4cb0-b81a-f7e5240cfc49`. The mapping from physical column names to user visible logical column names is stored in the Delta log.
-
-Physical column names are consistent over time across multiple files.
-
-See also [Databricks Documentation](https://docs.databricks.com/en/delta/column-mapping.html).
-
-##### Mitigation
-
-* DLHC must specify **physical column names** in `IMPORT` statements
-
-
-## Delimitations
-
-### Time-Travel Queries
-
-DLHC does not support time-travel queries on the imported data.
-
-### Parallel Import of Parquet Row Groups
-
-It would be possible for ExaLoader to import a single large Parquet file in parallel by splitting it into its row groups. We assume that data files are usually not larger than 130MB. This means that parallelizing the import on row-group level is not required because parallelizing on file level is enough.
-
-See [Row Group Parallelization](#row-group-parallelization).
+`dsn~ignore-lines-without-script-options~1` tries to mitigate this risk.

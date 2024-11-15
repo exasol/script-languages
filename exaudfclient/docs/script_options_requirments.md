@@ -52,13 +52,14 @@ Covers:
 `req~white-spaces~1`
 
 The parser must treat the following list of white spaces as token separator:
-|======================================================= 
-| Name         | C syntax      | ASCII Dec | ASCII Hex | 
-| tabulator    | '\t'          | 9         | 0x09      |
-| vertical tab | '\v'          | 11         | 0x0b     |
-| form feed    | '\f'          | 12         | 0x0c     |
-| space        | ' '           | 30        | 0x20      |     
-|======================================================= 
+
+ 
+| Name         | C syntax      | ASCII Dec | ASCII Hex     | 
+|--------------|---------------|-----------|---------------|
+| tabulator    | '\t'          | 9         | 0x09          |
+| vertical tab | '\v'          | 11        | 0x0b          |
+| form feed    | '\f'          | 12        | 0x0c          |
+| space        | ' '           | 30        | 0x20          |     
 
 Needs: dsn
 
@@ -157,7 +158,7 @@ Covers:
 - `feat~general-script-options-parsing~1`
 
 ### Duplicate Options Management
-`req~multiple-options-management~1`
+`req~duplicate-options-management~1`
 
 The parser must collect multiple Script Options with the same key and same/different value. Note: the specific handling depends on the option handler.
 
@@ -310,6 +311,28 @@ Needs: dsn
 
 Covers:
 - `feat~java-specific-script-options~1`
+
+### Java %jvmoption Whitespace Handling
+`req~java-jvmoption-whitespace-handling~1`
+
+The Java parser handler must split found Jvm Option value by whitespace character(s).
+
+Needs: dsn
+
+Covers:
+- `feat~java-specific-script-options~1`
+
+### Java %jvmoption Whitespace Escape Handling V2
+`req~java-jvmoption-whitespace-escape-handling-v2~1`
+
+The Java parser handler must detect and replace whitespace escape sequences in Jvm option values and replace them accordingly.
+
+Needs: dsn
+
+Covers:
+- `feat~java-specific-script-options~1`
+
+Tags: V2
 
 ### Java %import Option Replace Referenced Sripts
 `req~java-import-option-replace-referenced-scripts~1`
