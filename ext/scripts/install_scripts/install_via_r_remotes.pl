@@ -54,12 +54,56 @@ if($rscript_binary eq ''){
 }
 
 
-my $combining_template = "library(remotes)\n<<<<0>>>>";
-my @separators = ("\n");
-my @templates = ('install_version("<<<<0>>>>",NULL,repos="https://cloud.r-project.org", Ncpus=4)');
-if($with_versions){  
-    @templates = ('install_version("<<<<0>>>>","<<<<1>>>>",repos="https://cloud.r-project.org", Ncpus=4)');
+my $combining_template = '
+library(remotes)
+install_or_fail <- function(package_name, version){
+
+   tryCatch({install_version(package_name, version, repos="https://cloud.r-project.org", Ncpus=4)
+         library(package_name, character.only = TRUE)},
+         error = function(e){
+             print(e)
+             stop(paste("installation failed for:",package_name ))},
+         warning = function(w){
+           catch <-
+             grepl("download of package .* failed", w$message) ||
+             grepl("(dependenc|package).*(is|are) not available", w$message) ||
+             grepl("installation of package.*had non-zero exit status", w$message) ||
+             grepl("installation of one or more packages failed", w$message)
+           if(catch){ print(w$message)
+             stop(paste("installation failed for:",package_name ))}}
+         )
+
+ }
+
+<<<<0>>>>
+';
+
+my $combining_template_validation = '
+
+available_packages <- available.packages()
+
+validate_or_fail <- function(package_name){
+    # Check if the package is in the list of available packages
+    is_installed <- package_name %in% rownames(available_packages)
+
+    # Check the result
+    if (!is_installed) {
+        stop(paste("Package nor installed:", package_name))
+    }
 }
+
+
+<<<<0>>>>
+';
+
+
+my @separators = ("\n");
+my @templates = ('install_or_fail("<<<<0>>>>",NULL)');
+if($with_versions){  
+    @templates = ('install_or_fail("<<<<0>>>>","<<<<1>>>>")');
+}
+
+my @validation_templates = ('validate_or_fail("<<<<0>>>>")');
 
 sub identity {
     my ($line) = @_;
@@ -77,10 +121,15 @@ my @rendered_line_transformation_functions = (\&identity);
 if($with_versions and $allow_no_version){
     @rendered_line_transformation_functions = (\&replace_missing_version);
 }
+my @rendered_line_transformation_functions_validation = (\&identity);
 
 my $script = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
-        $file,$element_separator,$combining_template,\@templates,\@separators,\@rendered_line_transformation_functions);
+        $file,$element_separator,$combining_template,\@templates,\@separators,\@rendered_line_transformation_functions) .
+    package_mgmt_utils::generate_joined_and_transformed_string_from_file(
+        $file,$element_separator,$combining_template_validation,\@validation_templates,\@separators,\@rendered_line_transformation_functions_validation);
+
+
 
 if($with_versions and not $allow_no_version){
     if (index($script, "<<<<1>>>>") != -1) {
