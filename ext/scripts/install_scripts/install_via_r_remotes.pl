@@ -7,14 +7,15 @@
 
   install_via_r_versions.pl [OPTIONS]
   Options:
-    --help                Brief help message
-    --dry-run             Doesn't execute the command, only prints it to STDOUT
-    --file                Input file with each line represents a input. 
-                          A line can have multiple elements separated by --element-separator. 
-                          Lines everything after a # is interpreted as comment
-    --with-versions       Uses versions specified in the input file in the second element of each line
-    --allow-no-versions   If --with-versions is active, allow packages to have no version specified
-    --rscript-binary      Rscript binary to use for installation
+    --help                      Brief help message
+    --dry-run                   Doesn't execute the command, only prints it to STDOUT
+    --file                      Input file with each line represents a input.
+                                A line can have multiple elements separated by --element-separator.
+                                Lines everything after a # is interpreted as comment
+    --with-versions             Uses versions specified in the input file in the second element of each line
+    --allow-no-versions         If --with-versions is active, allow packages to have no version specified
+    --no-version-validation     If --with-versions is active, this flag controls if the version validation should be executed.
+    --rscript-binary            Rscript binary to use for installation
                                      
 =cut
 
@@ -33,6 +34,7 @@ my $element_separator = "\\|";
 my $rscript_binary = '';
 my $with_versions = 0;
 my $allow_no_version = 0;
+my $no_version_validation = 0;
 
 GetOptions (
             "help" => \$help,
@@ -40,6 +42,7 @@ GetOptions (
             "file=s" => \$file,
             "with-versions" => \$with_versions,
             "allow-no-version" => \$allow_no_version,
+            "no-version-validation" => \$no_version_validation,
             "rscript-binary=s" => \$rscript_binary,
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
@@ -58,7 +61,7 @@ my $combining_template_install = '
 library(remotes)
 install_or_fail <- function(package_name, version){
 
-   tryCatch({install_version(package_name, version, repos="https://cloud.r-project.org", Ncpus=4)
+   tryCatch({install_version(package_name, version, repos="https://cloud.r-project.org", Ncpus=4, upgrade="never")
          library(package_name, character.only = TRUE)},
          error = function(e){
              print(e)
@@ -80,18 +83,25 @@ install_or_fail <- function(package_name, version){
 
 my $combining_template_validation = '
 
-available_packages <- available.packages()
+installed_packages <- installed.packages()
+installed_package_names <- installed_packages[, "Package"]
 
-validate_or_fail <- function(package_name){
+validate_or_fail <- function(package_name, version){
     # Check if the package is in the list of available packages
-    is_installed <- package_name %in% rownames(available_packages)
+    is_installed <- package_name %in% installed_package_names
 
     # Check the result
     if (!is_installed) {
         stop(paste("Package nor installed:", package_name))
     }
-}
 
+    if (!is.null(version)) {
+       desc <- packageDescription(package_name)
+       if (version != desc$Version) {
+        stop(paste("Version of  installed installed package does not match:", package_name))
+       }
+    }
+}
 
 <<<<0>>>>
 ';
@@ -103,7 +113,10 @@ if($with_versions){
     @install_templates = ('install_or_fail("<<<<0>>>>","<<<<1>>>>")');
 }
 
-my @validation_templates = ('validate_or_fail("<<<<0>>>>")');
+my @validation_templates = ('validate_or_fail("<<<<0>>>>", NULL)');
+if($with_versions && !$no_version_validation){
+    @validation_templates = ('validate_or_fail("<<<<0>>>>","<<<<1>>>>")');
+}
 
 sub identity {
     my ($line) = @_;
@@ -118,10 +131,11 @@ sub replace_missing_version{
 }
 
 my @rendered_line_transformation_functions = (\&identity);
+my @rendered_line_transformation_functions_validation = (\&identity);
 if($with_versions and $allow_no_version){
     @rendered_line_transformation_functions = (\&replace_missing_version);
+    @rendered_line_transformation_functions_validation = (\&replace_missing_version);
 }
-my @rendered_line_transformation_functions_validation = (\&identity);
 
 my $script = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
