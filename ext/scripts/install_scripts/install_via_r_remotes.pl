@@ -54,7 +54,7 @@ if($rscript_binary eq ''){
 }
 
 
-my $combining_template = '
+my $combining_template_install = '
 library(remotes)
 install_or_fail <- function(package_name, version){
 
@@ -98,9 +98,9 @@ validate_or_fail <- function(package_name){
 
 
 my @separators = ("\n");
-my @templates = ('install_or_fail("<<<<0>>>>",NULL)');
+my @install_templates = ('install_or_fail("<<<<0>>>>",NULL)');
 if($with_versions){  
-    @templates = ('install_or_fail("<<<<0>>>>","<<<<1>>>>")');
+    @install_templates = ('install_or_fail("<<<<0>>>>","<<<<1>>>>")');
 }
 
 my @validation_templates = ('validate_or_fail("<<<<0>>>>")');
@@ -125,7 +125,7 @@ my @rendered_line_transformation_functions_validation = (\&identity);
 
 my $script = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
-        $file,$element_separator,$combining_template,\@templates,\@separators,\@rendered_line_transformation_functions) .
+        $file,$element_separator,$combining_template_install,\@install_templates,\@separators,\@rendered_line_transformation_functions) .
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template_validation,\@validation_templates,\@separators,\@rendered_line_transformation_functions_validation);
 
