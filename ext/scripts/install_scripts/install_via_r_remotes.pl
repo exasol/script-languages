@@ -130,16 +130,16 @@ sub replace_missing_version{
     return $line;
 }
 
-my @rendered_line_transformation_functions = (\&identity);
+my @rendered_line_transformation_functions_install = (\&identity);
 my @rendered_line_transformation_functions_validation = (\&identity);
 if($with_versions and $allow_no_version){
-    @rendered_line_transformation_functions = (\&replace_missing_version);
+    @rendered_line_transformation_functions_install = (\&replace_missing_version);
     @rendered_line_transformation_functions_validation = (\&replace_missing_version);
 }
 
 my $script = 
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
-        $file,$element_separator,$combining_template_install,\@install_templates,\@separators,\@rendered_line_transformation_functions) .
+        $file,$element_separator,$combining_template_install,\@install_templates,\@separators,\@rendered_line_transformation_functions_install) .
     package_mgmt_utils::generate_joined_and_transformed_string_from_file(
         $file,$element_separator,$combining_template_validation,\@validation_templates,\@separators,\@rendered_line_transformation_functions_validation);
 
