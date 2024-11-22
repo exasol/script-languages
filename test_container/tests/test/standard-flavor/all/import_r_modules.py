@@ -18,11 +18,13 @@ class ImportAllModulesTest(udf.TestCase):
                     file_pattern <- "cran_packages"
                     directory <- "/build_info/packages"
                     files <- list.files(path = directory, pattern = file_pattern, full.names = TRUE, recursive = TRUE)
-                    for (file in files) {
-                        package_list <- fread(file, sep="|", header = FALSE, col.names = c("Package", "Version"))
-                        package_names <- package_list[[1]]
-                        versions <- package_list[[2]]
-                        ctx$emit(package_names, versions)
+                    for (input_file in files) {
+                        package_list <- tryCatch(read.table(file = input_file, header=FALSE, sep = "|", comment.char = "#"), error=function(e) NULL)
+                        if (!is.null(package_list)) {
+                            package_names <- package_list[,1]
+                            versions <- package_list[,2]
+                            ctx$emit(package_names, versions)
+                        }
                     }
                 }
             /
