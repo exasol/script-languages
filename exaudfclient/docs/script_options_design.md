@@ -24,7 +24,7 @@ Please refer to the [System Requirement Specification](script_options_requirment
 
 #### Component Overview
 
-![Components](diagrams/OveralScriptOptionalsBuildingBlocks.png)
+![Components](diagrams/OveralScriptOptionalsBuildingBlocks.drawio.png)
 
 At the very high level there can be distinguished between the generic "Script Options Parser" module which parses a UDF script code and returns the found script options, and the "Script Options Parser Handler" which converts the Java UDF specific script options. In both modules there are specific implementation for the legacy parser and the new CTPG based parser.
 
@@ -34,7 +34,7 @@ The parser component can be used to parse any script code (Java, Python, R) for 
 
 #### Legacy Parser
 
-The legacy parser (V1) parser searches for one specific script option. The parser starts from beginning of the script code. If found, the parser immediately removes the script option from the script code and returns the option value. It validates the 
+The legacy parser (V1) parser searches for one specific script option. 
 
 #### V2 Parser
 
@@ -56,7 +56,7 @@ The parser handler uses the Script Options parser to query for specific options 
 
 Because the new parser implementation parses all script options at once, and because some of the system requirements differ between both version, the Parser Handler implementations are also very different between the legacy and the ctpg based one. However, both implementations provide the same interface to the Java VM in the UDF Framework:
 
-![Exctractor](diagrams/ScriptOptionsExtractorInterface.png)
+![Exctractor](diagrams/ScriptOptionsExtractorInterface.drawio.png)
 
 Note that variable `script_code` is passed per reference. This is because the Parser Handler might modify the script code:
 1. Remove the script options
@@ -64,11 +64,11 @@ Note that variable `script_code` is passed per reference. This is because the Pa
 
 The following sequence diagram shows how the Java VM implementation uses the Parser Handler to extract the script options.
 
-![ExctractSequenceDiagram](diagrams/ScriptOptionsParserHandlerSequence.png)
+![ExctractSequenceDiagram](diagrams/ScriptOptionsParserHandlerSequence.drawio.png)
 
 #### Legacy Parser Handler
 
-![LegacyParserHandler](diagrams/LegacyParserHandler.png)
+![LegacyParserHandler](diagrams/LegacyParserHandler.drawio.png)
 
 The `ScriptOptionsLinesParserLegacy` class uses the Parser to search for Java specific script options and forwards the found options to class `ConverterLegacy`, which uses a common implementation for the conversion of the options.
 Class `tLegacyExtractor` connects `ScriptOptionsLinesParserLegacy` to `ConverterLegacy` and then orchestrates the parsing sequence. 
@@ -88,7 +88,7 @@ while True:
 
 #### CTPG based Parser Handler
 
-![CTPGParserHandler](diagrams/CTPGParserHandler.png)
+![CTPGParserHandler](diagrams/CTPGParserHandler.drawio.png)
 
 The `ScriptOptionsLinesParserCTPG` class uses the new CTPG basedParser to search for **all** Java specific script options at once. Then it forwards the found options to class `ConverterV2`, which uses a common implementation for the conversion of the options. `ConverterV2` also implements the functions to convert Jvm otions and JAR options.   
 Class `tExtractorV2` connects `ScriptOptionsLinesParserCTPG` to `ConverterV2` and then orchestrates the parsing sequence.
@@ -153,13 +153,22 @@ class OtherClassC {
 
 The following diagram shows how the scripts are collected in the recursive algorithm:
 
-![V2ImportScriptFlow](diagrams/V2ImportScriptFlow.png)
+![V2ImportScriptFlow](diagrams/V2ImportScriptFlow.drawio.png)
 
 
 
 ## Runtime
 
+### Parser Implementation V1
+
+The legacy parser (V1) parser searches for one specific script option. The parser starts from beginning of the script code. If found, the parser immediately removes the script option from the script code and returns the option value. It validates the 
+
+### Parser Implementation V2
+
+The parser provides an interface to parse the UDF script for all options at once. All found script options need to be collected in an associative container. Internally. the parses uses [ctpg](https://github.com/peter-winter/ctpg) to parse the UDF script code line-by-line.
+
 ## Cross-cutting Concerns
+
 
 ## Design Decisions for V2
 
