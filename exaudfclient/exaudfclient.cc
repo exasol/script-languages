@@ -67,7 +67,7 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 #endif
 
 int main(int argc, char **argv) {
-   const std::string origLdLibraryPath(::getenv("LD_LIBRARY_PATH"))
+   const std::string origLdLibraryPath(::getenv("LD_LIBRARY_PATH"));
    const std::string newLdLibraryPath = std::string("/opt/conda/cuda-compat/:") + origLdLibraryPath;
    ::setenv("LD_LIBRARY_PATH", newLdLibraryPath.c_str());
 #ifndef UDF_PLUGIN_CLIENT
