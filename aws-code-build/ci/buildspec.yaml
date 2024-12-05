@@ -6,10 +6,10 @@ version: 0.2
 batch:
   fast-fail: false
   build-graph:
-    - identifier: build_standard_EXASOL_cuda_ml_8
+    - identifier: build_standard_Exasol_8_cuda_ml
       env:
         variables:
-          FLAVOR: standard-EXASOL-cuda-ml-8
+          FLAVOR: standard-Exasol-8-cuda-ml
         compute-type: BUILD_GENERAL1_MEDIUM
         privileged-mode: true
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
