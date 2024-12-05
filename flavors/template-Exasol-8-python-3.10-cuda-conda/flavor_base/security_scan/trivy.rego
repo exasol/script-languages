@@ -6,5 +6,5 @@ default ignore = false
 
 ignore {
         input.PkgName == "linux-libc-dev"
-        regex.match("^kernel:", input.Title)
+        regex.match("^(kernel:|In the Linux kernel)", input.Title)
 }
