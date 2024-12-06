@@ -4,6 +4,8 @@
 
 **Remarks:** The packages are grouped by there main usage and their type.
 
+- CondaDeps dependencies
+  - [Ubuntu packages](flavor_base/conda_deps/packages/apt_get_packages)
 - UDFclient dependencies
   - [Conda Packages](flavor_base/udfclient_deps/packages/conda_packages)
   - [Conda Channels](flavor_base/udfclient_deps/packages/conda_channels)
