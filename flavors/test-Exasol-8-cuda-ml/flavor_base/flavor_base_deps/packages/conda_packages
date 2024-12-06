@@ -1,0 +1,7 @@
+cudnn|9.3.0.75
+cuda-toolkit|12.6.2
+cuda-compat|12.6.2
+cuda-nvcc|12.6.77
+cuda-nvrtc|12.6.77
+numba|0.60.0
+pytorch|2.4.1

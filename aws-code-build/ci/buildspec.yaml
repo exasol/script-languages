@@ -34,3 +34,10 @@ batch:
         compute-type: BUILD_GENERAL1_MEDIUM
         privileged-mode: true
       buildspec: ./aws-code-build/ci/build_buildspec.yaml
+    - identifier: build_test_Exasol_8_cuda_ml
+      env:
+        variables:
+          FLAVOR: test-Exasol-8-cuda-ml
+        compute-type: BUILD_GENERAL1_MEDIUM
+        privileged-mode: true
+      buildspec: ./aws-code-build/ci/build_buildspec.yaml
