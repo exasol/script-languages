@@ -1,9 +1,7 @@
 [tool.poetry]
 package-mode = false
 name = "exasol-script-languages"
-# should we increase this version?
-# Are there other files that need to be updated?
-version = "8.1.0"
+version = "9.1.0"
 description = "Script Languages"
 
 license = "MIT"
