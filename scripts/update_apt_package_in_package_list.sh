@@ -10,13 +10,15 @@ if [ $# == 0 ]; then
     exit 1
 fi
 
-LIST_NEWEST_VERSION_OUTPUT=$1 # Package|Installed|Candidate
+# Format of $1: Package|Installed|Candidate
+# Set array variable SPEC.
+IFS='|' read -ra SPEC <<< "$1"
 SEARCH_DIRECTORY=${2:-.}
 REPLACE=${3:-no}
 
-PACKAGE=$(echo "$LIST_NEWEST_VERSION_OUTPUT" | cut -f 1 -d "|")
-CURRENT_VERSION=$(echo "$LIST_NEWEST_VERSION_OUTPUT" | cut -f 2 -d "|")
-CANDIDATE_VERSION=$(echo "$LIST_NEWEST_VERSION_OUTPUT" | cut -f 3 -d "|")
+PACKAGE=${SPEC[0]}
+CURRENT_VERSION=${SPEC[1]}
+CANDIDATE_VERSION=${SPEC[2]}
 
 FILES=$(grep -R "^$PACKAGE|$CURRENT_VERSION" "$SEARCH_DIRECTORY" | cut -f 1 -d ":")
 for FILE in $FILES; do
