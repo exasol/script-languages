@@ -13,7 +13,7 @@ fi
 # Format of $1: Package|Installed|Candidate
 # Set array variable SPEC.
 IFS='|' read -ra SPEC <<< "$1"
-SEARCH_DIRECTORY=${2:-.}
+SEARCH_DIRECTORY=${2:-flavors}
 REPLACE=${3:-no}
 
 PACKAGE=${SPEC[0]}
