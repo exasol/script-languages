@@ -5,6 +5,7 @@ import tempfile
 import time
 import urllib.request
 from pathlib import Path
+import math
 
 import requests
 from exasol_python_test_framework import udf
@@ -20,7 +21,7 @@ class PytorchTest(udf.TestCase):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
                 test_pytorch(epochs INTEGER)
-                RETURNS VARCHAR(10000) AS
+                RETURNS DOUBLE AS
                     
                 import torch
                 import torch.nn as nn
@@ -60,12 +61,13 @@ class PytorchTest(udf.TestCase):
                     with torch.no_grad():
                         y_pred = model(x_train)
                         mse = criterion(y_pred, y_train)
-                        return f'Mean Squared Error: {mse.item():.4f}'
+                        return mse.item()
                 /
                 '''))
 
         row = self.query(f"SELECT pytorchbasic.test_pytorch(1000);")[0]
-        self.assertIn('Mean Squared Error', row[0])
+
+        self.assertFalse(math.isnan(row[0]))
 
 
 if __name__ == '__main__':
