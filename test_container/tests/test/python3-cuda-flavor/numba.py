@@ -7,7 +7,7 @@ class NumbaTest(udf.TestCase):
     def setUp(self):
         self.query('create schema numbabasic', ignore_errors=True)
 
-    def test_import_keras(self):
+    def test_numba(self):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
                 test_numba(epochs INTEGER)
