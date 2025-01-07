@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from exasol_python_test_framework import udf
+import math
 
 
 class NumbaTest(udf.TestCase):
@@ -11,7 +12,7 @@ class NumbaTest(udf.TestCase):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
                 test_numba(epochs INTEGER)
-                RETURNS VARCHAR(10000) AS
+                RETURNS DOUBLE AS
                 
                 import math
                 from numba import vectorize, cuda
@@ -36,11 +37,12 @@ class NumbaTest(udf.TestCase):
                 
                     D = cu_discriminant(A, B, C)
                 
-                    return str(D)
+                    return float(np.sum(D))
                 /
                 '''))
 
         row = self.query("SELECT numbabasic.test_numba(10000);")[0]
+        self.assertTrue(row[0] > 0.0)
 
 
 if __name__ == '__main__':
