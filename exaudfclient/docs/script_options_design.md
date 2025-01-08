@@ -335,7 +335,7 @@ Covers:
 
 Tags: V2
 
-### Java %scriptclass Option Handling in Design
+### Java %scriptclass Option Handling
 `dsn~java-scriptclass-option-handling~1`
 
 Implement a function in the `Converter` class which adds the script class option to the JVM Options list.
