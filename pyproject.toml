@@ -1,7 +1,7 @@
 [tool.poetry]
 package-mode = false
 name = "exasol-script-languages"
-version = "8.1.0"
+version = "9.1.0"
 description = "Script Languages"
 
 license = "MIT"
