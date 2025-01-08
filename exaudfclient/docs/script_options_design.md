@@ -70,7 +70,7 @@ The following sequence diagram shows how the Java VM implementation uses the Par
 
 ![LegacyParserHandler](diagrams/LegacyParserHandler.drawio.png)
 
-The `ScriptOptionsLinesParserLegacy` class uses the Parser to search for Java specific script options and forwards the found options to class `ConverterLegacy`, which uses a common implementation for the conversion of the options.
+The `ScriptOptionsLinesParserLegacy` class uses the Parser to search for Java specific script options and forwards the found options to the class `ConverterLegacy`, which uses a common implementation for the conversion of the options.
 Class `tLegacyExtractor` connects `ScriptOptionsLinesParserLegacy` to `ConverterLegacy` and then orchestrates the parsing sequence. 
 
 `ScriptOptionsLinesParserLegacy` also implements the import of foreign scripts. The import script algorithm iteratively replaces foreign scripts. The algorithm is described in the following pseudocode snippet:
@@ -90,14 +90,14 @@ while True:
 
 ![CTPGParserHandler](diagrams/CTPGParserHandler.drawio.png)
 
-The `ScriptOptionsLinesParserCTPG` class uses the new CTPG basedParser to search for **all** Java specific script options at once. Then it forwards the found options to class `ConverterV2`, which uses a common implementation for the conversion of the options. `ConverterV2` also implements the functions to convert Jvm otions and JAR options.   
+The `ScriptOptionsLinesParserCTPG` class uses the new CTPG based Parser to search for **all** Java specific script options at once. Then it forwards the found options to class `ConverterV2`, which uses a common implementation for the conversion of the options. `ConverterV2` also implements the functions to convert Jvm otions and JAR options.   
 Class `tExtractorV2` connects `ScriptOptionsLinesParserCTPG` to `ConverterV2` and then orchestrates the parsing sequence.
 
 ##### CTPG based Script Import Algorithm
 `ScriptOptionsLinesParserCTPG` uses an instance of `ScriptImporter` to import foreign scripts. Because the new parser collects all script options at once, but backwards compatibility with existing UDF scripts must be ensured, there is an additional level of complexity in the import script algorithm. The algorithm is described in the following pseudocode snippet:
 ```
 function import(script_code, options_map)
- import_option = options_map.find("import")
+ import_options = options_map.find("import")
  if found:
     sorted_import_option = sort(import_option) //import options according to their location in the script, increasing order
     collectedScripts = list() //list of (script_code, location, size)
@@ -161,7 +161,7 @@ The following diagram shows how the scripts are collected in the recursive algor
 
 ### Parser Implementation V1
 
-The legacy parser (V1) parser searches for one specific script option. The parser starts from beginning of the script code. If found, the parser immediately removes the script option from the script code and returns the option value. It validates the 
+The legacy parser (V1) parser searches for one specific script option. The parser starts from the beginning of the script code. If found, the parser immediately removes the script option from the script code and returns the option value. It validates the 
 
 ### Parser Implementation V2
 
@@ -232,7 +232,7 @@ Tags: V2
 ### Ignore lines without script options
 `dsn~ignore-lines-without-script-options~1`
 
-In order to avoid lower performance compared to the old implementation, the parser must run only on lines which contain a `%` character.
+In order to avoid lower performance compared to the old implementation, the parser must run only on lines which contain a `%` character after only whitespaces.
 
 
 Covers:
@@ -289,7 +289,7 @@ Define the Lexer rules to tokenize whitespace escape sequences:
 - '\f' => <form feed> character
 - '\v' => <vertical tab> character
 
-Implement rules which replace those white space escape tokens only at the beginning of an option value. Add parser rules to ignore those tokens in anything else, which is not a script option. Those token are not expected to be part of an option key.
+Implement rules which replace those white space escape tokens only at the beginning of an option value. Add parser rules to leave those tokens as is in anything else, which is not a script option. Those token are not expected to be part of an option key.
 
 
 Covers:
@@ -302,8 +302,8 @@ Tags: V2
 ### Lexer and Parser Rules Escape Sequences
 `dsn~lexer-parser-rules-escape-sequences~1`
 
-Define the Lexer rules to tokenize '\n', '\r', '\; sequences, and parser rules to replace those sequences with <line feed>, <carriage return> or ';' characters. 
-Implement rules which replace those token at any location in an option value. Add parser rules to ignore those tokens in anything else, which is not a script option. Those token are not expected to be part of an option key.
+Define the Lexer rules to tokenize '\n', '\r', '\;' sequences, and parser rules to replace those sequences with <line feed>, <carriage return> or ';' characters. 
+Implement rules which replace those token at any location in an option value. Add parser rules to leave those tokens as is in anything else, which is not a script option. Those token are not expected to be part of an option key.
 
 
 Covers:
@@ -316,7 +316,7 @@ Tags: V2
 ### Script Option Removal Mechanism
 `dsn~script-option-removal~1`
 
-Implement a method in class `ScriptOptionLinesParserCTPG` which removes *all* identified Script Options from the original script code at once. This method be executed after the import scripts are replaced. The algorithm must replace the script options in reverse order in order to maintain consistency of internal list of positions.
+Implement a method in class `ScriptOptionLinesParserCTPG` which removes *all* identified Script Options from the original script code at once. This method should be executed after the import scripts are replaced. The algorithm must replace the script options in reverse order in order to maintain consistency of internal list of positions.
 
 
 Covers:
@@ -338,7 +338,7 @@ Tags: V2
 ### Java %scriptclass Option Handling in Design
 `dsn~java-scriptclass-option-handling~1`
 
-Implement a function in the `Converter` class which adds the script class option to the JVM Options list.
+Implement a function in the `ConverterV2` class which adds the script class option to the JVM Options list.
 
 
 Covers:
