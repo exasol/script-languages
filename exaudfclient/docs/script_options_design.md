@@ -9,7 +9,6 @@ This document's section structure is derived from the "[arc42](https://arc42.org
 ## Constraints
 
 - The parser implementation must be in C++.
-- The chosen parser implementation is [ctpg](https://github.com/peter-winter/ctpg), which supports the definition of Lexer and Parser Rules in C++ code.
 - The selected parser should allow easy encapsulation in a custom C++ namespace (UDF client linker namespace constraint)
 - The selected parser should not depend on additional runtime dependencies
 - The selected parser should have minimal compile time dependencies, i.e. no additional shared libraries or tools to generate C++ code
@@ -26,15 +25,15 @@ Please refer to the [System Requirement Specification](script_options_requirment
 
 ![Components](diagrams/OveralScriptOptionalsBuildingBlocks.drawio.png)
 
-At the very high level there can be distinguished between the generic "Script Options Parser" module which parses a UDF script code and returns the found script options, and the "Script Options Parser Handler" which converts the Java UDF specific script options. In both modules there are specific implementation for the legacy parser and the new CTPG based parser.
+At the very high level there can be distinguished between the generic "Script Options Parser" module which parses a UDF script code and returns the found script options, and the "Script Options Parser Handler" which converts the Java UDF specific script options. In both modules there are specific implementation for the legacy parser and the new CTPG based parser. We need to keep the legacy implementation alive, as the new approach causes some breaking changes, especially related to the new escape patterns: Existing UDF might not be working with the new parser implementation. 
 
 ### Script Options Parser
 
-The parser component can be used to parse any script code (Java, Python, R) for any script options. It provides simplistic interfaces, which are different between the two versions, which accept the script code as input and return the found script option(s). 
+The parser component can be used to parse any script code (Java, Python, R) for any script options. It provides simplistic interfaces, which are different between the two versions, which accept the script code as input and return the found script option(s). The interfaces need to be different because both parsers work inherently differently: While the legacy parser successively finds and removes script options by the given key, the new parser finds **all** script options at once, but does not remove them. 
 
 #### Legacy Parser
 
-The legacy parser (V1) parser searches for one specific script option. 
+The legacy parser (V1) parser searches for one specific script option, removes the whole option from the script code, and returns the script option value. 
 
 #### V2 Parser
 
@@ -43,7 +42,7 @@ It is important to use a parser generator implementation which allows the defini
 
 As the parser needs to find script options in any given script code, the generated parser must accept any strings which are not script options and ignore those. In order to achieve this, the lexer rules need to be as simple as possible, in order to avoid collisions.
 
-It is important to emphasize that in contrast to the legacy parser, the caller is responsible for removing the script options from the script code.
+It is important to emphasize that in contrast to the legacy parser, the caller is responsible for removing the script options from the script code, as the parser is agnostic to the actual script options keys.
 The interface provides a method which accepts the script code as input and returns a map with all found script options in the whole code. Each key in the map points to a list of all option values plus the start and end position of the option for this specific option key.
 
 ### Parser Handler
@@ -99,9 +98,9 @@ Class `tExtractorV2` connects `ScriptOptionsLinesParserCTPG` to `ConverterV2` an
 function import(script_code, options_map)
  import_options = options_map.find("import")
  if found:
-    sorted_import_option = sort(import_option) //import options according to their location in the script, increasing order
+    sorted_import_options = sort(import_options) //import options according to their location in the script, increasing order
     collectedScripts = list() //list of (script_code, location, size)
-    for each import_option in sorted_import_option:
+    for each import_option in sorted_import_options:
        import_script_code = resolve_foreign_script_somehow(import_option.value)
        if not md5_hashset.has(import_script_code):
           md5_hashset.add(import_script_code)
@@ -151,6 +150,24 @@ class OtherClassC {
 }
 ```
 
+The result must be:
+```
+class OtherClassB {
+    static void doSomething() {}
+}
+class OtherClassA {
+    static void doSomething() {}
+}
+class OtherClassC {
+    static void doSomething() {}
+}
+class JVMOPTION_TEST {
+    static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        ctx.emit(\"Success!\");
+    }
+}
+```
+
 The following diagram shows how the scripts are collected in the recursive algorithm:
 
 ![V2ImportScriptFlow](diagrams/V2ImportScriptFlow.drawio.png)
@@ -189,7 +206,7 @@ Tags: V2
 `dsn~lexer-parser-rules~1`
 
 Lexer and Parser rules to recognize `%optionKey`, `optionValue`, with whitespace characters as separator. The Parser rules will define the grammar to correctly identify Script Options, manage multiple options with the same key, and handle duplicates.
-
+The regular expression for the lexer term for finding newline escape sequences or the semicolon escape sequence is `\\;|\\n|\\r|\\\\`. The regular expression for the lexer term for finding white space escape sequences is `\\ |\\t|\\f|\\v`. 
 
 Covers:
 - `req~general-script-options-parsing~1`
@@ -443,7 +460,7 @@ Tags: V2
 ### General Parser Integration
 `dsn~general-parser-integration~1`
 
-Ensure that the new parser integrates seamlessly into the Exasol UDF Client environment. This includes embedding the parser within the custom C++ namespace, ensuring it meets all linker requirements, and does not introduce additional runtime dependencies.
+Ensure that the new parser integrates seamlessly into the Exasol UDF Client environment and the Exasol DB. This includes embedding the parser within the custom C++ namespace, ensuring it meets all linker requirements, and does not introduce additional runtime dependencies.
 
 
 Covers:
