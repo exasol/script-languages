@@ -44,7 +44,7 @@ class AvailablePython3Packages(udf.TestCase):
             ("simplejson",),
             ("simdjson",),
             ("pybase64",),
-            ("exasol_bucketfs_utils_python",),
+            ("exasol.bucketfs",),
             ("yaml",),
             ("bitsets",),
             ("pybloomfilter",),
