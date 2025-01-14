@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script should never be called directly, only sourced:
 
 #     source _activate_current_env.sh
