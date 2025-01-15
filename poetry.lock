@@ -152,17 +152,17 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.34.118"
+version = "1.35.99"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.34.118-py3-none-any.whl", hash = "sha256:e9edaf979fbe59737e158f2f0f3f0861ff1d61233f18f6be8ebb483905f24587"},
-    {file = "boto3-1.34.118.tar.gz", hash = "sha256:4eb8019421cb664a6fcbbee6152aa95a28ce8bbc1c4ee263871c09cdd58bf8ee"},
+    {file = "boto3-1.35.99-py3-none-any.whl", hash = "sha256:83e560faaec38a956dfb3d62e05e1703ee50432b45b788c09e25107c5058bd71"},
+    {file = "boto3-1.35.99.tar.gz", hash = "sha256:e0abd794a7a591d90558e92e29a9f8837d25ece8e3c120e530526fe27eba5fca"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.118,<1.35.0"
+botocore = ">=1.35.99,<1.36.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -171,13 +171,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.118"
+version = "1.35.99"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.118-py3-none-any.whl", hash = "sha256:e3f6c5636a4394768e81e33a16f5c6ae7f364f512415d423f9b9dc67fc638df4"},
-    {file = "botocore-1.34.118.tar.gz", hash = "sha256:0a3d1ec0186f8b516deb39474de3d226d531f77f92a0f56ad79b80219db3ae9e"},
+    {file = "botocore-1.35.99-py3-none-any.whl", hash = "sha256:b22d27b6b617fc2d7342090d6129000af2efd20174215948c0d7ae2da0fab445"},
+    {file = "botocore-1.35.99.tar.gz", hash = "sha256:1eab44e969c39c5f3d9a3104a0836c24715579a455f12b3979a31d7cde51b3c3"},
 ]
 
 [package.dependencies]
@@ -186,7 +186,7 @@ python-dateutil = ">=2.1,<3.0.0"
 urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >= \"3.10\""}
 
 [package.extras]
-crt = ["awscrt (==0.20.9)"]
+crt = ["awscrt (==0.22.0)"]
 
 [[package]]
 name = "certifi"
@@ -614,17 +614,6 @@ files = [
 ]
 
 [[package]]
-name = "exasol-error-reporting-python"
-version = "0.3.0"
-description = "Exasol Python Error Reporting"
-optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "exasol-error-reporting-python-0.3.0.tar.gz", hash = "sha256:5b417e21408743d3191cface1b3cadfd40d8db0b88a88ee58f753ffcedaa2e5a"},
-    {file = "exasol_error_reporting_python-0.3.0-py3-none-any.whl", hash = "sha256:727c429118b80e07715530d3b9159e8e43502bef2da34cbbac3c79465c901ce8"},
-]
-
-[[package]]
 name = "exasol-integration-test-docker-environment"
 version = "3.3.0"
 description = "Integration Test Docker Environment for Exasol"
@@ -697,22 +686,22 @@ setuptools = ">=73.0.0,<74.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "1.5.0"
+version = "1.6.0"
 description = "Manages AWS cloud CI build infrastructure."
 optional = false
 python-versions = "<4.0,>=3.10.0"
 files = [
-    {file = "exasol_script_languages_container_ci_setup-1.5.0-py3-none-any.whl", hash = "sha256:a9bb15c591c096108d74aacb9ea68bcda3cbad10fdaa7fef130e23f2f79c5b50"},
-    {file = "exasol_script_languages_container_ci_setup-1.5.0.tar.gz", hash = "sha256:5b894154b7883cb8907879c8473b501cbf328c55b19aee64c0a2cc2286c27f16"},
+    {file = "exasol_script_languages_container_ci_setup-1.6.0-py3-none-any.whl", hash = "sha256:cbcefa05b9492fafa21dd05c0e7d27bdfa48a1f4bfac6ff99c882ccd9ebfedf5"},
+    {file = "exasol_script_languages_container_ci_setup-1.6.0.tar.gz", hash = "sha256:46fa82990c1ab8385de17b9fedd3a8f496b1bed33c8061ff4d3d7f3715e15011"},
 ]
 
 [package.dependencies]
-boto3 = "1.34.118"
-botocore = "1.34.118"
+boto3 = "1.35.99"
+botocore = "1.35.99"
 click = ">=8.1.3,<9.0.0"
-exasol_error_reporting_python = ">=0.3.0,<0.4.0"
+exasol-error-reporting = ">=0.5.0"
 exasol-script-languages-container-ci = ">=1.6.0,<2.0.0"
-jinja2 = ">=3.1.0"
+jinja2 = ">=3.1.5"
 jsonschema = ">=4.22.0,<5.0.0"
 PyGithub = ">=2.3.0,<3.0.0"
 
@@ -2285,4 +2274,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4"
-content-hash = "39b00a493f3268ced7304ac5fea286c5fbf3b4b9e2c6e504aaadc377d546dab1"
+content-hash = "f53ad7792d79fc7dcdabde8a690df17744d87c750a288781b3da1545dc82ca0e"
