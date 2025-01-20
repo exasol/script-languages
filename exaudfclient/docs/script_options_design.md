@@ -178,11 +178,11 @@ The following diagram shows how the scripts are collected in the recursive algor
 
 ### Parser Implementation V1
 
-The legacy parser (V1) parser searches for one specific script option. The parser starts from the beginning of the script code. If found, the parser immediately removes the script option from the script code and returns the option value. It validates the 
+The legacy parser (V1) parser searches for one specific script option. The parser starts from the beginning of the script code. If found, the parser immediately removes the script option from the script code and returns the option value. 
 
 ### Parser Implementation V2
 
-The parser provides an interface to parse the UDF script for all options at once. All found script options need to be collected in an associative container. Internally. the parses uses [ctpg](https://github.com/peter-winter/ctpg) to parse the UDF script code line-by-line.
+The parser provides an interface to parse the UDF script for all options at once. All found script options need to be collected in an associative container. Internally, the parses uses [ctpg](https://github.com/peter-winter/ctpg) to parse the UDF script code line-by-line.
 
 ## Cross-cutting Concerns
 
@@ -366,8 +366,8 @@ Tags: V2
 ### Java %jar Option Collection
 `dsn~java-jar-option-collection~1`
 
-Implement an algorithm in class `ConverterV2` to split the given Jar option value by colon (':') and then collect the found Jar options in a list. 
-
+Implement an algorithm in class `ConverterV2` which parses the given Jar option value in expected format `<file1>:<file2>:...:<filen>`. The algorithm shall splut by colon (':') and then collect the found Jar options in a list. 
+Compare [OpenJdk implementation](https://github.com/AdoptOpenJDK/openjdk-jdk11/blob/19fb8f93c59dfd791f62d41f332db9e306bc1422/src/java.base/share/classes/jdk/internal/loader/URLClassPath.java#L174) of parsing the classpath.
 
 Covers:
 - `req~java-jar-option-handling-v2~1`
