@@ -366,7 +366,7 @@ Tags: V2
 ### Java %jar Option Collection
 `dsn~java-jar-option-collection~1`
 
-Implement an algorithm in class `ConverterV2` which parses the given Jar option value in expected format `<file1>:<file2>:...:<filen>`. The algorithm shall splut by colon (':') and then collect the found Jar options in a list. 
+Implement an algorithm in class `ConverterV2` which parses the given Jar option value in the expected format `<file1>:<file2>:...:<filen>`. The algorithm shall split by colon (':') and then collect the found Jar options in a list. 
 Compare [OpenJdk implementation](https://github.com/AdoptOpenJDK/openjdk-jdk11/blob/19fb8f93c59dfd791f62d41f332db9e306bc1422/src/java.base/share/classes/jdk/internal/loader/URLClassPath.java#L174) of parsing the classpath.
 
 Covers:
