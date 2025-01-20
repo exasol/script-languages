@@ -52,13 +52,14 @@ Covers:
 `req~white-spaces~1`
 
 The parser must treat the following list of white spaces as token separator:
-|======================================================= 
-| Name         | C syntax      | ASCII Dec | ASCII Hex | 
-| tabulator    | '\t'          | 9         | 0x09      |
-| vertical tab | '\v'          | 11         | 0x0b     |
-| form feed    | '\f'          | 12         | 0x0c     |
-| space        | ' '           | 30        | 0x20      |     
-|======================================================= 
+
+ 
+| Name         | C syntax      | ASCII Dec | ASCII Hex     | 
+|--------------|---------------|-----------|---------------|
+| tabulator    | '\t'          | 9         | 0x09          |
+| vertical tab | '\v'          | 11        | 0x0b          |
+| form feed    | '\f'          | 12        | 0x0c          |
+| space        | ' '           | 30        | 0x20          |     
 
 Needs: dsn
 
@@ -157,7 +158,7 @@ Covers:
 - `feat~general-script-options-parsing~1`
 
 ### Duplicate Options Management
-`req~multiple-options-management~1`
+`req~duplicate-options-management~1`
 
 The parser must collect multiple Script Options with the same key and same/different value. Note: the specific handling depends on the option handler.
 
@@ -191,7 +192,7 @@ Covers:
 Tags: V1
 
 ### Script Option Unknown Options Behavior V2
-`req~script-option-unknown-options-behvaior-v2~1`
+`req~script-option-unknown-options-behavior-v2~1`
 
 The parser handler must detect unknown script options and throw an exception if such an options is found. 
 
@@ -249,11 +250,14 @@ Covers:
 ### Java %jar Option Handling Multiple Options
 `req~java-jar-option-handling-multiple-options~1`
 
+Needs: dsn
+
 The Java parser handler must find multiple `%jar` options. The values are to be interpreted as the Java CLASSPATH: `<file1>:<file2>:...:<filen>`. The Java parser handler shall split the entries by the colon character.
 Compare [OpenJdk implementation](https://github.com/AdoptOpenJDK/openjdk-jdk11/blob/19fb8f93c59dfd791f62d41f332db9e306bc1422/src/java.base/share/classes/jdk/internal/loader/URLClassPath.java#L174) of parsing the classpath.
 
 Covers:
 - `feat~java-specific-script-options~1`
+
 
 ### Java %jar Option Handling V1
 `req~java-jar-option-handling-v1~1`
@@ -310,6 +314,28 @@ Needs: dsn
 
 Covers:
 - `feat~java-specific-script-options~1`
+
+### Java %jvmoption Whitespace Handling
+`req~java-jvmoption-whitespace-handling~1`
+
+The Java parser handler must split found Jvm Option value by whitespace character(s).
+
+Needs: dsn
+
+Covers:
+- `feat~java-specific-script-options~1`
+
+### Java %jvmoption Whitespace Escape Handling V2
+`req~java-jvmoption-whitespace-escape-handling-v2~1`
+
+The Java parser handler must detect and replace whitespace escape sequences in Jvm option values and replace them accordingly.
+
+Needs: dsn
+
+Covers:
+- `feat~java-specific-script-options~1`
+
+Tags: V2
 
 ### Java %import Option Replace Referenced Sripts
 `req~java-import-option-replace-referenced-scripts~1`
