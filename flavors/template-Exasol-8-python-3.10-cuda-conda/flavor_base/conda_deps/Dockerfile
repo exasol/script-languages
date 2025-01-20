@@ -17,7 +17,7 @@ ENV MAMBA_ROOT_PREFIX="/opt/conda"
 ENV MAMBA_EXE="/bin/micromamba"
 ENV MAMBA_DOCKERFILE_ACTIVATE=1
 
-COPY conda_deps/_activate_current_env.sh /usr/local/bin/_activate_current_env.sh
+COPY scripts/virtual_environment/_activate_current_conda_env.sh /usr/local/bin/_activate_current_env.sh
 
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
