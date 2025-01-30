@@ -19,7 +19,7 @@ keywords = ['exasol', 'udf', 'script-languages']
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4"
-exasol-script-languages-container-tool = "^1.0.0"
+exasol-script-languages-container-tool = "^1.1.0"
 exasol-script-languages-container-ci = "^1.6.0"
 exasol-script-languages-container-ci-setup = "^1.6.0"
 
