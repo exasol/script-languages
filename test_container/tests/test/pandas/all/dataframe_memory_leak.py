@@ -112,7 +112,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                     assert memory_check_executed == False #Sanity check for row number
                     print("Checking memory usage", flush=True)
                     gc.collect()
-                    time.sleep(1)
+                    time.sleep(1) #Need to sleep here. Otherwise GC might not have finished before taking snapshot.
                     snapshot_end = tracemalloc.take_snapshot()
                     top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                     first_item = top_stats_begin_end[0] #First item is always the largest one
@@ -151,6 +151,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
 
             import tracemalloc
             import gc
+            import time
             snapshot_begin = None
             memory_check_executed = False
             tracemalloc.start()
@@ -171,6 +172,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                     assert memory_check_executed == False #Sanity check for row number
                     print("Checking memory usage", flush=True)
                     gc.collect()
+                    time.sleep(1) #Need to sleep here. Otherwise GC might not have finished before taking snapshot.
                     snapshot_end = tracemalloc.take_snapshot()
                     top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                     first_item = top_stats_begin_end[0] #First item is always the largest one
@@ -223,7 +225,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                     assert memory_check_executed == False #Sanity check for row number
                     print("Checking memory usage", flush=True)
                     gc.collect()
-                    time.sleep(1)
+                    time.sleep(1) #Need to sleep here. Otherwise GC might not have finished before taking snapshot.
                     snapshot_end = tracemalloc.take_snapshot()
                     top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                     first_item = top_stats_begin_end[0] #First item is always the largest one
@@ -277,7 +279,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
 
                             if batch_idx == ({batch_count} - 1):
                                 gc.collect()
-                                time.sleep(1)
+                                time.sleep(1) #Need to sleep here. Otherwise GC might not have finished before taking snapshot.
                                 snapshot_end = tracemalloc.take_snapshot()
                                 top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                                 first_item = top_stats_begin_end[0] #First item is always the largest one
