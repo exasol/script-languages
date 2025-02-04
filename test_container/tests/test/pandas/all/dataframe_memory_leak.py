@@ -78,10 +78,10 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
 
     def test_dataframe_scalar_emits(self):
         """
-        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 100KB, where
-        the memory block snapshots are retrieved during the first/last invocation of the scalar UDF,
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 2^17=131072 Bytes,
+        where the memory block snapshots are retrieved during the first/last invocation of the scalar UDF,
         but after the emit().
-        Reasoning for 100KB is that the number of rows is > 100K, so if there was 1 Byte leaking during every execution,
+        Reasoning for 2^17=131072 Bytes is that this is the number of rows, so if there was 1 Byte leaking during every execution,
         it would be found here.
         """
         udf_def_str = udf.fixindent('''
@@ -116,13 +116,13 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                     snapshot_end = tracemalloc.take_snapshot()
                     top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                     first_item = top_stats_begin_end[0] #First item is always the largest one
-                    if first_item.size_diff > 100000:
+                    if first_item.size_diff > %s:
                         raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
                     memory_check_executed = True
                 counter = counter + 1
             /
 
-        ''' % (self.col_defs_str, self.col_defs_str, self.num_rows - 1))
+        ''' % (self.col_defs_str, self.col_defs_str, self.num_rows - 1, self.num_rows))
         self.query(udf_def_str)
         select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
         rows = self.query(select_sql)
@@ -192,9 +192,9 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
 
     def test_dataframe_scalar_returns(self):
         """
-        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 100KB, where
-        the memory block snapshots are retrieved during the first/last invocation of the scalar UDF.
-        Reasoning for 100KB is that the number of rows is > 100K, so if there was 1 Byte leaking during every execution,
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 2^17 = 131072 Bytes,
+        where the memory block snapshots are retrieved during the first/last invocation of the scalar UDF.
+        Reasoning for 131072 Bytes is that this is the number of rows, so if there was 1 Byte leaking during every execution,
         it would be found here.
         """
         udf_sql = udf.fixindent('''
@@ -229,14 +229,14 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                     snapshot_end = tracemalloc.take_snapshot()
                     top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                     first_item = top_stats_begin_end[0] #First item is always the largest one
-                    if first_item.size_diff > 100000:
-                        raise RuntimeError(f"scalar emit UDF uses too much memory: {first_item}")
+                    if first_item.size_diff > %s:
+                        raise RuntimeError(f"scalar returns UDF uses too much memory: {first_item}")
                     memory_check_executed = True
                 counter = counter + 1
 
                 return (df.iloc[0, 0] + df.iloc[0, 1]).item()
             /
-            ''' % (self.col_defs_str, self.num_rows - 1))
+            ''' % (self.col_defs_str, self.num_rows - 1, self.num_rows))
         self.query(udf_sql)
         print(udf_sql)
         select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
@@ -247,7 +247,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
 
     def test_dataframe_set_emits(self):
         """
-        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 15KB,
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 20000Bytes,
         where the memory block snapshots are retrieved during the first/last get+emit
         of a batch of 2^14 = 16384 rows. In total, 2^3 = 8 batches are retrieved and emitted.
         """
