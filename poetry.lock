@@ -190,13 +190,13 @@ crt = ["awscrt (==0.22.0)"]
 
 [[package]]
 name = "certifi"
-version = "2024.12.14"
+version = "2025.1.31"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
-    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
+    {file = "certifi-2025.1.31-py3-none-any.whl", hash = "sha256:ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe"},
+    {file = "certifi-2025.1.31.tar.gz", hash = "sha256:3d5da6925056f6f18f119200434a4780a94263f10d1c21d032a6f6b2baa20651"},
 ]
 
 [[package]]
@@ -664,33 +664,33 @@ types-requests = ">=2.31.0.6,<3.0.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci"
-version = "1.6.0"
+version = "1.7.0"
 description = "Implements CI builds for script-language-container."
 optional = false
 python-versions = "<4.0,>=3.10.0"
 files = [
-    {file = "exasol_script_languages_container_ci-1.6.0-py3-none-any.whl", hash = "sha256:1cd213736813431fa6046dc1f41be8386245e2fc8e68cda79475380896472210"},
-    {file = "exasol_script_languages_container_ci-1.6.0.tar.gz", hash = "sha256:06bc716ee09b97c7a912b87be878b360fc15bb8e84104c6a603dab5419671dea"},
+    {file = "exasol_script_languages_container_ci-1.7.0-py3-none-any.whl", hash = "sha256:fc2ead83297a2b5994112cf81c91b325bbf56b323a51285b1548114cc7d9fac7"},
+    {file = "exasol_script_languages_container_ci-1.7.0.tar.gz", hash = "sha256:a8e8145c8ea1fc7d8744f82a74a81cd0e856736189279f064496acb799effaa6"},
 ]
 
 [package.dependencies]
 click = ">=8.1.7,<9.0.0"
 datamodel-code-generator = ">=0.25.5,<0.30.0"
-exasol-integration-test-docker-environment = ">=3.1.0,<4.0.0"
-exasol-script-languages-container-tool = ">=1.0.0,<2.0.0"
+exasol-integration-test-docker-environment = ">=3.4.0,<4.0.0"
+exasol-script-languages-container-tool = ">=2.0.0,<3.0.0"
 GitPython = ">=3.1.0"
 PyGithub = ">=2.3.0,<3.0.0"
 setuptools = ">=73.0.0,<74.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "1.6.0"
+version = "1.7.0"
 description = "Manages AWS cloud CI build infrastructure."
 optional = false
 python-versions = "<4.0,>=3.10.0"
 files = [
-    {file = "exasol_script_languages_container_ci_setup-1.6.0-py3-none-any.whl", hash = "sha256:cbcefa05b9492fafa21dd05c0e7d27bdfa48a1f4bfac6ff99c882ccd9ebfedf5"},
-    {file = "exasol_script_languages_container_ci_setup-1.6.0.tar.gz", hash = "sha256:46fa82990c1ab8385de17b9fedd3a8f496b1bed33c8061ff4d3d7f3715e15011"},
+    {file = "exasol_script_languages_container_ci_setup-1.7.0-py3-none-any.whl", hash = "sha256:d418769169a54f18030e7d435f7faf3aba0dce1587fd88c22c52b8711ae7b42b"},
+    {file = "exasol_script_languages_container_ci_setup-1.7.0.tar.gz", hash = "sha256:505cc7735d0a1f8f02f0c22b494d22be332d5ce26b3cefb2b33723fa72f95fae"},
 ]
 
 [package.dependencies]
@@ -698,20 +698,20 @@ boto3 = "1.35.99"
 botocore = "1.35.99"
 click = ">=8.1.3,<9.0.0"
 exasol-error-reporting = ">=0.5.0"
-exasol-script-languages-container-ci = ">=1.6.0,<2.0.0"
+exasol-script-languages-container-ci = ">=1.7.0,<2.0.0"
 jinja2 = ">=3.1.5"
 jsonschema = ">=4.22.0,<5.0.0"
 PyGithub = ">=2.3.0,<3.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
-version = "1.1.0"
+version = "2.0.0"
 description = "Script Languages Container Tool"
 optional = false
 python-versions = "<4,>=3.10"
 files = [
-    {file = "exasol_script_languages_container_tool-1.1.0-py3-none-any.whl", hash = "sha256:bbea74850ea3c03dfb049f7b3053f224f0dc30f5d80403a598736738a43d31c9"},
-    {file = "exasol_script_languages_container_tool-1.1.0.tar.gz", hash = "sha256:a831f98ceeda2a74c9239a1a12f8e90b3a9612cd60dc2a3a33bbfe300669ecae"},
+    {file = "exasol_script_languages_container_tool-2.0.0-py3-none-any.whl", hash = "sha256:40bcc1194a275d5c8be24586d4dfc16c1b1b6fb2efea1d9cbfc3cf17c22dd030"},
+    {file = "exasol_script_languages_container_tool-2.0.0.tar.gz", hash = "sha256:b5dc28d2e44f014ae3fad66cc8986d2159a6b9976a711eb0391ef87bae815ee8"},
 ]
 
 [package.dependencies]
@@ -1217,13 +1217,13 @@ files = [
 
 [[package]]
 name = "paramiko"
-version = "3.5.0"
+version = "3.5.1"
 description = "SSH2 protocol library"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "paramiko-3.5.0-py3-none-any.whl", hash = "sha256:1fedf06b085359051cd7d0d270cebe19e755a8a921cc2ddbfa647fb0cd7d68f9"},
-    {file = "paramiko-3.5.0.tar.gz", hash = "sha256:ad11e540da4f55cedda52931f1a3f812a8238a7af7f62a60de538cd80bb28124"},
+    {file = "paramiko-3.5.1-py3-none-any.whl", hash = "sha256:43b9a0501fc2b5e70680388d9346cf252cfb7d00b0667c39e80eb43a408b8f61"},
+    {file = "paramiko-3.5.1.tar.gz", hash = "sha256:b2c665bc45b2b215bd7d7f039901b14b067da00f3a11e6640995fd58f2664822"},
 ]
 
 [package.dependencies]
@@ -2246,4 +2246,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4"
-content-hash = "b6ec2f0aac9ea5a1e5941f47227abe698ee8b8db32ec8d84629b2f1c4346cb35"
+content-hash = "f6b62e5c834f020099638fc72ba9c6dfb50012af4e5dcad33430fef2da984318"
