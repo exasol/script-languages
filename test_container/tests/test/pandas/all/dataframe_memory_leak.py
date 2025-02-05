@@ -9,6 +9,8 @@ from exasol_python_test_framework.exatest.testcase import useData
 from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 from typing import List, Tuple, Union
 
+NUM_ROW_INSERTS = 17
+NUM_ROWS = 2**NUM_ROW_INSERTS # => ~128 K rows
 
 class PandasDataFrameMemoryLeakTest(udf.TestCase):
     def setUp(self):
@@ -69,19 +71,19 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
     def create_table_1(self):
         self.create_table("TEST1",self.create_col_defs_str)
         self.import_via_insert("TEST1",[self.col_tuple],column_names=self.col_names)
-        num_inserts = 17 # => ~128 K rows
-        for i in range(num_inserts):
+
+        for i in range(NUM_ROW_INSERTS):
             insert_sql = 'INSERT INTO TEST1 (%s) SELECT %s FROM TEST1' % (self.col_names_str, self.col_names_str)
             print("Insert Statement %s"%insert_sql)
             self.query(insert_sql)
-        self.num_rows = 2**num_inserts
+
 
     def test_dataframe_scalar_emits(self):
         """
-        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 2^17=131072 Bytes,
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than NUM_ROWS=131072 Bytes,
         where the memory block snapshots are retrieved during the first/last invocation of the scalar UDF,
         but after the emit().
-        Reasoning for 2^17=131072 Bytes is that this is the number of rows, so if there was 1 Byte leaking during every execution,
+        Reasoning for NUM_ROWS=131072 Bytes is, if there was 1 Byte leaking during every execution,
         it would be found here.
         """
         udf_def_str = udf.fixindent('''
@@ -122,11 +124,11 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                 counter = counter + 1
             /
 
-        ''' % (self.col_defs_str, self.col_defs_str, self.num_rows - 1, self.num_rows))
+        ''' % (self.col_defs_str, self.col_defs_str, NUM_ROWS - 1, NUM_ROWS))
         self.query(udf_def_str)
         select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
         rows = self.query(select_sql)
-        self.assertEqual(self.num_rows, len(rows))
+        self.assertEqual(NUM_ROWS, len(rows))
 
     def test_dataframe_scalar_emits_multiple(self):
         """
@@ -141,7 +143,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
         does not increase the allocated memory even more.
         """
         batch_count = 8
-        batch_size = int(self.num_rows / batch_count)
+        batch_size = int(NUM_ROWS / batch_count)
         udf_def_str = udf.fixindent(f'''
             CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
             foo({self.col_defs_str})
@@ -188,13 +190,13 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
         select_sql = 'SELECT foo(%s) FROM FN2.TEST1 WHERE C0 <= %d; ' % (self.col_names_str, batch_count)
         print(select_sql)
         rows = self.query(select_sql)
-        self.assertEqual(self.num_rows, len(rows))
+        self.assertEqual(NUM_ROWS, len(rows))
 
     def test_dataframe_scalar_returns(self):
         """
-        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than 2^17 = 131072 Bytes,
+        This test checks that the largest memory block of a tracemalloc snapshot diff is not larger than NUM_ROWS = 131072 Bytes,
         where the memory block snapshots are retrieved during the first/last invocation of the scalar UDF.
-        Reasoning for 131072 Bytes is that this is the number of rows, so if there was 1 Byte leaking during every execution,
+        Reasoning for NUM_ROWS=131072 Bytes is, if there was 1 Byte leaking during every execution,
         it would be found here.
         """
         udf_sql = udf.fixindent('''
@@ -236,13 +238,13 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
 
                 return (df.iloc[0, 0] + df.iloc[0, 1]).item()
             /
-            ''' % (self.col_defs_str, self.num_rows - 1, self.num_rows))
+            ''' % (self.col_defs_str, NUM_ROWS - 1, NUM_ROWS))
         self.query(udf_sql)
         print(udf_sql)
         select_sql = 'SELECT foo(%s) FROM FN2.TEST1' % (self.col_names_str)
         print(select_sql)
         rows = self.query(select_sql)
-        self.assertEqual(self.num_rows, len(rows))
+        self.assertEqual(NUM_ROWS, len(rows))
 
 
     def test_dataframe_set_emits(self):
@@ -252,7 +254,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
         of a batch of 2^14 = 16384 rows. In total, 2^3 = 8 batches are retrieved and emitted.
         """
         batch_count = 8
-        batch_size = int(self.num_rows / batch_count)
+        batch_size = int(NUM_ROWS / batch_count)
         udf_sql = udf.fixindent(f'''
                     CREATE OR REPLACE PYTHON3 SET SCRIPT
                     foo({self.col_defs_str})
@@ -293,7 +295,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
         select_sql = 'SELECT foo(%s) FROM TEST1' % self.col_names_str
         print(select_sql)
         rows = self.query(select_sql)
-        self.assertEqual(self.num_rows, len(rows))
+        self.assertEqual(NUM_ROWS, len(rows))
 
 
 if __name__ == '__main__':
