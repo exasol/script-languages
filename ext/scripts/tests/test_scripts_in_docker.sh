@@ -5,7 +5,7 @@ set -u
 set -o pipefail
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 IMAGE_NAME=exasol/script-languages-install-scripts-test-image
-docker build -t $IMAGE_NAME -f "$SCRIPT_DIR/Dockerfile" "$SCRIPT_DIR/.."
+docker build -t $IMAGE_NAME -f "$SCRIPT_DIR/docker_all_dependencies/Dockerfile" "$SCRIPT_DIR/.."
 
 if [ -t 0 ]
 then

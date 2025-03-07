@@ -7,18 +7,19 @@
 
   install_via_pip.pl [OPTIONS]
   Options:
-    --help                                Brief help message
-    --dry-run                             Doesn't execute the command, only prints it to STDOUT
-    --file                                Input file with each line represents a input. 
-                                          A line can have multiple elements separated by --element-separator. 
-                                          Lines everything after a # is interpreted as comment
-    --with-versions                       Uses versions specified in the input file in the second element of each line
-    --allow-no-version                    If --with-versions is active, allow packages to have no version specified
-    --allow-no-version-for-urls           If --with-versions is active, allow packages specified by urls to have no version
-    --ignore-installed                    Set the --ignore-installed option for pip
-    --use-deprecated-legacy-resolver      Set the --use-deprecated=legacy-resolver option for pip
-    --python-binary                       Python-binary to use for the installation
-    --ancestor-pip-package-root-path      Base directory of pip package files for previous build steps
+    --help                                     Brief help message
+    --dry-run                                  Doesn't execute the command, only prints it to STDOUT
+    --file                                     Input file with each line represents a input.
+                                               A line can have multiple elements separated by --element-separator.
+                                               Lines everything after a # is interpreted as comment
+    --with-versions                            Uses versions specified in the input file in the second element of each line
+    --allow-no-version                         If --with-versions is active, allow packages to have no version specified
+    --allow-no-version-for-urls                If --with-versions is active, allow packages specified by urls to have no version
+    --ignore-installed                         Set the --ignore-installed option for pip
+    --use-deprecated-legacy-resolver           Set the --use-deprecated=legacy-resolver option for pip
+    --python-binary                            Python-binary to use for the installation
+    --ancestor-pip-package-root-path           Base directory of pip package files for previous build steps
+    --install-build-tools-ephemerally          If --install-build-tools-ephemerally is active, temporarily install apt package `build-essential` + `pkg-config` before installation of Python packages
                                      
 =cut
 
@@ -38,6 +39,7 @@ my $allow_no_version_for_urls = 0;
 my $ignore_installed = 0;
 my $use_deprecated_legacy_resolver = 0;
 my $ancestor_pip_package_root_path = '';
+my $install_build_tools_ephemerally = 0;
 GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
@@ -48,7 +50,9 @@ GetOptions (
             "ignore-installed" => \$ignore_installed,
             "use-deprecated-legacy-resolver" => \$use_deprecated_legacy_resolver,
             "python-binary=s" => \$python_binary,
-            "ancestor-pip-package-root-path=s" => \$ancestor_pip_package_root_path
+            "ancestor-pip-package-root-path=s" => \$ancestor_pip_package_root_path,
+            "install-build-tools-ephemerally" => \$install_build_tools_ephemerally
+
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
 
@@ -59,6 +63,10 @@ if($file eq ''){
 
 if($python_binary eq ''){
     package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments: --python-binary was not specified",1);
+}
+
+if($install_build_tools_ephemerally){
+    package_mgmt_utils::execute("apt-get update && apt-get install -y build-essential pkg-config",$dry_run);
 }
 
 my @pip_parameters = ();
@@ -126,4 +134,8 @@ if($with_versions){
 
 if($cmd ne ""){
    package_mgmt_utils::execute($cmd,$dry_run);
+}
+
+if($install_build_tools_ephemerally){
+    package_mgmt_utils::execute("apt-get purge -y build-essential pkg-config && apt-get -y autoremove",$dry_run);
 }
