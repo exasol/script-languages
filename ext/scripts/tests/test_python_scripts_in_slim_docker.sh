@@ -17,4 +17,4 @@ fi
 echo Use DOCKER_TTY_OPTION="$DOCKER_TTY_OPTION"
 
 # shellcheck disable=SC2086
-RUN_PIP_TESTS_EXECUTOR="docker run $DOCKER_TTY_OPTION -w /scripts/tests/install_scripts \"$IMAGE_NAME\"" PATH_TO_INSTALL_SCRIPTS="/scripts/install_scripts" bash install_scripts/run_pip_tests_with_epheramal_build_tools.sh --no-dry-run --install-build-essential-ephemerally
+RUN_PIP_TESTS_EXECUTOR="docker run $DOCKER_TTY_OPTION -w /scripts/tests/install_scripts \"$IMAGE_NAME\"" PATH_TO_INSTALL_SCRIPTS="/scripts/install_scripts" bash install_scripts/run_pip_tests_with_epheramal_build_tools.sh --no-dry-run

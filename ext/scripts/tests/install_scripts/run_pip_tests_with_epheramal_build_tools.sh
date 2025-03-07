@@ -8,6 +8,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 # shellcheck source=./ext/scripts/tests/install_scripts/assert.sh
 source "$SCRIPT_DIR/assert.sh"
+# shellcheck source=./ext/scripts/tests/install_scripts/run_pip_tests_base.sh
 source "$SCRIPT_DIR/run_pip_tests_base.sh"
 
 NL=$'\n'

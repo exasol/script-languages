@@ -19,7 +19,7 @@
     --use-deprecated-legacy-resolver           Set the --use-deprecated=legacy-resolver option for pip
     --python-binary                            Python-binary to use for the installation
     --ancestor-pip-package-root-path           Base directory of pip package files for previous build steps
-    --install-build-essential-ephemerally      If --install-build-essential-ephemerally is active, temporarily install apt package `build-essential` before installation of Python packages
+    --install-build-tools-ephemerally          If --install-build-tools-ephemerally is active, temporarily install apt package `build-essential` + `pkg-config` before installation of Python packages
                                      
 =cut
 
