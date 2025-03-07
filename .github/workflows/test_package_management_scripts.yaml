@@ -21,7 +21,7 @@ jobs:
             working_dir: "ext/scripts/tests/"
             name: "Test install scripts in docker container"
             install_deps: 0
-          - test_script: "bash test_scripts_in_slim_docker.sh"
+          - test_script: "bash test_python_scripts_in_slim_docker.sh"
             working_dir: "ext/scripts/tests/"
             name: "Test PIP install scripts in slim docker container"
             install_deps: 0
