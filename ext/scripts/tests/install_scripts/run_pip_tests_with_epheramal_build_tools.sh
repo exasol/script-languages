@@ -17,7 +17,7 @@ TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file te
 assert "$TEST_OUTPUT" "Dry-Run: apt-get update && apt-get install -y build-essential pkg-config${NL}Dry-Run: python3 -m pip install  --no-cache-dir 'pybloomfiltermmap3'${NL}Dry-Run: apt-get purge -y build-essential pkg-config && apt-get -y autoremove"
 echo
 
-echo ./install_via_pip.pl installing PIP package which require ephemeral installation of build tools
+echo ./install_via_pip.pl installing PIP package which require build tools must fail if option --install-build-tools-ephemerally is not set
 TEST_OUTPUT=$(run_install_must_fail "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file test_files/pip/needs_build_tools --python-binary python3 $DRY_RUN_OPTION")
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'pybloomfiltermmap3'"
 echo
