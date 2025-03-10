@@ -7,6 +7,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 IMAGE_NAME=exasol/script-languages-install-scripts-test-image-python-only
 docker build -t $IMAGE_NAME -f "$SCRIPT_DIR/docker_python_only/Dockerfile" "$SCRIPT_DIR/.."
 
+# Check if STDOUT is connected to a terminal. If so, we use Docker's interactive mode:
 if [ -t 0 ]
 then
    DOCKER_TTY_OPTION=-it
