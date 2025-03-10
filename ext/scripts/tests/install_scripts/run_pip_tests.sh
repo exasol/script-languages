@@ -8,57 +8,11 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 # shellcheck source=./ext/scripts/tests/install_scripts/assert.sh
 source "$SCRIPT_DIR/assert.sh"
-
-if [ -z "${PATH_TO_INSTALL_SCRIPTS-}" ]
-then
-  PATH_TO_INSTALL_SCRIPTS="$SCRIPT_DIR/../../install_scripts"
-fi
-
-DRY_RUN_OPTION=--dry-run
-if [ "${1-}" == "--no-dry-run" ]
-then
-  DRY_RUN_OPTION=
-fi
-
-if [ -z "${RUN_PIP_TESTS_EXECUTOR-}" ]
-then
-  echo Running pip tests without exector.
-else
-  echo Running pip tests with executor "'$RUN_PIP_TESTS_EXECUTOR'".
-fi
-
-function run_install() {
-  if [ -z "${RUN_PIP_TESTS_EXECUTOR-}" ]
-  then
-    eval "$*"
-  else
-    eval "$RUN_PIP_TESTS_EXECUTOR $PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl $*"
-  fi
-}
-
-function run_install_must_fail() {
-  if [ -z "${RUN_PIP_TESTS_EXECUTOR-}" ]
-  then
-    if [ -z "${DRY_RUN_OPTION-}" ]
-    then
-      eval "$*"  && return 1 || return 0;
-    else
-      eval "$*"
-    fi
-  else
-    if [ -z "${DRY_RUN_OPTION-}" ]
-    then
-      eval "$RUN_PIP_TESTS_EXECUTOR $PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl $*" && return 1 || return 0;
-    else
-      eval "$RUN_PIP_TESTS_EXECUTOR $PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl $*"
-    fi
-  fi
-}
-
+# shellcheck source=./ext/scripts/tests/install_scripts/run_pip_tests_base.sh
+source "$SCRIPT_DIR/run_pip_tests_base.sh"
 
 echo ./install_via_pip.pl with empty
 TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl" --file test_files/empty_test_file --python-binary python3 "$DRY_RUN_OPTION")
-assert "$TEST_OUTPUT" ""
 echo
 
 echo ./install_via_pip.pl without versions

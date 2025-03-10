@@ -9,28 +9,44 @@ on:
 jobs:
   test_package_management_scripts:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test_script: "bash run_tests.sh"
+            working_dir: "ext/scripts/tests/install_scripts"
+            name: "Test install scripts dry-run"
+            install_dependencies: false
+          - test_script: "bash test_scripts_in_docker.sh"
+            working_dir: "ext/scripts/tests/"
+            name: "Test install scripts in docker container"
+            install_dependencies: false
+          - test_script: "bash test_python_scripts_in_slim_docker.sh"
+            working_dir: "ext/scripts/tests/"
+            name: "Test PIP install scripts in slim docker container"
+            install_dependencies: false
+          - test_script: "bash run_tests.sh "
+            working_dir: "ext/scripts/tests/list_installed_scripts"
+            name: "Test list installed scripts"
+            install_dependencies: true
+
 
     steps:
     - uses: actions/checkout@v4
     
-    - uses: actions/setup-python@v5
+    - name: Install Python
+      uses: actions/setup-python@v5
+      if: matrix.install_dependencies == true
       with:
         python-version: "3.10"
 
-    - uses: r-lib/actions/setup-r@v2
+    - name: Install R
+      if: matrix.install_dependencies == true
+      uses: r-lib/actions/setup-r@v2
 
     - name: Init submodules
       run: git submodule update --init --recursive
 
-    - name: Test install scripts dry-run
-      run: bash run_tests.sh 
-      working-directory: ext/scripts/tests/install_scripts
-
-
-    - name: Test install scripts in docker container
-      run: bash test_scripts_in_docker.sh 
-      working-directory: ext/scripts/tests/
-
-    - name: Test list installed scripts
-      run: bash run_tests.sh 
-      working-directory: ext/scripts/tests/list_installed_scripts
+    - name: ${{ matrix.name }}
+      run: ${{ matrix.test_script }}
+      working-directory: ${{ matrix.working_dir }}
