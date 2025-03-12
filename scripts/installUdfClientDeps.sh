@@ -53,4 +53,6 @@ export ZMQ_INCLUDE_PREFIX=/usr/include
 export PROTOBUF_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu
 export PROTOBUF_INCLUDE_PREFIX=/usr/include/
 export PROTOBUF_BIN=/usr/bin/protoc
+export OPENSSL_LIBRARY_PREFIX=/usr/lib/x86_64-linux-gnu
+export OPENSSL_INCLUDE_PREFIX=/usr/include/openssl
 EOL
