@@ -19,7 +19,7 @@ jobs:
           poetry-version: '1.8.2'
       - name: Run HTML Report
         run: |
-          poetry run nox -s run-oft-html -- oft_report.html || echo failed
+          poetry run nox -s run-oft-html -- -- oft_report.html || echo failed
       - name: Run Plaintext Report
         run: |
           poetry run nox -s run-oft
