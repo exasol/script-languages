@@ -81,6 +81,9 @@ jobs:
         run: |
           bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
         working-directory: ./exaudfclient/
+        env:
+          OPENSSL_LIBRARY_PREFIX: "/usr/lib/x86_64-linux-gnu"
+          OPENSSL_INCLUDE_PREFIX: "/usr/include/openssl"
 
       - uses: actions/upload-artifact@v4
         if: failure()
