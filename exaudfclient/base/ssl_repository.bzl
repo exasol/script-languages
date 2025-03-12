@@ -13,7 +13,7 @@ def _ssl_local_repository_impl(repository_ctx):
     build_file_content = """
 cc_library(
     name = "ssl",
-    srcs = ["openssl/lib/libcrypto.so", ],
+    srcs = ["openssl/lib/libcrypto.so", "openssl/lib/libssl.so"],
     hdrs = glob(["openssl/include/**"]),
     includes = ["openssl/include/"],
     visibility = ["//visibility:public"]
