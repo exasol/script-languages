@@ -49,13 +49,13 @@ test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
 name = "attrs"
-version = "25.2.0"
+version = "25.3.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "attrs-25.2.0-py3-none-any.whl", hash = "sha256:611344ff0a5fed735d86d7784610c84f8126b95e549bcad9ff61b4242f2d386b"},
-    {file = "attrs-25.2.0.tar.gz", hash = "sha256:18a06db706db43ac232cce80443fcd9f2500702059ecf53489e3c5a3f417acaf"},
+    {file = "attrs-25.3.0-py3-none-any.whl", hash = "sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3"},
+    {file = "attrs-25.3.0.tar.gz", hash = "sha256:75d7cefc7fb576747b2c81b4442d4d4a1ce0900973527c011d1030fd3bf4af1b"},
 ]
 
 [package.extras]
@@ -178,32 +178,32 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.35.99"
+version = "1.37.1"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.35.99-py3-none-any.whl", hash = "sha256:83e560faaec38a956dfb3d62e05e1703ee50432b45b788c09e25107c5058bd71"},
-    {file = "boto3-1.35.99.tar.gz", hash = "sha256:e0abd794a7a591d90558e92e29a9f8837d25ece8e3c120e530526fe27eba5fca"},
+    {file = "boto3-1.37.1-py3-none-any.whl", hash = "sha256:4320441f904435a1b85e6ecb81793192e522c737cc9ed6566014e29f0a11cb22"},
+    {file = "boto3-1.37.1.tar.gz", hash = "sha256:96d18f7feb0c1fcb95f8837b74b6c8880e1b4e35ce5f8a8f8cb243a090c278ed"},
 ]
 
 [package.dependencies]
-botocore = ">=1.35.99,<1.36.0"
+botocore = ">=1.37.1,<1.38.0"
 jmespath = ">=0.7.1,<2.0.0"
-s3transfer = ">=0.10.0,<0.11.0"
+s3transfer = ">=0.11.0,<0.12.0"
 
 [package.extras]
 crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.35.99"
+version = "1.37.11"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.35.99-py3-none-any.whl", hash = "sha256:b22d27b6b617fc2d7342090d6129000af2efd20174215948c0d7ae2da0fab445"},
-    {file = "botocore-1.35.99.tar.gz", hash = "sha256:1eab44e969c39c5f3d9a3104a0836c24715579a455f12b3979a31d7cde51b3c3"},
+    {file = "botocore-1.37.11-py3-none-any.whl", hash = "sha256:02505309b1235f9f15a6da79103ca224b3f3dc5f6a62f8630fbb2c6ed05e2da8"},
+    {file = "botocore-1.37.11.tar.gz", hash = "sha256:72eb3a9a58b064be26ba154e5e56373633b58f951941c340ace0d379590d98b5"},
 ]
 
 [package.dependencies]
@@ -212,7 +212,7 @@ python-dateutil = ">=2.1,<3.0.0"
 urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >= \"3.10\""}
 
 [package.extras]
-crt = ["awscrt (==0.22.0)"]
+crt = ["awscrt (==0.23.8)"]
 
 [[package]]
 name = "certifi"
@@ -643,31 +643,31 @@ requests = ">=2.24.0"
 
 [[package]]
 name = "exasol-error-reporting"
-version = "0.5.0"
+version = "1.0.0"
 description = "Exasol Python Error Reporting"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "exasol_error_reporting-0.5.0-py3-none-any.whl", hash = "sha256:17a5e6cd862e79796ae9acd62f7d0dd13c485ad4a4d7467bb7f8d57c1c213d5e"},
-    {file = "exasol_error_reporting-0.5.0.tar.gz", hash = "sha256:5051f9a0dc9dbfc2dfa808d6b88c7595fa2688aa11a2b51c0895db00fe3e41bb"},
+    {file = "exasol_error_reporting-1.0.0-py3-none-any.whl", hash = "sha256:62370f0925bbcbc847a6ee7d6bff8c82f76bdd1fe833de670af310b6b04ee5d5"},
+    {file = "exasol_error_reporting-1.0.0.tar.gz", hash = "sha256:0b81cbb208cd74ca47643532568e467053a29905808e9f29b7b0e4ec5e4e0302"},
 ]
 
 [[package]]
 name = "exasol-integration-test-docker-environment"
-version = "3.4.0"
+version = "4.0.1"
 description = "Integration Test Docker Environment for Exasol"
 optional = false
 python-versions = "<4,>=3.9"
 files = [
-    {file = "exasol_integration_test_docker_environment-3.4.0-py3-none-any.whl", hash = "sha256:4976a78c63a8d8591c0fad6968a5ca3d36f1fcd07805abe9a9fbe65b99961155"},
-    {file = "exasol_integration_test_docker_environment-3.4.0.tar.gz", hash = "sha256:6e654e5c0b853a07d102293800ba629d9401424eb0508a923fa8ebe9d918470c"},
+    {file = "exasol_integration_test_docker_environment-4.0.1-py3-none-any.whl", hash = "sha256:19305fc054aaf10e9075a8470a282583819ee80a54ad1679149866cda9eaa79a"},
+    {file = "exasol_integration_test_docker_environment-4.0.1.tar.gz", hash = "sha256:f89fe9d464b7351f4f1e7697d218bbd7b6b5d17adb678e5e2f54803ca098e673"},
 ]
 
 [package.dependencies]
 click = ">=7.0"
 docker = {version = ">=4.0.0,<7.0.0 || >7.0.0", markers = "sys_platform != \"win32\""}
 docutils = ">=0.21.2"
-exasol-error-reporting = ">=0.4.0"
+exasol-error-reporting = ">=1.0.0,<2.0.0"
 fabric = ">=3.0.1,<4.0.0"
 gitpython = ">=2.1.0"
 humanfriendly = ">=4.18"
@@ -705,59 +705,59 @@ types-requests = ">=2.31.0.6,<3.0.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci"
-version = "1.7.0"
+version = "1.8.0"
 description = "Implements CI builds for script-language-container."
 optional = false
 python-versions = "<4.0,>=3.10.0"
 files = [
-    {file = "exasol_script_languages_container_ci-1.7.0-py3-none-any.whl", hash = "sha256:fc2ead83297a2b5994112cf81c91b325bbf56b323a51285b1548114cc7d9fac7"},
-    {file = "exasol_script_languages_container_ci-1.7.0.tar.gz", hash = "sha256:a8e8145c8ea1fc7d8744f82a74a81cd0e856736189279f064496acb799effaa6"},
+    {file = "exasol_script_languages_container_ci-1.8.0-py3-none-any.whl", hash = "sha256:15cd623d5f210026249732e7bed1f603f3c0cd1af4d85a582628999d43deb57b"},
+    {file = "exasol_script_languages_container_ci-1.8.0.tar.gz", hash = "sha256:4eaee03020073e93ffa5fe3d68b9e27046cac748331743e28b07f59283f1902a"},
 ]
 
 [package.dependencies]
 click = ">=8.1.7,<9.0.0"
 datamodel-code-generator = ">=0.25.5,<0.30.0"
-exasol-integration-test-docker-environment = ">=3.4.0,<4.0.0"
-exasol-script-languages-container-tool = ">=2.0.0,<3.0.0"
+exasol-integration-test-docker-environment = ">=4.0.1,<5.0.0"
+exasol-script-languages-container-tool = ">=3.0.0,<4.0.0"
 GitPython = ">=3.1.0"
 PyGithub = ">=2.3.0,<3.0.0"
 setuptools = ">=73.0.0,<74.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "1.7.0"
+version = "1.8.0"
 description = "Manages AWS cloud CI build infrastructure."
 optional = false
 python-versions = "<4.0,>=3.10.0"
 files = [
-    {file = "exasol_script_languages_container_ci_setup-1.7.0-py3-none-any.whl", hash = "sha256:d418769169a54f18030e7d435f7faf3aba0dce1587fd88c22c52b8711ae7b42b"},
-    {file = "exasol_script_languages_container_ci_setup-1.7.0.tar.gz", hash = "sha256:505cc7735d0a1f8f02f0c22b494d22be332d5ce26b3cefb2b33723fa72f95fae"},
+    {file = "exasol_script_languages_container_ci_setup-1.8.0-py3-none-any.whl", hash = "sha256:f77281e6edb4594a5da6f7bf31ddb5e946cf674e9eb47d715b2413bfc4371d1f"},
+    {file = "exasol_script_languages_container_ci_setup-1.8.0.tar.gz", hash = "sha256:4faac55bbf3b88d982e6faa5f7fb9792e2b9222ebe7566ade2b90d7c00b01fda"},
 ]
 
 [package.dependencies]
-boto3 = "1.35.99"
-botocore = "1.35.99"
+boto3 = "1.37.1"
+botocore = "1.37.11"
 click = ">=8.1.3,<9.0.0"
-exasol-error-reporting = ">=0.5.0"
-exasol-script-languages-container-ci = ">=1.7.0,<2.0.0"
-jinja2 = ">=3.1.5"
+exasol-error-reporting = ">=1.0.0,<2.0.0"
+exasol-script-languages-container-ci = ">=1.8.0,<2.0.0"
+jinja2 = ">=3.1.6"
 jsonschema = ">=4.22.0,<5.0.0"
 PyGithub = ">=2.3.0,<3.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
-version = "2.0.0"
+version = "3.0.0"
 description = "Script Languages Container Tool"
 optional = false
 python-versions = "<4,>=3.10"
 files = [
-    {file = "exasol_script_languages_container_tool-2.0.0-py3-none-any.whl", hash = "sha256:40bcc1194a275d5c8be24586d4dfc16c1b1b6fb2efea1d9cbfc3cf17c22dd030"},
-    {file = "exasol_script_languages_container_tool-2.0.0.tar.gz", hash = "sha256:b5dc28d2e44f014ae3fad66cc8986d2159a6b9976a711eb0391ef87bae815ee8"},
+    {file = "exasol_script_languages_container_tool-3.0.0-py3-none-any.whl", hash = "sha256:37c9359c766794b1371ab49d5c9befbf053da0e270014d6ba141db68daeced28"},
+    {file = "exasol_script_languages_container_tool-3.0.0.tar.gz", hash = "sha256:ae87794b91d3aaea6405681e658d54dc6c6f2a577308048bf7fa7933c0c05244"},
 ]
 
 [package.dependencies]
 exasol-bucketfs = ">=1.0.1,<2.0.0"
-exasol-integration-test-docker-environment = ">=3.4.0,<4.0.0"
+exasol-integration-test-docker-environment = ">=4.0.1,<5.0.0"
 importlib_metadata = ">=4.6.0"
 importlib-resources = ">=6.4.0"
 jsonschema = ">=4.23.0,<5.0.0"
@@ -1892,20 +1892,20 @@ files = [
 
 [[package]]
 name = "s3transfer"
-version = "0.10.4"
+version = "0.11.4"
 description = "An Amazon S3 Transfer Manager"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "s3transfer-0.10.4-py3-none-any.whl", hash = "sha256:244a76a24355363a68164241438de1b72f8781664920260c48465896b712a41e"},
-    {file = "s3transfer-0.10.4.tar.gz", hash = "sha256:29edc09801743c21eb5ecbc617a152df41d3c287f67b615f73e5f750583666a7"},
+    {file = "s3transfer-0.11.4-py3-none-any.whl", hash = "sha256:ac265fa68318763a03bf2dc4f39d5cbd6a9e178d81cc9483ad27da33637e320d"},
+    {file = "s3transfer-0.11.4.tar.gz", hash = "sha256:559f161658e1cf0a911f45940552c696735f5c74e64362e515f333ebed87d679"},
 ]
 
 [package.dependencies]
-botocore = ">=1.33.2,<2.0a.0"
+botocore = ">=1.37.4,<2.0a.0"
 
 [package.extras]
-crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
+crt = ["botocore[crt] (>=1.37.4,<2.0a.0)"]
 
 [[package]]
 name = "setuptools"
@@ -2345,4 +2345,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4"
-content-hash = "283edfe805ef996c88d5d8acdae397649302e2c773f769884108b9b108dae71b"
+content-hash = "68ac194d5dde2b9813e8a59da3ff83f068224b9018596ef6a5c75b70334302e5"
