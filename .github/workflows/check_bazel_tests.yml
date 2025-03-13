@@ -27,47 +27,65 @@ jobs:
         working-directory: ./exaudfclient/
 
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
      fail-fast: false
      matrix:
         include:
           - test: "//base/javacontainer/test:ExaStackTraceCleanerTest"
             name: "ExaStackTraceCleanerTest"
+            java_version: "openjdk-11-jdk"
+          - test: "//base/javacontainer/test:ExaStackTraceCleanerTest"
+            name: "ExaStackTraceCleanerTest"
+            java_version: "openjdk-17-jdk"
           - test: "//base/javacontainer/test:javacontainer-test-extractor-legacy"
             name: "javacontainer-test-extractor-legacy"
+            java_version: ""
           - test: "//base/javacontainer/test:javacontainer-test-extractor-v2"
             name: "javacontainer-test-extractor-v2"
+            java_version: ""
           - test: "//base/javacontainer/script_options/..."
             name: "javacontainer-script_options"
+            java_version: ""
           - test: "//base/exaudflib/test/..."
             name: "exaudflib"
+            java_version: ""
           - test: "//base/script_options_parser/ctpg/..."
             name: "script_options_parser_ctpg"
+            java_version: ""
           - test: "//base/script_options_parser/legacy/..."
             name: "script_options_parser_legacy"
+            java_version: ""
           - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/javacontainer/test:javacontainer-test-extractor-legacy"
             name: "javacontainer-test-extractor-legacy-with-valgrind"
+            java_version: ""
           - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/javacontainer/test:javacontainer-test-extractor-v2"
             name: "javacontainer-test-extractor-v2-with-valgrind"
+            java_version: ""
           - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/script_options_parser/ctpg/..."
             name: "script_options_parser_ctpg_with_valgrind"
+            java_version: ""
           - test: "--run_under='valgrind --leak-check=yes' --config=valgrind //base/script_options_parser/legacy/..."
             name: "script_options_parser_legacy_with_valgrind"
+            java_version: ""
           - test: "--config=asan //base/javacontainer/test:javacontainer-test-extractor-legacy"
             name: "javacontainer-test-extractor-legacy-with-asan"
+            java_version: ""
           - test: "--config=asan //base/javacontainer/test:javacontainer-test-extractor-v2"
             name: "javacontainer-test-extractor-v2-with-asan"
+            java_version: ""
           - test: "--config=asan //base/script_options_parser/ctpg/..."
             name: "script_options_parser_ctpg_with_asan"
+            java_version: ""
           - test: "--config=asan //base/script_options_parser/legacy/..."
             name: "script_options_parser_legacy_with_asan"
+            java_version: ""
     steps:
       - uses: actions/checkout@v4
       - name: Install JDK and ZMQ
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk libzmq3-dev valgrind
+          sudo apt-get install -y ${{ matrix.java_version }} libzmq3-dev valgrind
       - name: Install bazel
         run: | 
           BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
