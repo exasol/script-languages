@@ -16,22 +16,8 @@ zmq_local_repository(name = "zmq")
 protobuf_local_repository = use_repo_rule("//base:protobuf_repository.bzl", "protobuf_local_repository")
 protobuf_local_repository(name = "protobuf")
 
-
-new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
-
-new_local_repository(
-    name = "ssl",
-    build_file_content = """
-cc_library(
-    name = "ssl",
-    srcs = ["usr/lib/x86_64-linux-gnu/libssl.so","usr/lib/x86_64-linux-gnu/libcrypto.so"],
-    hdrs = glob(["usr/include/openssl/*.h"]),
-    includes = ["usr/include/openssl"],
-    visibility = ["//visibility:public"]
-)
-    """,
-    path = "/",
-)
+ssl_local_repository = use_repo_rule("//base:ssl_repository.bzl", "ssl_local_repository")
+ssl_local_repository(name = "ssl")
 
 
 java_local_repository = use_repo_rule("//base:java_repository.bzl", "java_local_repository")
