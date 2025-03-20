@@ -66,6 +66,10 @@ void set_SWIGVM_params(SWIGVM_params_t* p);
 }
 #endif
 
+void print_usage(const char *prg_name) {
+    std::cerr << "Usage: " << prg_name << " <socket> lang=python|lang=r|lang=java|lang=streaming|lang=benchmark <scriptOptionsParserVersion=1|2>" << endl;
+}
+
 int main(int argc, char **argv) {
 #ifndef UDF_PLUGIN_CLIENT
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
@@ -125,13 +129,32 @@ int main(int argc, char **argv) {
         return 1;
     }
 #else
-    if (argc != 3) {
-        cerr << "Usage: " << argv[0] << " <socket> lang=python|lang=r|lang=java|lang=streaming|lang=benchmark" << endl;
+    bool cli_use_ctp_parser = false;
+    if (argc < 3 || argc > 4) {
+        print_usage(argv[0]);
         return 1;
     }
+    if (4 == argc) {
+        if(strcmp(argv[3], "scriptOptionsParserVersion=2") == 0) {
+            cli_use_ctp_parser = true;
+        } else if (strcmp(argv[3], "scriptOptionsParserVersion=1") != 0) {
+             print_usage(argv[0]);
+             return 1;
+        }
+    }
     const char* script_options_parser_env_val = ::getenv("SCRIPT_OPTIONS_PARSER_VERSION");
-    const bool useCtpgScriptOptionsParser = script_options_parser_env_val != nullptr &&
-                                            ::strcmp(script_options_parser_env_val, "2") == 0;
+    bool use_ctpg_script_options_parser = false;
+    if (script_options_parser_env_val != nullptr) {
+        if (::strcmp(script_options_parser_env_val, "1") == 0) {
+            use_ctpg_script_options_parser = false;
+        } else if (::strcmp(script_options_parser_env_val, "2") == 0) {
+                use_ctpg_script_options_parser = true;
+        } else {
+            print_usage(argv[0]);
+        }
+    } else {
+        use_ctpg_script_options_parser = cli_use_ctp_parser;
+    }
 #endif
 
     if (::setenv("HOME", "/tmp", 1) == -1)
@@ -163,7 +186,7 @@ int main(int argc, char **argv) {
     } else if (strcmp(argv[2], "lang=java")==0)
     {
 #ifdef ENABLE_JAVA_VM
-        if (useCtpgScriptOptionsParser) {
+        if (use_ctpg_script_options_parser) {
                 vmMaker = [&](){return SWIGVMContainers::JavaContainerBuilder().useCtpgParser().build();};
         } else {
             vmMaker = [&](){return SWIGVMContainers::JavaContainerBuilder().build();};
