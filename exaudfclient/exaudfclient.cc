@@ -144,11 +144,17 @@ int main(int argc, char **argv) {
     }
     const char* script_options_parser_env_val = ::getenv("SCRIPT_OPTIONS_PARSER_VERSION");
     bool use_ctpg_script_options_parser = false;
+    /*
+     * The given script-options-parser version set by the environment variable "SCRIPT_OPTIONS_PARSER_VERSION"
+     * must have priority over the CLI argument "scriptOptionsParserVersion=x".
+     * This allows clients to override the parser version in a specific UDF, if needed,
+     * via "%env SCRIPT_OPTIONS_PARSER_VERSION=x".
+     */
     if (script_options_parser_env_val != nullptr) {
         if (::strcmp(script_options_parser_env_val, "1") == 0) {
             use_ctpg_script_options_parser = false;
         } else if (::strcmp(script_options_parser_env_val, "2") == 0) {
-                use_ctpg_script_options_parser = true;
+            use_ctpg_script_options_parser = true;
         } else {
             print_usage(argv[0]);
         }
