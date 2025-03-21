@@ -141,7 +141,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "docker.transport.npipesocket",
                 "docker.transport.npipeconn",
                 "tenacity.tornadoweb",
-                "setuptools.command.bdist_wheel" #Broken since 77.0.x. Eventually remove later
+                "setuptools.command.bdist_wheel" #Broken since 77.0.x. Eventually remove later, see https://github.com/exasol/script-languages-release/issues/1101
             }
             excluded_submodules = (
                 "sphinxext",
