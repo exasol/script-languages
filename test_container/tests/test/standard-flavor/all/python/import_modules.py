@@ -141,7 +141,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "docker.transport.npipesocket",
                 "docker.transport.npipeconn",
                 "tenacity.tornadoweb",
-                "setuptools.command.bdist_wheel"
+                "setuptools.command.bdist_wheel" #Broken since 77.0.x. Eventually remove later
             }
             excluded_submodules = (
                 "sphinxext",
