@@ -1,4 +1,4 @@
-name: OFT Report
+name: CI
 
 on:
   push:
