@@ -19,7 +19,7 @@ jobs:
           poetry-version: '2.1.2'
       - id: set-matrix
         run: |
-          FLAVORS=$(nox -s get-flavors)
+          FLAVORS=$(poetry run nox -s get-flavors)
           echo "matrix=$FLAVORS" >> "$GITHUB_OUTPUT"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
