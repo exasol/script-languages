@@ -1,0 +1,30 @@
+name: Build SLC
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+
+jobs:
+
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@0.20.0
+        with:
+          python-version: '${{ matrix.python_version }}'
+          poetry-version: '2.1.2'
+      - name: Build SLC ${{ inputs.flavor }}
+        run: |
+          mkdir -p /tmp/slc
+          poetry run exaslct export --flavor-path "flavors/${{inputs.flavor}}" --export-path /tmp/slc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slc_${{inputs.flavor}}
+          path: /tmp/slc/*.tar.gz
+          compression-level: 0
