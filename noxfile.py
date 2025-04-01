@@ -1,5 +1,6 @@
+import json
 from pathlib import Path
-
+from typing import List
 
 import nox
 
@@ -8,6 +9,11 @@ ROOT = Path(__file__).parent
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = []
+
+def get_flavors() -> List[Path]:
+    flavor_path = ROOT / "flavors"
+    flavor_names = [f.name for f in flavor_path.iterdir() if f.is_dir()]
+    return flavor_names
 
 
 def get_oft_jar(session: nox.Session) -> Path:
@@ -54,3 +60,10 @@ def run_oft_udf_client_html(session: nox.Session):
     """
     html_file = session.posargs[0] if session.posargs else "report.html"
     run_oft_for_udf_client(session, "-o", "html", "-f", html_file)
+
+@nox.session(name="get-flavors", python=False)
+def run_get_flavors(session: nox.Session):
+    """
+    Print all flavors as JSON.
+    """
+    print(json.dumps(get_flavors()))
