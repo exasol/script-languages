@@ -1,7 +1,7 @@
 [tool.poetry]
 package-mode = false
 name = "exasol-script-languages"
-version = "9.4.0"
+version = "9.5.0"
 description = "Script Languages"
 
 license = "MIT"
@@ -23,7 +23,7 @@ exasol-script-languages-container-tool = "^3.0.0"
 exasol-script-languages-container-ci = "^1.8.0"
 exasol-script-languages-container-ci-setup = "^1.8.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 toml = ">=0.10.2"
 gitpython = ">=3.1.0"
 nox = ">=2022.8.7"
