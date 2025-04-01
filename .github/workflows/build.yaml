@@ -1,0 +1,40 @@
+name: OFT Report
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+
+jobs:
+  get-flavors:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@0.12.0
+        with:
+          python-version: '${{ matrix.python_version }}'
+          poetry-version: '2.1.2'
+      - id: set-matrix
+        run: |
+          FLAVORS=$(nox -s get-flavors)
+          echo "matrix=$FLAVORS" >> "$GITHUB_OUTPUT"
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+  build:
+    runs-on: ubuntu-22.04
+    needs: get-flavors
+    strategy:
+      fail-fast: true
+      matrix:
+        flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@0.20.0
+        with:
+          python-version: '${{ matrix.python_version }}'
+          poetry-version: '2.1.2'
