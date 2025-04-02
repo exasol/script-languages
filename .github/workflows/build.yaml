@@ -25,16 +25,11 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   build:
-    runs-on: ubuntu-22.04
     needs: get-flavors
     strategy:
       fail-fast: true
       matrix:
         flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@0.20.0
-        with:
-          python-version: '${{ matrix.python_version }}'
-          poetry-version: '2.1.2'
+    uses: ./.github/workflows/build_slc.yaml
+    with:
+      flavor: ${{ matrix.flavor }}
