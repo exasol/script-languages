@@ -33,3 +33,14 @@ jobs:
     uses: ./.github/workflows/build_slc.yaml
     with:
       flavor: ${{ matrix.flavor }}
+  test:
+    needs: [build,get-flavors]
+    strategy:
+      fail-fast: true
+      matrix:
+        flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
+    uses: ./.github/workflows/test_slc.yaml
+    with:
+      flavor: ${{ matrix.flavor }}
+
+
