@@ -7,9 +7,10 @@ on:
           description: 'A flavor'
           required: true
           type: string
+
 jobs:
 
-  detect-runner:
+  detect-test-runner:
     runs-on: ubuntu-22.04
     steps:
      - uses: actions/checkout@v4
@@ -18,19 +19,17 @@ jobs:
        with:
          python-version: '${{ matrix.python_version }}'
          poetry-version: '2.1.2'
-     - name: Detect runner
-       id: detect-runner
+     - name: Detect Test runner
+       id: detect-test-runner
        run: |
-         RUNNER=$(poetry run nox -s "get-runner-for-flavor(flavor='${{ inputs.flavor }}')")
+         RUNNER=$(poetry run nox -s "get-test-runner-for-flavor(flavor='${{ inputs.flavor }}')")
          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
     outputs:
-     runner: ${{ steps.detect-runner.outputs.runner }}
-  build:
-    needs: detect-runner
+     runner: ${{ steps.detect-test-runner.outputs.runner }}
+  run-tests:
+    needs: detect-test-runner
     runs-on:
-      labels: ${{needs.detect-runner.outputs.runner}}
-    outputs:
-          slc-artifact-id: ${{ steps.artifact-upload-step.outputs.artifact-id }}
+      labels: ${{needs.detect-test-runner.outputs.runner}}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python & Poetry Environment
@@ -38,13 +37,13 @@ jobs:
         with:
           python-version: '${{ matrix.python_version }}'
           poetry-version: '2.1.2'
-      - name: Build SLC ${{ inputs.flavor }}
-        run: |
-          mkdir -p /tmp/slc
-          poetry run exaslct export --flavor-path "flavors/${{inputs.flavor}}" --export-path /tmp/slc
-      - uses: actions/upload-artifact@v4
-        id: artifact-upload-step
+      - name: Download SLC
+        id: download-slc
+        uses: actions/download-artifact@v4
         with:
           name: slc_${{inputs.flavor}}
-          path: /tmp/slc/*.tar.gz
-          compression-level: 0
+          path: "slc"
+
+      - name: Check SLC
+        run: |
+          ls ${{steps.download-slc.outputs.download-path}}

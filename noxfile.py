@@ -80,4 +80,17 @@ def run_get_runner_for_flavor(session: nox.Session, flavor: str):
             runner = ci["runner"]
     print(runner)
 
+@nox.session(name="get-test-runner-for-flavor", python=False)
+@nox.parametrize("flavor", get_flavors())
+def run_test_get_runner_for_flavor(session: nox.Session, flavor: str):
+    """
+    Returns the test-runner for a flavor
+    """
+    ci_file = FLAVOR_PATH / flavor / "ci.json"
+    runner = "ubuntu-22.04"
+    if ci_file.exists():
+        with open(ci_file) as file:
+            ci = json.load(file)
+            runner = ci["test_runner"]
+    print(runner)
 
