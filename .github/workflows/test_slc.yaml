@@ -1,4 +1,4 @@
-name: Build SLC
+name: Test SLC
 
 on:
   workflow_call:
