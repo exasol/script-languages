@@ -38,6 +38,8 @@ jobs:
         with:
           python-version: '${{ matrix.python_version }}'
           poetry-version: '2.1.2'
+      - name: Check space on disk
+        run: df
       - name: Build SLC ${{ inputs.flavor }}
         run: |
           mkdir -p /tmp/slc
