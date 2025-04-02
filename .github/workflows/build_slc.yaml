@@ -10,8 +10,26 @@ on:
 
 jobs:
 
-  build:
+  detect-runner:
     runs-on: ubuntu-22.04
+    steps:
+     - uses: actions/checkout@v4
+     - name: Setup Python & Poetry Environment
+       uses: exasol/python-toolbox/.github/actions/python-environment@0.20.0
+       with:
+         python-version: '${{ matrix.python_version }}'
+         poetry-version: '2.1.2'
+     - name: Detect runner
+       id: detect-runner
+       run: |
+         RUNNER=$(poetry run nox -s "get-runner-for-flavor(flavor='${{ inputs.flavor }}')")
+         echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
+    outputs:
+     runner: ${{ steps.detect-runner.outputs.runner }}
+  build:
+    needs: detect-runner
+    runs-on:
+      labels: ${{needs.detect-runner.outputs.runner}}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python & Poetry Environment
