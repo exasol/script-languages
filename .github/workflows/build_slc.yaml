@@ -42,11 +42,11 @@ jobs:
         run: df
       - name: Build SLC ${{ inputs.flavor }}
         run: |
-          mkdir -p /tmp/slc
-          poetry run exaslct export --flavor-path "flavors/${{inputs.flavor}}" --export-path /tmp/slc
+          mkdir slc
+          poetry run exaslct export --flavor-path "flavors/${{inputs.flavor}}" --export-path ./slc
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:
           name: slc_${{inputs.flavor}}
-          path: /tmp/slc/*.tar.gz
+          path: ./slc/*.tar.gz
           compression-level: 0
