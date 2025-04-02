@@ -5,16 +5,14 @@ from typing import List
 import nox
 
 ROOT = Path(__file__).parent
-
+FLAVOR_PATH = ROOT / "flavors"
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = []
 
 def get_flavors() -> List[Path]:
-    flavor_path = ROOT / "flavors"
-    flavor_names = [f.name for f in flavor_path.iterdir() if f.is_dir()]
+    flavor_names = [f.name for f in FLAVOR_PATH.iterdir() if f.is_dir()]
     return flavor_names
-
 
 def get_oft_jar(session: nox.Session) -> Path:
     oft_version = "4.1.0"
@@ -67,3 +65,19 @@ def run_get_flavors(session: nox.Session):
     Print all flavors as JSON.
     """
     print(json.dumps(get_flavors()))
+
+@nox.session(name="get-runner-for-flavor", python=False)
+@nox.parametrize("flavor", get_flavors())
+def run_get_runner_for_flavor(session: nox.Session, flavor: str):
+    """
+    Returns the runner for a flavor
+    """
+    ci_file = FLAVOR_PATH / flavor / "ci.json"
+    runner = "ubuntu-22.04"
+    if ci_file.exists():
+        with open(ci_file) as file:
+            ci = json.load(file)
+            runner = ci["runner"]
+    print(runner)
+
+
