@@ -40,6 +40,8 @@ jobs:
           poetry-version: '2.1.2'
       - name: Check space on disk
         run: df
+      - name: Print pwd
+        run: pwd
       - name: Build SLC ${{ inputs.flavor }}
         run: |
           mkdir slc
