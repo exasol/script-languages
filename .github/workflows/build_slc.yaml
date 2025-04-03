@@ -29,8 +29,6 @@ jobs:
     needs: detect-runner
     runs-on:
       labels: ${{needs.detect-runner.outputs.runner}}
-    outputs:
-          slc-artifact-id: ${{ steps.artifact-upload-step.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python & Poetry Environment
@@ -40,8 +38,6 @@ jobs:
           poetry-version: '2.1.2'
       - name: Check space on disk
         run: df
-      - name: Print pwd
-        run: pwd
       - name: Build SLC ${{ inputs.flavor }}
         run: |
           mkdir slc

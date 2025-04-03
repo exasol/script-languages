@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
+    uses: ./.github/workflows/build_slc.yaml
+    with:
+      flavor: ${{ matrix.flavor }}
+  test:
+    needs: [build]
+    strategy:
+      fail-fast: true
+      matrix:
+        flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
+    uses: ./.github/workflows/test_slc.yaml
+    with:
+      flavor: ${{ matrix.flavor }}

@@ -64,8 +64,8 @@ def run_get_flavors(session: nox.Session):
     """
     Print all flavors as JSON.
     """
-    #print(json.dumps(get_flavors()))
-    print(json.dumps(["template-Exasol-all-python-3.10"]))
+    print(json.dumps(get_flavors()))
+    #print(json.dumps(["template-Exasol-all-python-3.10"]))
 
 @nox.session(name="get-runner-for-flavor", python=False)
 @nox.parametrize("flavor", get_flavors())

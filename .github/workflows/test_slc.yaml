@@ -46,4 +46,5 @@ jobs:
 
       - name: Check SLC
         run: |
-          ls ${{steps.download-slc.outputs.download-path}}
+          ls -la ${{steps.download-slc.outputs.download-path}}
+          sleep 600
