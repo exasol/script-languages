@@ -1,14 +1,18 @@
+import json
 from pathlib import Path
-
+from typing import List
 
 import nox
 
 ROOT = Path(__file__).parent
-
+FLAVOR_PATH = ROOT / "flavors"
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = []
 
+def get_flavors() -> List[Path]:
+    flavor_names = [f.name for f in FLAVOR_PATH.iterdir() if f.is_dir()]
+    return flavor_names
 
 def get_oft_jar(session: nox.Session) -> Path:
     oft_version = "4.1.0"
@@ -54,3 +58,53 @@ def run_oft_udf_client_html(session: nox.Session):
     """
     html_file = session.posargs[0] if session.posargs else "report.html"
     run_oft_for_udf_client(session, "-o", "html", "-f", html_file)
+
+@nox.session(name="get-flavors", python=False)
+def run_get_flavors(session: nox.Session):
+    """
+    Print all flavors as JSON.
+    """
+    print(json.dumps(get_flavors()))
+    #print(json.dumps(["template-Exasol-all-python-3.10"]))
+
+@nox.session(name="get-build-runner-for-flavor", python=False)
+@nox.parametrize("flavor", get_flavors())
+def run_get_build_runner_for_flavor(session: nox.Session, flavor: str):
+    """
+    Returns the runner for a flavor
+    """
+    ci_file = FLAVOR_PATH / flavor / "ci.json"
+    runner = "ubuntu-22.04"
+    if ci_file.exists():
+        with open(ci_file) as file:
+            ci = json.load(file)
+            runner = ci["build_runner"]
+    print(runner)
+
+@nox.session(name="get-test-runner-for-flavor", python=False)
+@nox.parametrize("flavor", get_flavors())
+def run_test_get_runner_for_flavor(session: nox.Session, flavor: str):
+    """
+    Returns the test-runner for a flavor
+    """
+    ci_file = FLAVOR_PATH / flavor / "ci.json"
+    runner = "ubuntu-22.04"
+    if ci_file.exists():
+        with open(ci_file) as file:
+            ci = json.load(file)
+            runner = ci["test_config"]["test_runner"]
+    print(runner)
+
+@nox.session(name="get-test-sets-for-flavor", python=False)
+@nox.parametrize("flavor", get_flavors())
+def run_test_sets_for_flavor(session: nox.Session, flavor: str):
+    """
+    Returns the test-runner for a flavor
+    """
+    ci_file = FLAVOR_PATH / flavor / "ci.json"
+    test_sets = []
+    if ci_file.exists():
+        with open(ci_file) as file:
+            ci = json.load(file)
+            test_sets = ci["test_config"]["test_sets"]
+    print(json.dumps(test_sets))
