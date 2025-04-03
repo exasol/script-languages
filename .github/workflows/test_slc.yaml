@@ -17,7 +17,7 @@ jobs:
      - name: Setup Python & Poetry Environment
        uses: exasol/python-toolbox/.github/actions/python-environment@0.20.0
        with:
-         python-version: '${{ matrix.python_version }}'
+         python-version: '3.10'
          poetry-version: '2.1.2'
      - name: Detect Test runner
        id: detect-test-runner
@@ -34,7 +34,7 @@ jobs:
      - name: Setup Python & Poetry Environment
        uses: exasol/python-toolbox/.github/actions/python-environment@0.20.0
        with:
-         python-version: '${{ matrix.python_version }}'
+         python-version: '3.10'
          poetry-version: '2.1.2'
      - name: Detect Test runner
        id: detect-test-sets
@@ -68,5 +68,6 @@ jobs:
 
       - name: Run Test-Set ${{ matrix.test-set.name }}
         run: |
-          echo Found folders: "${{ matrix.test-set.folders }}"
-          sleep 600
+          result=$(jq -r '.[] | "--test-folder " + .' <<< "${{ fromJson(matrix.test-set.folders) }}")
+          echo Found folders: "$result"
+
