@@ -11,19 +11,11 @@ on:
 jobs:
 
   build:
-    strategy:
-      fail-fast: true
-      matrix:
-        flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
     uses: ./.github/workflows/build_slc.yaml
     with:
-      flavor: ${{ matrix.flavor }}
+      flavor: ${{ inputs.flavor }}
   test:
     needs: [build]
-    strategy:
-      fail-fast: true
-      matrix:
-        flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
     uses: ./.github/workflows/test_slc.yaml
     with:
-      flavor: ${{ matrix.flavor }}
+      flavor: ${{ inputs.flavor }}
