@@ -1,4 +1,16 @@
 {
-  "runner": "int-linux-x64-2core-ubuntu24.04-1",
-  "test_runner": "int-linux-x64-2core-ubuntu24.04-1"
+  "runner": "int-linux-x64-4core-ubuntu24.04-1",
+  "test_config": {
+    "test_runner": "int-linux-x64-4core-ubuntu24.04-1",
+    "test_sets": [
+      {
+        "name": "all",
+        "folders": ["python3/all"]
+      },
+      {
+        "name": "pandas",
+        "folders": ["pandas/all", "pandas/pandas2"]
+      }
+    ]
+  }
 }

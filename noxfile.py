@@ -67,9 +67,9 @@ def run_get_flavors(session: nox.Session):
     print(json.dumps(get_flavors()))
     #print(json.dumps(["template-Exasol-all-python-3.10"]))
 
-@nox.session(name="get-runner-for-flavor", python=False)
+@nox.session(name="get-build-runner-for-flavor", python=False)
 @nox.parametrize("flavor", get_flavors())
-def run_get_runner_for_flavor(session: nox.Session, flavor: str):
+def run_get_build_runner_for_flavor(session: nox.Session, flavor: str):
     """
     Returns the runner for a flavor
     """
@@ -78,7 +78,7 @@ def run_get_runner_for_flavor(session: nox.Session, flavor: str):
     if ci_file.exists():
         with open(ci_file) as file:
             ci = json.load(file)
-            runner = ci["runner"]
+            runner = ci["build_runner"]
     print(runner)
 
 @nox.session(name="get-test-runner-for-flavor", python=False)
@@ -92,6 +92,19 @@ def run_test_get_runner_for_flavor(session: nox.Session, flavor: str):
     if ci_file.exists():
         with open(ci_file) as file:
             ci = json.load(file)
-            runner = ci["test_runner"]
+            runner = ci["test_config"]["test_runner"]
     print(runner)
 
+@nox.session(name="get-test-sets-for-flavor", python=False)
+@nox.parametrize("flavor", get_flavors())
+def run_test_sets_for_flavor(session: nox.Session, flavor: str):
+    """
+    Returns the test-runner for a flavor
+    """
+    ci_file = FLAVOR_PATH / flavor / "ci.json"
+    test_sets = []
+    if ci_file.exists():
+        with open(ci_file) as file:
+            ci = json.load(file)
+            test_sets = ci["test_config"]["test_sets"]
+    print(json.dumps(test_sets))
