@@ -21,7 +21,7 @@ jobs:
      - name: Detect runner
        id: detect-runner
        run: |
-         RUNNER=$(poetry run nox -s "get-runner-for-flavor(flavor='${{ inputs.flavor }}')")
+         RUNNER=$(poetry run nox -s "get-build-runner-for-flavor(flavor='${{ inputs.flavor }}')")
          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
     outputs:
      runner: ${{ steps.detect-runner.outputs.runner }}
