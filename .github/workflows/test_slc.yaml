@@ -26,10 +26,32 @@ jobs:
          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
     outputs:
      runner: ${{ steps.detect-test-runner.outputs.runner }}
+
+  detect-test-sets:
+    runs-on: ubuntu-22.04
+    steps:
+     - uses: actions/checkout@v4
+     - name: Setup Python & Poetry Environment
+       uses: exasol/python-toolbox/.github/actions/python-environment@0.20.0
+       with:
+         python-version: '${{ matrix.python_version }}'
+         poetry-version: '2.1.2'
+     - name: Detect Test runner
+       id: detect-test-sets
+       run: |
+         TEST_SETS=$(poetry run nox -s "get-test-sets-for-flavor(flavor='${{ inputs.flavor }}')")
+         echo "test_sets=$TEST_SETS" >> "$GITHUB_OUTPUT"
+    outputs:
+     test-sets: ${{ steps.detect-test-sets.outputs.test_sets }}
+
   run-tests:
-    needs: detect-test-runner
+    needs: [detect-test-runner, detect-test-sets]
     runs-on:
       labels: ${{needs.detect-test-runner.outputs.runner}}
+    strategy:
+      fail-fast: true
+      matrix:
+        flavor: ${{fromJson(needs.detect-test-sets.outputs.test-sets)}}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python & Poetry Environment
@@ -44,7 +66,7 @@ jobs:
           name: slc_${{inputs.flavor}}
           path: "slc"
 
-      - name: Check SLC
+      - name: Run Test-Set ${{ matrix.name }}
         run: |
-          ls -la ${{steps.download-slc.outputs.download-path}}
+          echo Found folders: "${{ matrix.folders }}"
           sleep 600

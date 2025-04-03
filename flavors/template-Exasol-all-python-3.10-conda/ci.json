@@ -1,7 +1,7 @@
 {
-  "runner": "int-linux-x64-4core-ubuntu24.04-1",
+  "build_runner": "ubuntu-22.04",
   "test_config": {
-    "test_runner": "int-linux-x64-4core-ubuntu24.04-1",
+    "test_runner": "ubuntu-22.04",
     "test_sets": [
       {
         "name": "all",
@@ -10,10 +10,6 @@
       {
         "name": "pandas",
         "folders": ["pandas/all", "pandas/pandas2"]
-      },
-      {
-        "name": "cuda",
-        "folders": ["python3-cuda-flavor"]
       }
     ]
   }
