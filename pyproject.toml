@@ -14,7 +14,7 @@ readme = 'README.md'  # Markdown files are supported
 
 keywords = ['exasol', 'udf', 'script-languages']
 
-[tool.project]
+[tool.poetry]
 
 package-mode = false
 
