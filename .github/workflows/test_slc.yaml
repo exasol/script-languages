@@ -39,10 +39,10 @@ jobs:
      - name: Detect Test runner
        id: detect-test-sets
        run: |
-         TEST_SETS=$(poetry run nox -s "get-test-sets-for-flavor(flavor='${{ inputs.flavor }}')")
-         echo "test_sets=$TEST_SETS" >> "$GITHUB_OUTPUT"
+         TEST_SETS=$(poetry run nox -s "get-test-set-names-for-flavor(flavor='${{ inputs.flavor }}')")
+         echo "test_set_names=$TEST_SETS" >> "$GITHUB_OUTPUT"
     outputs:
-     test-sets: ${{ steps.detect-test-sets.outputs.test_sets }}
+     test-sets: ${{ steps.detect-test-sets.outputs.test_set_names }}
 
   run-tests:
     needs: [detect-test-runner, detect-test-sets]

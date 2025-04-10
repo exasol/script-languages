@@ -1,8 +1,11 @@
+import argparse
 import json
+from argparse import ArgumentParser
 from pathlib import Path
 from typing import List
 
 import nox
+from exasol.slc.api import run_db_tests as exaslct_run_db_tests
 
 ROOT = Path(__file__).parent
 FLAVOR_PATH = ROOT / "flavors"
@@ -95,16 +98,41 @@ def run_test_get_runner_for_flavor(session: nox.Session, flavor: str):
             runner = ci["test_config"]["test_runner"]
     print(runner)
 
-@nox.session(name="get-test-sets-for-flavor", python=False)
+@nox.session(name="get-test-get-names-for-flavor", python=False)
 @nox.parametrize("flavor", get_flavors())
-def run_test_sets_for_flavor(session: nox.Session, flavor: str):
+def run_test_get_names_for_flavor(session: nox.Session, flavor: str):
     """
     Returns the test-runner for a flavor
     """
     ci_file = FLAVOR_PATH / flavor / "ci.json"
-    test_sets = []
+    test_sets_names = []
     if ci_file.exists():
         with open(ci_file) as file:
             ci = json.load(file)
             test_sets = ci["test_config"]["test_sets"]
-    print(json.dumps(test_sets))
+            test_sets_names = [test_set["name"] for test_set in test_sets]
+    print(json.dumps(test_sets_names))
+
+@nox.session(name="run-db-tests", python=True)
+def run_db_tests(session: nox.Session):
+    """
+    Returns the test-runner for a flavor
+    """
+    def parser() -> ArgumentParser:
+        p = ArgumentParser(
+            usage="nox -s get-test-set-folders -- --flavor <flavor> --test-set <test-set-name>",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        )
+        p.add_argument("--flavor")
+        p.add_argument("--test-set-name")
+        return p
+
+    args = parser().parse_args(session.posargs)
+    ci_file = FLAVOR_PATH / args.flavor / "ci.json"
+    test_set_folders = []
+    if ci_file.exists():
+        with open(ci_file) as file:
+            ci = json.load(file)
+            test_set = ci["test_config"]["test_sets"][args.test_set_name]
+            test_set_folders=(folder for folder in test_set["folders"])
+    exaslct_run_db_tests.run_db_test(flavor_path=f"flavors/{args.flavor}", test_set_folders=test_set_folders)
