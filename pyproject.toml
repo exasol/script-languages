@@ -1,5 +1,4 @@
-[tool.poetry]
-package-mode = false
+[project]
 name = "exasol-script-languages"
 version = "9.5.0"
 description = "Script Languages"
@@ -7,15 +6,22 @@ description = "Script Languages"
 license = "MIT"
 
 authors = [
-    "Torsten Kilias <torsten.kilias@exasol.com>"
+    { name="Torsten Kilias", email="Torsten Kilias <torsten.kilias@exasol.com>" },
+    { name="Thomas Uebensee", email="Thomas Uebensee <ext.thomas.uebensee@exasol.com>" }
 ]
 
 readme = 'README.md'  # Markdown files are supported
 
+keywords = ['exasol', 'udf', 'script-languages']
+
+[tool.project]
+
+package-mode = false
+
+[project.urls]
 repository = "https://github.com/exasol/script-languages"
 homepage = "https://github.com/exasol/script-languages"
 
-keywords = ['exasol', 'udf', 'script-languages']
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4"
@@ -29,5 +35,5 @@ gitpython = ">=3.1.0"
 nox = ">=2022.8.7"
 
 [build-system]
-requires = ["poetry_core>=1.0.0"]
+requires = ["poetry_core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"

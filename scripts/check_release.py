@@ -21,7 +21,7 @@ def get_git_version():
 
 def get_poetry_version():
     parsed_toml = toml.load('pyproject.toml')
-    return parsed_toml["tool"]["poetry"]["version"].strip()
+    return parsed_toml["project"]["version"].strip()
 
 
 def get_change_log_version():
