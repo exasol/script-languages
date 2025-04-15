@@ -113,7 +113,7 @@ def run_test_set_names_for_flavor(session: nox.Session, flavor: str):
             test_sets_names = [test_set["name"] for test_set in test_sets]
     print(json.dumps(test_sets_names))
 
-@nox.session(name="run-db-tests", python=True)
+@nox.session(name="run-db-tests", python=False)
 def run_db_tests(session: nox.Session):
     """
     Returns the test-runner for a flavor
@@ -134,8 +134,10 @@ def run_db_tests(session: nox.Session):
     if ci_file.exists():
         with open(ci_file) as file:
             ci = json.load(file)
-            test_set = ci["test_config"]["test_sets"][args.test_set_name]
-            test_set_folders=(folder for folder in test_set["folders"])
+            matched_test_set = [test_set for test_set in ci["test_config"]["test_sets"] if test_set["name"] == args.test_set_name]
+            if len(matched_test_set) != 1:
+                raise ValueError(f"Invalid test set name: {args.test_set_name}")
+            test_set_folders=(folder for folder in matched_test_set[0]["folders"])
     slc_directory = Path(args.slc_directory)
     if not slc_directory.exists():
         raise ValueError(f"{args.slc_directory} does not exist")
