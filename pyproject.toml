@@ -25,7 +25,7 @@ homepage = "https://github.com/exasol/script-languages"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4"
-exasol-script-languages-container-tool = "^3.0.0"
+exasol-script-languages-container-tool = "^3.1.0"
 exasol-script-languages-container-ci = "^1.8.0"
 exasol-script-languages-container-ci-setup = "^1.8.0"
 
