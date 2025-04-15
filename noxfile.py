@@ -120,7 +120,7 @@ def run_db_tests(session: nox.Session):
     """
     def parser() -> ArgumentParser:
         p = ArgumentParser(
-            usage="nox -s get-test-set-folders -- --flavor <flavor> --test-set <test-set-name>",
+            usage="nox -s run-db-tests -- --flavor <flavor> --test-set <test-set-name>",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         p.add_argument("--flavor")
