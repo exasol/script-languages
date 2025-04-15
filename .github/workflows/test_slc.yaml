@@ -68,6 +68,6 @@ jobs:
 
       - name: Run Test-Set ${{ matrix.test-set.name }}
         run: |
-          result=$(jq -r '.[] | "--test-folder " + .' <<< "${{ fromJson(matrix.test-set.folders) }}")
-          echo Found folders: "$result"
-
+          #poetry run nox -s run-db-tests -- --flavor "${{ inputs.flavor }}" --test-set-name ${{ matrix.test-set }}
+          echo "Download path is ${{ steps.download-slc.outputs.download-path }}"
+          ls "${{ steps.download-slc.outputs.download-path }}"

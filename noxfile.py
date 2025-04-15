@@ -98,11 +98,11 @@ def run_test_get_runner_for_flavor(session: nox.Session, flavor: str):
             runner = ci["test_config"]["test_runner"]
     print(runner)
 
-@nox.session(name="get-test-get-names-for-flavor", python=False)
+@nox.session(name="get-test-set-names-for-flavor", python=False)
 @nox.parametrize("flavor", get_flavors())
-def run_test_get_names_for_flavor(session: nox.Session, flavor: str):
+def run_test_set_names_for_flavor(session: nox.Session, flavor: str):
     """
-    Returns the test-runner for a flavor
+    Returns the test-set names for a flavor as JSON list
     """
     ci_file = FLAVOR_PATH / flavor / "ci.json"
     test_sets_names = []
