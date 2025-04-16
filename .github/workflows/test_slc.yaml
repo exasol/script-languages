@@ -57,7 +57,7 @@ jobs:
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@1.0.1
         with:
-          python-version: '${{ matrix.python_version }}'
+          python-version: '3.10'
           poetry-version: '2.1.2'
       - name: Download SLC
         id: download-slc

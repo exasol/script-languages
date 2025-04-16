@@ -130,7 +130,7 @@ def run_db_tests(session: nox.Session):
 
     args = parser().parse_args(session.posargs)
     ci_file = FLAVOR_PATH / args.flavor / "ci.json"
-    test_set_folders = []
+    test_set_folders = tuple()
     if ci_file.exists():
         with open(ci_file) as file:
             ci = json.load(file)
@@ -149,4 +149,4 @@ def run_db_tests(session: nox.Session):
     if len(slc_files) != 1:
         raise ValueError(f"{args.flavor} does not contain expected tar.gz file, but \n {slc_files}")
 
-    exaslct_run_db_tests.run_db_test(flavor_path=f"flavors/{args.flavor}", test_set_folders=test_set_folders, use_existing_container=str(slc_files[0]))
+    exaslct_run_db_tests.run_db_test(flavor_path=(f"flavors/{args.flavor}",), test_folder=test_set_folders, use_existing_container=str(slc_files[0]))
