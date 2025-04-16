@@ -139,6 +139,10 @@ def run_db_tests(session: nox.Session):
                 raise ValueError(f"Invalid test set name: {args.test_set_name}")
             test_set_folders=(folder for folder in matched_test_set[0]["folders"])
     slc_directory = Path(args.slc_directory)
+    print("Starting debug")
+    for child in slc_directory.iterdir():
+        print(child)
+    print("End debug")
     if not slc_directory.exists():
         raise ValueError(f"{args.slc_directory} does not exist")
     slc_files = list(slc_directory.glob(f"{args.flavor}-*.tar.gz"))
