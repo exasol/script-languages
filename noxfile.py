@@ -141,8 +141,8 @@ def run_db_tests(session: nox.Session):
     slc_directory = Path(args.slc_directory)
     if not slc_directory.exists():
         raise ValueError(f"{args.slc_directory} does not exist")
-    slc_files = list(slc_directory.glob(f"{args.flavor}/*.tar.gz"))
-    if len(slc_files) == 1:
+    slc_files = list(slc_directory.glob(f"{args.flavor}-*.tar.gz"))
+    if len(slc_files) != 1:
         raise ValueError(f"{args.flavor} does not contain expected tar.gz file, but \n {slc_files}")
 
     exaslct_run_db_tests.run_db_test(flavor_path=f"flavors/{args.flavor}", test_set_folders=test_set_folders, use_existing_container=str(slc_files[0]))
