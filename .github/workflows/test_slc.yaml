@@ -1,0 +1,70 @@
+name: Test SLC
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+
+jobs:
+
+  detect-test-runner:
+    runs-on: ubuntu-22.04
+    steps:
+     - uses: actions/checkout@v4
+     - name: Setup Python & Poetry Environment
+       uses: exasol/python-toolbox/.github/actions/python-environment@1.0.1
+       with:
+         python-version: '3.10'
+         poetry-version: '2.1.2'
+     - name: Detect Test runner
+       id: detect-test-runner
+       run: |
+         RUNNER=$(poetry run -- nox -s "get-test-runner-for-flavor(flavor='${{ inputs.flavor }}')")
+         echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
+    outputs:
+     runner: ${{ steps.detect-test-runner.outputs.runner }}
+
+  detect-test-sets:
+    runs-on: ubuntu-22.04
+    steps:
+     - uses: actions/checkout@v4
+     - name: Setup Python & Poetry Environment
+       uses: exasol/python-toolbox/.github/actions/python-environment@1.0.1
+       with:
+         python-version: '3.10'
+         poetry-version: '2.1.2'
+     - name: Detect Test runner
+       id: detect-test-sets
+       run: |
+         TEST_SETS=$(poetry run -- nox -s "get-test-set-names-for-flavor(flavor='${{ inputs.flavor }}')")
+         echo "test_set_names=$TEST_SETS" >> "$GITHUB_OUTPUT"
+    outputs:
+     test-sets: ${{ steps.detect-test-sets.outputs.test_set_names }}
+
+  run-tests:
+    needs: [detect-test-runner, detect-test-sets]
+    runs-on:
+      labels: ${{needs.detect-test-runner.outputs.runner}}
+    strategy:
+      fail-fast: true
+      matrix:
+        test-set: ${{fromJson(needs.detect-test-sets.outputs.test-sets)}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@1.0.1
+        with:
+          python-version: '3.10'
+          poetry-version: '2.1.2'
+      - name: Download SLC
+        id: download-slc
+        uses: actions/download-artifact@v4
+        with:
+          name: slc_${{inputs.flavor}}
+          path: "slc"
+      - name: Run Test-Set ${{ matrix.test-set.name }}
+        run: |
+          poetry run -- nox -s run-db-tests -- --flavor "${{ inputs.flavor }}" --test-set-name ${{ matrix.test-set }} --slc-directory "${{ steps.download-slc.outputs.download-path }}"

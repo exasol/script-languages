@@ -1,0 +1,16 @@
+{
+  "build_runner": "ubuntu-22.04",
+  "test_config": {
+    "test_runner": "ubuntu-22.04",
+    "test_sets": [
+      {
+        "name": "all",
+        "folders": ["python3/all"]
+      },
+      {
+        "name": "pandas",
+        "folders": ["pandas/all", "pandas/pandas2"]
+      }
+    ]
+  }
+}
