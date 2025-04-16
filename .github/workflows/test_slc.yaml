@@ -67,4 +67,4 @@ jobs:
           path: "slc"
       - name: Run Test-Set ${{ matrix.test-set.name }}
         run: |
-          poetry run -- nox -s run-db-tests --flavor "${{ inputs.flavor }}" --test-set-name ${{ matrix.test-set }} --slc-directory "${{ steps.download-slc.outputs.download-path }}"
+          poetry run -- nox -s run-db-tests -- --flavor "${{ inputs.flavor }}" --test-set-name ${{ matrix.test-set }} --slc-directory "${{ steps.download-slc.outputs.download-path }}"
