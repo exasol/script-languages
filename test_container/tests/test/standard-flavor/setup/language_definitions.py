@@ -7,7 +7,7 @@ class LanguageDefinitions(udf.TestCase):
     def setUp(self):
         self.query('create schema language_definitions', ignore_errors=True)
 
-    def test_no_python2_bin(self):
+    def test_language_definition_json(self):
         self.query(udf.fixindent('''
             CREATE OR REPLACE PYTHON3 SCALAR SCRIPT language_definitions.check_language_definitions() returns int AS
             from pathlib import Path
