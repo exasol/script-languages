@@ -138,6 +138,9 @@ class AnalyzeRelease(DockerFlavorAnalyzeImageTask):
                 "language_deps": AnalyzeLanguageDeps,
                 "flavor_base_deps": AnalyzeFlavorBaseDeps}
 
+    def get_language_definition(self) -> str:
+        return "language_definitions.json"
+
     def get_path_in_flavor(self):
         return "flavor_base"
 

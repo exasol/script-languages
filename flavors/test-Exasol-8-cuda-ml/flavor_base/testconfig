@@ -1,2 +1,2 @@
 generic_language_tests=python3
-test_folders=python3/all pandas/all pandas/pandas2 python3-cuda-flavor
+test_folders=python3/all pandas/all pandas/pandas2 python3-cuda-flavor standard-flavor/setup
