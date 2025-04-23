@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+    secrets:
+      DOCKER_USERNAME:
+          required: true
+      DOCKER_PASSWORD:
+          required: true
+
+jobs:
+  check_for_build:
+    uses: ./.github/workflows/slc_ci/ci_check_for_build.yaml
+    with:
+      flavor: ${{ inputs.flavor }}
+
+  do_nothing:
+    if: ${{ needs.check_for_build.outputs.continue != 'True' }}
+    needs: [check_for_build]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Print status
+        run: Skipping build and test for flavor ${{ inputs.flavor }}
+
+  build:
+    needs: check_for_build
+    uses: ./.github/workflows/slc_ci/build_slc.yaml
+    if: ${{ needs.check_for_build.outputs.continue == 'True' }}
+    with:
+      flavor: ${{ inputs.flavor }}
+  test:
+    needs: [check_for_build, build]
+    if: ${{ needs.check_for_build.outputs.continue == 'True' }}
+    uses: ./.github/workflows/slc_ci/test_slc.yaml
+    with:
+      flavor: ${{ inputs.flavor }}

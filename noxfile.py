@@ -7,15 +7,13 @@ from typing import List
 import nox
 from exasol.slc.api import run_db_tests as exaslct_run_db_tests
 
+from exasol.slc_ci.nox.tasks import *
+
 ROOT = Path(__file__).parent
 FLAVOR_PATH = ROOT / "flavors"
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = []
-
-def get_flavors() -> List[Path]:
-    flavor_names = [f.name for f in FLAVOR_PATH.iterdir() if f.is_dir()]
-    return flavor_names
 
 def get_oft_jar(session: nox.Session) -> Path:
     oft_version = "4.1.0"
@@ -62,87 +60,3 @@ def run_oft_udf_client_html(session: nox.Session):
     html_file = session.posargs[0] if session.posargs else "report.html"
     run_oft_for_udf_client(session, "-o", "html", "-f", html_file)
 
-@nox.session(name="get-flavors", python=False)
-def run_get_flavors(session: nox.Session):
-    """
-    Print all flavors as JSON.
-    """
-    print(json.dumps(get_flavors()))
-    #print(json.dumps(["template-Exasol-all-python-3.10"]))
-
-@nox.session(name="get-build-runner-for-flavor", python=False)
-@nox.parametrize("flavor", get_flavors())
-def run_get_build_runner_for_flavor(session: nox.Session, flavor: str):
-    """
-    Returns the runner for a flavor
-    """
-    ci_file = FLAVOR_PATH / flavor / "ci.json"
-    runner = "ubuntu-22.04"
-    if ci_file.exists():
-        with open(ci_file) as file:
-            ci = json.load(file)
-            runner = ci["build_runner"]
-    print(runner)
-
-@nox.session(name="get-test-runner-for-flavor", python=False)
-@nox.parametrize("flavor", get_flavors())
-def run_test_get_runner_for_flavor(session: nox.Session, flavor: str):
-    """
-    Returns the test-runner for a flavor
-    """
-    ci_file = FLAVOR_PATH / flavor / "ci.json"
-    runner = "ubuntu-22.04"
-    if ci_file.exists():
-        with open(ci_file) as file:
-            ci = json.load(file)
-            runner = ci["test_config"]["test_runner"]
-    print(runner)
-
-@nox.session(name="get-test-set-names-for-flavor", python=False)
-@nox.parametrize("flavor", get_flavors())
-def run_test_set_names_for_flavor(session: nox.Session, flavor: str):
-    """
-    Returns the test-set names for a flavor as JSON list
-    """
-    ci_file = FLAVOR_PATH / flavor / "ci.json"
-    test_sets_names = []
-    if ci_file.exists():
-        with open(ci_file) as file:
-            ci = json.load(file)
-            test_sets = ci["test_config"]["test_sets"]
-            test_sets_names = [test_set["name"] for test_set in test_sets]
-    print(json.dumps(test_sets_names))
-
-@nox.session(name="run-db-tests", python=False)
-def run_db_tests(session: nox.Session):
-    """
-    Returns the test-runner for a flavor
-    """
-    def parser() -> ArgumentParser:
-        p = ArgumentParser(
-            usage="nox -s run-db-tests -- --flavor <flavor> --test-set <test-set-name>",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        )
-        p.add_argument("--flavor")
-        p.add_argument("--test-set-name")
-        p.add_argument("--slc-directory")
-        return p
-
-    args = parser().parse_args(session.posargs)
-    ci_file = FLAVOR_PATH / args.flavor / "ci.json"
-    test_set_folders = tuple()
-    if ci_file.exists():
-        with open(ci_file) as file:
-            ci = json.load(file)
-            matched_test_set = [test_set for test_set in ci["test_config"]["test_sets"] if test_set["name"] == args.test_set_name]
-            if len(matched_test_set) != 1:
-                raise ValueError(f"Invalid test set name: {args.test_set_name}")
-            test_set_folders=(folder for folder in matched_test_set[0]["folders"])
-    slc_directory = Path(args.slc_directory)
-    if not slc_directory.exists():
-        raise ValueError(f"{args.slc_directory} does not exist")
-    slc_files = list(slc_directory.glob(f"{args.flavor}*.tar.gz"))
-    if len(slc_files) != 1:
-        raise ValueError(f"{args.flavor} does not contain expected tar.gz file, but \n {slc_files}")
-
-    exaslct_run_db_tests.run_db_test(flavor_path=(f"flavors/{args.flavor}",), test_folder=test_set_folders, use_existing_container=str(slc_files[0]))

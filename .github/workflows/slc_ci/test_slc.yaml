@@ -22,7 +22,7 @@ jobs:
      - name: Detect Test runner
        id: detect-test-runner
        run: |
-         RUNNER=$(poetry run -- nox -s "get-test-runner-for-flavor(flavor='${{ inputs.flavor }}')")
+         RUNNER=$(poetry run -- nox -s ci:get-test-runner-for-flavor -- --flavor "${{ inputs.flavor }}")
          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
     outputs:
      runner: ${{ steps.detect-test-runner.outputs.runner }}
@@ -39,7 +39,7 @@ jobs:
      - name: Detect Test runner
        id: detect-test-sets
        run: |
-         TEST_SETS=$(poetry run -- nox -s "get-test-set-names-for-flavor(flavor='${{ inputs.flavor }}')")
+         TEST_SETS=$(poetry run -- nox -s ci:get-test-set-names-for-flavor -- --flavor "${{ inputs.flavor }}")
          echo "test_set_names=$TEST_SETS" >> "$GITHUB_OUTPUT"
     outputs:
      test-sets: ${{ steps.detect-test-sets.outputs.test_set_names }}
@@ -67,4 +67,4 @@ jobs:
           path: "slc"
       - name: Run Test-Set ${{ matrix.test-set.name }}
         run: |
-          poetry run -- nox -s run-db-tests -- --flavor "${{ inputs.flavor }}" --test-set-name ${{ matrix.test-set }} --slc-directory "${{ steps.download-slc.outputs.download-path }}"
+          poetry run -- nox -s ci:run-db-tests -- --flavor "${{ inputs.flavor }}" --test-set-name ${{ matrix.test-set }} --slc-directory "${{ steps.download-slc.outputs.download-path }}"

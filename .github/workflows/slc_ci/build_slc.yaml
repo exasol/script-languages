@@ -7,6 +7,12 @@ on:
           description: 'A flavor'
           required: true
           type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+
 jobs:
 
   detect-runner:
@@ -21,7 +27,7 @@ jobs:
      - name: Detect runner
        id: detect-runner
        run: |
-         RUNNER=$(poetry run -- nox -s "get-build-runner-for-flavor(flavor='${{ inputs.flavor }}')")
+         RUNNER=$(poetry run -- nox -s "ci:get-build-runner-for-flavor" --flavor "${{ inputs.flavor }}")
          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
     outputs:
      runner: ${{ steps.detect-runner.outputs.runner }}
@@ -31,20 +37,25 @@ jobs:
       labels: ${{needs.detect-runner.outputs.runner}}
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@1.0.1
         with:
           python-version: '3.10'
           poetry-version: '2.1.2'
-      - name: Check space on disk
-        run: df
+
       - name: Build SLC ${{ inputs.flavor }}
+        id: build-slc
         run: |
-          mkdir slc
-          poetry run exaslct export --flavor-path "flavors/${{inputs.flavor}}" --export-path ./slc
+          slc_path=`poetry run -- nox -s "ci:export-and-scan-vulnerabilities" --flavor "${{inputs.flavor}}" --branch-name ${GITHUB_REF##*/} --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --commit-sha "${{ github.sha }}"`
+          echo "slc-path=$slc_path" >> $GITHUB_OUTPUT
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:
           name: slc_${{inputs.flavor}}
-          path: ./slc/*.tar.gz
+          path: "${{ steps.build-slc.outputs.slc-path }}"
           compression-level: 0

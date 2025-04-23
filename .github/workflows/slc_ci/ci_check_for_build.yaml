@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+    outputs:
+      continue:
+        description: "Indicates if need to build and test SLC"
+        value: ${{ jobs.check_for_build.outputs.continue }}
+
+jobs:
+  check_for_build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@0.12.0
+        with:
+          python-version: "3.10"
+          poetry-version: "2.1.2"
+      - name: Run check
+        id: run-check
+        run: |
+          result = `poetry run nox -s run_check_if_build_needed -- --flavor ${{ inputs.flavor }} --branch-name ${GITHUB_REF##*/}`
+          echo "continue=$result" >> $GITHUB_OUTPUT
+
+    outputs:
+      continue: ${{ steps.run-check.outputs.continue }}
