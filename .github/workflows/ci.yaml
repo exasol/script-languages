@@ -19,9 +19,6 @@ jobs:
       - id: set-matrix
         run: |
           FLAVORS=$(poetry -- run nox -s ci:find-available-flavors)
-          echo ------------------------------
-          echo $FLAVORS
-          echo ------------------------------
           echo matrix=$FLAVORS >> "$GITHUB_OUTPUT"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
