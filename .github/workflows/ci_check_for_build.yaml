@@ -27,12 +27,8 @@ jobs:
       - name: Run check
         id: run-check
         run: |
-          echo ref_name name is ${{github.ref_name}}
-          echo head_ref is ${{github.head_ref}}
           branch_name="${{github.head_ref || github.ref_name}}"
-          echo resulting branch_name is $branch_name
-          git fetch
-          result = $(poetry run -- nox -s  ci:check-if-build-need -- --flavor ${{ inputs.flavor }} --branch-name "$branch_name")
+          result=$(poetry run -- nox -s  ci:check-if-build-need -- --flavor ${{ inputs.flavor }} --branch-name "$branch_name")
           echo "continue=$result" >> $GITHUB_OUTPUT
 
     outputs:
