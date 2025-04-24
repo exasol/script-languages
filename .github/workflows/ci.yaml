@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - develop
   pull_request:
 
 jobs:
@@ -31,7 +30,10 @@ jobs:
       matrix:
         flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
     uses: ./.github/workflows/ci_flavor.yaml
+    secrets:
+      DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+      DOCKER_PASSWORD: '${{ secrets.DOCKER_PASSWORD }}'
     with:
       flavor: ${{ matrix.flavor }}
-    secrets: inherit
+
 
