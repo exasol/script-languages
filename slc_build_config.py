@@ -4,7 +4,7 @@ from pathlib import Path
 
 from exasol.slc_ci.model.build_config import BuildConfig
 
-SLC_BUILD_CONFIG = BuildConfig(root=Path(__file__).parent, base_branch="master",
+SLC_BUILD_CONFIG = BuildConfig(root=Path(__file__).parent, base_branch="origin/master",
                                ignore_paths=[
                                    ".gitignore",
                                    ".dockerignore",
