@@ -47,8 +47,8 @@ jobs:
       - name: Build SLC ${{ inputs.flavor }}
         id: build-slc
         run: |
-          slc_path=`poetry run -- nox -s "ci:export-and-scan-vulnerabilities" -- --flavor "${{inputs.flavor}}" --branch-name ${{github.ref_name}} --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --commit-sha "${{ github.sha }}"`
-          echo slc_path=$slc_path >> $GITHUB_OUTPUT
+          branch_name="${{github.head_ref || github.ref_name}}"
+          poetry run -- nox -s "ci:export-and-scan-vulnerabilities" -- --flavor "${{inputs.flavor}}" --branch-name ${{github.ref_name}} --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --commit-sha "${{ github.sha }}" --github-output "$GITHUB_OUTPUT"
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
