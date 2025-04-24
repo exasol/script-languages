@@ -32,7 +32,7 @@ python = ">=3.10,<4"
 exasol-script-languages-container-tool = "^3.1.0"
 #exasol-script-languages-container-ci = {path="/home/thomas/Work/script-languages-container-ci/dist/exasol_script_languages_container_ci-1.8.0-py3-none-any.whl"}
 exasol-script-languages-container-ci = {git="https://github.com/exasol/script-languages-container-ci", branch="feature/75_implement_ci_for_gh_workflows"}
-
+exasol-script-languages-container-ci-setup = "^1.8.0"
 
 [tool.poetry.group.dev.dependencies]
 toml = ">=0.10.2"

@@ -30,7 +30,7 @@ jobs:
       fail-fast: true
       matrix:
         flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
-    uses: ./.github/workflows/slc_ci/ci_flavor.yaml
+    uses: ./.github/workflows/ci_flavor.yaml
     with:
       flavor: ${{ matrix.flavor }}
     secrets: inherit

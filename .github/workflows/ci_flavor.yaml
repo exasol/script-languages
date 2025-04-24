@@ -15,7 +15,7 @@ on:
 
 jobs:
   check_for_build:
-    uses: ./.github/workflows/slc_ci/ci_check_for_build.yaml
+    uses: ./.github/workflows/ci_check_for_build.yaml
     with:
       flavor: ${{ inputs.flavor }}
 
@@ -29,13 +29,13 @@ jobs:
 
   build:
     needs: check_for_build
-    uses: ./.github/workflows/slc_ci/build_slc.yaml
+    uses: ./.github/workflows/build_slc.yaml
     if: ${{ needs.check_for_build.outputs.continue == 'True' }}
     with:
       flavor: ${{ inputs.flavor }}
   test:
     needs: [check_for_build, build]
     if: ${{ needs.check_for_build.outputs.continue == 'True' }}
-    uses: ./.github/workflows/slc_ci/test_slc.yaml
+    uses: ./.github/workflows/test_slc.yaml
     with:
       flavor: ${{ inputs.flavor }}
