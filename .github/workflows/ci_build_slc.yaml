@@ -27,7 +27,7 @@ jobs:
      - name: Detect runner
        id: detect-runner
        run: |
-         RUNNER=$(poetry run -- nox -s "ci:get-build-runner-for-flavor" --flavor "${{ inputs.flavor }}")
+         RUNNER=$(poetry run -- nox -s "ci:get-build-runner-for-flavor" -- --flavor "${{ inputs.flavor }}")
          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
     outputs:
      runner: ${{ steps.detect-runner.outputs.runner }}
@@ -47,7 +47,7 @@ jobs:
       - name: Build SLC ${{ inputs.flavor }}
         id: build-slc
         run: |
-          slc_path=`poetry run -- nox -s "ci:export-and-scan-vulnerabilities" --flavor "${{inputs.flavor}}" --branch-name ${{github.ref_name}} --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --commit-sha "${{ github.sha }}"`
+          slc_path=`poetry run -- nox -s "ci:export-and-scan-vulnerabilities" -- --flavor "${{inputs.flavor}}" --branch-name ${{github.ref_name}} --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --commit-sha "${{ github.sha }}"`
           echo "slc-path=$slc_path" >> $GITHUB_OUTPUT
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
