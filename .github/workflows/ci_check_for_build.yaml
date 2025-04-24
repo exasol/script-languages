@@ -25,8 +25,8 @@ jobs:
       - name: Run check
         id: run-check
         run: |
-          echo branch name is ${GITHUB_REF##*/}
-          result = `poetry run -- nox -s run_check_if_build_needed -- --flavor ${{ inputs.flavor }} --branch-name ${GITHUB_REF##*/}`
+          echo branch name is ${{github.ref_name}}
+          result = `poetry run -- nox -s  ci:check-if-build-need -- --flavor ${{ inputs.flavor }} --branch-name ${{github.ref_name}}`
           echo "continue=$result" >> $GITHUB_OUTPUT
 
     outputs:
