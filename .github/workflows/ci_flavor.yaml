@@ -33,6 +33,7 @@ jobs:
     if: ${{ needs.check_for_build.outputs.continue == 'True' }}
     with:
       flavor: ${{ inputs.flavor }}
+    secrets: inherit
   test:
     needs: [check_for_build, build]
     if: ${{ needs.check_for_build.outputs.continue == 'True' }}
