@@ -19,6 +19,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: master
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@1.0.1
         with:
@@ -30,6 +33,7 @@ jobs:
           echo ref_name name is ${{github.ref_name}}
           echo head_ref is ${{github.head_ref}}
           branch_name="${{github.head_ref || github.ref_name}}"
+          echo resulting branch_name is $branch_name
           result = $(poetry run -- nox -s  ci:check-if-build-need -- --flavor ${{ inputs.flavor }} --branch-name "$branch_name")
           echo "continue=$result" >> $GITHUB_OUTPUT
 
