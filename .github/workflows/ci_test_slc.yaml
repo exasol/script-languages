@@ -7,7 +7,11 @@ on:
           description: 'A flavor'
           required: true
           type: string
-
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
 jobs:
 
   detect-test-runner:
@@ -22,8 +26,7 @@ jobs:
      - name: Detect Test runner
        id: detect-test-runner
        run: |
-         RUNNER=$(poetry run -- nox -s ci:get-test-runner-for-flavor -- --flavor "${{ inputs.flavor }}")
-         echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
+         poetry run -- nox -s ci:get-test-runner-for-flavor -- --flavor "${{ inputs.flavor }}") --github-var runner
     outputs:
      runner: ${{ steps.detect-test-runner.outputs.runner }}
 
@@ -39,8 +42,7 @@ jobs:
      - name: Detect Test runner
        id: detect-test-sets
        run: |
-         TEST_SETS=$(poetry run -- nox -s ci:get-test-set-names-for-flavor -- --flavor "${{ inputs.flavor }}")
-         echo "test_set_names=$TEST_SETS" >> "$GITHUB_OUTPUT"
+         poetry run -- nox -s ci:get-test-set-names-for-flavor -- --flavor "${{ inputs.flavor }}") --github-var test_set_names
     outputs:
      test-sets: ${{ steps.detect-test-sets.outputs.test_set_names }}
 
@@ -65,6 +67,9 @@ jobs:
         with:
           name: slc_${{inputs.flavor}}
           path: "slc"
-      - name: Run Test-Set ${{ matrix.test-set.name }}
+      - name: Run Test-Set ${{ matrix.test-set }}
         run: |
-          poetry run -- nox -s ci:run-db-tests -- --flavor "${{ inputs.flavor }}" --test-set-name ${{ matrix.test-set }} --slc-directory "${{ steps.download-slc.outputs.download-path }}"
+          poetry run -- nox -s ci:run-db-tests -- --flavor "${{ inputs.flavor }}" --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD"  --test-set-name ${{ matrix.test-set }} --slc-directory "${{ steps.download-slc.outputs.download-path }}"
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

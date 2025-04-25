@@ -40,3 +40,4 @@ jobs:
     uses: ./.github/workflows/ci_test_slc.yaml
     with:
       flavor: ${{ inputs.flavor }}
+    secrets: inherit
