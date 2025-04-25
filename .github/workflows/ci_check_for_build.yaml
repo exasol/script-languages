@@ -28,8 +28,7 @@ jobs:
         id: run-check
         run: |
           branch_name="${{github.head_ref || github.ref_name}}"
-          result=$(poetry run -- nox -s  ci:check-if-build-need -- --flavor ${{ inputs.flavor }} --branch-name "$branch_name")
-          echo "continue=$result" >> $GITHUB_OUTPUT
+          poetry run -- nox -s  ci:check-if-build-need -- --flavor ${{ inputs.flavor }} --branch-name "$branch_name" --github-var continue
 
     outputs:
       continue: ${{ steps.run-check.outputs.continue }}
