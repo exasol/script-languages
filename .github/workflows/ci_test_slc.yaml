@@ -26,7 +26,7 @@ jobs:
      - name: Detect Test runner
        id: detect-test-runner
        run: |
-         poetry run -- nox -s ci:get-test-runner-for-flavor -- --flavor "${{ inputs.flavor }}") --github-var runner
+         poetry run -- nox -s ci:get-test-runner-for-flavor -- --flavor "${{ inputs.flavor }}" --github-var runner
     outputs:
      runner: ${{ steps.detect-test-runner.outputs.runner }}
 
@@ -42,7 +42,7 @@ jobs:
      - name: Detect Test runner
        id: detect-test-sets
        run: |
-         poetry run -- nox -s ci:get-test-set-names-for-flavor -- --flavor "${{ inputs.flavor }}") --github-var test_set_names
+         poetry run -- nox -s ci:get-test-set-names-for-flavor -- --flavor "${{ inputs.flavor }}" --github-var test_set_names
     outputs:
      test-sets: ${{ steps.detect-test-sets.outputs.test_set_names }}
 
