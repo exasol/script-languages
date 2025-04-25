@@ -680,14 +680,14 @@ files = [
 
 [[package]]
 name = "exasol-integration-test-docker-environment"
-version = "4.1.0"
+version = "4.0.1"
 description = "Integration Test Docker Environment for Exasol"
 optional = false
-python-versions = "<4,>=3.9.2"
+python-versions = "<4,>=3.9"
 groups = ["main"]
 files = [
-    {file = "exasol_integration_test_docker_environment-4.1.0-py3-none-any.whl", hash = "sha256:8fc114c22ca2fb5eef5970f0eecdfb35752fc0798e12a31da7db4327c6579c19"},
-    {file = "exasol_integration_test_docker_environment-4.1.0.tar.gz", hash = "sha256:e9d17e236940f49017d0b3713eb25df027656d1c4fbe3c1adbf9d08b269e8eb6"},
+    {file = "exasol_integration_test_docker_environment-4.0.1-py3-none-any.whl", hash = "sha256:19305fc054aaf10e9075a8470a282583819ee80a54ad1679149866cda9eaa79a"},
+    {file = "exasol_integration_test_docker_environment-4.0.1.tar.gz", hash = "sha256:f89fe9d464b7351f4f1e7697d218bbd7b6b5d17adb678e5e2f54803ca098e673"},
 ]
 
 [package.dependencies]
@@ -2520,4 +2520,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4"
-content-hash = "f176271ab36dd8c2afed0abb9e1a62760b240f76faf4daf561661937fa925329"
+content-hash = "a60def8ffc218a5e8cfefaef8ae24c648855c7d065f35c3fbc71b11d6f8ecf73"
