@@ -754,7 +754,7 @@ setuptools = "^78.0.0"
 type = "git"
 url = "https://github.com/exasol/script-languages-container-ci"
 reference = "feature/75_implement_ci_for_gh_workflows"
-resolved_reference = "b1450a8d279557dfce9a6ea442dfc66cd9acf1cf"
+resolved_reference = "db676114e28e25265dc0ae1c17fae91ff5104cfd"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
