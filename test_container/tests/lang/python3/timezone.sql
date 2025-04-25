@@ -3,7 +3,7 @@ DEFAULT_TZ()
 RETURNS VARCHAR(100) AS
 import time
 def run(ctx):
-    return time.tzname
+    return time.tzname[0]
 /
 
 create python3 SCALAR SCRIPT

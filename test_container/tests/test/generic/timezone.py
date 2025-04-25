@@ -5,7 +5,7 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import requires
 
 
-class BasicTest(udf.TestCase):
+class TimeZoneTest(udf.TestCase):
 
     @requires('DEFAULT_TZ')
     def test_default(self):
@@ -16,7 +16,7 @@ class BasicTest(udf.TestCase):
             ''')
         self.assertRowsEqual([("EUROPE/BERLIN",)], rows)
         rows = self.query('''
-            SELECT DEFAULT_TZ() 
+            SELECT fn1.default_tz() 
             FROM DUAL
             ''')
         self.assertRowsEqual([("CET",)], rows)
@@ -25,7 +25,7 @@ class BasicTest(udf.TestCase):
     @requires('MODIFY_TZ_TO_NEW_YORK')
     def test_set_tz(self):
         rows = self.query('''
-            SELECT MODIFY_TZ()
+            SELECT fn1.modify_tz_to_new_york()
             FROM DUAL
             ''')
         self.assertRowsEqual([("EST",)], rows)
