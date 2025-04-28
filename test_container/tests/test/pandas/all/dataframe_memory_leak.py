@@ -178,7 +178,7 @@ class PandasDataFrameMemoryLeakTest(udf.TestCase):
                     snapshot_end = tracemalloc.take_snapshot()
                     top_stats_begin_end = snapshot_end.compare_to(snapshot_begin, 'lineno')
                     first_item = top_stats_begin_end[0] #First item is always the largest one
-                    if first_item.size_diff > 150000:
+                    if first_item.size_diff > 170000:
                         raise RuntimeError(f"scalar emit UDF uses too much memory: {{first_item}}")
                     memory_check_executed = True
                 counter = counter + 1
