@@ -1,6 +1,6 @@
 python|3.10.4
 numpy|1.26.2
 pandas|2.2.2
-pyarrow|16.1.0
-libarrow|16.1.0=h4804cb8_44_cuda #pinned to older version because libarrow -> orc -> protobuf (newer versions of libarrow require newer versions of protobuf)
+pyarrow|18.1.0
+libarrow|18.1.0=hc0853d7_22_cuda #pinned to older version because libarrow -> orc -> protobuf (newer versions of libarrow require newer versions of protobuf but pytorch still uses older version)
 mamba|2.0.4
