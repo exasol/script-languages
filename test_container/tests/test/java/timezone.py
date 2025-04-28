@@ -38,7 +38,7 @@ class TimeZoneTest(udf.TestCase):
                           ''')
         self.assertRowsEqual([("CET",)], rows)
 
-    def test_set_tz(self):
+    def test_set_tz_via_env_script_option(self):
         self.query(udf.fixindent('''
 
         CREATE OR REPLACE java SCALAR SCRIPT
@@ -61,6 +61,28 @@ class TimeZoneTest(udf.TestCase):
                           ''')
         self.assertRowsEqual([("EST",)], rows)
 
+    def test_set_tz_via_jvm_option_script_option(self):
+        self.query(udf.fixindent('''
+
+        CREATE OR REPLACE java SCALAR SCRIPT
+        modify_tz_to_est_via_jvm_option()
+        RETURNS VARCHAR(100) AS
+        %jvmoption -Duser.timezone=America/New_York;
+        import java.time.ZoneId;
+        import java.util.TimeZone;
+        class MODIFY_TZ_TO_EST_VIA_JVM_OPTION {
+            static String run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                TimeZone timeZone = TimeZone.getDefault();
+                return timeZone.getDisplayName(false, TimeZone.SHORT);
+            }
+        }
+        /
+        '''))
+        rows = self.query('''
+                          SELECT tz_java.modify_tz_to_est_via_jvm_option()
+                          FROM DUAL
+                          ''')
+        self.assertRowsEqual([("EST",)], rows)
 
 if __name__ == '__main__':
     udf.main()

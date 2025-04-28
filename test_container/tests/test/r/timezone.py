@@ -53,6 +53,25 @@ class TimeZoneTest(udf.TestCase):
             ''')
         self.assertRowsEqual([("EST",)], rows)
 
+    def test_set_tz_via_script_options(self):
+        self.query(udf.fixindent('''
+        create r SCALAR SCRIPT
+        modify_tz_via_script_option()
+        RETURNS VARCHAR(100) AS
+        %env TZ=America/New_York;
+        run <- function(ctx) {
+            non_dst_date <- as.POSIXct("2023-01-01 12:00:00")
+            timezone_short_name <- format(non_dst_date, "%Z")
+            timezone_short_name
+        }
+        /
+        '''))
+        rows = self.query('''
+            SELECT tz_r.modify_tz_via_script_option()
+            FROM DUAL
+            ''')
+        self.assertRowsEqual([("EST",)], rows)
+
 
 if __name__ == '__main__':
     udf.main()

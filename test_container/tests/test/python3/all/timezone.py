@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 from exasol_python_test_framework import udf
@@ -48,11 +47,28 @@ class TimeZoneTest(udf.TestCase):
         /
         '''))
         rows = self.query('''
-            SELECT tz_python.test_set_tz('America/New_York')
+            SELECT tz_python.modify_tz('America/New_York')
             FROM DUAL
             ''')
         self.assertRowsEqual([("EST",)], rows)
 
+    def test_set_tz_via_script_option(self):
+        self.query(udf.fixindent('''
+        create python3 SCALAR SCRIPT
+        modify_tz_via_script_option()
+        RETURNS VARCHAR(100) AS
+        %env TZ=America/New_York;
+        import time
+        import os
+        def run(ctx):
+            return time.tzname[0]
+        /
+        '''))
+        rows = self.query('''
+            SELECT tz_python.modify_tz_via_script_option()
+            FROM DUAL
+            ''')
+        self.assertRowsEqual([("EST",)], rows)
 
 if __name__ == '__main__':
     udf.main()
