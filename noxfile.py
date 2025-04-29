@@ -1,14 +1,19 @@
+import argparse
+import json
+from argparse import ArgumentParser
 from pathlib import Path
-
+from typing import List
 
 import nox
+from exasol.slc.api import run_db_tests as exaslct_run_db_tests
+
+from exasol.slc_ci.nox.tasks import *
 
 ROOT = Path(__file__).parent
-
+FLAVOR_PATH = ROOT / "flavors"
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = []
-
 
 def get_oft_jar(session: nox.Session) -> Path:
     oft_version = "4.1.0"
@@ -54,3 +59,4 @@ def run_oft_udf_client_html(session: nox.Session):
     """
     html_file = session.posargs[0] if session.posargs else "report.html"
     run_oft_for_udf_client(session, "-o", "html", "-f", html_file)
+
