@@ -140,7 +140,9 @@ class ImportAllModulesTest(udf.TestCase):
                 "msrest.pipeline.aiohttp",
                 "docker.transport.npipesocket",
                 "docker.transport.npipeconn",
-                "tenacity.tornadoweb"
+                "tenacity.tornadoweb",
+                "joblib.testing",
+                "joblib.test",
             }
             excluded_submodules = (
                 "sphinxext",
