@@ -1,8 +1,5 @@
 {
-  "build": {
-    "base_branch": "master",
-    "ignore": {
-      "paths": [
+    "ignore_paths": [
         ".gitignore",
         ".dockerignore",
         "LICENSE",
@@ -18,8 +15,8 @@
         ".github",
         "emulator",
         "githooks"
-      ]
-    }
-  },
-  "release": {"timeout_in_minutes": 240}
+    ],
+    "docker_build_repository": "exadockerci4/script-languages-build-cache",
+    "docker_release_repository": "exadockerci4/script-languages-build-cache",
+    "test_container_folder": "test_container"
 }
