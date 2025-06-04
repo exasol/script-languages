@@ -51,18 +51,38 @@ jobs:
         with:
             submodules: 'recursive'
 
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          large-packages: false
+      - name: Free disk space by removing large directories
+        run: |
+          sudo rm -rf /usr/local/graalvm/
+          sudo rm -rf /usr/local/.ghcup/
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/lib/node_modules
+          sudo rm -rf /opt/ghc
+
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
         with:
           python-version: '3.10'
+
       - name: Download SLC ${{matrix.goal}}
         id: download-slc
         uses: actions/download-artifact@v4
         with:
           name: slc-${{inputs.flavor}}-${{matrix.goal}}
           path: "slc"
+
       - name: Print SLC's
         run: ls -la slc
+
+      - name: Allow unprivileged user namespaces
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Run Test-Set ${{ matrix.test-set-name }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin

@@ -755,14 +755,14 @@ setuptools = ">=80.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "2.0.1"
+version = "2.0.2"
 description = "Manages AWS cloud CI build infrastructure."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "exasol_script_languages_container_ci_setup-2.0.1-py3-none-any.whl", hash = "sha256:64a524449c89bb8d3109e760b732b837b4323682a169ab805cf3d4c177b505de"},
-    {file = "exasol_script_languages_container_ci_setup-2.0.1.tar.gz", hash = "sha256:da8ec1ee59116ed6eb10475dee90835ab5b70328479c1a853a47064b84ca373c"},
+    {file = "exasol_script_languages_container_ci_setup-2.0.2-py3-none-any.whl", hash = "sha256:74c7c3a9f5a92b48bbf57fc96064bcc4378b559d021aa8c2d6052ba4a9f3d898"},
+    {file = "exasol_script_languages_container_ci_setup-2.0.2.tar.gz", hash = "sha256:ff8e7ed7a4c1cea91ae30b0a93655f089ee92dcec3a2a28fe4702ee6c8498b31"},
 ]
 
 [package.dependencies]
@@ -2527,4 +2527,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4"
-content-hash = "303b572f86996651230225a4fa421fc1c1b6eccaa5b8332974c420b49df59078"
+content-hash = "ff8d5cfaf621205f35749d9fdfad65886989e6e6d0c3d80b8d21cba4fb733c3b"
