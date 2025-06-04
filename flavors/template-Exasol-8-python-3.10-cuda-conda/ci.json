@@ -1,5 +1,5 @@
 {
-  "build_runner": "ubuntu-22.04",
+  "build_runner": "int-linux-x64-2core-ubuntu24.04-1",
   "test_config": {
     "default_test_runner": "int-linux-x64-2core-ubuntu24.04-1",
     "test_sets": [
