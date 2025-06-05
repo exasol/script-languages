@@ -17,6 +17,25 @@ class PytorchTest(udf.TestCase):
     def setUp(self):
         self.query('create schema pytorchbasic', ignore_errors=True)
 
+    def test_pytorch_gpu(self):
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
+                test_gpu_available()
+                RETURNS VARCHAR(1000) AS
+
+                import torch
+
+                def run(ctx):
+                    if torch.cuda.is_available():
+                        return "GPU Found"
+                    else:
+                        return "GPU Not Found"
+                /
+                '''))
+
+        row = self.query("SELECT pytorchbasic.test_gpu_available();")[0]
+        self.assertTrue(row[0] == "GPU Found")
+
     def test_pytorch(self):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
@@ -36,7 +55,9 @@ class PytorchTest(udf.TestCase):
                 
                     # Convert numpy arrays to torch tensors
                     x_train = torch.from_numpy(x)
+                    assert x_train.is_cuda()
                     y_train = torch.from_numpy(y)
+                    assert y_train.is_cuda()
                 
                     # Define a simple linear regression model
                     class LinearModel(nn.Module):
