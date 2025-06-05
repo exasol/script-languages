@@ -1,0 +1,115 @@
+# ---- AUTOMATICALLY GENERATED FILE ----
+# ---- DO NOT EDIT MANUALLY, BUT USE PYTHON MODULE "exasol.slc_ci_setup" ----
+# ---- from https://github.com/exasol/script-languages-container-ci-setup TO UPDATE ----
+
+
+name: SLC-CI-Build-Flavor
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+      additional-build-arguments:
+          description: 'Additional build for command "exaslc-ci export-and-scan-vulnerabilities".'
+          required: false
+          default: ''
+          type: string
+
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+
+jobs:
+
+  detect-runner:
+    runs-on: ubuntu-24.04
+    steps:
+     - uses: actions/checkout@v4
+       with:
+          submodules: 'recursive'
+
+     - name: Setup Python & Poetry Environment
+       uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+       with:
+         python-version: '3.10'
+     - name: Detect runner
+       id: detect-runner
+       run: poetry run -- exaslc-ci get-build-runner --flavor "$FLAVOR" --github-output-var runner
+       env:
+         FLAVOR: ${{ inputs.flavor }}
+    outputs:
+     runner: ${{ steps.detect-runner.outputs.runner }}
+  build:
+    needs: detect-runner
+    runs-on:
+      labels: ${{needs.detect-runner.outputs.runner}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            submodules: 'recursive'
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          large-packages: false
+      - name: Free disk space by removing large directories
+        run: |
+          sudo rm -rf /usr/local/graalvm/
+          sudo rm -rf /usr/local/.ghcup/
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/lib/node_modules
+          sudo rm -rf /opt/ghc
+
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+        with:
+          python-version: '3.10'
+
+      - name: Build SLC ${{ inputs.flavor }}
+        id: build-slc
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+          poetry run -- exaslc-ci export-and-scan-vulnerabilities --flavor "$FLAVOR" --branch-name "$BRANCH_NAME" --commit-sha "$COMMIT_SHA" --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --github-output-var slc_paths ${{ inputs.additional-build-arguments }}
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          BRANCH_NAME: ${{github.head_ref || github.ref}}
+          COMMIT_SHA: ${{github.sha}}
+          FLAVOR: ${{inputs.flavor}}
+
+      - name: Check for password
+        run: grep -rq ${{ secrets.DOCKER_PASSWORD }} .build_output && exit 1 || exit 0
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        name: Upload log artifacts
+        with:
+          name: logs_build_${{inputs.flavor}}
+          path: |
+            .build_output/jobs/**/*
+            .build_output/security_scan/**/*
+            .build_output/meta_data/**/*
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        name: Upload release SLC for flavor ${{inputs.flavor}}
+        with:
+          name: slc-${{ inputs.flavor }}-${{ fromJson(steps.build-slc.outputs.slc_paths).slc_release.goal }}
+          path: "${{ fromJson(steps.build-slc.outputs.slc_paths).slc_release.path }}"
+          compression-level: 0
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v4
+        name: Upload test SLC for flavor ${{inputs.flavor}}
+        with:
+          name: slc-${{ inputs.flavor }}-${{ fromJson(steps.build-slc.outputs.slc_paths).slc_test.goal }}
+          path: "${{ fromJson(steps.build-slc.outputs.slc_paths).slc_test.path }}"
+          compression-level: 0
+          retention-days: 1

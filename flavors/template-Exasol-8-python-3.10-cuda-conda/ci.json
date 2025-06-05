@@ -1,0 +1,32 @@
+{
+  "build_runner": "int-linux-x64-2core-ubuntu24.04-1",
+  "test_config": {
+    "default_test_runner": "int-linux-x64-2core-ubuntu24.04-1",
+    "test_sets": [
+      {
+        "name": "python",
+        "folders": ["python3/all"],
+        "goal": "release",
+        "generic_language_tests": []
+      },
+      {
+        "name": "pandas",
+        "folders": ["pandas/all", "pandas/pandas2"],
+        "goal": "release",
+        "generic_language_tests": []
+      },
+      {
+        "name": "linker_namespace",
+        "folders": ["linker_namespace_sanity"],
+        "goal": "base_test_build_run",
+        "generic_language_tests": []
+      },
+      {
+        "name": "generic",
+        "folders": [],
+        "goal": "release",
+        "generic_language_tests": ["python3"]
+      }
+    ]
+  }
+}

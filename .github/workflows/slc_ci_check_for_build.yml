@@ -1,0 +1,40 @@
+# ---- AUTOMATICALLY GENERATED FILE ----
+# ---- DO NOT EDIT MANUALLY, BUT USE PYTHON MODULE "exasol.slc_ci_setup" ----
+# ---- from https://github.com/exasol/script-languages-container-ci-setup TO UPDATE ----
+
+
+name: SLC-CI-Check-For-Build
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+    outputs:
+      continue:
+        description: "Indicates if we need to build and test SLC"
+        value: ${{ jobs.check_for_build.outputs.continue }}
+
+jobs:
+  check_for_build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+        with:
+          python-version: "3.10"
+      - name: Run check
+        id: run-check
+        run: |
+          poetry run -- exaslc-ci check-if-build-needed --flavor "$FLAVOR" --branch-name "$BRANCH_NAME" --base-ref "$BASE_REF" --github-output-var continue
+        env:
+          BRANCH_NAME: ${{github.head_ref || github.ref}}
+          BASE_REF: ${{ github.base_ref }}
+          FLAVOR: ${{ inputs.flavor }}
+    outputs:
+      continue: ${{ steps.run-check.outputs.continue }}
