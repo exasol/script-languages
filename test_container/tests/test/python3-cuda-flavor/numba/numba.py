@@ -8,11 +8,31 @@ class NumbaTest(udf.TestCase):
     def setUp(self):
         self.query('create schema numbabasic', ignore_errors=True)
 
+    def test_numba_gpu_available(self):
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE PYTHON3 SCALAR SCRIPT test_gpu_available()
+                RETURNS VARCHAR(20) AS
+                 %perInstanceRequiredAcceleratorDevices GpuNvidia;
+        
+                from numba import cuda
+        
+                def run(ctx):
+                    if cuda.is_available():
+                        return "GPU Found"
+                    else:
+                        return "GPU Not Found"
+                /
+                '''))
+
+        row = self.query("SELECT numbabasic.test_gpu_available();")[0]
+        self.assertTrue(row[0] == "GPU Found")
+
     def test_numba(self):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
                 test_numba(epochs INTEGER)
                 RETURNS DOUBLE AS
+                 %perInstanceRequiredAcceleratorDevices GpuNvidia;
                 
                 import math
                 from numba import vectorize, cuda
@@ -21,7 +41,7 @@ class NumbaTest(udf.TestCase):
                 
                 @vectorize(['float32(float32, float32, float32)',
                             'float64(float64, float64, float64)',],
-                             #target='cuda'
+                             target='cuda'
                             )
                 def cu_discriminant(a, b, c):
                     return math.sqrt(b ** 2 - 4 * a * c)

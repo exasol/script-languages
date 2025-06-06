@@ -28,8 +28,24 @@
         "generic_language_tests": ["python3"]
       },
       {
-        "name": "gpu",
-        "folders": ["python3-cuda-flavor"],
+        "name": "gpu_enabled",
+        "folders": ["python3-cuda-flavor/gpu_enabled"],
+        "goal": "release",
+        "generic_language_tests": [],
+        "test_runner": "int-linux-x64-4core-gpu-t4-ubuntu24.04-1",
+        "accelerator": "nvidia"
+      },
+      {
+        "name": "gpu_numba",
+        "folders": ["python3-cuda-flavor/numba"],
+        "goal": "release",
+        "generic_language_tests": [],
+        "test_runner": "int-linux-x64-4core-gpu-t4-ubuntu24.04-1",
+        "accelerator": "nvidia"
+      },
+      {
+        "name": "gpu_pytorch",
+        "folders": ["python3-cuda-flavor/pytorch"],
         "goal": "release",
         "generic_language_tests": [],
         "test_runner": "int-linux-x64-4core-gpu-t4-ubuntu24.04-1",
