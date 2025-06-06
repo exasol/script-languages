@@ -34,8 +34,8 @@ class PytorchTest(udf.TestCase):
                 /
                 '''))
 
-        row = self.query("SELECT pytorchbasic.test_gpu_available();")[0]
-        self.assertTrue(row[0] == "GPU Found")
+        rows = self.query("SELECT pytorchbasic.test_gpu_available();")
+        self.assertRowsEqual(["GPU Found",], rows)
 
     def test_pytorch(self):
         self.query(udf.fixindent('''
