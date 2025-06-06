@@ -12,6 +12,7 @@ class NumbaTest(udf.TestCase):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT test_gpu_available()
                 RETURNS VARCHAR(20) AS
+                 %perInstanceRequiredAcceleratorDevices GpuNvidia;
         
                 from numba import cuda
         
@@ -31,6 +32,7 @@ class NumbaTest(udf.TestCase):
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
                 test_numba(epochs INTEGER)
                 RETURNS DOUBLE AS
+                 %perInstanceRequiredAcceleratorDevices GpuNvidia;
                 
                 import math
                 from numba import vectorize, cuda
