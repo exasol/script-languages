@@ -1,7 +1,7 @@
-cudnn|9.3.0.75
+cudnn|9.8.0.87
 cuda-toolkit|12.6.2
 cuda-compat|12.6.2
-cuda-nvcc|12.6.77
-cuda-nvrtc|12.6.77
-numba|0.60.0
-pytorch|2.7.0
+cuda-nvcc|12.6.85
+cuda-nvrtc|12.6.85
+numba|0.61.2
+pytorch|2.7.0=cuda126_generic_py310_hd77d226_200
