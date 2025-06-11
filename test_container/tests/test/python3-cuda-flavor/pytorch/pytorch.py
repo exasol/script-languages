@@ -17,11 +17,32 @@ class PytorchTest(udf.TestCase):
     def setUp(self):
         self.query('create schema pytorchbasic', ignore_errors=True)
 
+    def test_pytorch_gpu(self):
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
+                test_gpu_available()
+                RETURNS VARCHAR(1000) AS
+                 %perInstanceRequiredAcceleratorDevices GpuNvidia;
+
+                import torch
+
+                def run(ctx):
+                    if torch.cuda.is_available():
+                        return "GPU Found"
+                    else:
+                        return "GPU Not Found"
+                /
+                '''))
+
+        rows = self.query("SELECT pytorchbasic.test_gpu_available();")
+        self.assertRowsEqual([("GPU Found",)], rows)
+
     def test_pytorch(self):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT
                 test_pytorch(epochs INTEGER)
                 RETURNS DOUBLE AS
+                 %perInstanceRequiredAcceleratorDevices GpuNvidia;
                     
                 import torch
                 import torch.nn as nn
@@ -29,6 +50,9 @@ class PytorchTest(udf.TestCase):
                 import numpy as np
             
                 def run(ctx):
+                    assert torch.cuda.is_available()
+                    device = torch.device("cuda")
+                    assert device is not None
                     # Generate random data
                     np.random.seed(42)
                     x = np.random.rand(100, 1).astype(np.float32)  # Random x values
@@ -36,7 +60,9 @@ class PytorchTest(udf.TestCase):
                 
                     # Convert numpy arrays to torch tensors
                     x_train = torch.from_numpy(x)
+                    x_train = x_train.to(device)
                     y_train = torch.from_numpy(y)
+                    y_train = y_train.to(device)
                 
                     # Define a simple linear regression model
                     class LinearModel(nn.Module):
@@ -54,14 +80,20 @@ class PytorchTest(udf.TestCase):
                 
                     # Training loop
                     epochs = ctx.epochs
+                    model.to(device)
                     for epoch in range(epochs):
-                        model
+                        model.train()
+                        optimizer.zero_grad()
+                        y_pred = model(x_train)
+                        loss = criterion(y_pred, y_train)
+                        loss.backward()
+                        optimizer.step()
                     # Check accuracy
                     model.eval()
                     with torch.no_grad():
                         y_pred = model(x_train)
                         mse = criterion(y_pred, y_train)
-                        return mse.item()
+                    return mse.item()
                 /
                 '''))
 
