@@ -13,17 +13,19 @@ on:
           required: true
           type: string
     outputs:
-      continue:
-        description: "Indicates if we need to build and test SLC"
-        value: ${{ jobs.check_for_build.outputs.continue }}
+      result:
+        description: "Build-Mode: Possible value 'no_build_needed', 'normal', 'rebuild'"
+        value: ${{ jobs.check_for_build.outputs.build_mode }}
 
 jobs:
   check_for_build:
     runs-on: ubuntu-24.04
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: 'recursive'
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
         with:
@@ -31,10 +33,11 @@ jobs:
       - name: Run check
         id: run-check
         run: |
-          poetry run -- exaslc-ci check-if-build-needed --flavor "$FLAVOR" --branch-name "$BRANCH_NAME" --base-ref "$BASE_REF" --github-output-var continue
+          poetry run -- exaslc-ci check-if-build-needed --flavor "$FLAVOR" --base-ref "$BASE_REF" --github-event "$GITHUB_EVENT" --github-output-var build_mode
         env:
-          BRANCH_NAME: ${{github.head_ref || github.ref}}
           BASE_REF: ${{ github.base_ref }}
           FLAVOR: ${{ inputs.flavor }}
+          GITHUB_EVENT: ${{ github.event_name }}
+
     outputs:
-      continue: ${{ steps.run-check.outputs.continue }}
+      build_mode: ${{ steps.run-check.outputs.build_mode }}
