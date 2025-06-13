@@ -12,10 +12,9 @@ on:
           description: 'A flavor'
           required: true
           type: string
-      additional-build-arguments:
-          description: 'Additional build for command "exaslc-ci export-and-scan-vulnerabilities".'
-          required: false
-          default: ''
+      build-mode:
+          description: 'Build mode: possible values: "normal", "rebuild", "release".'
+          required: true
           type: string
 
     secrets:
@@ -76,13 +75,14 @@ jobs:
         id: build-slc
         run: |
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
-          poetry run -- exaslc-ci export-and-scan-vulnerabilities --flavor "$FLAVOR" --branch-name "$BRANCH_NAME" --commit-sha "$COMMIT_SHA" --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --github-output-var slc_paths ${{ inputs.additional-build-arguments }}
+          poetry run -- exaslc-ci export-and-scan-vulnerabilities --flavor "$FLAVOR" --branch-name "$BRANCH_NAME" --commit-sha "$COMMIT_SHA" --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD" --github-output-var slc_paths --build-mode "$BUILD_MODE"
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           BRANCH_NAME: ${{github.head_ref || github.ref}}
           COMMIT_SHA: ${{github.sha}}
           FLAVOR: ${{inputs.flavor}}
+          BUILD_MODE: ${{inputs.build-mode}}
 
       - name: Check for password
         run: grep -rq ${{ secrets.DOCKER_PASSWORD }} .build_output && exit 1 || exit 0
