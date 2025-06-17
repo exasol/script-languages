@@ -6,7 +6,7 @@ encodeUTF8 = lambda x: x
 from exascript_python import *
 import decimal
 import datetime
-import imp
+import types
 
 class ExaUDFError(Exception):
     pass 
@@ -126,7 +126,7 @@ class exa:
             modobj = self.__modules[str(code)]
         else:
             print("%%% new code", modname, repr(code), code in self.__modules)
-            modobj = imp.new_module(modname)
+            modobj = types.ModuleType(modname)
             modobj.__file__ = "<%s>" % modname
             modobj.__dict__['exa'] = self
             self.__modules[str(code)] = modobj
