@@ -656,14 +656,14 @@ types-requests = ">=2.31.0.6,<3.0.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci"
-version = "3.1.0"
+version = "3.2.0"
 description = "Implements CI builds for script-language-container."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "exasol_script_languages_container_ci-3.1.0-py3-none-any.whl", hash = "sha256:d4d5d3c5c2333a163fc9347d17a532ef0efe63de719d0c5f5e7b0bbc4cae986b"},
-    {file = "exasol_script_languages_container_ci-3.1.0.tar.gz", hash = "sha256:061e645ad9ed199ab9cbbe5610aecd8b95b0e16f8ef9fcb66d8006efd45bc3bb"},
+    {file = "exasol_script_languages_container_ci-3.2.0-py3-none-any.whl", hash = "sha256:dea8814dd54c0f1f7a313daac6c9cfba0a621a222dcb722df93e46256ab721fe"},
+    {file = "exasol_script_languages_container_ci-3.2.0.tar.gz", hash = "sha256:69009d695bd45262a7855664b4bf48e02df12d747618aef91a6b23075600c41f"},
 ]
 
 [package.dependencies]
@@ -675,14 +675,14 @@ setuptools = ">=80.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "3.0.0"
+version = "3.1.0"
 description = "Manages AWS cloud CI build infrastructure."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "exasol_script_languages_container_ci_setup-3.0.0-py3-none-any.whl", hash = "sha256:1a46d8d610805db6997da5bd7232353570cae0a5c220cffcb75241e97562dad6"},
-    {file = "exasol_script_languages_container_ci_setup-3.0.0.tar.gz", hash = "sha256:c61bdfb472fb75c20700c4ffcc51285edaed117aea45999f790198a0d9c3d17e"},
+    {file = "exasol_script_languages_container_ci_setup-3.1.0-py3-none-any.whl", hash = "sha256:07f844f4be4e127a5980f41806ea6497b5908c31a16256f135fda5c8aeaf4cd6"},
+    {file = "exasol_script_languages_container_ci_setup-3.1.0.tar.gz", hash = "sha256:ad5b34aa301c22847d593c91d369d8154b0374a3db4077b2dd362db86d3265a7"},
 ]
 
 [package.dependencies]
@@ -2277,4 +2277,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <4.0"
-content-hash = "c08f416dd0b088c4dd44f8215e507a6a9dd0a62db7ee534178b496cb070f32ef"
+content-hash = "0889010b86c7e613fae7ec5a085348e749e3445702d3d623513e7800fc37eece"
