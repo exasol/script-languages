@@ -10,5 +10,6 @@ RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/secu
 
 ENV SECURITY_SCANNERS="trivy"
 COPY /security_scan/.trivyignore /.trivyignore
+COPY /security_scan/trivy.rego /trivy.rego
 
 ENTRYPOINT ["/scripts/security_scan/run.sh"]
