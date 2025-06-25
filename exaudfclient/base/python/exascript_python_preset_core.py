@@ -13,7 +13,7 @@ class ExaUDFError(Exception):
 
 def clean_stacktrace_line(line):
     import re
-    match = re.match("""^\s+File "(.+)", line ([0-9]+), in (.+)$""",line)
+    match = re.match(r"""^\s+File "(.+)", line ([0-9]+), in (.+)$""",line)
     if match is not None:
         filename=match.group(1)
         lineno=match.group(2)
