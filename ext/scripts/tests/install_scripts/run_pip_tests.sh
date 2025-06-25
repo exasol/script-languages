@@ -111,5 +111,10 @@ TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl --file te
 assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install  --no-cache-dir 'azure-common==1.1.28' 'azure-batch==14.2.0' 'azure-storage-queue==1.1.0'"
 echo
 
+echo ./install_via_pip.pl with pip-needs-break-system-packages
+TEST_OUTPUT=$(run_install "$PATH_TO_INSTALL_SCRIPTS/install_via_pip.pl" --file test_files/pip/with_versions/all_versions_specified --pip-needs-break-system-packages --python-binary python3 "$DRY_RUN_OPTION")
+assert "$TEST_OUTPUT" "Dry-Run: python3 -m pip install --break-system-packages --no-cache-dir 'humanfriendly' 'requests'"
+echo
+
 check_for_failed_tests
 echo "All pip tests passed"

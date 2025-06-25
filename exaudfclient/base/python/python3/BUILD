@@ -8,9 +8,12 @@ genrule(
         cp "$(location //base/exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //base/exaudflib:exascript.i)" build_exascript_python_tmp_cc/exaudflib
         cd build_exascript_python_tmp_cc
         swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "../$(location exascript_python_tmp.cc)" exaudflib/exascript.i
+        cd ..
+        python3 "$(location //base:replace_swig_import_helper.py)" "$(location exascript_python.py)" "$(location exascript_python.py)"
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
-    srcs = ["//base/exaudflib:exascript.i","//base/exaudflib:swig/script_data_transfer_objects_wrapper.h"]
+    srcs = ["//base/exaudflib:exascript.i","//base/exaudflib:swig/script_data_transfer_objects_wrapper.h"],
+    tools = ["//base:replace_swig_import_helper.py"],
 )
 
 genrule(
