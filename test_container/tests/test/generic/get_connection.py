@@ -172,8 +172,7 @@ class ConnectionTest(udf.TestCase):
             CREATE OR REPLACE PYTHON3 ADAPTER SCRIPT adapter.fast_adapter_conn AS
             import json
             import string
-            encodeUTF8 = lambda x: x
-
+            
             def adapter_call(request):
                 root = json.loads(request)
                 if root["type"] == "createVirtualSchema":
@@ -197,9 +196,9 @@ class ConnectionTest(udf.TestCase):
                             }]
                         }
                     }
-                    return encodeUTF8(json.dumps(res))
+                    return json.dumps(res)
                 elif root["type"] == "dropVirtualSchema":
-                    return encodeUTF8(json.dumps({"type": "dropVirtualSchema"}))
+                    return json.dumps({"type": "dropVirtualSchema"})
                 else:
                     raise ValueError('Unsupported callback')
             /

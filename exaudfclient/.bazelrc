@@ -26,3 +26,4 @@ build:valgrind -c dbg
 build:valgrind --copt -g
 build:valgrind --strip=never
 build:valgrind --copt -DVALGRIND_ACTIVE
+build:swig-string-as-buffer --copt='-DSWIG_STRING_AS_BYTES_ENABLED=1' --action_env=SWIG_STRING_AS_BYTES_ENABLED=1

@@ -10,7 +10,7 @@ genrule(
         swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "../$(location exascript_python_tmp.cc)" exaudflib/exascript.i
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
-    srcs = ["//base/exaudflib:exascript.i","//base/exaudflib:swig/script_data_transfer_objects_wrapper.h"]
+    srcs = ["//base/exaudflib:exascript.i","//base/exaudflib:swig/script_data_transfer_objects_wrapper.h"],
 )
 
 genrule(
@@ -36,13 +36,22 @@ genrule(
 )
 
 genrule(
+    name = "gen_encoding_decoding",
+    cmd = 'python3 "$(location //base:add_encoding_decoding.py)" "$(location exascript_encoding_decoding.py)"',
+    outs = ["exascript_encoding_decoding.py"],
+    srcs = [],
+    tools = ["//base:add_encoding_decoding.py"]
+)
+
+genrule(
     name = "exascript_python_int",
     cmd = """
       cp $(SRCS) .
-      python3 $(location //base:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"
+      python3 $(location //base:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py" "exascript_encoding_decoding.py"
     """,
     outs = ["exascript_python_int.h"],
-    srcs = [":exascript_python_tmp_cc", "//base/python:exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
+    srcs = [":exascript_python_tmp_cc", "//base/python:exascript_python_wrap.py",
+            ":extend_exascript_python_preset_py", ":gen_encoding_decoding"],
     tools = ["//base:build_integrated.py"]
 )
 

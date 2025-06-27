@@ -175,6 +175,23 @@ inline void checkPyObjIsNotNull(const PyObject *obj) {
         throw std::runtime_error("F-UDF-CL-SL-PYTHON-1142");
 }
 
+inline PyObject* convertPyStringToPyBytes(PyObject* pyString) {
+#ifdef SWIG_STRING_AS_BYTES_ENABLED
+    return PyObject_CallMethod(pyString, "encode", NULL);
+#else
+    Py_INCREF(pyString);
+    return pyString;
+#endif
+}
+
+inline PyObject* convertPyBytesToPyString(PyObject* pyString) {
+#ifdef SWIG_STRING_AS_BYTES_ENABLED
+    return PyObject_CallMethod(pyString, "decode", NULL);
+#else
+    Py_INCREF(pyString);
+    return pyString;
+#endif
+}
 
 
 struct ColumnInfo
@@ -923,8 +940,11 @@ inline void handleEmitPyInt(
             break;
         }
         case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyObject_Str(pyInt));
+        {
+            PyPtr pyStrInt(PyObject_Str(pyInt));
+            pyValue.reset(convertPyStringToPyBytes(pyStrInt.get()));
             break;
+        }
         case SWIGVMContainers::DOUBLE:
         {
             double value = PyFloat_AsDouble(pyInt);
@@ -977,8 +997,11 @@ inline void handleEmitPyFloat(
             break;
         }
         case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyObject_Str(pyFloat));
+        {
+            PyPtr pyStrFloat(PyObject_Str(pyFloat));
+            pyValue.reset(convertPyStringToPyBytes(pyStrFloat.get()));
             break;
+        }
         case SWIGVMContainers::DOUBLE:
         {
             //pyFloat points to a 'borrowed' reference. We need to explicitly increase the ref counter here, as pyValue will decrease it again later.
@@ -1020,15 +1043,21 @@ inline void handleEmitPyDecimal(
         case SWIGVMContainers::INT64:
         case SWIGVMContainers::INT32:
         {
+            std::cout << "handleEmitPyDecimal: INT" << std::endl;
             PyPtr pyInt(PyObject_CallMethodObjArgs(pyDecimal, pyIntMethodName.get(), NULL));
             pyValue.reset(pyInt.release());
             break;
         }
         case SWIGVMContainers::NUMERIC:
-            pyValue.reset(PyObject_Str(pyDecimal));
+        {
+            std::cout << "handleEmitPyDecimal: NUMERIC" << std::endl;
+            PyPtr pyStrDecimal(PyObject_Str(pyDecimal));
+            pyValue.reset(convertPyStringToPyBytes(pyStrDecimal.get()));
             break;
+        }
         case SWIGVMContainers::DOUBLE:
         {
+            std::cout << "handleEmitPyDecimal: DOUBLE" << std::endl;
             PyPtr pyFloat(PyObject_CallMethodObjArgs(pyDecimal, pyFloatMethodName.get(), NULL));
             pyValue.reset(pyFloat.release());
             break;
@@ -1067,11 +1096,12 @@ inline void handleEmitPyStr(
         case SWIGVMContainers::STRING:
         {
             Py_ssize_t size = -1;
+            PyPtr bytesString(convertPyStringToPyBytes(pyString));
             const char *str = PyUnicode_AsUTF8AndSize(pyString, &size);
             if (!str && size < 0)
                 throw std::runtime_error("F-UDF-CL-SL-PYTHON-1137: invalid size of string");
             PyPtr pySize(PyLong_FromSsize_t(size));
-            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyString, pySize.get(), NULL));
+            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), bytesString.get(), pySize.get(), NULL));
             break;
         }
         default:
@@ -1105,7 +1135,8 @@ inline void handleEmitPyDate(
         case SWIGVMContainers::DATE:
         {
             PyPtr pyIsoDate(PyObject_CallMethodObjArgs(pyDate, pyIsoformatMethodName.get(), NULL));
-            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDate.get(), NULL));
+            PyPtr bytesIsoDate(convertPyStringToPyBytes(pyIsoDate.get()));
+            pyResult.reset(PyObject_CallMethodObjArgs(resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), bytesIsoDate.get(), NULL));
             break;
         }
         default:
@@ -1141,8 +1172,9 @@ inline void handleEmitPyTimestamp(
             // it to the generated string.
             PyPtr pyTzLocalize(PyObject_CallMethod(pyTimestamp, "tz_localize", "z", NULL));
             PyPtr pyIsoDatetime(PyObject_CallMethod(pyTzLocalize.get(), "isoformat", "s", " "));
+            PyPtr bytesDateTime(convertPyStringToPyBytes(pyIsoDatetime.get()));
             pyResult.reset(PyObject_CallMethodObjArgs(
-                resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
+                resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), bytesDateTime.get(), NULL));
             break;
         }
         default:
@@ -1177,8 +1209,9 @@ inline void handleEmitNpyDateTime(
         case SWIGVMContainers::TIMESTAMP:
         {
             PyPtr pyIsoDatetime(PyObject_CallMethod(pyTimestamp, "isoformat", "s", " "));
+            PyPtr bytesDateTime(convertPyStringToPyBytes(pyIsoDatetime.get()));
             pyResult.reset(PyObject_CallMethodObjArgs(
-                resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), pyIsoDatetime.get(), NULL));
+                resultHandler, pyColSetMethods[c].second.get(), pyColSetMethods[c].first.get(), bytesDateTime.get(), NULL));
             break;
         }
         default:
@@ -1377,7 +1410,8 @@ void emit(PyObject *resultHandler, std::vector<ColumnInfo>& colInfo, PyObject *d
 
                 PyPtr pyCheckException(PyObject_CallMethodObjArgs(resultHandler, pyCheckExceptionMethodName.get(), NULL));
                 if (pyCheckException.get() != Py_None) {
-                    const char *exMsg = PyUnicode_AsUTF8(pyCheckException.get());
+                    PyPtr exceptionAsPyBytes(convertPyBytesToPyString(pyCheckException.get()));
+                    const char *exMsg = PyUnicode_AsUTF8(exceptionAsPyBytes.get());
                     if (exMsg) {
                         std::stringstream ss;
                         ss << "F-UDF-CL-SL-PYTHON-1075: emit(): " << exMsg;
