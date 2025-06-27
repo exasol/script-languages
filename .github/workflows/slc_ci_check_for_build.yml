@@ -30,6 +30,13 @@ jobs:
         uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
         with:
           python-version: "3.10"
+
+      - name: Checkout source branch
+        if: ${{ github.event_name == 'pull_request' }}
+        run: git checkout "$SOURCE_BRANCH"
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref }}
+
       - name: Run check
         id: run-check
         run: |
