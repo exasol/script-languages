@@ -194,16 +194,22 @@ PythonVMImpl::PythonVMImpl(bool checkOnly): m_checkOnly(checkOnly)
 	check("F-UDF-CL-SL-PYTHON-1010");
 	if (exatable == NULL) throw PythonVM::exception("F-UDF-CL-SL-PYTHON-1011: Failed to import code module");
 
+        code = Py_CompileString(integrated_exascript_encoding_decoding_py, "<EXASCRIPTDECENC>", Py_file_input); check("F-UDF-CL-SL-PYTHON-1143");
+        if (code == NULL) {check("F-UDF-CL-SL-PYTHON-1144");}
+
+        PyEval_EvalCode(code, globals, globals); check("F-UDF-CL-SL-PYTHON-1145");
+        Py_DECREF(code);
+
         code = Py_CompileString(integrated_exascript_python_preset_py, "<EXASCRIPTPP>", Py_file_input); check("F-UDF-CL-SL-PYTHON-1012");
         if (code == NULL) {check("F-UDF-CL-SL-PYTHON-1013");}
 
- 	PyEval_EvalCode(code, globals, globals); check("F-UDF-CL-SL-PYTHON-1014"); 
+        PyEval_EvalCode(code, globals, globals); check("F-UDF-CL-SL-PYTHON-1014");
         Py_DECREF(code);
 
-         PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check("F-UDF-CL-SL-PYTHON-1016");
-         //PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
-	 PyObject *retvalue = PyObject_CallFunctionObjArgs(runobj, globals, NULL); check("F-UDF-CL-SL-PYTHON-1017");
-         Py_XDECREF(retvalue); retvalue = NULL;
+        PyObject *runobj = PyDict_GetItemString(globals, "__pythonvm_wrapped_parse"); check("F-UDF-CL-SL-PYTHON-1016");
+        //PyObject *retvalue = PyObject_CallFunction(runobj, NULL); check();
+        PyObject *retvalue = PyObject_CallFunctionObjArgs(runobj, globals, NULL); check("F-UDF-CL-SL-PYTHON-1017");
+        Py_XDECREF(retvalue); retvalue = NULL;
 
 	code = Py_CompileString(integrated_exascript_python_wrap_py, "<EXASCRIPT>", Py_file_input); check("F-UDF-CL-SL-PYTHON-1018");
         if (code == NULL) throw PythonVM::exception("Failed to compile wrapping script");
@@ -489,6 +495,7 @@ const char* PythonVMImpl::singleCall(single_call_function_id_e fn, const Executi
         PyObject* p3str = PyUnicode_AsEncodedString(repr, "utf-8", "ignore");
         const char *bytes = PyBytes_AS_STRING(p3str);
         singleCallResult = string(bytes);
+        std::cout << "pythoncontainer: singleCallResult='" << singleCallResult << "'" << std::endl;
         Py_XDECREF(retvalue); retvalue = NULL;
 	return singleCallResult.c_str();
 }

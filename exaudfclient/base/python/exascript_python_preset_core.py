@@ -1,7 +1,5 @@
 import sys
 unicode = str
-decodeUTF8 = lambda x: x
-encodeUTF8 = lambda x: x
 
 from exascript_python import *
 import decimal
@@ -83,14 +81,14 @@ class exa:
                 colprec = self.__meta.inputColumnPrecision(x)
                 colscale = self.__meta.inputColumnScale(x)
                 colsize = self.__meta.inputColumnSize(x)
-                coltn = self.__meta.inputColumnTypeName(x)
+                coltn = decodeUTF8(self.__meta.inputColumnTypeName(x))
             elif tbl == 'output':
                 colname = decodeUTF8(self.__meta.outputColumnName(x))
                 coltype = self.__meta.outputColumnType(x)
                 colprec = self.__meta.outputColumnPrecision(x)
                 colscale = self.__meta.outputColumnScale(x)
                 colsize = self.__meta.outputColumnSize(x)
-                coltn = self.__meta.outputColumnTypeName(x)
+                coltn = decodeUTF8(self.__meta.outputColumnTypeName(x))
             class exacolumn:
                 def __init__(self, cn, ct, st, cp, cs, l):
                     self.name = cn
