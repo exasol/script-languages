@@ -27,7 +27,7 @@ RUN mkdir /exaudfclient /exaudf
 COPY /exaudfclient/ /exaudfclient/
 
 WORKDIR /exaudfclient/
-RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty -c dbg --config python --config test-binaries"]
+RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty -c dbg --config python --config test-binaries --config swig-string-as-buffer"]
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base
