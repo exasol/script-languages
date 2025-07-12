@@ -207,12 +207,12 @@ class DynamicInputErrors(Test):
 
     @requires('EMPTY_SET_RETURNS')
     def test_exception_empty_set_returns(self):
-        with self.assertRaisesRegex(Exception, 'user defined set script has no arguments'):
+        with self.assertRaisesRegex(Exception, 'data exception - missing input parameters for SET UDF script'):
             self.query('''select fn1.empty_set_returns() from groupt''')
 
     @requires('EMPTY_SET_EMITS')
     def test_exception_empty_set_emits(self):
-        with self.assertRaisesRegex(Exception, 'user defined set script has no arguments'):
+        with self.assertRaisesRegex(Exception, 'data exception - missing input parameters for SET UDF script'):
             self.query('''select fn1.empty_set_emits() from groupt''')
 
 class DynamicInputOptimizations(Test):

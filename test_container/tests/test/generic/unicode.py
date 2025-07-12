@@ -41,7 +41,7 @@ def getPythonVersionInUDFs(server, script_languages):
            select pyversion_schema.python_version();
            ''' % {'sl': script_languages})
     cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol
-		        -no-config -autocommit ON -L -pipe''' % {
+		        -no-config -autocommit ON -L -pipe -jdbcparam validateservercertificate=0''' % {
         'exaplus': os.environ.get('EXAPLUS',
                                   '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
         'conn': server
@@ -136,7 +136,7 @@ def setUpModule():
             ROW SEPARATOR = 'CRLF';
             ''' % os.path.join(os.getcwd(), csvfile.name)
         cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol
-		        -no-config -autocommit ON -L -pipe''' % {
+		        -no-config -autocommit ON -L -pipe -jdbcparam validateservercertificate=0''' % {
             'exaplus': os.environ.get('EXAPLUS',
                                       '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
             'conn': udf.opts.server

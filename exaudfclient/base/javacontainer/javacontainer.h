@@ -2,8 +2,9 @@
 #define JAVACONTAINER_H
 
 
-#include "exaudflib/vm/swig_vm.h"
+#include "base/exaudflib/vm/swig_vm.h"
 #include <string.h>
+#include <memory>
 
 #ifdef ENABLE_JAVA_VM
 
@@ -11,9 +12,18 @@ namespace SWIGVMContainers {
 
 class JavaVMImpl;
 
+namespace JavaScriptOptions {
+
+struct Extractor;
+
+}
+
 class JavaVMach: public SWIGVM {
     public:
-        JavaVMach(bool checkOnly);
+        /*
+         * scriptOptionsParser: JavaVMach takes ownership of ScriptOptionsParser pointer.
+         */
+        JavaVMach(bool checkOnly, std::unique_ptr<JavaScriptOptions::Extractor> extractor);
         virtual ~JavaVMach() {}
         virtual void shutdown();
         virtual bool run();

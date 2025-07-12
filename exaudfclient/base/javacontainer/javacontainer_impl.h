@@ -4,8 +4,9 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <memory>
 
-#include "exaudflib/vm/swig_vm.h"
+#include "base/exaudflib/vm/swig_vm.h"
 #include <jni.h>
 
 #ifdef ENABLE_JAVA_VM
@@ -14,10 +15,17 @@ class JavaVMTest;
 
 namespace SWIGVMContainers {
 
+namespace JavaScriptOptions {
+    struct Extractor;
+}
+
 class JavaVMImpl {
     public:
         friend class ::JavaVMTest;
-        JavaVMImpl(bool checkOnly, bool noJNI);
+        /*
+         * scriptOptionsParser: JavaVMImpl takes ownership of ScriptOptionsParser pointer.
+         */
+        JavaVMImpl(bool checkOnly, bool noJNI, std::unique_ptr<JavaScriptOptions::Extractor> extractor);
         ~JavaVMImpl() {}
         void shutdown();
         bool run();
@@ -32,26 +40,15 @@ class JavaVMImpl {
         void addLocalClasspath();
         bool checkNeedsCompilation();
         void setClasspath();
-        void throwException(const char *message);
-        void throwException(const std::exception& ex);
-        void throwException(const std::string& ex);
-        //void throwException(swig_undefined_single_call_exception& ex);
-        void importScripts();
-        void addExternalJarPaths();
-        void getExternalJvmOptions();
-        void getScriptClassName();
         void setJvmOptions();
         void addJarToClasspath(const std::string& path);
-        std::vector<unsigned char> scriptToMd5(const char *script);
+        void parseScriptOptions(std::unique_ptr<JavaScriptOptions::Extractor> extractor);
         bool m_checkOnly;
         std::string m_exaJavaPath;
         std::string m_localClasspath;
         std::string m_scriptCode;
         std::string m_exaJarPath;
         std::string m_classpath;
-        std::set<std::vector<unsigned char> > m_importedScriptChecksums;
-        std::set<std::string> m_jarPaths;
-        bool m_exceptionThrown;
         std::vector<std::string> m_jvmOptions;
         JavaVM *m_jvm;
         JNIEnv *m_env;

@@ -1,0 +1,51 @@
+# ---- AUTOMATICALLY GENERATED FILE ----
+# ---- DO NOT EDIT MANUALLY, BUT USE PYTHON MODULE "exasol.slc_ci_setup" ----
+# ---- from https://github.com/exasol/script-languages-container-ci-setup TO UPDATE ----
+
+
+name: SLC-CI-Flavor
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+    secrets:
+      DOCKER_USERNAME:
+          required: true
+      DOCKER_PASSWORD:
+          required: true
+
+
+jobs:
+  check_for_build:
+    uses: ./.github/workflows/slc_ci_check_for_build.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+
+  do_nothing:
+    if: ${{ needs.check_for_build.outputs.result == 'no_build_needed' }}
+    needs: [check_for_build]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Print message
+        run: echo skipping build and test for flavor ${{ inputs.flavor }}
+
+  build:
+    needs: check_for_build
+    uses: ./.github/workflows/slc_ci_build_slc.yml
+    if: ${{ needs.check_for_build.outputs.result != 'no_build_needed' }}
+    with:
+      flavor: ${{ inputs.flavor }}
+      build-mode: ${{ needs.check_for_build.outputs.result }}
+    secrets: inherit
+
+  test:
+    needs: [check_for_build, build]
+    if: ${{ needs.check_for_build.outputs.result != 'no_build_needed' }}
+    uses: ./.github/workflows/slc_ci_test_slc.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+    secrets: inherit

@@ -1,0 +1,109 @@
+# ---- AUTOMATICALLY GENERATED FILE ----
+# ---- DO NOT EDIT MANUALLY, BUT USE PYTHON MODULE "exasol.slc_ci_setup" ----
+# ---- from https://github.com/exasol/script-languages-container-ci-setup TO UPDATE ----
+
+
+name: SLC-CI-Test
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+jobs:
+  detect-test-matrix:
+    runs-on: ubuntu-22.04
+    steps:
+     - uses: actions/checkout@v4
+       with:
+          submodules: 'recursive'
+
+     - name: Setup Python & Poetry Environment
+       uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+       with:
+         python-version: '3.10'
+     - name: Detect Test Matrix
+       id: detect-test-matrix
+       run: |
+         poetry run -- exaslc-ci get-test-matrix --flavor "$FLAVOR" --github-output-var test_matrix
+       env:
+         FLAVOR: ${{ inputs.flavor }}
+    outputs:
+     test-matrix: ${{ steps.detect-test-matrix.outputs.test_matrix }}
+
+  run-tests:
+    needs: [detect-test-matrix]
+    runs-on:
+      labels: ${{matrix.test-runner}}
+    strategy:
+      fail-fast: true
+      matrix: ${{fromJson(needs.detect-test-matrix.outputs.test-matrix)}}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            submodules: 'recursive'
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          large-packages: false
+      - name: Free disk space by removing large directories
+        run: |
+          sudo rm -rf /usr/local/graalvm/
+          sudo rm -rf /usr/local/.ghcup/
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/lib/node_modules
+          sudo rm -rf /opt/ghc
+
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+        with:
+          python-version: '3.10'
+
+      - name: Download SLC ${{matrix.goal}}
+        id: download-slc
+        uses: actions/download-artifact@v4
+        with:
+          name: slc-${{inputs.flavor}}-${{matrix.goal}}
+          path: "slc"
+
+      - name: Print SLC's
+        run: ls -la slc
+
+      - name: Allow unprivileged user namespaces
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Run Test-Set ${{ matrix.test-set-name }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+          poetry run -- exaslc-ci run-tests --flavor "$FLAVOR" --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD"  --test-set-name "$TEST_SET_NAME" --slc-directory "$SLC_DIRECTORY" --commit-sha "$COMMIT_SHA"
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          FLAVOR: ${{ inputs.flavor }}
+          TEST_SET_NAME: ${{ matrix.test-set-name }}
+          SLC_DIRECTORY: ${{ steps.download-slc.outputs.download-path }}
+          COMMIT_SHA: ${{github.sha}}
+
+      - name: Check for password
+        run: grep -rq ${{ secrets.DOCKER_PASSWORD }} .build_output && exit 1 || exit 0
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        name: Upload log artifacts
+        with:
+          name: logs_tests_${{inputs.flavor}}_${{ matrix.test-set-name }}
+          path: |
+            .build_output/jobs/**/*
+            .build_output/meta_data/**/*
+          retention-days: 30

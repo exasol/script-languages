@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from exasol_python_test_framework import udf
+from exasol_python_test_framework.exatest import useData
 
 
 class JavaInterpreter(udf.TestCase):
@@ -110,7 +111,7 @@ class JavaInterpreter(udf.TestCase):
             '''))
         with self.assertRaisesRegex(Exception, '4711'):
             self.query('SELECT foo() FROM dual')
-            
+
     def test_exception_in_run_and_cleanup_is_propagated(self):
         out, _err = self.query_via_exaplus(udf.fixindent('''
             DROP SCHEMA test_exception_in_run_and_cleanup_is_propagated CASCADE;
@@ -161,25 +162,38 @@ class JavaInterpreter(udf.TestCase):
 
 
 class JavaJar(udf.TestCase):
+
+    legacy_env_declaration = ""
+    ctpg_parser_env_declaration = "%env SCRIPT_OPTIONS_PARSER_VERSION=2;"
+    additional_env_declarations = [(legacy_env_declaration,), (ctpg_parser_env_declaration,)]
+
     def setUp(self):
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
 
-    def test_jar_path(self):
+    @useData(((legacy_env_declaration, 'No values found for %jar statement'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:5\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+    def test_jar_path(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jar_path()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar
                 '''))
-        with self.assertRaisesRegex(Exception, 'No values found for %jar statement'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jar_path() FROM dual')
 
-    def test_jar_path2(self):
+    @useData(((legacy_env_declaration, 'End of %jar statement not found'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:5\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+    def test_jar_path2(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jar_path2()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar
                 class TEST_JAR_PATH2 {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -188,14 +202,18 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegex(Exception, 'End of %jar statement not found'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jar_path2() FROM dual')
 
-    def test_jar_path3(self):
+    @useData(((legacy_env_declaration, 'No values found for %jar statement'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:6\] PARSE: Syntax error: Unexpected \';\'")))
+    def test_jar_path3(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jar_path3()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar ;
                 class TEST_JAR_PATH3 {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -204,23 +222,29 @@ class JavaJar(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegex(Exception, 'No values found for %jar statement'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jar_path3() FROM dual')
 
-    def test_jar_path_end(self):
+    @useData(((legacy_env_declaration, 'End of %jar statement not found'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:20\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+    def test_jar_path_end(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jar_path_end()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar /my/path/x.jar'''))
-        with self.assertRaisesRegex(Exception, 'End of %jar statement not found'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jar_path_end() FROM dual')
 
-    def test_jar_tab(self):
+    @useData(additional_env_declarations)
+    def test_jar_tab(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 jar_case_tab()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar		/my/path/x.jar;
                 class JAR_CASE_TAB {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -231,11 +255,18 @@ class JavaJar(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'No such file or directory'):
             rows = self.query('SELECT jar_case_tab() FROM DUAL')
 
-    def test_jar_tab_end(self):
+    @useData(additional_env_declarations)
+    def test_jar_tab_end(self, additional_env_declaration):
+        """
+        Note that both parser throw errors for different reasons:
+        1. The legacy parser will convert '/my/path/x.jar 		 ' to '/my/path/x.jar'
+        2. The ctpg based parser will keep the trailing white spaces.
+        """
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 jar_case_tab_end()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar		/my/path/x.jar 		 ;
                 class JAR_CASE_TAB_END {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -246,11 +277,13 @@ class JavaJar(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'No such file or directory'):
             rows = self.query('SELECT jar_case_tab_end() FROM DUAL')
 
-    def test_jar_multiple_statements(self):
+    @useData(additional_env_declarations)
+    def test_jar_multiple_statements(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 jar_case_multi_statements()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar /my/path/x.jar;
                 %jar /my/path/x2.jar;
                 class JAR_CASE_MULTI_STATEMENTS {
@@ -262,11 +295,13 @@ class JavaJar(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'No such file or directory'):
             rows = self.query('SELECT jar_case_multi_statements() FROM DUAL')
 
-    def test_jar_commented(self):
+    @useData(additional_env_declarations)
+    def test_jar_commented(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 jar_case_commented()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 // %jar /my/path/x.jar;
                 class JAR_CASE_COMMENTED {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -277,11 +312,13 @@ class JavaJar(udf.TestCase):
         rows = self.query('SELECT jar_case_commented() FROM DUAL')
         self.assertEqual(1, rows[0][0])
 
-    def test_jar_commented_after_code(self):
+    @useData(additional_env_declarations)
+    def test_jar_commented_after_code(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 jar_case_commented_after_code()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 class JAR_CASE_COMMENTED_AFTER_CODE {  // %jar /my/path/x.jar;
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                         return 1;
@@ -291,11 +328,13 @@ class JavaJar(udf.TestCase):
         rows = self.query('SELECT jar_case_commented_after_code() FROM DUAL')
         self.assertEqual(1, rows[0][0])
 
-    def test_jar_after_code(self):
+    @useData(additional_env_declarations)
+    def test_jar_after_code(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 jar_case_after_code()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 class JAR_CASE_AFTER_CODE { %jar /my/path/x.jar;
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                         return 1;
@@ -305,12 +344,13 @@ class JavaJar(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'VM error:'):
             rows = self.query('SELECT jar_case_after_code() FROM DUAL')
 
-
-    def test_jar_multiple_jars(self):
+    @useData(additional_env_declarations)
+    def test_jar_multiple_jars(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 jar_case_multi_jars()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jar /my/path/x.jar:/my/path/x2.jar;
                 class JAR_CASE_MULTI_JARS {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -380,25 +420,38 @@ class JavaSyntax(udf.TestCase):
 
 
 class JavaJvmOption(udf.TestCase):
+
+    legacy_env_declaration = ""
+    ctpg_parser_env_declaration = "%env SCRIPT_OPTIONS_PARSER_VERSION=2;"
+    additional_env_declarations = [(legacy_env_declaration,), (ctpg_parser_env_declaration,)]
+
     def setUp(self):
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
 
-    def test_jvm_opt(self):
+    @useData(((legacy_env_declaration, 'No values found for %jvmoption statement'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:11\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+    def test_jvm_opt(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption
                 '''))
-        with self.assertRaisesRegex(Exception, 'No values found for %jvmoption statement'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jvm_opt() FROM dual')
 
-    def test_jvm_opt2(self):
+    @useData(((legacy_env_declaration, 'End of %jvmoption statement not found'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:11\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+    def test_jvm_opt2(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt2()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption
                 class TEST_JVM_OPT2 {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -407,14 +460,18 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegex(Exception, 'End of %jvmoption statement not found'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jvm_opt2() FROM dual')
 
-    def test_jvm_opt3(self):
+    @useData(((legacy_env_declaration, 'No values found for %jvmoption statement'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:12\] PARSE: Syntax error: Unexpected \';\'")))
+    def test_jvm_opt3(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt3()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption ;
                 class TEST_JVM_OPT3 {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -423,23 +480,29 @@ class JavaJvmOption(udf.TestCase):
                     }
                 }
                 '''))
-        with self.assertRaisesRegex(Exception, 'No values found for %jvmoption statement'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jvm_opt3() FROM dual')
 
-    def test_jvm_opt4(self):
+    @useData(((legacy_env_declaration, 'End of %jvmoption statement not found'),
+              (ctpg_parser_env_declaration,
+               "Error parsing script options at line 1: \[1:20\] PARSE: Syntax error: Unexpected \'<eof>\'")))
+    def test_jvm_opt4(self, additional_env_declaration, expected_error):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt4()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xmx512m'''))
-        with self.assertRaisesRegex(Exception, 'End of %jvmoption statement not found'):
+        with self.assertRaisesRegex(Exception, expected_error):
             rows = self.query('SELECT test_jvm_opt4() FROM dual')
 
-    def test_jvm_opt_tab(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_tab(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_tab()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption		-Xmx512m;
                 class TEST_JVM_OPT_TAB {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -450,11 +513,13 @@ class JavaJvmOption(udf.TestCase):
         rows = self.query('SELECT test_jvm_opt_tab() FROM DUAL')
         self.assertEqual(1, rows[0][0])
 
-    def test_jvm_opt_tab_end(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_tab_end(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_tab_end()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption		-Xmx512m 		 ;
                 class TEST_JVM_OPT_TAB_END {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -465,11 +530,13 @@ class JavaJvmOption(udf.TestCase):
         rows = self.query('SELECT test_jvm_opt_tab_end() FROM DUAL')
         self.assertEqual(1, rows[0][0])
 
-    def test_jvm_opt_multiple_opts(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_multiple_opts(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_multiple_opts()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xms56m -Xmx128m -Xss512k;
                 class TEST_JVM_OPT_MULTIPLE_OPTS {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -480,11 +547,13 @@ class JavaJvmOption(udf.TestCase):
         rows = self.query('SELECT test_jvm_opt_multiple_opts() FROM DUAL')
         self.assertEqual(1, rows[0][0])
 
-    def test_jvm_opt_multiple_opts2(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_multiple_opts2(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_multiple_opts2()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xmx5000m;
                 %jvmoption -Xms56m -Xmx128m -Xss1k;
                 %jvmoption -Xss512k -Xms128m;
@@ -497,11 +566,13 @@ class JavaJvmOption(udf.TestCase):
         rows = self.query('SELECT test_jvm_opt_multiple_opts2() FROM DUAL')
         self.assertEqual(1, rows[0][0])
 
-    def test_jvm_opt_invalid_opt(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_invalid_opt(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_invalid_opt()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xmj56m;
                 class TEST_JVM_OPT_INVALID_OPT {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -512,11 +583,13 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, '.*Cannot start the JVM: unknown error.*'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt() FROM dual')
 
-    def test_jvm_opt_invalid_opt2(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_invalid_opt2(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_invalid_opt2()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xmx56m junk;
                 class TEST_JVM_OPT_INVALID_OPT2 {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -527,11 +600,13 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, '.*Cannot start the JVM: unknown error.*'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt2() FROM dual')
 
-    def test_jvm_opt_invalid_opt3(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_invalid_opt3(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_invalid_opt3()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xjunk;
                 %jvmoption -Xmx56m;
                 class TEST_JVM_OPT_INVALID_OPT3 {
@@ -543,11 +618,13 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, '.*Cannot start the JVM: unknown error.*'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt3() FROM dual')
 
-    def test_jvm_opt_invalid_opt4(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_invalid_opt4(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_invalid_opt4()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xms56q;
                 class TEST_JVM_OPT_INVALID_OPT4 {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -558,11 +635,13 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'invalid arguments'):
             rows = self.query('SELECT test_jvm_opt_invalid_opt4() FROM dual')
 
-    def test_jvm_opt_invalid_mem(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_invalid_mem(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_invalid_mem()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xmx900000000m;
                 class TEST_JVM_OPT_INVALID_MEM {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -573,11 +652,13 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'VM crashed'):
             rows = self.query('SELECT test_jvm_opt_invalid_mem() FROM dual')
 
-    def test_jvm_opt_invalid_mem2(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_invalid_mem2(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_invalid_mem2()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xms1m -Xmx1m;
                 class TEST_JVM_OPT_INVALID_MEM2 {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -588,11 +669,13 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'VM error:'):
             rows = self.query('SELECT test_jvm_opt_invalid_mem2() FROM dual')
 
-    def test_jvm_opt_invalid_stack_size(self):
+    @useData(additional_env_declarations)
+    def test_jvm_opt_invalid_stack_size(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT
                 test_jvm_opt_invalid_stack_size()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %jvmoption -Xss1k;
                 class TEST_JVM_OPT_INVALID_STACK_SIZE {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -603,16 +686,41 @@ class JavaJvmOption(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'unknown error'):
             rows = self.query('SELECT test_jvm_opt_invalid_stack_size() FROM dual')
 
+    @useData([("-Dmyoption=Hello\ World", "Hello World"), ("-Dmyoption=\"Hello\ World\"", "\"Hello World\""),
+              ("-Dmyoption=Hello\\tWorld", "Hello\tWorld"), ("-Dmyoption=Hello\\vWorld", "Hello\vWorld"),
+              ("-Dmyoption=Hello\\\\World", "Hello\\World"), ("-Dmyoption=Hello\\fWorld", "Hello\fWorld"),
+              ("-Dmyoption=Hello\ World\\t\\t   ", "Hello World\t\t")])
+    def test_jvm_opt_escape_sequence(self, jvm_option_value, expected_return_value):
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE java SCALAR SCRIPT
+                test_jvm_opt_with_escape()
+                RETURNS VARCHAR(10000) AS
+                %env SCRIPT_OPTIONS_PARSER_VERSION=2;
+                %jvmoption ''' + jvm_option_value + ''';
+                class TEST_JVM_OPT_WITH_ESCAPE {
+                    static String run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                        return System.getProperty("myoption");
+                    }
+                }
+                '''))
+        self.assertRowsEqual([(expected_return_value,)],
+                             self.query('''SELECT test_jvm_opt_with_escape()'''))
+
 
 class JavaScriptClass(udf.TestCase):
+
+    additional_env_declarations = [("",), ("%env SCRIPT_OPTIONS_PARSER_VERSION=2;",)]
+
     def setUp(self):
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
 
-    def test_set_script_class(self):
+    @useData(additional_env_declarations)
+    def test_set_script_class(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT A()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %scriptclass com.exasol.B;
                 class B {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -623,10 +731,13 @@ class JavaScriptClass(udf.TestCase):
         self.assertRowsEqual([(1,)],
             self.query('''SELECT a()'''))
 
-    def test_set_script_class_2(self):
+
+    @useData(additional_env_declarations)
+    def test_set_script_class_2(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT A()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %scriptclass   com.exasol.B   ;
                 class B {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -637,10 +748,12 @@ class JavaScriptClass(udf.TestCase):
         self.assertRowsEqual([(1,)],
             self.query('''SELECT a()'''))
 
-    def test_set_invalid_script_class(self):
+    @useData(additional_env_declarations)
+    def test_set_invalid_script_class(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT A()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 %scriptclass com.exasol.C;
                 class B {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
@@ -651,10 +764,12 @@ class JavaScriptClass(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'The main script class .* cannot be found:'):
             self.query('''SELECT a()''')
 
-    def test_set_invalid_script_class_2(self):
+    @useData(additional_env_declarations)
+    def test_set_invalid_script_class_2(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT A()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 // Looks correct, however the script B is in the com.exasol package implicitly.
                 %scriptclass B;
                 class B {
@@ -666,10 +781,12 @@ class JavaScriptClass(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'The main script class .* cannot be found:'):
             self.query('''SELECT a()''')
 
-    def test_invalid_script_class(self):
+    @useData(additional_env_declarations)
+    def test_invalid_script_class(self, additional_env_declaration):
         self.query(udf.fixindent('''
                 CREATE OR REPLACE java SCALAR SCRIPT A()
                 RETURNS int AS
+                ''' + additional_env_declaration + '''
                 class B {
                     static int run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                         return 1;
@@ -684,7 +801,7 @@ class JavaGenericEmit(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
-        
+
     def test_emit_object_array_multi_arg(self):
         self.query(udf.fixindent('''
                 CREATE JAVA SET SCRIPT EMIT_OBJECT (a int) EMITS (a varchar(100), b int) AS

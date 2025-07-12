@@ -1,0 +1,50 @@
+# ---- AUTOMATICALLY GENERATED FILE ----
+# ---- DO NOT EDIT MANUALLY, BUT USE PYTHON MODULE "exasol.slc_ci_setup" ----
+# ---- from https://github.com/exasol/script-languages-container-ci-setup TO UPDATE ----
+
+
+name: SLC-CI-Check-For-Build
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+          description: 'A flavor'
+          required: true
+          type: string
+    outputs:
+      result:
+        description: "Build-Mode: Possible value 'no_build_needed', 'normal', 'rebuild'"
+        value: ${{ jobs.check_for_build.outputs.build_mode }}
+
+jobs:
+  check_for_build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+        with:
+          python-version: "3.10"
+
+      - name: Checkout source branch
+        if: ${{ github.event_name == 'pull_request' }}
+        run: git checkout "$SOURCE_BRANCH"
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref }}
+
+      - name: Run check
+        id: run-check
+        run: |
+          poetry run -- exaslc-ci check-if-build-needed --flavor "$FLAVOR" --base-ref "$BASE_REF" --github-event "$GITHUB_EVENT" --github-output-var build_mode
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          FLAVOR: ${{ inputs.flavor }}
+          GITHUB_EVENT: ${{ github.event_name }}
+
+    outputs:
+      build_mode: ${{ steps.run-check.outputs.build_mode }}

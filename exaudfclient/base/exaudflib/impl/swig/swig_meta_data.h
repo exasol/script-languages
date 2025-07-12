@@ -1,22 +1,21 @@
 #ifndef EXAUDFCLIENT_SWIGMETADATA_H
 #define EXAUDFCLIENT_SWIGMETADATA_H
 
-#include "exaudflib/swig/swig_common.h"
-#include "exaudflib/swig/swig_meta_data.h"
-#include "exaudflib/zmqcontainer.pb.h"
-#include "exaudflib/impl/socket_low_level.h"
-#include "exaudflib/impl/msg_conversion.h"
-#include "exaudflib/impl/global.h"
+#include "base/exaudflib/swig/swig_common.h"
+#include "base/exaudflib/swig/swig_meta_data.h"
+#include "base/exaudflib/zmqcontainer.pb.h"
+#include "base/exaudflib/impl/socket_low_level.h"
+#include "base/exaudflib/impl/msg_conversion.h"
+#include "base/exaudflib/impl/global.h"
 #include <string>
 #include <vector>
 #include <sstream>
 
 namespace SWIGVMContainers {
 
-class SWIGMetadata_Impl : public SWIGMetadata {
+class SWIGMetadata_Impl : public SWIGMetadataIf {
 public:
     SWIGMetadata_Impl():
-        SWIGMetadata(false),
         m_connection_id(exaudflib::global.SWIGVM_params_ref->connection_id),
         m_socket(*(exaudflib::global.sock)),
         m_exch(&exaudflib::global.exchandler),

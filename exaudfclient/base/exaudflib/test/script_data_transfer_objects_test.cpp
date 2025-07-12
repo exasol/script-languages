@@ -1,4 +1,4 @@
-#include <engine/exscript/script_data_transfer_objects.h>
+#include "base/exaudflib/swig/script_data_transfer_objects.h"
 #include <gtest/gtest.h>
 
 using namespace ExecutionGraph;
@@ -17,8 +17,8 @@ protected:
 TEST_F(ImportSpecificationTest, is_subselect)
 {
     ImportSpecification is1(true);
-    EXPECT_TRUE(is1.isSubselect());
     ImportSpecification is2(false);
+    EXPECT_TRUE(is1.isSubselect());
     EXPECT_FALSE(is2.isSubselect());
 }
 
@@ -116,14 +116,14 @@ TEST_F(ImportSpecificationTest, column_names_and_types)
 
     EXPECT_TRUE(is1.hasSubselectColumnSpecification());
     EXPECT_TRUE(is1.hasConsistentColumns());
-    EXPECT_TRUE(is1.getSubselectColumnNames().size() == 3);
-    EXPECT_TRUE(is1.getSubselectColumnTypes().size() == 3);
-    EXPECT_TRUE(is1.getSubselectColumnNames()[0] == "col1");
-    EXPECT_TRUE(is1.getSubselectColumnNames()[1] == "col2");
-    EXPECT_TRUE(is1.getSubselectColumnNames()[2] == "col3");
-    EXPECT_TRUE(is1.getSubselectColumnTypes()[0] == "type1");
-    EXPECT_TRUE(is1.getSubselectColumnTypes()[1] == "type2");
-    EXPECT_TRUE(is1.getSubselectColumnTypes()[2] == "type3");
+    EXPECT_EQ(is1.getSubselectColumnNames().size(), 3);
+    EXPECT_EQ(is1.getSubselectColumnTypes().size(), 3);
+    EXPECT_EQ(is1.getSubselectColumnNames()[0], "col1");
+    EXPECT_EQ(is1.getSubselectColumnNames()[1], "col2");
+    EXPECT_EQ(is1.getSubselectColumnNames()[2], "col3");
+    EXPECT_EQ(is1.getSubselectColumnTypes()[0], "type1");
+    EXPECT_EQ(is1.getSubselectColumnTypes()[1], "type2");
+    EXPECT_EQ(is1.getSubselectColumnTypes()[2], "type3");
 }
 
 TEST_F(ImportSpecificationTest, connection_name_or_details)
@@ -175,14 +175,14 @@ TEST_F(ImportSpecificationTest, connection_info)
 {
     ImportSpecification is1(false);
     is1.setConnectionName("some_connection");
-    EXPECT_TRUE(is1.getConnectionName() == "some_connection");
+    EXPECT_EQ(is1.getConnectionName(), "some_connection");
 
     ImportSpecification is2(false);
     is2.setConnectionInformation(ConnectionInformation("some_address","some_user","some_password"));
-    EXPECT_TRUE(is2.getConnectionInformation().getAddress() == "some_address");
-    EXPECT_TRUE(is2.getConnectionInformation().getUser() == "some_user");
-    EXPECT_TRUE(is2.getConnectionInformation().getPassword() == "some_password");
-    EXPECT_TRUE(is2.getConnectionInformation().getKind() == "password");
+    EXPECT_EQ(is2.getConnectionInformation().getAddress(), "some_address");
+    EXPECT_EQ(is2.getConnectionInformation().getUser(), "some_user");
+    EXPECT_EQ(is2.getConnectionInformation().getPassword(), "some_password");
+    EXPECT_EQ(is2.getConnectionInformation().getKind(), "password");
 }
 
 
@@ -193,15 +193,15 @@ TEST_F(ImportSpecificationTest, parameters)
     is1.addParameter("key1","value1");
     EXPECT_TRUE(is1.hasParameters());
     std::map<std::string, std::string>::const_iterator ps1 = is1.getParameters().begin();
-    EXPECT_TRUE(ps1->first == "key1");
-    EXPECT_TRUE(ps1->second == "value1");
+    EXPECT_EQ(ps1->first, "key1");
+    EXPECT_EQ(ps1->second, "value1");
 
     is1.addParameter("key2","value2");
     EXPECT_TRUE(is1.hasParameters());
     std::map<std::string, std::string>::const_iterator ps2 = is1.getParameters().begin();
     ++ps2;
-    EXPECT_TRUE(ps2->first == "key2");
-    EXPECT_TRUE(ps2->second == "value2");
+    EXPECT_EQ(ps2->first, "key2");
+    EXPECT_EQ(ps2->second, "value2");
 }
 
 //
@@ -221,30 +221,30 @@ protected:
 TEST_F(ConnectionInformationTest, address_user_password_construction)
 {
     ConnectionInformation ci("some_address","some_user","some_password");
-    EXPECT_TRUE(ci.getKind() == "password");
-    EXPECT_TRUE(ci.getAddress() == "some_address");
-    EXPECT_TRUE(ci.getUser() == "some_user");
-    EXPECT_TRUE(ci.getPassword() == "some_password");
+    EXPECT_EQ(ci.getKind(), "password");
+    EXPECT_EQ(ci.getAddress(), "some_address");
+    EXPECT_EQ(ci.getUser(), "some_user");
+    EXPECT_EQ(ci.getPassword(), "some_password");
     EXPECT_FALSE(ci.hasData());
 }
 
 TEST_F(ConnectionInformationTest, kind_address_user_password_construction)
 {
     ConnectionInformation ci("some_kind","some_address","some_user","some_password");
-    EXPECT_TRUE(ci.getKind() == "some_kind");
-    EXPECT_TRUE(ci.getAddress() == "some_address");
-    EXPECT_TRUE(ci.getUser() == "some_user");
-    EXPECT_TRUE(ci.getPassword() == "some_password");
+    EXPECT_EQ(ci.getKind(), "some_kind");
+    EXPECT_EQ(ci.getAddress(), "some_address");
+    EXPECT_EQ(ci.getUser(), "some_user");
+    EXPECT_EQ(ci.getPassword(), "some_password");
     EXPECT_FALSE(ci.hasData());
 }
 
 TEST_F(ConnectionInformationTest, empty_construction)
 {
     ConnectionInformation ci;
-    EXPECT_TRUE(ci.getKind() == "");
-    EXPECT_TRUE(ci.getAddress() == "");
-    EXPECT_TRUE(ci.getUser() == "");
-    EXPECT_TRUE(ci.getPassword() == "");
+    EXPECT_TRUE(ci.getKind().empty());
+    EXPECT_TRUE(ci.getAddress().empty());
+    EXPECT_TRUE(ci.getUser().empty());
+    EXPECT_TRUE(ci.getPassword().empty());
     EXPECT_TRUE(ci.hasData());
 }
 
@@ -252,15 +252,9 @@ TEST_F(ConnectionInformationTest, copy)
 {
     ConnectionInformation ca("a","b","c","d");
     ConnectionInformation cb(ca);
-    EXPECT_TRUE(ca.getKind() == cb.getKind());
-    EXPECT_TRUE(ca.getAddress() == cb.getAddress());
-    EXPECT_TRUE(ca.getUser() == cb.getUser());
-    EXPECT_TRUE(ca.getPassword() == cb.getPassword());
-    EXPECT_TRUE(ca.hasData() == cb.hasData());
-}
-
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    EXPECT_EQ(ca.getKind(), cb.getKind());
+    EXPECT_EQ(ca.getAddress(), cb.getAddress());
+    EXPECT_EQ(ca.getUser(), cb.getUser());
+    EXPECT_EQ(ca.getPassword(), cb.getPassword());
+    EXPECT_EQ(ca.hasData(), cb.hasData());
 }

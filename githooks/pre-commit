@@ -10,6 +10,5 @@ bash "$GITHOOKS_PATH/prohibit_commit_to_master.sh"
 echo "Searching for duplicated error codes in repository (pre-commit hook)"
 bash find_duplicate_error_codes.sh
 bash "$GITHOOKS_PATH/update_current_submodules_file.sh"
-bash "$GITHOOKS_PATH/update_exaslct_starter_scripts.sh"
-bash "$GITHOOKS_PATH/update_aws_buildspec.sh"
+poetry run -- nox -s update-ci-github-workflows
 popd

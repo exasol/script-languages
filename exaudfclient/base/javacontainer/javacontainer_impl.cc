@@ -1,33 +1,38 @@
 #include <iostream>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <openssl/md5.h>
 #include <set>
 #include <jni.h>
 #include <unistd.h>
 #include <sstream>
 
-#include "exaudflib/swig/swig_meta_data.h"
 #include "exascript_java_jni_decl.h"
 
-#include "debug_message.h"
-#include "javacontainer/javacontainer.h"
-#include "javacontainer/javacontainer_impl.h"
-#include "exaudflib/vm/scriptoptionlines.h"
+#include "base/utils/debug_message.h"
+#include "base/javacontainer/javacontainer.h"
+#include "base/javacontainer/javacontainer_impl.h"
+#include "base/javacontainer/script_options/extractor.h"
+
 
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_exaJavaPath(""), m_localClasspath("/tmp"), // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
-                                        m_scriptCode(SWIGVM_params->script_code), m_exceptionThrown(false), m_jvm(NULL), m_env(NULL), m_needsCompilation(true) {
+JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
+                        std::unique_ptr<JavaScriptOptions::Extractor> extractor)
+: m_checkOnly(checkOnly)
+, m_exaJavaPath("")
+, m_localClasspath("/tmp") // **IMPORTANT**: /tmp needs to be in the classpath, otherwise ExaCompiler crashe with com.exasol.ExaCompilationException: /DATE_STRING.java:3: error: error while writing DATE_STRING: could not create parent directories
+, m_scriptCode(SWIGVM_params->script_code)
+, m_jvm(NULL)
+, m_env(NULL)
+, m_needsCompilation(true)
+{
 
     stringstream ss;
-    m_exaJavaPath = "/exaudf/javacontainer"; // TODO hardcoded path
-    DBG_FUNC_CALL(cerr,getScriptClassName());  // To be called before scripts are imported. Otherwise, the script classname from an imported script could be used
-    DBG_FUNC_CALL(cerr,importScripts());
-    DBG_FUNC_CALL(cerr,getExternalJvmOptions());
-    DBG_FUNC_CALL(cerr,setClasspath());
-    DBG_FUNC_CALL(cerr,addExternalJarPaths());
+    m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
+
+    parseScriptOptions(std::move(extractor));
+
     m_needsCompilation = checkNeedsCompilation();
     if (m_needsCompilation) {
         DBG_FUNC_CALL(cerr,addPackageToScript());
@@ -43,18 +48,29 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI): m_checkOnly(checkOnly), m_ex
     }
 }
 
+void JavaVMImpl::parseScriptOptions(std::unique_ptr<JavaScriptOptions::Extractor> extractor) {
+
+    DBG_FUNC_CALL(cerr,extractor->extract(m_scriptCode));
+
+    DBG_FUNC_CALL(cerr,setClasspath());
+
+    m_jvmOptions = std::move(extractor->moveJvmOptions());
+
+    extractor->iterateJarPaths([&](const std::string& s) { addJarToClasspath(s);});
+}
+
 void JavaVMImpl::shutdown() {
     if (m_checkOnly)
-        throwException("F-UDF.CL.SL.JAVA-1159: Java VM in check only mode");
+        throw JavaVMach::exception("F-UDF.CL.SL.JAVA-1159: Java VM in check only mode");
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
     string calledUndefinedSingleCall;
     check("F-UDF.CL.SL.JAVA-1160",calledUndefinedSingleCall);
     if (!cls)
-        throwException("F-UDF.CL.SL.JAVA-1161: FindClass for ExaWrapper failed");
+        throw JavaVMach::exception("F-UDF.CL.SL.JAVA-1161: FindClass for ExaWrapper failed");
     jmethodID mid = m_env->GetStaticMethodID(cls, "cleanup", "()V");
     check("F-UDF.CL.SL.JAVA-1162",calledUndefinedSingleCall);
     if (!mid)
-        throwException("F-UDF.CL.SL.JAVA-1163: GetStaticMethodID for run failed");
+        throw JavaVMach::exception("F-UDF.CL.SL.JAVA-1163: GetStaticMethodID for run failed");
     m_env->CallStaticVoidMethod(cls, mid);
     check("F-UDF.CL.SL.JAVA-1164",calledUndefinedSingleCall);
     try {
@@ -66,16 +82,16 @@ void JavaVMImpl::shutdown() {
 
 bool JavaVMImpl::run() {
     if (m_checkOnly)
-        throwException("F-UDF-CL-SL-JAVA-1008: Java VM in check only mode");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1008: Java VM in check only mode");
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
     string calledUndefinedSingleCall;
     check("F-UDF-CL-SL-JAVA-1009",calledUndefinedSingleCall);
     if (!cls)
-        throwException("F-UDF-CL-SL-JAVA-1010: FindClass for ExaWrapper failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1010: FindClass for ExaWrapper failed");
     jmethodID mid = m_env->GetStaticMethodID(cls, "run", "()V");
     check("F-UDF-CL-SL-JAVA-1011",calledUndefinedSingleCall);
     if (!mid)
-        throwException("F-UDF-CL-SL-JAVA-1012: GetStaticMethodID for run failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1012: GetStaticMethodID for run failed");
     m_env->CallStaticVoidMethod(cls, mid);
     check("F-UDF-CL-SL-JAVA-1013",calledUndefinedSingleCall);
     return true;
@@ -86,7 +102,7 @@ static string singleCallResult;
 const char* JavaVMImpl::singleCall(single_call_function_id_e fn, const ExecutionGraph::ScriptDTO& args, string& calledUndefinedSingleCall) {
 
     if (m_checkOnly)
-        throwException("F-UDF-CL-SL-JAVA-1014: Java VM in check only mode");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1014: Java VM in check only mode");
 
     const char* func = NULL;
     switch (fn) {
@@ -97,16 +113,16 @@ const char* JavaVMImpl::singleCall(single_call_function_id_e fn, const Execution
         case SC_FN_GENERATE_SQL_FOR_EXPORT_SPEC: func = "generateSqlForExportSpec"; break;
     }
     if (func == NULL) {
-        throwException("F-UDF-CL-SL-JAVA-1015: Unknown single call "+std::to_string(fn));
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1015: Unknown single call "+std::to_string(fn));
     }
     jclass cls = m_env->FindClass("com/exasol/ExaWrapper");
     check("F-UDF-CL-SL-JAVA-1016",calledUndefinedSingleCall);
     if (!cls)
-        throwException("F-UDF-CL-SL-JAVA-1017: FindClass for ExaWrapper failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1017: FindClass for ExaWrapper failed");
     jmethodID mid = m_env->GetStaticMethodID(cls, "runSingleCall", "(Ljava/lang/String;Ljava/lang/Object;)[B");
     check("F-UDF-CL-SL-JAVA-1018",calledUndefinedSingleCall);
     if (!mid)
-        throwException("F-UDF-CL-SL-JAVA-1019: GetStaticMethodID for run failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1019: GetStaticMethodID for run failed");
     jstring fn_js = m_env->NewStringUTF(func);
     check("F-UDF-CL-SL-JAVA-1020",calledUndefinedSingleCall);
 
@@ -206,7 +222,7 @@ void JavaVMImpl::createJvm() {
         }
         ss << " (" << rc << ")";
         delete [] options;
-        throwException(ss.str().c_str());
+        throw JavaVMach::exception(ss.str());
     }
     delete [] options;
 }
@@ -220,107 +236,19 @@ void JavaVMImpl::compileScript() {
     jstring classpathStr = m_env->NewStringUTF(m_localClasspath.c_str());
     check("F-UDF-CL-SL-JAVA-1031",calledUndefinedSingleCall);
     if (!classnameStr || !codeStr || !classpathStr)
-        throwException("F-UDF-CL-SL-JAVA-1032: NewStringUTF for compile failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1032: NewStringUTF for compile failed");
     jclass cls = m_env->FindClass("com/exasol/ExaCompiler");
     check("F-UDF-CL-SL-JAVA-1033",calledUndefinedSingleCall);
     if (!cls)
-        throwException("F-UDF-CL-SL-JAVA-1034: FindClass for ExaCompiler failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1034: FindClass for ExaCompiler failed");
     jmethodID mid = m_env->GetStaticMethodID(cls, "compile", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
     check("F-UDF-CL-SL-JAVA-1035",calledUndefinedSingleCall);
     if (!mid)
-        throwException("F-UDF-CL-SL-JAVA-1036: GetStaticMethodID for compile failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1036: GetStaticMethodID for compile failed");
     m_env->CallStaticVoidMethod(cls, mid, classnameStr, codeStr, classpathStr);
     check("F-UDF-CL-SL-JAVA-1037",calledUndefinedSingleCall);
 }
 
-void JavaVMImpl::addExternalJarPaths() {
-    const string jarKeyword = "%jar";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    while (true) {
-        string jarPath = ExecutionGraph::extractOptionLine(m_scriptCode, jarKeyword, whitespace, lineEnd, pos, [&](const char* msg){throwException(msg);});
-        if (jarPath == "")
-            break;
-        for (size_t start = 0, delim = 0; ; start = delim + 1) {
-            delim = jarPath.find(":", start);
-            if (delim != string::npos) {
-                string jar = jarPath.substr(start, delim - start);
-                if (m_jarPaths.find(jar) == m_jarPaths.end())
-                    m_jarPaths.insert(jar);
-            }
-            else {
-                string jar = jarPath.substr(start);
-                if (m_jarPaths.find(jar) == m_jarPaths.end())
-                    m_jarPaths.insert(jar);
-                break;
-            }
-        }
-    }
-    for (set<string>::iterator it = m_jarPaths.begin(); it != m_jarPaths.end(); ++it) {
-        addJarToClasspath(*it);
-    }
-}
-
-void JavaVMImpl::getScriptClassName() {
-    const string scriptClassKeyword = "%scriptclass";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    string scriptClass = 
-      ExecutionGraph::extractOptionLine(
-          m_scriptCode, 
-          scriptClassKeyword, 
-          whitespace, 
-          lineEnd, 
-          pos, 
-          [&](const char* msg){throwException("F-UDF-CL-SL-JAVA-1038: "+std::string(msg));}
-          );
-    if (scriptClass != "") {
-        m_jvmOptions.push_back("-Dexasol.scriptclass=" + scriptClass);
-    }
-}
-
-void JavaVMImpl::importScripts() {
-    SWIGMetadata *meta = NULL;
-    const string importKeyword = "%import";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    // Attention: We must hash the parent script before modifying it (adding the
-    // package definition). Otherwise we don't recognize if the script imports its self
-    m_importedScriptChecksums.insert(scriptToMd5(m_scriptCode.c_str()));
-    while (true) {
-        string scriptName = 
-          ExecutionGraph::extractOptionLine(
-              m_scriptCode, 
-              importKeyword, 
-              whitespace, 
-              lineEnd, 
-              pos, 
-              [&](const char* msg){throwException("F-UDF-CL-SL-JAVA-1039: "+std::string(msg));}
-              );
-        if (scriptName == "")
-            break;
-        if (!meta) {
-            meta = new SWIGMetadata();
-            if (!meta)
-                throwException("F-UDF-CL-SL-JAVA-1040: Failure while importing scripts");
-        }
-        const char *scriptCode = meta->moduleContent(scriptName.c_str());
-        const char *exception = meta->checkException();
-        if (exception)
-            throwException("F-UDF-CL-SL-JAVA-1041: "+std::string(exception));
-        if (m_importedScriptChecksums.insert(scriptToMd5(scriptCode)).second) {
-            // Script has not been imported yet
-            // If this imported script contains %import statements 
-            // they will be resolved in this while loop.
-            m_scriptCode.insert(pos, scriptCode);
-        }
-    }
-    if (meta)
-        delete meta;
-}
 
 bool JavaVMImpl::check(const string& errorCode, string& calledUndefinedSingleCall) {
     jthrowable ex = m_env->ExceptionOccurred();
@@ -329,13 +257,13 @@ bool JavaVMImpl::check(const string& errorCode, string& calledUndefinedSingleCal
 
         jclass undefinedSingleCallExceptionClass = m_env->FindClass("com/exasol/ExaUndefinedSingleCallException");
         if (!undefinedSingleCallExceptionClass) {
-            throwException(errorCode+": F-UDF-CL-SL-JAVA-1042: FindClass for com.exasol.ExaUndefinedSingleCallException failed");
+            throw JavaVMach::exception(errorCode+": F-UDF-CL-SL-JAVA-1042: FindClass for com.exasol.ExaUndefinedSingleCallException failed");
         }
         if (m_env->IsInstanceOf(ex, undefinedSingleCallExceptionClass)) {
             jmethodID undefinedRemoteFn = m_env->GetMethodID(undefinedSingleCallExceptionClass, "getUndefinedRemoteFn", "()Ljava/lang/String;");
             check("F-UDF-CL-SL-JAVA-1043",calledUndefinedSingleCall);
             if (!undefinedRemoteFn)
-                throwException(errorCode+": F-UDF-CL-SL-JAVA-1044: com.exasol.ExaUndefinedSingleCallException.getUndefinedRemoteFn() could not be found");
+                throw JavaVMach::exception(errorCode+": F-UDF-CL-SL-JAVA-1044: com.exasol.ExaUndefinedSingleCallException.getUndefinedRemoteFn() could not be found");
             jobject undefinedRemoteFnString = m_env->CallObjectMethod(ex,undefinedRemoteFn);
             if (undefinedRemoteFnString) {
                 jstring fn = static_cast<jstring>(undefinedRemoteFnString);
@@ -347,19 +275,19 @@ bool JavaVMImpl::check(const string& errorCode, string& calledUndefinedSingleCal
                 //swig_undefined_single_call_exception ex(fn_string);
                 //throwException(ex);
             } else {
-               throwException(errorCode+": F-UDF-CL-SL-JAVA-1045: Internal error: getUndefinedRemoteFn() returned no result"); 
+               throw JavaVMach::exception(errorCode+": F-UDF-CL-SL-JAVA-1045: Internal error: getUndefinedRemoteFn() returned no result");
             } 
         }
 
         string exceptionMessage = "";
         jclass exClass = m_env->GetObjectClass(ex);
         if (!exClass)
-            throwException(errorCode+": F-UDF-CL-SL-JAVA-1046: FindClass for Throwable failed");
+            throw JavaVMach::exception(errorCode+": F-UDF-CL-SL-JAVA-1046: FindClass for Throwable failed");
         // Throwable.toString()
         jmethodID toString = m_env->GetMethodID(exClass, "toString", "()Ljava/lang/String;");
         check("F-UDF-CL-SL-JAVA-1047",calledUndefinedSingleCall);
         if (!toString)
-            throwException(errorCode+": F-UDF-CL-SL-JAVA-1048: Throwable.toString() could not be found");
+            throw JavaVMach::exception(errorCode+": F-UDF-CL-SL-JAVA-1048: Throwable.toString() could not be found");
         jobject object = m_env->CallObjectMethod(ex, toString);
         if (object) {
             jstring message = static_cast<jstring>(object);
@@ -415,7 +343,7 @@ bool JavaVMImpl::check(const string& errorCode, string& calledUndefinedSingleCal
 //                }
 //            }
 //        }
-        throwException(errorCode+": "+exceptionMessage);
+        throw JavaVMach::exception(errorCode+": "+exceptionMessage);
     }
     return 1;
 }
@@ -425,15 +353,15 @@ void JavaVMImpl::registerFunctions() {
     jclass cls = m_env->FindClass("com/exasol/swig/exascript_javaJNI");
     check("F-UDF-CL-SL-JAVA-1057",calledUndefinedSingleCall);
     if (!cls)
-        throwException("F-UDF-CL-SL-JAVA-1058: FindClass for exascript_javaJNI failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1058: FindClass for exascript_javaJNI failed");
     int rc = m_env->RegisterNatives(cls, methods, sizeof(methods) / sizeof(methods[0]));
     check("F-UDF-CL-SL-JAVA-1059",calledUndefinedSingleCall);
     if (rc)
-        throwException("F-UDF-CL-SL-JAVA-1060: RegisterNatives failed");
+        throw JavaVMach::exception("F-UDF-CL-SL-JAVA-1060: RegisterNatives failed");
 }
 
 void JavaVMImpl::setClasspath() {
-    m_exaJarPath = m_exaJavaPath + "/libexaudf.jar";
+    m_exaJarPath = m_exaJavaPath + "/exaudf_deploy.jar";
     m_classpath = m_exaJarPath;
 }
 
@@ -448,15 +376,6 @@ bool JavaVMImpl::checkNeedsCompilation() {
     return false == trimmedScriptCode.empty();
 }
 
-vector<unsigned char> JavaVMImpl::scriptToMd5(const char *script) {
-    MD5_CTX ctx;
-    unsigned char md5[MD5_DIGEST_LENGTH];
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, script, strlen(script));
-    MD5_Final(md5, &ctx);
-    return vector<unsigned char>(md5, md5 + sizeof(md5));
-}
-
 void JavaVMImpl::addJarToClasspath(const string& path) {
     string jarPath = path; // m_exaJavaPath + "/jars/" + path;
 
@@ -469,57 +388,25 @@ void JavaVMImpl::addJarToClasspath(const string& path) {
         if (rc) {
             stringstream errorMsg;
             errorMsg << "F-UDF-CL-SL-JAVA-1061: Java VM cannot find '" << jarPath.c_str() << "': " << strerror(errno);
-            throwException(errorMsg.str().c_str());
+            throw JavaVMach::exception(errorMsg.str());
         }
     }
     else if (rc) {
         stringstream errorMsg;
         errorMsg << "F-UDF-CL-SL-JAVA-1062: Java VM cannot find '" << jarPath.c_str() << "': " << strerror(errno);
-        throwException(errorMsg.str().c_str());
+        throw JavaVMach::exception(errorMsg.str());
     }
 
     if (!S_ISREG(st.st_mode)) {
         stringstream errorMsg;
         errorMsg << "F-UDF-CL-SL-JAVA-1063: '" << jarPath.c_str() << "' is not a regular file";
-        throwException(errorMsg.str().c_str());
+        throw JavaVMach::exception(errorMsg.str());
     }
 
     // Add file to classpath
     m_classpath += ":" + jarPath;
 }
 
-void JavaVMImpl::getExternalJvmOptions() {
-    const string jvmOption = "%jvmoption";
-    const string whitespace = " \t\f\v";
-    const string lineEnd = ";";
-    size_t pos;
-    while (true) {
-        string options = 
-          ExecutionGraph::extractOptionLine(
-              m_scriptCode,
-              jvmOption, 
-              whitespace, 
-              lineEnd, 
-              pos, 
-              [&](const char* msg){throwException("F-UDF-CL-SL-JAVA-1064: "+std::string(msg));}
-              );
-        if (options == "")
-            break;
-        for (size_t start = 0, delim = 0; ; start = delim + 1) {
-            start = options.find_first_not_of(whitespace, start);
-            if (start == string::npos)
-                break;
-            delim = options.find_first_of(whitespace, start);
-            if (delim != string::npos) {
-                m_jvmOptions.push_back(options.substr(start, delim - start));
-            }
-            else {
-                m_jvmOptions.push_back(options.substr(start));
-                break;
-            }
-        }
-    }
-}
 
 void JavaVMImpl::setJvmOptions() {
     bool minHeap = false;
@@ -564,33 +451,3 @@ void JavaVMImpl::setJvmOptions() {
     // Serial garbage collection
     m_jvmOptions.push_back("-XX:+UseSerialGC"); // TODO allow different Garbage Collectors, multiple options are not allowed, so we need to check if options was specified by the user or otherwise use -XX:+UseSerialGC as default
 }
-
-
-void JavaVMImpl::throwException(const std::string&  message) {
-    if (!m_exceptionThrown) {
-        m_exceptionThrown = true;
-    }
-    throw JavaVMach::exception(message);
-}
-
-
-void JavaVMImpl::throwException(const char*  message) {
-    if (!m_exceptionThrown) {
-        m_exceptionThrown = true;
-    }
-    throw JavaVMach::exception(message);
-}
-
-void JavaVMImpl::throwException(const std::exception& ex) {
-    if (!m_exceptionThrown) {
-        m_exceptionThrown = true;
-    }
-    throw ex;
-}
-
-//void JavaVMImpl::throwException(swig_undefined_single_call_exception& ex) {
-//    if (!m_exceptionThrown) {
-//        m_exceptionThrown = true;
-//    }
-//    throw ex;
-//}

@@ -2,7 +2,7 @@
 #define ENABLE_BENCHMARK_VM
 #endif
 
-#include "debug_message.h"
+#include "base/utils/debug_message.h"
 #include "benchmark_container.h"
 #include <iostream>
 #include <string>

@@ -1,0 +1,29 @@
+name: OFT Report
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@0.12.0
+        with:
+          python-version: "3.10"
+          poetry-version: "2.1.2"
+      - name: Run HTML Report
+        run: |
+          poetry run nox -s run-oft-html -- -- oft_report.html || echo failed
+      - name: Run Plaintext Report
+        run: |
+          poetry run nox -s run-oft
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "oft_report.html"
+          path: oft_report.html

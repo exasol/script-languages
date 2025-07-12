@@ -1,12 +1,13 @@
-#include "javacontainer/javacontainer.h"
-#include "javacontainer/javacontainer_impl.h"
+#include "base/javacontainer/javacontainer.h"
+#include "base/javacontainer/javacontainer_impl.h"
+#include "base/javacontainer/script_options/extractor.h"
 
 using namespace SWIGVMContainers;
 using namespace std;
 
-JavaVMach::JavaVMach(bool checkOnly) {
+JavaVMach::JavaVMach(bool checkOnly,std::unique_ptr<JavaScriptOptions::Extractor> extractor) {
     try {
-        m_impl = new JavaVMImpl(checkOnly, false);
+        m_impl = new JavaVMImpl(checkOnly, false, std::move(extractor));
     } catch (std::exception& err) {
         lock_guard<mutex> lock(exception_msg_mtx);
         exception_msg = "F-UDF-CL-SL-JAVA-1000: "+std::string(err.what());

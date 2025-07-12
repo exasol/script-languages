@@ -1,12 +1,12 @@
-#include "exaudflib/impl/check.h"
-#include "exaudflib/impl/socket_info.h"
+#include "base/exaudflib/impl/check.h"
+#include "base/exaudflib/impl/socket_info.h"
 #include <pthread.h>
 #include <unistd.h>
 #include <iostream>
 #include <atomic>
 
 
-#include "debug_message.h"
+#include "base/utils/debug_message.h"
 
 namespace exaudflib {
     namespace check {

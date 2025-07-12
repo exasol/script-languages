@@ -10,20 +10,20 @@
 #include <fstream>
 #include <functional>
 
-#include "debug_message.h"
+#include "base/utils/debug_message.h"
 
 // swig lib
 #include <limits>
 
 
-#include "exaudflib/impl/check.h"
-#include "exaudflib/impl/socket_info.h"
-#include "exaudflib/impl/socket_low_level.h"
-#include "exaudflib/impl/msg_conversion.h"
-#include "exaudflib/impl/global.h"
-#include "exaudflib/impl/socket_high_level.h"
+#include "base/exaudflib/impl/check.h"
+#include "base/exaudflib/impl/socket_info.h"
+#include "base/exaudflib/impl/socket_low_level.h"
+#include "base/exaudflib/impl/msg_conversion.h"
+#include "base/exaudflib/impl/global.h"
+#include "base/exaudflib/impl/socket_high_level.h"
 
-#include "exaudflib/vm/swig_vm.h"
+#include "base/exaudflib/vm/swig_vm.h"
 
 
 #ifndef NDEBUG

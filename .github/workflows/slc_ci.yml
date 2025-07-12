@@ -1,0 +1,55 @@
+# ---- AUTOMATICALLY GENERATED FILE ----
+# ---- DO NOT EDIT MANUALLY, BUT USE PYTHON MODULE "exasol.slc_ci_setup" ----
+# ---- from https://github.com/exasol/script-languages-container-ci-setup TO UPDATE ----
+
+
+name: SLC-CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+      - 'rebuild/**'
+  pull_request:
+
+jobs:
+  prepare-test-container:
+    uses: ./.github/workflows/slc_ci_prepare_test_container.yml
+    secrets: inherit
+
+  get-flavors:
+    needs: prepare-test-container
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+        with:
+          python-version: '3.10'
+      - id: set-matrix
+        run: poetry run -- exaslc-ci get-flavors --github-output-var matrix
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+  ci:
+    needs: get-flavors
+    strategy:
+      fail-fast: true
+      matrix:
+        flavor: ${{fromJson(needs.get-flavors.outputs.matrix)}}
+    uses: ./.github/workflows/slc_ci_flavor.yml
+    secrets: inherit
+    with:
+      flavor: ${{ matrix.flavor }}
+
+  slc-ready:
+    needs: ci
+    name: SLC Allow Merge
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Print message
+        run: echo SLCs CI finished

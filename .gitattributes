@@ -1,4 +1,5 @@
 poetry.lock linguist-generated=true
 setup.py linguist-generated=true
 exaslct_scripts/*.sh linguist-generated=true
-aws-code-build/ci/*.yaml linguist-generated=true
+.github/workflows/slc_ci*.yml linguist-generated=true
+.github/workflows/slc_cd*.yml linguist-generated=true

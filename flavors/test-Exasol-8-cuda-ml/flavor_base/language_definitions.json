@@ -1,0 +1,14 @@
+{
+  "schema_version": 2,
+  "language_definitions": [
+    {
+      "protocol": "localzmq+protobuf",
+      "aliases": ["PYTHON310_CUDA"],
+      "parameters": [{"key": "lang", "value": "python"}],
+      "udf_client_path": {
+        "executable": "/exaudf/exaudfclient"
+      },
+      "deprecation": null
+    }
+  ]
+}
