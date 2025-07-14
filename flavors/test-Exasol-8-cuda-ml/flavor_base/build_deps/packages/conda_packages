@@ -5,3 +5,4 @@ make|4.3
 chrpath|0.16
 gxx_linux-64|12.4.0
 gcc_linux-64|12.4.0
+binutils_linux-64|2.43
