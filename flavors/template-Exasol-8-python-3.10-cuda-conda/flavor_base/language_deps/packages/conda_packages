@@ -1,7 +1,7 @@
 python|3.10.4
 numpy|1.26.2
-pandas|2.2.2
-pyarrow|16.0.0
-libarrow|16.0.0=he216f8a_1_cuda
+pandas|2.3.0
+pyarrow|20.0.0
+libarrow|20.0.0=h3f1e28f_6_cuda
 mamba|1.5.1
-cuda-toolkit|11.8.0
+cuda-toolkit|12.9.0
