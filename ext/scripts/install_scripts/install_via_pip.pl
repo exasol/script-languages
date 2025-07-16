@@ -40,6 +40,7 @@ my $ignore_installed = 0;
 my $use_deprecated_legacy_resolver = 0;
 my $ancestor_pip_package_root_path = '';
 my $install_build_tools_ephemerally = 0;
+my $pip_needs_break_system_packages = 0;
 GetOptions (
             "help" => \$help,
             "dry-run" => \$dry_run,
@@ -51,7 +52,8 @@ GetOptions (
             "use-deprecated-legacy-resolver" => \$use_deprecated_legacy_resolver,
             "python-binary=s" => \$python_binary,
             "ancestor-pip-package-root-path=s" => \$ancestor_pip_package_root_path,
-            "install-build-tools-ephemerally" => \$install_build_tools_ephemerally
+            "install-build-tools-ephemerally" => \$install_build_tools_ephemerally,
+            "pip-needs-break-system-packages" => \$pip_needs_break_system_packages
 
           ) or package_mgmt_utils::print_usage_and_abort(__FILE__,"Error in command line arguments",2);
 package_mgmt_utils::print_usage_and_abort(__FILE__,"",0) if $help;
@@ -77,6 +79,10 @@ if($ignore_installed){
 
 if($use_deprecated_legacy_resolver){
   push @pip_parameters, "--use-deprecated=legacy-resolver";
+}
+
+if($pip_needs_break_system_packages){
+  push @pip_parameters, "--break-system-packages";
 }
 
 my $pip_parameters_str = join( ' ', @pip_parameters);
