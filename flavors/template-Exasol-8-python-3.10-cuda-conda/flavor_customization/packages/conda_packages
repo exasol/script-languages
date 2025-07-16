@@ -7,3 +7,5 @@
 # also start a comment after the package definition.
 
 #pysimdjson|4.0.3
+
+#Change the cuda toolkit according to your needs

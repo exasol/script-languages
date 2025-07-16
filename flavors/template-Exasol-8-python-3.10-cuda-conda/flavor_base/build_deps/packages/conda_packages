@@ -1,7 +1,8 @@
-protobuf|4.25.3
+protobuf|5.29.3
 pcre|8.45
-bazel|7.2.1
+bazel|7.5.0
 make|4.3
 chrpath|0.16
 gxx_linux-64|12.4.0
 gcc_linux-64|12.4.0
+binutils_linux-64|2.43 #Needed because of https://github.com/exasol/script-languages-release/issues/1181
