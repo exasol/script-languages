@@ -1,19 +1,17 @@
 import sys
 unicode = str
-decodeUTF8 = lambda x: x
-encodeUTF8 = lambda x: x
 
 from exascript_python import *
 import decimal
 import datetime
-import imp
+import types
 
 class ExaUDFError(Exception):
     pass 
 
 def clean_stacktrace_line(line):
     import re
-    match = re.match("""^\s+File "(.+)", line ([0-9]+), in (.+)$""",line)
+    match = re.match(r"""^\s+File "(.+)", line ([0-9]+), in (.+)$""",line)
     if match is not None:
         filename=match.group(1)
         lineno=match.group(2)
@@ -83,14 +81,14 @@ class exa:
                 colprec = self.__meta.inputColumnPrecision(x)
                 colscale = self.__meta.inputColumnScale(x)
                 colsize = self.__meta.inputColumnSize(x)
-                coltn = self.__meta.inputColumnTypeName(x)
+                coltn = decodeUTF8(self.__meta.inputColumnTypeName(x))
             elif tbl == 'output':
                 colname = decodeUTF8(self.__meta.outputColumnName(x))
                 coltype = self.__meta.outputColumnType(x)
                 colprec = self.__meta.outputColumnPrecision(x)
                 colscale = self.__meta.outputColumnScale(x)
                 colsize = self.__meta.outputColumnSize(x)
-                coltn = self.__meta.outputColumnTypeName(x)
+                coltn = decodeUTF8(self.__meta.outputColumnTypeName(x))
             class exacolumn:
                 def __init__(self, cn, ct, st, cp, cs, l):
                     self.name = cn
@@ -126,7 +124,7 @@ class exa:
             modobj = self.__modules[str(code)]
         else:
             print("%%% new code", modname, repr(code), code in self.__modules)
-            modobj = imp.new_module(modname)
+            modobj = types.ModuleType(modname)
             modobj.__file__ = "<%s>" % modname
             modobj.__dict__['exa'] = self
             self.__modules[str(code)] = modobj

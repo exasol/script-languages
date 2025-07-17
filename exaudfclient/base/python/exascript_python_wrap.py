@@ -3,8 +3,6 @@ import os
 pyextdataframe_pkg = None
 
 unicode = str
-decodeUTF8 = lambda x: x
-encodeUTF8 = lambda x: x
 long = int
     
 if 'LIBPYEXADATAFRAME_DIR' in os.environ:
@@ -45,10 +43,10 @@ class exaiter(object):
                 return val
             return resget
         def convert_date(x):
-            val = datetime.datetime.strptime(x, "%Y-%m-%d")
+            val = datetime.datetime.strptime(decodeUTF8(x), "%Y-%m-%d")
             return datetime.date(val.year, val.month, val.day)
         def convert_timestamp(x):
-            return datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f")
+            return datetime.datetime.strptime(decodeUTF8(x), "%Y-%m-%d %H:%M:%S.%f")
         self.__incoltypes = []
         for col in range(self.__meta.inputColumnCount()):
             self.__incoltypes.append(self.__meta.inputColumnType(col))
@@ -67,8 +65,8 @@ class exaiter(object):
                 data[colname] = rd(inp.getInt64, inp.wasNull, col)
             elif self.__incoltypes[col] == NUMERIC:
                 if self.__meta.inputColumnScale(col) == 0:
-                    data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: int(str(x)))
-                else: data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: decimal.Decimal(str(x)))
+                    data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: int(decodeUTF8(x)))
+                else: data[colname] = rd(inp.getNumeric, inp.wasNull, col, lambda x: decimal.Decimal(decodeUTF8(x)))
             elif self.__incoltypes[col] == DATE:
                 data[colname] = rd(inp.getDate, inp.wasNull, col, convert_date)
             elif self.__incoltypes[col] == TIMESTAMP:
@@ -138,7 +136,7 @@ class exaiter(object):
             elif type(v) in (int, long):
                 if self.__outcoltypes[k] == INT32: self.__out.setInt32(k, int(v))
                 elif self.__outcoltypes[k] == INT64: self.__out.setInt64(k, int(v))
-                elif self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, str(int(v)))
+                elif self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, encodeUTF8(str(int(v))))
                 elif self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 else:
                     raise RuntimeError(u"E-UDF-CL-SL-PYTHON-1091: emit column '%s' is of type %s but data given have type %s" \
@@ -147,7 +145,7 @@ class exaiter(object):
                 if self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 elif self.__outcoltypes[k] == INT32: self.__out.setInt32(k, int(v))
                 elif self.__outcoltypes[k] == INT64: self.__out.setInt64(k, int(v))
-                elif self.__outcoltypes[k] == NUMERIC: self.__out.setInt64(k, str(v))
+                elif self.__outcoltypes[k] == NUMERIC: self.__out.setInt64(k, encodeUTF8(str(v)))
                 else:
                     raise RuntimeError(u"E-UDF-CL-SL-PYTHON-1092: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
@@ -156,7 +154,7 @@ class exaiter(object):
                     raise RuntimeError(u"E-UDF-CL-SL-PYTHON-1093: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setBoolean(k, bool(v))
-            elif type(v) in (str, unicode):
+            elif type(v) in (str, unicode, bytes):
                 v = encodeUTF8(v)
                 vl = len(v)
                 if self.__outcoltypes[k] != STRING:
@@ -164,7 +162,7 @@ class exaiter(object):
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
                 self.__out.setString(k, v, vl)
             elif type(v) == decimal.Decimal:
-                if self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, str(v))
+                if self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, encodeUTF8(str(v)))
                 elif self.__outcoltypes[k] == INT32: self.__out.setInt32(k, int(v))
                 elif self.__outcoltypes[k] == INT64: self.__out.setInt64(k, int(v))
                 elif self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
@@ -175,12 +173,12 @@ class exaiter(object):
                 if self.__outcoltypes[k] != DATE:
                     raise RuntimeError("E-UDF-CL-SL-PYTHON-1096: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
-                self.__out.setDate(k, v.isoformat())
+                self.__out.setDate(k, encodeUTF8(v.isoformat()))
             elif type(v) == datetime.datetime:
                 if self.__outcoltypes[k] != TIMESTAMP:
                     raise RuntimeError("E-UDF-CL-SL-PYTHON-1097: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
-                self.__out.setTimestamp(k, v.isoformat(' '))
+                self.__out.setTimestamp(k, encodeUTF8(v.isoformat(' ')))
             else: raise RuntimeError("E-UDF-CL-SL-PYTHON-1098: data type %s is not supported" % str(type(v)))
             msg = self.__out.checkException()
             if msg: raise RuntimeError("F-UDF-CL-SL-PYTHON-1099: "+msg)
