@@ -19,15 +19,15 @@
       },
       {
         "name": "pandas_mem_leak_dframe",
-        "files": [],
-        "folders": ["pandas/all/slow/dataframe_memory_leak.py"],
+        "files": ["pandas/all/slow/dataframe_memory_leak.py"],
+        "folders": [],
         "goal": "release",
         "generic_language_tests": []
       },
       {
         "name": "pandas_mem_leak_dtype",
-        "files": [],
-        "folders": ["pandas/all/slow/emit_dtypes_memory_leak.py"],
+        "files": ["pandas/all/slow/emit_dtypes_memory_leak.py"],
+        "folders": [],
         "goal": "release",
         "generic_language_tests": []
       },
