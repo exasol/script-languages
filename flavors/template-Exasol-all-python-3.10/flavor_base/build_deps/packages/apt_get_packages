@@ -7,3 +7,4 @@ build-essential|12.9ubuntu3
 libpcre3-dev|2:8.39-13ubuntu0.22.04.1
 protobuf-compiler|3.12.4-1ubuntu7.22.04.4
 chrpath|0.16-2
+libleveldb-dev|1.23-3build1

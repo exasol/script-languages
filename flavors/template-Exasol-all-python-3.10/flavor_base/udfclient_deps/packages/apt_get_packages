@@ -4,3 +4,4 @@ libnss-db|2.2.3pre1-6ubuntu3
 libzmq3-dev|4.3.4-2
 libprotobuf-dev|3.12.4-1ubuntu7.22.04.4
 libssl-dev|3.0.2-0ubuntu1.19
+libleveldb-dev|1.23-3build1
