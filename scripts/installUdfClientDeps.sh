@@ -25,11 +25,9 @@ export DEBIAN_FRONTEND=noninteractive
 ARCH=$(dpkg --print-architecture)
 case "$ARCH" in
   amd64)
-    JAVA_HOME="/usr/lib/jvm/java-1.11.0-openjdk-amd64"
     BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64"
     ;;
   arm64)
-    JAVA_HOME="/usr/lib/jvm/java-1.11.0-openjdk-arm64"
     BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-arm64"
     ;;
   *)
@@ -81,5 +79,4 @@ export PROTOBUF_INCLUDE_PREFIX=/usr/include/
 export PROTOBUF_BIN=/usr/bin/protoc
 export OPENSSL_LIBRARY_PREFIX=/usr/lib/${ARCH}-linux-gnu
 export OPENSSL_INCLUDE_PREFIX=/usr/include/openssl
-export JAVA_HOME=$JAVA_HOME
 EOF
