@@ -6,7 +6,21 @@
       {
         "name": "python",
         "files": [],
-        "folders": ["python3/all"],
+        "folders": ["python3/all/fast"],
+        "goal": "release",
+        "generic_language_tests": []
+      },
+      {
+        "name": "pandas_mem_leak_dframe",
+        "files": ["pandas/all/slow/dataframe_memory_leak.py"],
+        "folders": [],
+        "goal": "release",
+        "generic_language_tests": []
+      },
+      {
+        "name": "pandas_mem_leak_dtype",
+        "files": ["pandas/all/slow/emit_dtypes_memory_leak.py"],
+        "folders": [],
         "goal": "release",
         "generic_language_tests": []
       },
