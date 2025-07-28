@@ -47,7 +47,7 @@
       },
       {
         "name": "gpu",
-        "files": "",
+        "files": [],
         "folders": [
           "python3-cuda-flavor/gpu_enabled",
           "python3-cuda-flavor/nvidia-smi"
