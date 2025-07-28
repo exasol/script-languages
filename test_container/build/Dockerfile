@@ -35,3 +35,9 @@ RUN pip3 install -r "requirements.txt"
 RUN mkdir -p /dev_tools
 COPY deps/install_dev_tools.sh /dev_tools
 COPY deps/maven-toolchains.xml /root/.m2/toolchains.xml
+
+# Adjust if running on ARM
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+        sed -i 's/openjdk-amd64/openjdk-arm64/g' /root/.m2/toolchains.xml; \
+    fi

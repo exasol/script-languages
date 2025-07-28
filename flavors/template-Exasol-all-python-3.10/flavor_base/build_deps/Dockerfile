@@ -23,17 +23,34 @@ RUN set -e; \
     ARCH=$(dpkg --print-architecture); \
     if [ "$ARCH" = "amd64" ]; then \
         BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-amd64"; \
-        JAVA_HOME_PATH="/usr/lib/jvm/java-1.8.0-openjdk-amd64"; \
     elif [ "$ARCH" = "arm64" ]; then \
         BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-arm64"; \
-        JAVA_HOME_PATH="/usr/lib/jvm/java-1.8.0-openjdk-arm64"; \
     else \
         echo "Unsupported architecture: $ARCH" >&2; exit 1; \
     fi; \
     curl -fsSL -o /usr/local/bin/bazel "$BAZELISK_URL"; \
-    chmod +x /usr/local/bin/bazel; \
-    echo "export PROTOBUF_BIN=/usr/bin/protoc" > /env; \
-    echo "export JAVA_HOME=$JAVA_HOME_PATH" >> /env; \
+    chmod +x /usr/local/bin/bazel;
+    
+# Determine architecture and write relevant env vars to /env
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+        JAVA_PREFIX="/usr/lib/jvm/java-11-openjdk-amd64"; \
+        OPENSSL_LIB="/usr/lib/x86_64-linux-gnu"; \
+    elif [ "$ARCH" = "arm64" ]; then \
+        JAVA_PREFIX="/usr/lib/jvm/java-11-openjdk-arm64"; \
+        OPENSSL_LIB="/usr/lib/aarch64-linux-gnu"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    echo "export JAVA_PREFIX=$JAVA_PREFIX" >> /env && \
+    echo "export ARCH=$ARCH" >> /env && \
+    echo "export PROTOBUF_LIBRARY_PREFIX=/usr/lib/" >> /env && \
+    echo "export PROTOBUF_INCLUDE_PREFIX=/usr/include/" >> /env && \
+    echo "export ZMQ_LIBRARY_PREFIX=/usr/lib" >> /env && \
+    echo "export ZMQ_INCLUDE_PREFIX=/usr/include" >> /env && \
+    echo "export OPENSSL_LIBRARY_PREFIX=$OPENSSL_LIB" >> /env && \
+    echo "export OPENSSL_INCLUDE_PREFIX=/usr/include/openssl" >> /env && \
+    echo "export PROTOBUF_BIN=/usr/bin/protoc" >> /env && \
     echo "export USE_BAZEL_VERSION=$USE_BAZEL_VERSION" >> /env
 
 # Install SWIG 2.0.4
