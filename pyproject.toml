@@ -1,6 +1,6 @@
 [project]
 name = "exasol-script-languages"
-version = "9.6.0"
+version = "9.7.0"
 description = "Script Languages"
 
 license = "MIT"
@@ -19,8 +19,8 @@ keywords = ['exasol', 'udf', 'script-languages']
 
 dependencies = [
 "exasol-script-languages-container-tool (>=3.3.0, <4.0.0)",
-"exasol-script-languages-container-ci (>=3.2.0, <4.0.0)",
-"exasol-script-languages-container-ci-setup (>=3.1.0, <4.0.0)",
+"exasol-script-languages-container-ci (>=4.0.0, <5.0.0)",
+"exasol-script-languages-container-ci-setup (>=3.3.0, <4.0.0)",
 ]
 
 
