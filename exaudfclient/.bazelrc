@@ -26,3 +26,4 @@ build:valgrind -c dbg
 build:valgrind --copt -g
 build:valgrind --strip=never
 build:valgrind --copt -DVALGRIND_ACTIVE
+build:fix_conda_ar_tool --action_env=AR=x86_64-conda-linux-gnu-gcc-ar --features=-archive_param_file
