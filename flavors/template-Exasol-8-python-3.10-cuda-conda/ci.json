@@ -5,30 +5,49 @@
     "test_sets": [
       {
         "name": "python",
+        "files": [],
         "folders": ["python3/all"],
         "goal": "release",
         "generic_language_tests": []
       },
       {
         "name": "pandas",
-        "folders": ["pandas/all", "pandas/pandas2"],
+        "files": [],
+        "folders": ["pandas/all/fast", "pandas/pandas2"],
+        "goal": "release",
+        "generic_language_tests": []
+      },
+      {
+        "name": "pandas_mem_leak_dframe",
+        "files": ["pandas/all/slow/dataframe_memory_leak.py"],
+        "folders": [],
+        "goal": "release",
+        "generic_language_tests": []
+      },
+      {
+        "name": "pandas_mem_leak_dtype",
+        "files": ["pandas/all/slow/emit_dtypes_memory_leak.py"],
+        "folders": [],
         "goal": "release",
         "generic_language_tests": []
       },
       {
         "name": "linker_namespace",
+        "files": [],
         "folders": ["linker_namespace_sanity"],
         "goal": "base_test_build_run",
         "generic_language_tests": []
       },
       {
         "name": "generic",
+        "files": [],
         "folders": [],
         "goal": "release",
         "generic_language_tests": ["python3"]
       },
       {
         "name": "gpu",
+        "files": [],
         "folders": [
           "python3-cuda-flavor/gpu_enabled",
           "python3-cuda-flavor/nvidia-smi"
