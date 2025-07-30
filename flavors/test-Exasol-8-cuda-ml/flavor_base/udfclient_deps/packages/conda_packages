@@ -1,4 +1,4 @@
-libprotobuf|5.29.3
+libprotobuf|6.31.1
 zeromq|4.3.5
-nss|3.100
+nss|3.114
 cppzmq|4.10.0
