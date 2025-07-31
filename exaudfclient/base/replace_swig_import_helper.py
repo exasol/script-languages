@@ -1,3 +1,10 @@
+"""
+This script replaces the function `swig_import_helper`
+in the automatically generated `exascript_python.py` with a simple import statement.
+This is needed for Python 3.12, as the automatically generated code uses the library `imp`
+which was removed in this Python version.
+#TODO: Update Swig to a new version which produces code compatible with Python 3.12
+"""
 import sys
 from pathlib import Path
 

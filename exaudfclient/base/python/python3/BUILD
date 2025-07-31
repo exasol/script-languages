@@ -8,6 +8,8 @@ genrule(
         cp "$(location //base/exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //base/exaudflib:exascript.i)" build_exascript_python_tmp_cc/exaudflib
         cd build_exascript_python_tmp_cc
         swig -v $$INCLUDES -O -DEXTERNAL_PROCESS -Wall -c++ -python -py3 -addextern -module exascript_python -o "../$(location exascript_python_tmp.cc)" exaudflib/exascript.i
+        #Run replace_swig_import_helper.py because the generated exascript_python.py is not compatible with Python 3.12
+        #TODO: Update Swig to a new version which produces code compatible with Python 3.12
         cd ..
         python3 "$(location //base:replace_swig_import_helper.py)" "$(location exascript_python.py)" "$(location exascript_python.py)"
         """,
