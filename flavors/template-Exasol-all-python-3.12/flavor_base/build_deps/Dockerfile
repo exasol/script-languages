@@ -10,7 +10,7 @@ COPY scripts /scripts
 RUN mkdir -p /build_info/packages
 COPY build_deps/packages /build_info/packages/build_deps
 
-ENV BAZEL_PACKAGE_VERSION="7.2.1"
+ENV BAZEL_PACKAGE_VERSION="8.3.1"
 ENV BAZEL_PACKAGE_FILE="bazel_$BAZEL_PACKAGE_VERSION-linux-x86_64.deb"
 ENV BAZEL_PACKAGE_URL="https://github.com/bazelbuild/bazel/releases/download/$BAZEL_PACKAGE_VERSION/$BAZEL_PACKAGE_FILE"
 
