@@ -56,7 +56,7 @@ genrule(
 
 genrule(
     name = "filter_swig_code_exascript_java_h",
-    cmd = 'python3 $(location //base:filter_swig_code.py) "$@" "$<"',
+    cmd = python3 $(location //base:filter_swig_code.py) "$@" "$<"',
     outs = ["exascript_java.h"],
     srcs = [":exascript_java_tmp_h"],
     tools = ["//base:filter_swig_code.py"]

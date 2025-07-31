@@ -34,4 +34,4 @@ RUN locale-gen en_US.UTF-8 && \
 
 RUN touch /env && \
     echo "export PROTOBUF_BIN=/usr/bin/protoc" >> /env && \
-    echo "export JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64" >> /env
+    echo "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-amd64/" >> /env
