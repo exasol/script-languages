@@ -6,14 +6,14 @@ encodeUTF8 = lambda x: x
 from exascript_python import *
 import decimal
 import datetime
-import imp
+import types
 
 class ExaUDFError(Exception):
     pass 
 
 def clean_stacktrace_line(line):
     import re
-    match = re.match("""^\s+File "(.+)", line ([0-9]+), in (.+)$""",line)
+    match = re.match(r"""^\s+File "(.+)", line ([0-9]+), in (.+)$""",line)
     if match is not None:
         filename=match.group(1)
         lineno=match.group(2)
@@ -126,7 +126,7 @@ class exa:
             modobj = self.__modules[str(code)]
         else:
             print("%%% new code", modname, repr(code), code in self.__modules)
-            modobj = imp.new_module(modname)
+            modobj = types.ModuleType(modname)
             modobj.__file__ = "<%s>" % modname
             modobj.__dict__['exa'] = self
             self.__modules[str(code)] = modobj

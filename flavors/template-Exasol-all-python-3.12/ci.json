@@ -1,12 +1,12 @@
 {
-  "build_runner": "ubuntu-22.04",
+  "build_runner": "ubuntu-24.04",
   "test_config": {
-    "default_test_runner": "ubuntu-22.04",
+    "default_test_runner": "ubuntu-24.04",
     "test_sets": [
       {
         "name": "python",
         "files": [],
-        "folders": ["python3/all/fast"],
+        "folders": ["python3/all"],
         "goal": "release",
         "generic_language_tests": []
       },
