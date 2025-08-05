@@ -27,7 +27,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@1.2.0
+        uses: exasol/python-toolbox/.github/actions/python-environment@1.7.3
         with:
           python-version: '3.10'
       - id: set-matrix
