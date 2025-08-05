@@ -15,7 +15,7 @@ jobs:
         fetch-depth: 0
 
     - name: Setup Python & Poetry Environment
-      uses: exasol/python-toolbox/.github/actions/python-environment@1.7.3
+      uses: exasol/python-toolbox/.github/actions/python-environment@1.7.2
       with:
         python-version: "3.10"
         poetry-version: '2.1.2'
