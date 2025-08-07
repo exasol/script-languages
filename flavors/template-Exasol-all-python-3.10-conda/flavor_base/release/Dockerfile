@@ -1,4 +1,4 @@
-FROM {flavor_customization}}
+FROM {{flavor_customization}}
 
 ENV ENV_NAME="base"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
