@@ -135,7 +135,6 @@ class AnalyzeRelease(DockerFlavorAnalyzeImageTask):
 
     def requires_tasks(self):
         return {"build_run": AnalyzeBuildRun,
-                "language_deps": AnalyzeLanguageDeps,
                 "flavor_base_deps": AnalyzeFlavorBaseDeps}
 
     def get_language_definition(self) -> str:
