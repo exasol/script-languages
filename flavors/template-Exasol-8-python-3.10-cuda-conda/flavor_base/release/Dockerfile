@@ -6,10 +6,10 @@ ENV MAMBA_EXE="/bin/micromamba"
 
 RUN mkdir -p /conf /buckets /nvidia/driver /nvidia/utils
 
-COPY --from={{language_deps}} /build_info /build_info
+COPY --from={{flavor_base_deps}} /build_info /build_info
 RUN true # workaround for https://github.com/moby/moby/issues/37965
 
-COPY --from={{language_deps}} /scripts /scripts
+COPY --from={{flavor_base_deps}} /scripts /scripts
 RUN true # workaround for https://github.com/moby/moby/issues/37965
 
 RUN ldconfig
