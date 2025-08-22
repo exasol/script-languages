@@ -7,7 +7,7 @@ WORKDIR /exaudfclient/
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/
 ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
 ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-RUN ./build.sh --config no-tty --config optimize --config python --config fast-binary --config fix_conda_ar_tool
+RUN ./build.sh --config no-tty --config optimize --config python --config slow-wrapper --config fix_conda_ar_tool
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base
