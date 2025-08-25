@@ -6,7 +6,7 @@
 #include "base/exaudflib/swig/swig_meta_data.h"
 #include "base/script_options_parser/ctpg/script_option_lines_ctpg.h"
 #include <memory>
-
+#include <unordered_set>
 
 namespace SWIGVMContainers {
 
@@ -47,7 +47,7 @@ class ScriptImporter {
          void replaceImportScripts(std::string & scriptCode,
                                    const std::vector<CollectedScript> &collectedImportScripts);
 
-        Checksum m_importedScriptChecksums;
+        std::unordered_set<std::string> m_importedSetOfScripts;
         SwigFactory & m_swigFactory;
         std::unique_ptr<SWIGMetadataIf> m_metaData;
         Keywords & m_keywords;
