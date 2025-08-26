@@ -1,7 +1,6 @@
 #ifndef SCRIPTOPTIONLINEPARSERCTPGSCRIPTIMPORTER_H
 #define SCRIPTOPTIONLINEPARSERCTPGSCRIPTIMPORTER_H 1
 
-#include "base/javacontainer/script_options/checksum.h"
 #include "base/javacontainer/script_options/keywords.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
 #include "base/script_options_parser/ctpg/script_option_lines_ctpg.h"

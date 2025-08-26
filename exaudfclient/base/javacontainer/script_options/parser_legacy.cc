@@ -1,5 +1,4 @@
 #include "base/javacontainer/script_options/parser_legacy.h"
-#include "base/javacontainer/script_options/checksum.h"
 #include "base/script_options_parser/legacy/script_option_lines.h"
 #include "base/exaudflib/swig/swig_meta_data.h"
 #include "base/swig_factory/swig_factory.h"
