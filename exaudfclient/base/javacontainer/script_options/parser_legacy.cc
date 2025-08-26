@@ -7,6 +7,7 @@
 #include "base/script_options_parser/exception.h"
 
 #include <memory>
+#include <unordered_set>
 
 
 namespace SWIGVMContainers {
@@ -28,8 +29,8 @@ void ScriptOptionLinesParserLegacy::extractImportScripts() {
     std::unique_ptr<SWIGMetadataIf> metaData;
     // Attention: We must hash the parent script before modifying it (adding the
     // package definition). Otherwise we don't recognize if the script imports its self
-    Checksum importedScriptChecksums;
-    importedScriptChecksums.addScript(m_scriptCode.c_str());
+    std::unordered_set<std::string> importedSetOfScripts;
+    importedSetOfScripts.insert(m_scriptCode);
     /*
     The following while loop iteratively replaces import scripts in the script code. Each replacement is done in two steps:
     1. Remove the "%import ..." option in the script code
@@ -120,7 +121,8 @@ void ScriptOptionLinesParserLegacy::extractImportScripts() {
             const char *exception = metaData->checkException();
             if (exception)
                 throw std::runtime_error("F-UDF-CL-SL-JAVA-1616: " + std::string(exception));
-            if (importedScriptChecksums.addScript(importScriptCode)) {
+            bool isInserted = importedSetOfScripts.insert(importScriptCode).second;
+            if (isInserted) {
                 // Script has not been imported yet
                 // If this imported script contains %import statements
                 // they will be resolved in the next iteration of the while loop.
