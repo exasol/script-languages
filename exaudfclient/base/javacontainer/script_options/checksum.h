@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <unordered_set>
 
 
 namespace SWIGVMContainers {
@@ -18,7 +19,7 @@ public:
     bool addScript(const char *script);
 
 private:
-    std::set<std::vector<unsigned char> > m_importedScriptChecksums;
+    std::unordered_set<std::string> m_setOfImportedScripts;
 };
 
 
