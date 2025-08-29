@@ -33,8 +33,7 @@ void ScriptImporter::collectImportScripts(const ScriptImporter::OptionValues_t &
     for (const auto & option: option_values) {
         const char *importScriptCode = findImportScript(option.value);
         std::string importScriptCodeStr;
-        importScriptCodeStr.assign(importScriptCode);
-        bool isInserted = m_importedSetOfScripts.insert(importScriptCodeStr).second;
+        bool isInserted = m_importedSetOfScripts.insert(std::string(importScriptCode)).second;
         if (isInserted) {
             // Script has not been imported yet
             // If this imported script contains %import statements
