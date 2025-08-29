@@ -23,20 +23,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           fetch-depth: 0
           submodules: 'recursive'
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@1.7.4
+        uses: exasol/python-toolbox/.github/actions/python-environment@v1
         with:
           python-version: "3.10"
-
-      - name: Checkout source branch
-        if: ${{ github.event_name == 'pull_request' }}
-        run: git checkout "$SOURCE_BRANCH"
-        env:
-          SOURCE_BRANCH: ${{ github.head_ref }}
-
       - name: Run check
         id: run-check
         run: |
