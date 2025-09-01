@@ -5,6 +5,7 @@
 #include "base/swig_factory/swig_factory.h"
 #include "base/javacontainer/script_options/string_ops.h"
 #include <sstream>
+#include <set>
 
 
 namespace ctpg_parser = ExecutionGraph::OptionsLineParser::CTPG;
