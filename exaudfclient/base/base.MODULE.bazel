@@ -16,10 +16,6 @@ zmq_local_repository(name = "zmq")
 protobuf_local_repository = use_repo_rule("//base:protobuf_repository.bzl", "protobuf_local_repository")
 protobuf_local_repository(name = "protobuf")
 
-ssl_local_repository = use_repo_rule("//base:ssl_repository.bzl", "ssl_local_repository")
-ssl_local_repository(name = "ssl")
-
-
 java_local_repository = use_repo_rule("//base:java_repository.bzl", "java_local_repository")
 java_local_repository(name = "java")
 
