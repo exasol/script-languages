@@ -8,7 +8,7 @@ cc_library(
     srcs = [":parser.h", ":converter.h", ":converter.cc", ":parser_legacy.cc", ":extractor_impl.h",
             ":extractor_impl.cc", ":converter_legacy.cc", ":converter_legacy.h",
             ":converter_v2.cc", ":converter_v2.h",
-            ":keywords.h", ":keywords.cc", ":checksum.h", ":checksum.cc", ":parser_ctpg.cc",
+            ":keywords.h", ":keywords.cc", ":distinct_script_set.h", ":distinct_script_set.cc", ":parser_ctpg.cc",
             ":parser_ctpg_script_importer.cc", ":parser_ctpg_script_importer.h",
             ":parser_ctpg_jvm_options_parser.cc", ":parser_ctpg_jvm_options_parser.h", ":string_ops.h", ":string_ops.cc"],
     deps = ["//base/script_options_parser/legacy:script_option_lines_parser_legacy",

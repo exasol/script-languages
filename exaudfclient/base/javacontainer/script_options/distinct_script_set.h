@@ -10,15 +10,15 @@ namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-class Checksum {
+class DistinctScriptSet {
 
 public:
-    Checksum() = default;
+    DistinctScriptSet() = default;
 
     bool addScript(const char *script);
 
 private:
-    std::unordered_set<std::string> m_importedScriptChecksums;
+    std::unordered_set<std::string> m_importedScripts;
 };
 
 

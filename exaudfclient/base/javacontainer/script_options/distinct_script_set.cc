@@ -1,4 +1,4 @@
-#include "base/javacontainer/script_options/checksum.h"
+#include "base/javacontainer/script_options/distinct_script_set.h"
 #include <string.h>
 
 namespace SWIGVMContainers {
@@ -6,9 +6,9 @@ namespace SWIGVMContainers {
 namespace JavaScriptOptions {
 
 
-bool Checksum::addScript(const char *script) {
+bool DistinctScriptSet::addScript(const char *script) {
     std::string strScript = std::string(script);
-    return m_importedScriptChecksums.insert(strScript).second;
+    return m_importedScripts.insert(strScript).second;
 }
 
 
