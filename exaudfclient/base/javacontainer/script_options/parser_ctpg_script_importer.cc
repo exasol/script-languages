@@ -18,7 +18,7 @@ namespace JavaScriptOptions {
 namespace CTPG {
 
 ScriptImporter::ScriptImporter(SwigFactory & swigFactory, Keywords & keywords)
-: m_importedScriptChecksums()
+: m_importedScripts()
 , m_swigFactory(swigFactory)
 , m_metaData()
 , m_keywords(keywords) {}
@@ -34,7 +34,7 @@ void ScriptImporter::collectImportScripts(const ScriptImporter::OptionValues_t &
     for (const auto & option: option_values) {
         const char *importScriptCode = findImportScript(option.value);
         std::string importScriptCodeStr;
-        if (m_importedScriptChecksums.addScript(importScriptCode) ) {
+        if (m_importedScripts.addScript(importScriptCode) ) {
             // Script has not been imported yet
             // If this imported script contains %import statements
             // they will be resolved in the next recursion.
@@ -71,7 +71,7 @@ void ScriptImporter::importScript(std::string & scriptCode,
         throw std::runtime_error("F-UDF-CL-SL-JAVA-1633: Maximal recursion depth for importing scripts reached.");
     }
     if (optionIt != options.end()) {
-        m_importedScriptChecksums.addScript(scriptCode.c_str());
+        m_importedScripts.addScript(scriptCode.c_str());
         //Sort options from first in script to last in script
         std::sort(optionIt->second.begin(), optionIt->second.end(),
                     [](const ctpg_parser::ScriptOption& first, const ctpg_parser::ScriptOption& second)

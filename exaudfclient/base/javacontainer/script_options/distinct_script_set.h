@@ -3,22 +3,22 @@
 
 #include <string>
 #include <vector>
-#include <set>
+#include <unordered_set>
 
 
 namespace SWIGVMContainers {
 
 namespace JavaScriptOptions {
 
-class Checksum {
+class DistinctScriptSet {
 
 public:
-    Checksum() = default;
+    DistinctScriptSet() = default;
 
     bool addScript(const char *script);
 
 private:
-    std::set<std::vector<unsigned char> > m_importedScriptChecksums;
+    std::unordered_set<std::string> m_importedScripts;
 };
 
 
