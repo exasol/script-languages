@@ -1,6 +1,6 @@
 coreutils|9.4-3ubuntu6.1
 adduser|3.137ubuntu1
-locales|2.39-0ubuntu8.6
+locales|2.35-0ubuntu3.11
 libnss-db|2.2.3pre1-9build3
 libzmq3-dev|4.3.5-1build2
 cppzmq-dev|4.10.0-1build1
