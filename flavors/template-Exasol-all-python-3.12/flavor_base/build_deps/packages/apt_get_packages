@@ -6,4 +6,4 @@ build-essential|12.10ubuntu1
 libpcre3-dev|2:8.39-15build1
 protobuf-compiler|3.21.12-8.2ubuntu0.2
 chrpath|0.16-2build1
-locales|2.39-0ubuntu8.5
+locales|2.39-0ubuntu8.6
