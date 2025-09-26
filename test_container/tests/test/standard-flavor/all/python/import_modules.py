@@ -143,6 +143,17 @@ class ImportAllModulesTest(udf.TestCase):
                 "tenacity.tornadoweb",
                 "joblib.testing",
                 "joblib.test",
+                "pydantic.v1.mypy", #Used for pydantic mypy plugin, which is not useful in UDFs
+                "pydantic.mypy", #Used for pydantic mypy plugin, which is not useful in UDFs
+                "pydevd_plugins.extensions",
+                "pyximport.pyxbuild", #Still uses distutils which was removed in Python 3.12, see  https://github.com/cython/cython/blob/master/pyximport/pyxbuild.py
+                "sagemaker.amtviz", # Visualisation not needed in UDF's
+                "sagemaker.aws_batch",
+                "sagemaker.mlflow",
+                "sagemaker.modules.train.container_drivers.distributed_drivers.mpi_driver",
+                "sklearn.externals.array_api_compat",
+                "starlette",
+                "uvicorn",
             }
             excluded_submodules = (
                 "sphinxext",
@@ -235,9 +246,9 @@ class ImportAllModulesTest(udf.TestCase):
         root_modules = self.get_all_root_modules()
         self.create_import_for_all_submodules_udf()
         for root_module in root_modules:
-            # with UdfDebugger(test_case=self):
+            print("Running import check for root module:", root_module)
             rows = self.query(f'''SELECT import_all_modules.import_all_submodules('{root_module}') FROM dual''')
-            print("Number of modules:", len(rows))
+            print("Number of modules:", len(rows), " for root module:", root_module)
             failed_imports = [(row[0], row[1]) for row in rows if row[2] == "ERROR"]
             for i in failed_imports:
                 print(i[0])
