@@ -1,7 +1,7 @@
 coreutils|8.32-4.1ubuntu1.2
 locales|2.35-0ubuntu3.11
 tar|1.34+dfsg-1ubuntu0.1.22.04.2
-curl|7.81.0-1ubuntu1.20
+curl|7.81.0-1ubuntu1.21
 openjdk-11-jdk-headless|11.0.28+6-1ubuntu1~22.04.1
 build-essential|12.9ubuntu3
 libpcre3-dev|2:8.39-13ubuntu0.22.04.1
