@@ -1,0 +1,9 @@
+# This file specifies the package list which gets installed via conda from conda-forge.
+# You must specify the the package and its version separated by a |.
+# We recommend here the usage of package versions, to ensure that the container 
+# builds are reproducible. However, we allow also packages without version.
+# As you can see, this file can contain comments which start with #.
+# If a line starts with # the whole line is a comment, however you can
+# also start a comment after the package definition.
+
+#pysimdjson|4.0.3
