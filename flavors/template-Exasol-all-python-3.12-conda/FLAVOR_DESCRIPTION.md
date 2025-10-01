@@ -2,7 +2,7 @@
 
 ## Packages
 
-**Remarks:** The packages are grouped by there main usage and their type.
+**Remarks:** The packages are grouped by their main usage and their type.
 
 - [Conda dependencies](flavor_base/conda_deps/packages/apt_get_packages)
 - UDFclient dependencies

@@ -20,7 +20,7 @@ COPY flavor_customization/packages /build_info/packages/flavor_customization
 RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/flavor_customization/conda_packages --channel-file /build_info/packages/flavor_customization/conda_channels --with-versions --allow-no-version --conda-binary "$MAMBA_ROOT_PREFIX/bin/mamba"
 
 COPY flavor_customization/packages/python3_pip_packages /build_info/packages/flavor_customization
-RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_customization/python3_pip_packages --python-binary "$MAMBA_ROOT_PREFIX/bin/python3.10" --with-versions --allow-no-version
+RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_customization/python3_pip_packages --python-binary "$MAMBA_ROOT_PREFIX/bin/python3.12" --with-versions --allow-no-version
 
 ##########################################################################
 ##########################################################################
