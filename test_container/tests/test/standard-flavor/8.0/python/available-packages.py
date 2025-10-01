@@ -40,7 +40,6 @@ class AvailablePython3Packages(udf.TestCase):
             ("pyexasol",),
             ("EXASOL",),
             ("paramiko",),
-            ("pysftp",),
             ("simplejson",),
             ("simdjson",),
             ("pybase64",),
