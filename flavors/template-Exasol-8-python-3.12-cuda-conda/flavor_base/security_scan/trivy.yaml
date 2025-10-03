@@ -1,0 +1,4 @@
+scan:
+  skip-files:
+    - /usr/bin/trivy
+ignore-policy: /trivy.rego
