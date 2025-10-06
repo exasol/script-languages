@@ -4,4 +4,4 @@ pandas|2.3.3
 pyarrow|21.0.0
 libarrow|21.0.0=hc17998d_0_cuda
 mamba|2.3.2
-cuda-toolkit|13.0.1
+cuda-toolkit|12.9.1
