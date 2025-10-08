@@ -8,4 +8,5 @@
 
 #pysimdjson|4.0.3
 
-#Change the cuda toolkit according to your needs
+#Add the CUDA compat package in case you are using an older driver
+#cuda-compat|12.9.1
