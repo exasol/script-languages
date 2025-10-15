@@ -1,4 +1,4 @@
-protobuf|=6.31.1
+protobuf|6.31.1
 pcre|8.45
 bazel|7.6.1
 gxx_linux-64|12.4.0
