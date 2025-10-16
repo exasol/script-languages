@@ -1,7 +1,8 @@
 cudnn|9.10.1.4
 cuda-toolkit|12.9.1
-cuda-compat|12.9.1
+#cuda-compat|12.9.1
 cuda-nvcc|12.9.86
 cuda-nvrtc|12.9.86
 numba|0.61.2
+numba-cuda|0.20.0
 pytorch|2.7.1=cuda129_generic_py310_h919abc8_203
