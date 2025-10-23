@@ -7,4 +7,4 @@ RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/flav
 
 RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/flavor_base_deps/conda_packages --channel-file /build_info/packages/flavor_base_deps/conda_channels --with-versions --conda-binary "$MAMBA_ROOT_PREFIX/bin/mamba"
 
-RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_base_deps/python3_pip_packages --python-binary "$MAMBA_ROOT_PREFIX/bin/python3.10" --with-versions --allow-no-version
+RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_base_deps/python3_pip_packages --python-binary "$MAMBA_ROOT_PREFIX/bin/python3.12" --with-versions --allow-no-version

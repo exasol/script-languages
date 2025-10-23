@@ -1,6 +1,6 @@
-gdb|12.1-0ubuntu1~22.04.2
-valgrind|1:3.18.1-1ubuntu2
-gdbserver|12.1-0ubuntu1~22.04.2
-binutils|2.38-4ubuntu2.8
-patchelf|0.14.3-1
-strace|5.16-0ubuntu3
+gdb|15.0.50.20240403-0ubuntu1
+valgrind|1:3.22.0-0ubuntu3
+gdbserver|15.0.50.20240403-0ubuntu1
+binutils|2.42-4ubuntu2.5
+patchelf|0.18.0-1.1build1
+strace|6.8-0ubuntu2
