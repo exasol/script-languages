@@ -13,7 +13,9 @@ class NumbaTest(udf.TestCase):
                 CREATE OR REPLACE PYTHON3 SCALAR SCRIPT test_gpu_available()
                 RETURNS VARCHAR(20) AS
                  %perInstanceRequiredAcceleratorDevices GpuNvidia;
-        
+                
+                import site
+                site.main()
                 from numba import cuda
         
                 def run(ctx):
@@ -34,6 +36,8 @@ class NumbaTest(udf.TestCase):
                 RETURNS DOUBLE AS
                  %perInstanceRequiredAcceleratorDevices GpuNvidia;
                 
+                import site
+                site.main()
                 import math
                 from numba import vectorize, cuda
                 import numpy as np

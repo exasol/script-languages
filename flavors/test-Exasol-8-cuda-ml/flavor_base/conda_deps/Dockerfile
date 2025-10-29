@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV ARCHIVE_UBUNTU_PREFIX=""
@@ -19,8 +19,8 @@ ENV MAMBA_DOCKERFILE_ACTIVATE=1
 
 COPY scripts/virtual_environment/_activate_current_conda_env.sh /usr/local/bin/_activate_current_env.sh
 
-RUN addgroup --gid 1000 exasolution
-RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
+RUN usermod -l exasolution ubuntu
+RUN groupmod -n exasolution ubuntu
 RUN addgroup --gid 500 exausers
 RUN adduser --disabled-login --uid 500 --gid 500 exadefusr --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
 

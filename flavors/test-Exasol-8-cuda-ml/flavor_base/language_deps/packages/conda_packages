@@ -1,6 +1,6 @@
-python|3.10.4
+python|3.12.11
 numpy|1.26.2
-pandas|2.3.1
+pandas|2.3.3
 pyarrow|21.0.0
 libarrow|21.0.0=hc17998d_0_cuda
-mamba|2.0.4
+mamba|2.3.2
