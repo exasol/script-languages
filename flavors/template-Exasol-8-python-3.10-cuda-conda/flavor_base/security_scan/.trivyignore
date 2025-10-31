@@ -1,3 +1,13 @@
 CVE-2025-47907 #This affects nsight-compute version 2025.2.1. Ignoring for now
 CVE-2025-47906 #This affects nsight-compute version 2025.2.1. Ignoring for now
 CVE-2020-11979 #Caused by cuda-nvvp 12.9.79 which is already latest version. Can be removed when updating CUDA Version. Ignoring for now.
+CVE-2025-47912 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-58183 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-58185 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-58186 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-58187 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-58188 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-58189 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-61723 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-61724 #This affects nsight-compute version 2025.2.1. Ignoring for now
+CVE-2025-61725 #This affects nsight-compute version 2025.2.1. Ignoring for now
