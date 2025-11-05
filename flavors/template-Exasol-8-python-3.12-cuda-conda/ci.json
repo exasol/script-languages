@@ -44,18 +44,6 @@
         "folders": [],
         "goal": "release",
         "generic_language_tests": ["python3"]
-      },
-      {
-        "name": "gpu",
-        "files": [],
-        "folders": [
-          "python3-cuda-flavor/gpu_enabled",
-          "python3-cuda-flavor/nvidia-smi"
-        ],
-        "goal": "release",
-        "generic_language_tests": [],
-        "test_runner": "int-linux-x64-4core-gpu-t4-ubuntu24.04-1",
-        "accelerator": "nvidia"
       }
     ]
   }

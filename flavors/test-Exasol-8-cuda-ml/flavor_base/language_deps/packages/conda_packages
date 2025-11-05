@@ -1,6 +1,6 @@
 python|3.12.11
 numpy|1.26.2
 pandas|2.3.3
-pyarrow|21.0.0
-libarrow|21.0.0=hc17998d_0_cuda
-mamba|2.3.2
+pyarrow|22.0.0
+libarrow|22.0.0=h552f9d5_3_cuda
+mamba|2.3.3
