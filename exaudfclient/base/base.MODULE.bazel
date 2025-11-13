@@ -1,0 +1,31 @@
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "googletest", version = "1.15.0")
+bazel_dep(name = "rules_java", version = "7.6.1")
+bazel_dep(name = "rules_jvm_external", version = "6.2")
+
+python_local_repository = use_repo_rule("//base:python_repository.bzl", "python_local_repository")
+python_local_repository(name = "python3", python_version="python3")
+
+numpy_local_repository = use_repo_rule("//base:python_repository.bzl", "numpy_local_repository")
+
+numpy_local_repository(name = "numpy")
+
+zmq_local_repository = use_repo_rule("//base:zmq_repository.bzl", "zmq_local_repository")
+zmq_local_repository(name = "zmq")
+
+protobuf_local_repository = use_repo_rule("//base:protobuf_repository.bzl", "protobuf_local_repository")
+protobuf_local_repository(name = "protobuf")
+
+java_local_repository = use_repo_rule("//base:java_repository.bzl", "java_local_repository")
+java_local_repository(name = "java")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "com.exasol:udf-api-java:1.0.5",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
