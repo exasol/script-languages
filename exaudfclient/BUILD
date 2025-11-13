@@ -71,7 +71,7 @@ sh_library(
     })
 )
 
-SLOW_WRAPPER_BINARY="""$(location //:wrapper_generator_bin) "$(location exaudfclient_bin)" "$(location exaudfclient)" "$(location //base:exaudfclient.template.sh)" """
+SLOW_WRAPPER_BINARY="""$(location //:wrapper_generator_bin) "$(location exaudfclient_bin)" "$(location exaudfclient)" "$(location @exaudfclient_base//:exaudfclient.template.sh)" """
 FAST_BINARY="""cp "$(location exaudfclient_bin)" "$(location exaudfclient)" """
 CREATE_BINARY_SCRIPT=select({
         "@exaudfclient_base//:fast_binary": FAST_BINARY,
@@ -86,11 +86,11 @@ genrule(
     output_to_bindir = True
 )
 
-SLOW_WRAPPER_STATIC_BINARY="""$(location //:wrapper_generator_bin) "$(location exaudfclient_static_bin)" "$(location exaudfclient_static)" "$(location //base:exaudfclient.template.sh)" """
+SLOW_WRAPPER_STATIC_BINARY="""$(location //:wrapper_generator_bin) "$(location exaudfclient_static_bin)" "$(location exaudfclient_static)" "$(location @exaudfclient_base//:exaudfclient.template.sh)" """
 FAST_BINARY_STATIC="""cp "$(location exaudfclient_static_bin)" "$(location exaudfclient_static)" """
 CREATE_STATIC_BINARY_SCRIPT=select({
-        "//:fast_binary": FAST_BINARY_STATIC,
-        "//:slow_wrapper": SLOW_WRAPPER_STATIC_BINARY,
+        "@exaudfclient_base//:fast_binary": FAST_BINARY_STATIC,
+        "@exaudfclient_base//:slow_wrapper": SLOW_WRAPPER_STATIC_BINARY,
         "//conditions:default": FAST_BINARY_STATIC
     })
 
