@@ -1,9 +1,9 @@
-#include "base/javacontainer/script_options/parser_ctpg.h"
-#include "base/javacontainer/script_options/parser_ctpg_script_importer.h"
-#include "base/utils/exceptions.h"
-#include "base/script_options_parser/exception.h"
-#include "base/swig_factory/swig_factory.h"
-#include "base/javacontainer/script_options/string_ops.h"
+#include "javacontainer/script_options/parser_ctpg.h"
+#include "javacontainer/script_options/parser_ctpg_script_importer.h"
+#include "utils/exceptions.h"
+#include "script_options_parser/exception.h"
+#include "swig_factory/swig_factory.h"
+#include "javacontainer/script_options/string_ops.h"
 #include <sstream>
 #include <set>
 

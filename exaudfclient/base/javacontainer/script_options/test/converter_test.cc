@@ -1,8 +1,8 @@
 
 #include "include/gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "base/javacontainer/script_options/converter_legacy.h"
-#include "base/javacontainer/script_options/converter_v2.h"
+#include "javacontainer/script_options/converter_legacy.h"
+#include "javacontainer/script_options/converter_v2.h"
 
 using namespace SWIGVMContainers::JavaScriptOptions;
 

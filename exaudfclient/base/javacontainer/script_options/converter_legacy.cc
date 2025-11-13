@@ -1,5 +1,5 @@
-#include "base/javacontainer/script_options/converter_legacy.h"
-#include "base/javacontainer/script_options/string_ops.h"
+#include "javacontainer/script_options/converter_legacy.h"
+#include "javacontainer/script_options/string_ops.h"
 #include <iostream>
 #include <sstream>
 #include <algorithm>

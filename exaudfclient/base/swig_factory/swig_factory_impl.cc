@@ -1,6 +1,6 @@
-#include "base/swig_factory/swig_factory_impl.h"
-#include "base/exaudflib/load_dynamic.h"
-#include "base/exaudflib/swig/swig_common.h"
+#include "swig_factory/swig_factory_impl.h"
+#include "exaudflib/load_dynamic.h"
+#include "exaudflib/swig/swig_common.h"
 
 namespace SWIGVMContainers {
 

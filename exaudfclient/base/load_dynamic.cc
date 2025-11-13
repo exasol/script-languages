@@ -3,7 +3,7 @@
 #endif
 
 #include <sstream>
-#include "base/exaudflib/vm/swig_vm.h"
+#include "exaudflib/vm/swig_vm.h"
 
 void* handle;
 
