@@ -1,0 +1,96 @@
+# A template to use Docker (rootful) instead of containerd & nerdctl
+# And provide all dependencies necessary to build the Exasol UDF client with Bazel
+# Also, it sets all environment variables needed to build the UDF client for Python and Java
+# TODO: Add R dependencies
+# $ limactl start ./docker-udf-client.yaml
+# cd ./exaudfclient
+# $ limactl shell docker-udf-client bazel build --config no-tty --config optimize --config python --config fast-binary
+
+# To run exaslct, run
+# $ export DOCKER_HOST=$(limactl list docker-udf-client --format 'unix://{{.Dir}}/sock/docker.sock')
+# $ exaslct build --flavor-path ./flavors/...
+
+minimumLimaVersion: 1.1.0
+
+base:
+- template://_images/ubuntu-lts
+- template://_default/mounts
+
+# containerd is managed by Docker, not by Lima, so the values are set to false here.
+containerd:
+  system: false
+  user: false
+provision:
+- mode: system
+  # This script defines the host.docker.internal hostname when hostResolver is disabled.
+  # It is also needed for lima 0.8.2 and earlier, which does not support hostResolver.hosts.
+  # Names defined in /etc/hosts inside the VM are not resolved inside containers when
+  # using the hostResolver; use hostResolver.hosts instead (requires lima 0.8.3 or later).
+  script: |
+    #!/bin/sh
+    sed -i 's/host.lima.internal.*/host.lima.internal host.docker.internal/' /etc/hosts
+    sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+- mode: system
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    command -v docker >/dev/null 2>&1 && exit 0
+    if [ ! -e /etc/systemd/system/docker.socket.d/override.conf ]; then
+      mkdir -p /etc/systemd/system/docker.socket.d
+      # Alternatively we could just add the user to the "docker" group, but that requires restarting the user session
+      cat <<-EOF >/etc/systemd/system/docker.socket.d/override.conf
+      [Socket]
+      SocketUser={{.User}}
+    EOF
+    fi
+    export DEBIAN_FRONTEND=noninteractive
+    curl -fsSL https://get.docker.com | sh
+- mode: system
+  script: |
+   export DEBIAN_FRONTEND=noninteractive
+   apt update && apt install -y protobuf-compiler libzmq3-dev openjdk-17-jdk build-essential git python3.12-dev python3-pip libpcre3-dev
+   curl -L  https://github.com/bazelbuild/bazelisk/releases/download/v1.27.0/bazelisk-linux-amd64 -o /usr/bin/bazel
+   chmod +x /usr/bin/bazel
+   pip install --break-system-packages numpy
+   curl -L -o swig-2.0.4.tar.gz https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/swig-2.0.4.tar.gz && tar zxf swig-2.0.4.tar.gz && (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && rm -rf swig-2.0.4 swig-2.0.4.tar.gz
+probes:
+- script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    if ! timeout 30s bash -c "until command -v docker >/dev/null 2>&1; do sleep 3; done"; then
+      echo >&2 "docker is not installed yet"
+      exit 1
+    fi
+    if ! timeout 30s bash -c "until pgrep dockerd; do sleep 3; done"; then
+      echo >&2 "dockerd is not running"
+      exit 1
+    fi
+  hint: See "/var/log/cloud-init-output.log" in the guest
+hostResolver:
+  # hostResolver.hosts requires lima 0.8.3 or later. Names defined here will also
+  # resolve inside containers, and not just inside the VM itself.
+  hosts:
+    host.docker.internal: host.lima.internal
+portForwards:
+- guestSocket: "/var/run/docker.sock"
+  hostSocket: "{{.Dir}}/sock/docker.sock"
+message: |
+  To run `docker` on the host (assumes docker-cli is installed), run the following commands:
+  ------
+  docker context create lima-{{.Name}} --docker "host=unix://{{.Dir}}/sock/docker.sock"
+  docker context use lima-{{.Name}}
+  docker run hello-world
+  ------
+env:
+   PYTHON3_PREFIX: /usr
+   PYTHON3_VERSION: python3.12
+   ZMQ_LIBRARY_PREFIX: /usr/lib/x86_64-linux-gnu/
+   ZMQ_INCLUDE_PREFIX: /usr/include
+   PROTOBUF_LIBRARY_PREFIX: /usr/lib/x86_64-linux-gnu
+   PROTOBUF_INCLUDE_PREFIX: /usr/include/
+   PROTOBUF_BIN: /usr/bin/protoc
+   USE_BAZEL_VERSION: 8.4.2
+   JAVA_PREFIX: /usr/lib/jvm/java-17-openjdk-amd64
+mounts:
+  - location: "~"
+    writable: true
