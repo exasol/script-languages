@@ -11,6 +11,8 @@
 #include <link.h>
 #include <string.h>
 
+#include "exaudf_lib_output_path.h"
+
 #ifndef UDF_PLUGIN_CLIENT
 #include <dlfcn.h> //This is required for dynamic linking in new linker namespace, not required for plugins
 #endif

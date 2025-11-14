@@ -19,9 +19,19 @@ VM_PYTHON3_DEPS=select({
         "//conditions:default": []
     })
 
+
+genrule(
+    name = "exaudflib_output_path_header",
+    srcs = ["@exaudfclient_base//:libexaudflib_complete.so"],
+    outs = ["exaudf_lib_output_path.h"],
+    cmd = '''
+      echo "#define CUSTOM_LIBEXAUDFLIB_PATH \\"external/$(rlocationpath @exaudfclient_base//:libexaudflib_complete.so)\\"" > $@
+    ''',
+)
+
 cc_binary(
     name = "exaudfclient_bin",
-    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic"],
+    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic", "//:exaudflib_output_path_header"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["@exaudfclient_base//exaudflib:header", "@exaudfclient_base//utils:utils"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
            ["@exaudfclient_base//exaudflib:exaudflib-deps"],
@@ -44,7 +54,7 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_static_bin",
-    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic"],
+    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic", "//:exaudflib_output_path_header"],
     linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
     deps = ["@exaudfclient_base//exaudflib:header", "@exaudfclient_base//utils:utils"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
             ["@exaudfclient_base//exaudflib:exaudflib-deps"] +
