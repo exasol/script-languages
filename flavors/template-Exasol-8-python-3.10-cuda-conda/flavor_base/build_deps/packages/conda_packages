@@ -1,6 +1,6 @@
 protobuf|6.31.1
 pcre|8.45
-bazel|7.6.1
+bazel|8.3.1
 make|4.3
 chrpath|0.16
 gxx_linux-64|15.1.0

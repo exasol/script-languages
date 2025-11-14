@@ -29,7 +29,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
 {
 
     stringstream ss;
-    m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
+    m_exaJavaPath = "/exaudf/external/exaudfclient_base+/javacontainer"; // TODO hardcoded path
 
     parseScriptOptions(std::move(extractor));
 
