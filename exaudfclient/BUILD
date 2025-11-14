@@ -25,7 +25,7 @@ genrule(
     srcs = ["@exaudfclient_base//:libexaudflib_complete.so"],
     outs = ["exaudf_lib_output_path.h"],
     cmd = '''
-      echo "#define CUSTOM_LIBEXAUDFLIB_PATH \\"external/$(rlocationpath @exaudfclient_base//:libexaudflib_complete.so)\\"" > $@
+      echo "#define CUSTOM_LIBEXAUDFLIB_PATH \\"/exaudf/external/$(rlocationpath @exaudfclient_base//:libexaudflib_complete.so)\\"" > $@
     ''',
 )
 
