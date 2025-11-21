@@ -3,6 +3,11 @@ module(name="exaudfclient_base", version = "1.0")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "googletest", version = "1.15.0")
 bazel_dep(name = "rules_jvm_external", version = "6.2")
+
+# The following is necessary to build the UDF client for Java
+# Since Bazel >8 the Python hermetic build rules must not run as root
+# However, since the UDF client is built as root in a docker container
+# we must disable this behavior. The only way is to configure the Python hermetic toolchain
 bazel_dep(name = "rules_python", version = "1.7.0")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
