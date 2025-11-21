@@ -29,3 +29,14 @@ protobuf_local_repository(name = "protobuf")
 
 java_local_repository = use_repo_rule("@exaudfclient_base//:java_repository.bzl", "java_local_repository")
 java_local_repository(name = "java")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "com.exasol:udf-api-java:1.0.5",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
