@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <stdlib.h>
 #include <sstream>
-#include "base/exaudflib/load_dynamic.h"
-#include "base/exaudflib/swig/swig_table_iterator.h"
+#include "exaudflib/load_dynamic.h"
+#include "exaudflib/swig/swig_table_iterator.h"
 
 #define SWIG_MAX_VAR_DATASIZE 4000000
 

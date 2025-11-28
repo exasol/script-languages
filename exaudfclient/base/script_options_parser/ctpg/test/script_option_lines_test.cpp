@@ -1,9 +1,9 @@
-#include "base/script_options_parser/ctpg/script_option_lines_ctpg.h"
+#include "script_options_parser/ctpg/script_option_lines_ctpg.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
 #include <exception>
-#include "base/script_options_parser/exception.h"
+#include "script_options_parser/exception.h"
 
 
 using namespace ExecutionGraph;

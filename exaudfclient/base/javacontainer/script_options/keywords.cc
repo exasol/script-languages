@@ -1,4 +1,4 @@
-#include "base/javacontainer/script_options/keywords.h"
+#include "javacontainer/script_options/keywords.h"
 #include <string_view>
 
 namespace SWIGVMContainers {

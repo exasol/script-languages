@@ -1,8 +1,8 @@
 #ifndef EXAUDFCLIENT_SWIGGENERALITERATOR_H
 #define EXAUDFCLIENT_SWIGGENERALITERATOR_H
 
-#include "base/exaudflib/swig/swig_common.h"
-#include "base/exaudflib/impl/global.h"
+#include "exaudflib/swig/swig_common.h"
+#include "exaudflib/impl/global.h"
 
 namespace SWIGVMContainers {
 

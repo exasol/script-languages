@@ -1,7 +1,7 @@
 #ifndef PYTHONVM_H
 #define PYTHONVM_H
 
-#include "base/exaudflib/vm/swig_vm.h"
+#include "exaudflib/vm/swig_vm.h"
 
 #ifdef ENABLE_PYTHON_VM
 

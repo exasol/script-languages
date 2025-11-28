@@ -1,6 +1,6 @@
-#include "base/exaudflib/impl/socket_low_level.h"
-#include "base/exaudflib/impl/check.h"
-#include "base/utils/debug_message.h"
+#include "exaudflib/impl/socket_low_level.h"
+#include "exaudflib/impl/check.h"
+#include "utils/debug_message.h"
 #include <mutex>
 #include <iostream>
 #include <unistd.h>

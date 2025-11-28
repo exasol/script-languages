@@ -1,9 +1,9 @@
 
 #include "include/gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "base/javacontainer/script_options/parser_ctpg.h"
+#include "javacontainer/script_options/parser_ctpg.h"
 
-#include "base/javacontainer/script_options/test/swig_factory_test.h"
+#include "javacontainer/script_options/test/swig_factory_test.h"
 #include <string.h>
 
 using namespace SWIGVMContainers::JavaScriptOptions;

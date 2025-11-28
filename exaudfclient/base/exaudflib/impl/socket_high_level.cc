@@ -1,13 +1,13 @@
-#include "base/exaudflib/impl/socket_high_level.h"
+#include "exaudflib/impl/socket_high_level.h"
 
-#include "base/exaudflib/impl/socket_low_level.h"
-#include "base/exaudflib/zmqcontainer.pb.h"
-#include "base/exaudflib/impl/msg_conversion.h"
-#include "base/exaudflib/impl/global.h"
-#include "base/exaudflib/swig/swig_common.h"
-#include "base/exaudflib/vm/swig_vm.h"
+#include "exaudflib/impl/socket_low_level.h"
+#include "exaudflib/zmqcontainer.pb.h"
+#include "exaudflib/impl/msg_conversion.h"
+#include "exaudflib/impl/global.h"
+#include "exaudflib/swig/swig_common.h"
+#include "exaudflib/vm/swig_vm.h"
 #include <sys/resource.h>
-#include "base/utils/debug_message.h"
+#include "utils/debug_message.h"
 
 namespace exaudflib {
     namespace socket_high_level {
