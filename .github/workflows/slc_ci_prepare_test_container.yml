@@ -8,9 +8,9 @@ name: SLC-CI-Prepare-Test-Container
 on:
   workflow_call:
     secrets:
-      DOCKER_USERNAME:
+      CI4_DOCKERHUB_USERNAME:
         required: true
-      DOCKER_PASSWORD:
+      CI4_DOCKERHUB_TOKEN:
         required: true
 jobs:
   prepare-test-container:
@@ -28,12 +28,12 @@ jobs:
             echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
             poetry run -- exaslc-ci prepare-test-container --commit-sha "$COMMIT_SHA" --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD"
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
           COMMIT_SHA: ${{ github.sha }}
 
       - name: Check for password
-        run: grep -rq ${{ secrets.DOCKER_PASSWORD }} .build_output && exit 1 || exit 0
+        run: grep -rq ${{ secrets.CI4_DOCKERHUB_TOKEN }} .build_output && exit 1 || exit 0
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
