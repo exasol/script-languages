@@ -45,7 +45,7 @@ class JavaExtJarFileReferences(udf.TestCase):
     def upload_to_bucketfs(self, src_path: Path, expected_jar_in_script_option: str, target_filename: str) -> str:
         env_info = obj_from_json_file("/environment_info.json")
         docker_db_ip = env_info.database_info.container_info.ip_address
-        bucketfs_port = env_info.database_info.ports.bucketfs
+        bucketfs_port = env_info.database_info.ports._bucketfs_http
         with tempfile.TemporaryDirectory() as tmp_dir:
             local_target_file_path = Path(tmp_dir) / target_filename
             shutil.copy(src_path, local_target_file_path)
