@@ -58,7 +58,7 @@ class JavaModules(udf.TestCase):
     def upload_to_bucketfs(self, path: Path) -> str:
         env_info = obj_from_json_file("/environment_info.json")
         docker_db_ip = env_info.database_info.container_info.ip_address
-        bucketfs_port = env_info.database_info.ports.bucketfs
+        bucketfs_port = env_info.database_info.ports._bucketfs_http
         upload_url = f"http://{docker_db_ip}:{bucketfs_port}/myudfs/{path.name}"
         username = "w"
         password = "write"
