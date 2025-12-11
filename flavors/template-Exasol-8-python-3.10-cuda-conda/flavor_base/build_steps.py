@@ -160,3 +160,4 @@ class SecurityScan(DockerFlavorAnalyzeImageTask):
 
     def get_path_in_flavor(self):
         return "flavor_base"
+
