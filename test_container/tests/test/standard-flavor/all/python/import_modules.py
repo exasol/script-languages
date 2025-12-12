@@ -154,7 +154,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "sklearn.externals.array_api_compat",
                 "starlette",
                 "uvicorn",
-                "google_crc32c._crc32c",
+                "google_crc32c.cext",
             }
             excluded_submodules = (
                 "sphinxext",
