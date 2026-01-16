@@ -1,7 +1,7 @@
 
 #include "include/gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "base/javacontainer/script_options/string_ops.h"
+#include "javacontainer/script_options/string_ops.h"
 
 using namespace SWIGVMContainers::JavaScriptOptions;
 

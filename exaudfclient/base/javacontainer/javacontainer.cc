@@ -1,6 +1,6 @@
-#include "base/javacontainer/javacontainer.h"
-#include "base/javacontainer/javacontainer_impl.h"
-#include "base/javacontainer/script_options/extractor.h"
+#include "javacontainer/javacontainer.h"
+#include "javacontainer/javacontainer_impl.h"
+#include "javacontainer/script_options/extractor.h"
 
 using namespace SWIGVMContainers;
 using namespace std;

@@ -1,5 +1,5 @@
-#include "base/javacontainer/test/cpp/swig_factory_test.h"
-#include "base/exaudflib/swig/swig_meta_data.h"
+#include "javacontainer/test/cpp/swig_factory_test.h"
+#include "exaudflib/swig/swig_meta_data.h"
 
 #include <stdexcept>
 

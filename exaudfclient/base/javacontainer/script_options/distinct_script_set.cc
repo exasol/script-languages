@@ -1,4 +1,4 @@
-#include "base/javacontainer/script_options/distinct_script_set.h"
+#include "javacontainer/script_options/distinct_script_set.h"
 #include <string.h>
 
 namespace SWIGVMContainers {

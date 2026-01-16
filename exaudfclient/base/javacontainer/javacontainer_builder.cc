@@ -1,6 +1,6 @@
-#include "base/javacontainer/javacontainer_builder.h"
-#include "base/javacontainer/script_options/extractor_impl.h"
-#include "base/swig_factory/swig_factory_impl.h"
+#include "javacontainer/javacontainer_builder.h"
+#include "javacontainer/script_options/extractor_impl.h"
+#include "swig_factory/swig_factory_impl.h"
 
 #ifdef ENABLE_JAVA_VM
 

@@ -2,7 +2,7 @@
 #define JAVACONTAINER_BUILDER_H
 
 #include <memory>
-#include "base/javacontainer/javacontainer.h"
+#include "javacontainer/javacontainer.h"
 
 #ifdef ENABLE_JAVA_VM
 

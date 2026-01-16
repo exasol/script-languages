@@ -1,7 +1,7 @@
 #include "include/gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "base/javacontainer/test/cpp/javavm_test.h"
-#include "base/javacontainer/test/cpp/swig_factory_test.h"
+#include "javacontainer/test/cpp/javavm_test.h"
+#include "javacontainer/test/cpp/swig_factory_test.h"
 #include <string.h>
 
 const uint32_t NumInlineJavaLines = 500000;

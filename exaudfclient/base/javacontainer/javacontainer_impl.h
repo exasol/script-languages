@@ -6,7 +6,7 @@
 #include <set>
 #include <memory>
 
-#include "base/exaudflib/vm/swig_vm.h"
+#include "exaudflib/vm/swig_vm.h"
 #include <jni.h>
 
 #ifdef ENABLE_JAVA_VM
