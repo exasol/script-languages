@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <stdlib.h>
 #include <sstream>
-#include "base/exaudflib/load_dynamic.h"
+#include "exaudflib/load_dynamic.h"
 
 namespace SWIGVMContainers {
 

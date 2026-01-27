@@ -11,5 +11,5 @@ cc_library(
     name = "swig_factory",
     hdrs = [":swig_factory.h", ":swig_factory_impl.h"],
     srcs = [":swig_factory_impl.cc"],
-    deps = ["//base/exaudflib:header"],
+    deps = ["//exaudflib:header"],
 )

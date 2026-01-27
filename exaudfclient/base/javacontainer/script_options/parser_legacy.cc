@@ -1,10 +1,10 @@
-#include "base/javacontainer/script_options/parser_legacy.h"
-#include "base/javacontainer/script_options/distinct_script_set.h"
-#include "base/script_options_parser/legacy/script_option_lines.h"
-#include "base/exaudflib/swig/swig_meta_data.h"
-#include "base/swig_factory/swig_factory.h"
-#include "base/utils/exceptions.h"
-#include "base/script_options_parser/exception.h"
+#include "javacontainer/script_options/parser_legacy.h"
+#include "javacontainer/script_options/distinct_script_set.h"
+#include "script_options_parser/legacy/script_option_lines.h"
+#include "exaudflib/swig/swig_meta_data.h"
+#include "swig_factory/swig_factory.h"
+#include "utils/exceptions.h"
+#include "script_options_parser/exception.h"
 
 #include <memory>
 

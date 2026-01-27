@@ -1,6 +1,6 @@
-#include "base/javacontainer/script_options/converter_v2.h"
-#include "base/javacontainer/script_options/string_ops.h"
-#include "base/javacontainer/script_options/parser_ctpg_jvm_options_parser.h"
+#include "javacontainer/script_options/converter_v2.h"
+#include "javacontainer/script_options/string_ops.h"
+#include "javacontainer/script_options/parser_ctpg_jvm_options_parser.h"
 #include <iostream>
 #include <sstream>
 #include <algorithm>

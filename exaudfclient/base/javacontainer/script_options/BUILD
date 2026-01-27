@@ -11,8 +11,8 @@ cc_library(
             ":keywords.h", ":keywords.cc", ":distinct_script_set.h", ":distinct_script_set.cc", ":parser_ctpg.cc",
             ":parser_ctpg_script_importer.cc", ":parser_ctpg_script_importer.h",
             ":parser_ctpg_jvm_options_parser.cc", ":parser_ctpg_jvm_options_parser.h", ":string_ops.h", ":string_ops.cc"],
-    deps = ["//base/script_options_parser/legacy:script_option_lines_parser_legacy",
-            "//base/script_options_parser/ctpg:script_option_lines_parser_ctpg", "//base/utils:utils",
-            "//base/exaudflib:header", "//base/exaudflib:exaudflib-deps", "//base/swig_factory:swig_factory_if",
-            "//base/script_options_parser:exception"],
+    deps = ["//script_options_parser/legacy:script_option_lines_parser_legacy",
+            "//script_options_parser/ctpg:script_option_lines_parser_ctpg", "//utils:utils",
+            "//exaudflib:header", "//exaudflib:exaudflib-deps", "//swig_factory:swig_factory_if",
+            "//script_options_parser:exception"],
 )

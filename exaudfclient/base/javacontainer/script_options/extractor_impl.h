@@ -6,12 +6,12 @@
 #include <set>
 
 
-#include "base/javacontainer/script_options/extractor.h"
-#include "base/javacontainer/script_options/converter_legacy.h"
-#include "base/javacontainer/script_options/converter_v2.h"
-#include "base/javacontainer/script_options/parser_ctpg.h"
-#include "base/javacontainer/script_options/parser_legacy.h"
-#include "base/swig_factory/swig_factory.h"
+#include "javacontainer/script_options/extractor.h"
+#include "javacontainer/script_options/converter_legacy.h"
+#include "javacontainer/script_options/converter_v2.h"
+#include "javacontainer/script_options/parser_ctpg.h"
+#include "javacontainer/script_options/parser_legacy.h"
+#include "swig_factory/swig_factory.h"
 
 namespace SWIGVMContainers {
 
