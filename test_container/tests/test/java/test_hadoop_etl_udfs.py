@@ -117,7 +117,7 @@ class JavaHive(udf.TestCase):
     def upload_hadoop_etl_udf_jar_to_bucket_fs(self, env):
         env_info = obj_from_json_file("/environment_info.json")
         docker_db_ip = env_info.database_info.container_info.ip_address
-        bucketfs_port = env_info.database_info.ports.bucketfs
+        bucketfs_port = env_info.database_info.ports._bucketfs_http
         upload_url = f"http://{docker_db_ip}:{bucketfs_port}/myudfs/hadoop-etl-udfs-v0.0.1-apache-2.8.5-3.0.0.jar".format(
             docker_db_ip=docker_db_ip)
         username = "w"

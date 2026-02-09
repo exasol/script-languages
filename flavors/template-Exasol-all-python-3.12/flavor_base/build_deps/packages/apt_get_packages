@@ -1,9 +1,9 @@
 coreutils|9.4-3ubuntu6.1
 tar|1.35+dfsg-3build1
 curl|8.5.0-2ubuntu10.6
-openjdk-17-jdk|17.0.16+8~us1-0ubuntu1~24.04.1
+openjdk-17-jdk|17.0.18+8-1~24.04.1
 build-essential|12.10ubuntu1
 libpcre3-dev|2:8.39-15build1
 protobuf-compiler|3.21.12-8.2ubuntu0.2
 chrpath|0.16-2build1
-locales|2.39-0ubuntu8.6
+locales|2.39-0ubuntu8.7
