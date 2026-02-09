@@ -29,6 +29,7 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
 {
 
     stringstream ss;
+    //Path "external/exaudfclient_base+/" comes from external module "exaudfclient_base"
     m_exaJavaPath = "/exaudf/external/exaudfclient_base+/javacontainer"; // TODO hardcoded path
 
     parseScriptOptions(std::move(extractor));

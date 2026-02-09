@@ -12,6 +12,7 @@ if 'LIBPYEXADATAFRAME_DIR' in os.environ:
     #print("sys.path append",path_to_pyexadataframe)
     sys.path.append(path_to_pyexadataframe)
 else:
+    #Path "external/exaudfclient_base+/" comes from external module "exaudfclient_base"
     path_to_pyexadataframe="/exaudf/external/exaudfclient_base+/python/python3"
     #print("sys.path append",path_to_pyexadataframe)
     sys.path.append(path_to_pyexadataframe)
