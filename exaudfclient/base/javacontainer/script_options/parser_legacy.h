@@ -2,8 +2,8 @@
 #define SCRIPTOPTIONLINEPARSERLEGACY_H 1
 
 
-#include "base/javacontainer/script_options/parser.h"
-#include "base/javacontainer/script_options/keywords.h"
+#include "javacontainer/script_options/parser.h"
+#include "javacontainer/script_options/keywords.h"
 
 #include <memory>
 

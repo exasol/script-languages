@@ -2,7 +2,7 @@
 #define JAVACONTAINER_H
 
 
-#include "base/exaudflib/vm/swig_vm.h"
+#include "exaudflib/vm/swig_vm.h"
 #include <string.h>
 #include <memory>
 

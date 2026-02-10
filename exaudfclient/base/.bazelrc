@@ -1,16 +1,7 @@
 build --lockfile_mode=off --copt='-std=c++17' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX
-# TODO add environment variables for R libraries
 build:benchmark --define benchmark=true
 build:java  --define java=true --action_env=JAVA_PREFIX
 build:python --define python=true --action_env=NUMPY_PREFIX --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION
-build:fast-binary --define binary_type=fast_binary //:exaudfclient
-build:slow-wrapper --define binary_type=slow_wrapper //:exaudfclient
-build:static-binary //:exaudfclient_static
-build:test-binaries --config=static-binary --config=slow-wrapper
-build:verbose --copt='-v' --subcommands --verbose_failures --announce_rc
-#TODO test linkopts="-flto"
-build:optimize --copt="-g0" --copt="-DNDEBUG" --copt=-fstack-protector-strong --copt=-fomit-frame-pointer --copt=-ffunction-sections --copt=-fdata-sections --copt="-O3" --copt="-U_FORTIFY_SOURCE" --copt="-flto" --copt="-fuse-linker-plugin"
-build:no-tty --curses=no --color=no
 build:debug-build --sandbox_debug --config=verbose
 build:no-symlinks --symlink_prefix=/
 build:asan --strip=never
@@ -26,4 +17,3 @@ build:valgrind -c dbg
 build:valgrind --copt -g
 build:valgrind --strip=never
 build:valgrind --copt -DVALGRIND_ACTIVE
-build:fix_conda_ar_tool --action_env=AR=x86_64-conda-linux-gnu-gcc-ar --features=-archive_param_file

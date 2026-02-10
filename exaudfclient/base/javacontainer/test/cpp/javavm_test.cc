@@ -1,7 +1,7 @@
-#include "base/javacontainer/test/cpp/javavm_test.h"
-#include "base/javacontainer/test/cpp/swig_factory_test.h"
-#include "base/javacontainer/javacontainer_impl.h"
-#include "base/javacontainer/script_options/extractor_impl.h"
+#include "javacontainer/test/cpp/javavm_test.h"
+#include "javacontainer/test/cpp/swig_factory_test.h"
+#include "javacontainer/javacontainer_impl.h"
+#include "javacontainer/script_options/extractor_impl.h"
 #include <string.h>
 
 std::unique_ptr<SwigFactoryTestImpl> makeDefaultSwigFactory() {

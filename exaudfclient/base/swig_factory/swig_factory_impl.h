@@ -1,7 +1,7 @@
 #ifndef SWIG_FACTORY_IMPL_H
 #define SWIG_FACTORY_IMPL_H 1
 
-#include "base/swig_factory/swig_factory.h"
+#include "swig_factory/swig_factory.h"
 
 namespace SWIGVMContainers {
 
