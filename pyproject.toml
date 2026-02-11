@@ -26,17 +26,22 @@ dependencies = [
 
 [tool.poetry]
 
+requires-poetry = ">=2.3.0"
+
 package-mode = false
 
 [project.urls]
 repository = "https://github.com/exasol/script-languages"
 homepage = "https://github.com/exasol/script-languages"
 
+[dependency-groups]
 
-[tool.poetry.group.dev.dependencies]
-toml = ">=0.10.2"
-gitpython = ">=3.1.0"
-nox = ">=2022.8.7"
+
+dev = [
+    "toml>=0.10.2",
+    "gitpython>=3.1.0, <4.0.0",
+    "nox>=2022.8.7"
+]
 
 [build-system]
 requires = ["poetry_core>=2.1.0"]

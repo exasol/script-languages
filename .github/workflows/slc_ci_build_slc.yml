@@ -28,27 +28,31 @@ jobs:
   detect-runner:
     runs-on: ubuntu-24.04
     steps:
-     - uses: actions/checkout@v4
+     - uses: actions/checkout@v6
        with:
           submodules: 'recursive'
 
      - name: Setup Python & Poetry Environment
-       uses: exasol/python-toolbox/.github/actions/python-environment@v1
+       uses: exasol/python-toolbox/.github/actions/python-environment@v5
        with:
-         python-version: '3.10'
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
      - name: Detect runner
        id: detect-runner
        run: poetry run -- exaslc-ci get-build-runner --flavor "$FLAVOR" --github-output-var runner
        env:
          FLAVOR: ${{ inputs.flavor }}
+
     outputs:
      runner: ${{ steps.detect-runner.outputs.runner }}
+
   build:
     needs: detect-runner
     runs-on:
       labels: ${{needs.detect-runner.outputs.runner}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
             submodules: 'recursive'
 
@@ -57,6 +61,7 @@ jobs:
         with:
           tool-cache: true
           large-packages: false
+
       - name: Free disk space by removing large directories
         run: |
           sudo rm -rf /usr/local/graalvm/
@@ -67,9 +72,10 @@ jobs:
           sudo rm -rf /opt/ghc
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v1
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
+          poetry-version: "2.3.0"
 
       - name: Build SLC ${{ inputs.flavor }}
         id: build-slc
@@ -87,7 +93,7 @@ jobs:
       - name: Check for password
         run: grep -rq ${{ secrets.CI4_DOCKERHUB_TOKEN }} .build_output && exit 1 || exit 0
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ always() }}
         name: Upload log artifacts
         with:
@@ -98,7 +104,7 @@ jobs:
             .build_output/meta_data/**/*
           retention-days: 30
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         name: Upload release SLC for flavor ${{inputs.flavor}}
         with:
           name: slc-${{ inputs.flavor }}-${{ fromJson(steps.build-slc.outputs.slc_paths).slc_release.goal }}
@@ -106,7 +112,7 @@ jobs:
           compression-level: 0
           retention-days: 1
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         name: Upload test SLC for flavor ${{inputs.flavor}}
         with:
           name: slc-${{ inputs.flavor }}-${{ fromJson(steps.build-slc.outputs.slc_paths).slc_test.goal }}

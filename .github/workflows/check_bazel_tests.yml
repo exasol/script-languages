@@ -7,13 +7,13 @@ on:
   pull_request:
 
 env:
-  USE_BAZEL_VERSION: 7.2.1
+  USE_BAZEL_VERSION: 8.3.1
   UDF_CLIENT_ENV_FILE: /tmp/.udf_client_env
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Search for duplicated error codes
         run: bash find_duplicate_error_codes.sh
 
@@ -81,7 +81,7 @@ jobs:
             name: "script_options_parser_legacy_with_asan"
             java_version: ""
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install JDK and ZMQ
         run: |
           sudo apt-get update
@@ -94,7 +94,7 @@ jobs:
           sudo apt install -y "/tmp/$BAZEL_PACKAGE_FILE"
           rm "/tmp/$BAZEL_PACKAGE_FILE"
         env:
-          BAZEL_PACKAGE_VERSION: "7.2.1"
+          BAZEL_PACKAGE_VERSION: "8.3.1"
       - name: Run tests
         run: |
           bazel test ${{ matrix.additional_args }} ${{ matrix.test }}
