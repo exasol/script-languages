@@ -13,28 +13,31 @@ on:
           required: true
           type: string
     secrets:
-      DOCKER_USERNAME:
+      CI4_DOCKERHUB_USERNAME:
         required: true
-      DOCKER_PASSWORD:
+      CI4_DOCKERHUB_TOKEN:
         required: true
 jobs:
   detect-test-matrix:
     runs-on: ubuntu-22.04
     steps:
-     - uses: actions/checkout@v4
+     - uses: actions/checkout@v6
        with:
           submodules: 'recursive'
 
      - name: Setup Python & Poetry Environment
-       uses: exasol/python-toolbox/.github/actions/python-environment@v1
+       uses: exasol/python-toolbox/.github/actions/python-environment@v5
        with:
-         python-version: '3.10'
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
      - name: Detect Test Matrix
        id: detect-test-matrix
        run: |
          poetry run -- exaslc-ci get-test-matrix --flavor "$FLAVOR" --github-output-var test_matrix
        env:
          FLAVOR: ${{ inputs.flavor }}
+
     outputs:
      test-matrix: ${{ steps.detect-test-matrix.outputs.test_matrix }}
 
@@ -47,7 +50,7 @@ jobs:
       matrix: ${{fromJson(needs.detect-test-matrix.outputs.test-matrix)}}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
             submodules: 'recursive'
 
@@ -56,6 +59,7 @@ jobs:
         with:
           tool-cache: true
           large-packages: false
+
       - name: Free disk space by removing large directories
         run: |
           sudo rm -rf /usr/local/graalvm/
@@ -66,13 +70,14 @@ jobs:
           sudo rm -rf /opt/ghc
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v1
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
+          poetry-version: "2.3.0"
 
       - name: Download SLC ${{matrix.goal}}
         id: download-slc
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: slc-${{inputs.flavor}}-${{matrix.goal}}
           path: "slc"
@@ -88,17 +93,17 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
           poetry run -- exaslc-ci run-tests --flavor "$FLAVOR" --docker-user "$DOCKER_USERNAME" --docker-password "$DOCKER_PASSWORD"  --test-set-name "$TEST_SET_NAME" --slc-directory "$SLC_DIRECTORY" --commit-sha "$COMMIT_SHA"
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
           FLAVOR: ${{ inputs.flavor }}
           TEST_SET_NAME: ${{ matrix.test-set-name }}
           SLC_DIRECTORY: ${{ steps.download-slc.outputs.download-path }}
           COMMIT_SHA: ${{github.sha}}
 
       - name: Check for password
-        run: grep -rq ${{ secrets.DOCKER_PASSWORD }} .build_output && exit 1 || exit 0
+        run: grep -rq ${{ secrets.CI4_DOCKERHUB_TOKEN }} .build_output && exit 1 || exit 0
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ always() }}
         name: Upload log artifacts
         with:

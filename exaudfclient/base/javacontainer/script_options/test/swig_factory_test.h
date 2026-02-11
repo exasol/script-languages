@@ -3,7 +3,7 @@
 
 #include <string>
 #include <map>
-#include "base/swig_factory/swig_factory.h"
+#include "swig_factory/swig_factory.h"
 #include <functional>
 
 struct SwigFactoryTestImpl : public SWIGVMContainers::SwigFactory {

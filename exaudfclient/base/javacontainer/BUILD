@@ -5,7 +5,7 @@ genrule(
     cmd = """
         mkdir -p java_src/com/exasol/swig
         mkdir -p build_exascript_java_tmp_cc/exaudflib
-        cp "$(location //base/exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //base/exaudflib:exascript.i)" build_exascript_java_tmp_cc/exaudflib
+        cp "$(location //exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_cc/exaudflib
         cd build_exascript_java_tmp_cc
         swig -v -O -DEXTERNAL_PROCESS -Wall -c++ -java -addextern -module exascript_java -package com.exasol.swig -outdir "../java_src/com/exasol/swig" -o "../exascript_java_tmp.cc" exaudflib/exascript.i
         cd ..
@@ -37,29 +37,29 @@ genrule(
             "raw/TableIterator.java",
             "exascript_java_tmp.cc"
     ],
-    srcs = ["//base/exaudflib:exascript.i","//base/exaudflib:swig/script_data_transfer_objects_wrapper.h"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:swig/script_data_transfer_objects_wrapper.h"]
 )
 
 genrule(
     name = "exascript_java_tmp_h",
     cmd = """
         mkdir build_exascript_java_tmp_h
-        cp "$(location //base/exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //base/exaudflib:exascript.i)" build_exascript_java_tmp_h
+        cp "$(location //exaudflib:swig/script_data_transfer_objects_wrapper.h)" "$(location //exaudflib:exascript.i)" build_exascript_java_tmp_h
         cp -r "$(location exascript_java_tmp.cc)" build_exascript_java_tmp_h
         cd build_exascript_java_tmp_h
         swig -v -DEXTERNAL_PROCESS -c++ -java -external-runtime "../$(location exascript_java_tmp.h)"
         """,
     outs = ["exascript_java_tmp.h"],
-    srcs = ["//base/exaudflib:exascript.i","//base/exaudflib:swig/script_data_transfer_objects_wrapper.h", ":exascript_java_tmp.cc"]
+    srcs = ["//exaudflib:exascript.i","//exaudflib:swig/script_data_transfer_objects_wrapper.h", ":exascript_java_tmp.cc"]
 )
 
 
 genrule(
     name = "filter_swig_code_exascript_java_h",
-    cmd = 'python3 $(location //base:filter_swig_code.py) "$@" "$<"',
+    cmd = 'python3 $(location //:filter_swig_code.py) "$@" "$<"',
     outs = ["exascript_java.h"],
     srcs = [":exascript_java_tmp_h"],
-    tools = ["//base:filter_swig_code.py"]
+    tools = ["//:filter_swig_code.py"]
 )
 
 genrule(
@@ -71,7 +71,7 @@ genrule(
             cp  $(location :raw/ResultHandler.java) "$$TMPDIR"/java_src/com/exasol/swig/
             cp  $(location :raw/exascript_javaJNI.java) "$$TMPDIR"/java_src/com/exasol/swig/
             find "$$TMPDIR"/java_src/com/exasol/swig/ -name *.java -type f -exec chmod 644 {} \\;
-            cp -r -L $(location //base:filter_swig_code.py) $(location :exascript_java_tmp.cc) "$$TMPDIR"
+            cp -r -L $(location //:filter_swig_code.py) $(location :exascript_java_tmp.cc) "$$TMPDIR"
             (cd "$$TMPDIR"
             python3 filter_swig_code.py "exascript_java.cc" "exascript_java_tmp.cc")
             cp "$$TMPDIR"/exascript_java.cc $(location :exascript_java.cc)
@@ -88,13 +88,13 @@ genrule(
             ],
     srcs = [":exascript_java_tmp.cc", ":raw/TableIterator.java",
             ":raw/ResultHandler.java", ":raw/exascript_javaJNI.java"],
-    tools = ["//base:filter_swig_code.py"]
+    tools = ["//:filter_swig_code.py"]
 )
 
 cc_library(
     name = "exascript_java",
     srcs = [":exascript_java.cc",],
-    deps = ["@java//:java","//base/exaudflib:exaudflib-deps","//base/exaudflib:header"],
+    deps = ["@java//:java","//exaudflib:exaudflib-deps","//exaudflib:header"],
     copts= ["-O0","-fno-lto"],
     # We limit this target to -O0 (no optimization) and -fno-lto. because otherwise we get compiler warnings of the sort 
     # note: "code may be misoptimized unless -fno-strict-aliasing is used." 
@@ -109,9 +109,9 @@ cc_library(
     srcs = [":javacontainer.cc", ":javacontainer.h", ":javacontainer_impl.cc", ":javacontainer_impl.h",
             ":javacontainer_builder.h", ":javacontainer_builder.cc", ":dummy"],
     hdrs = [":filter_swig_code_exascript_java_h", "exascript_java_jni_decl.h"],
-    deps = ["@java//:java", ":exascript_java", "//base/exaudflib:header",
-            "//base/utils:utils","//base/javacontainer/script_options:java_script_option_lines",
-            "//base/swig_factory:swig_factory"],
+    deps = ["@java//:java", ":exascript_java", "//exaudflib:header",
+            "//utils:utils","//javacontainer/script_options:java_script_option_lines",
+            "//swig_factory:swig_factory"],
 #    copts= ["-O0","-fno-lto"],
     alwayslink=True,
 )

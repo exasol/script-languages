@@ -8,10 +8,10 @@
 
 #include "exascript_java_jni_decl.h"
 
-#include "base/utils/debug_message.h"
-#include "base/javacontainer/javacontainer.h"
-#include "base/javacontainer/javacontainer_impl.h"
-#include "base/javacontainer/script_options/extractor.h"
+#include "utils/debug_message.h"
+#include "javacontainer/javacontainer.h"
+#include "javacontainer/javacontainer_impl.h"
+#include "javacontainer/script_options/extractor.h"
 
 
 using namespace SWIGVMContainers;
@@ -29,7 +29,8 @@ JavaVMImpl::JavaVMImpl(bool checkOnly, bool noJNI,
 {
 
     stringstream ss;
-    m_exaJavaPath = "/exaudf/base/javacontainer"; // TODO hardcoded path
+    //Path "external/exaudfclient_base+/" comes from external module "exaudfclient_base"
+    m_exaJavaPath = "/exaudf/external/exaudfclient_base+/javacontainer"; // TODO hardcoded path
 
     parseScriptOptions(std::move(extractor));
 

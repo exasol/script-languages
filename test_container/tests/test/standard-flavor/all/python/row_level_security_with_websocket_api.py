@@ -6,7 +6,7 @@ import os
 
 
 class WebsocketAPIConnectionTest(udf.TestCase):
-    db_port = obj_from_json_file("/environment_info.json").database_info.ports.database
+    db_port = obj_from_json_file("/environment_info.json").database_info.ports._database
     connection = f"localhost:{db_port}"
     user = "sys"
     pwd = "exasol"

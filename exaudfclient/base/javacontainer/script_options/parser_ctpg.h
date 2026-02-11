@@ -1,9 +1,9 @@
 #ifndef SCRIPTOPTIONLINEPARSERCTPGY_H
 #define SCRIPTOPTIONLINEPARSERCTPGY_H 1
 
-#include "base/javacontainer/script_options/parser.h"
-#include "base/javacontainer/script_options/keywords.h"
-#include "base/script_options_parser/ctpg/script_option_lines_ctpg.h"
+#include "javacontainer/script_options/parser.h"
+#include "javacontainer/script_options/keywords.h"
+#include "script_options_parser/ctpg/script_option_lines_ctpg.h"
 #include <memory>
 
 namespace SWIGVMContainers {

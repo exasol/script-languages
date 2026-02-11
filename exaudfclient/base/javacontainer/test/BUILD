@@ -1,6 +1,6 @@
 java_library(
     name = "ExaStackTraceCleaner",
-    srcs = ["//base/javacontainer:ExaStackTraceCleaner.java"]
+    srcs = ["//javacontainer:ExaStackTraceCleaner.java"]
 )
 
 java_test(
@@ -20,7 +20,7 @@ cc_test(
     name = "javacontainer-test-extractor-legacy",
     srcs = JAVACONTAINER_TEST_SRCS,
     deps = [
-        "//base/javacontainer:javacontainer",
+        "//javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
     data = ["test.jar", "other_test.jar"]
@@ -30,7 +30,7 @@ cc_test(
     name = "javacontainer-test-extractor-v2",
     srcs = JAVACONTAINER_TEST_SRCS + ["cpp/javacontainer_extractor_v2_test.cc"],
     deps = [
-        "//base/javacontainer:javacontainer",
+        "//javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
     defines = ["USE_EXTRACTOR_V2"],
@@ -42,7 +42,7 @@ cc_test(
     name = "javacontainer-perf-test-legacy-parser",
     srcs = JAVACONTAINER_PERF_TEST_SRCS,
     deps = [
-        "//base/javacontainer:javacontainer",
+        "//javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
     data = ["test.jar", "other_test.jar"]
@@ -52,7 +52,7 @@ cc_test(
     name = "javacontainer-perf-test-ctpg-parser",
     srcs = JAVACONTAINER_PERF_TEST_SRCS,
     deps = [
-        "//base/javacontainer:javacontainer",
+        "//javacontainer:javacontainer",
         "@googletest//:gtest_main",
     ],
     defines = ["USE_EXTRACTOR_V2"],
