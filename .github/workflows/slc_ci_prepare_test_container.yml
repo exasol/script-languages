@@ -16,13 +16,16 @@ jobs:
   prepare-test-container:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: 'recursive'
+
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v1
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
       - name: Prepare test container
         run: |
             echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
@@ -35,7 +38,7 @@ jobs:
       - name: Check for password
         run: grep -rq ${{ secrets.CI4_DOCKERHUB_TOKEN }} .build_output && exit 1 || exit 0
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ always() }}
         name: Upload log artifacts
         with:
