@@ -225,11 +225,11 @@ def compare_flavor(
 
 def get_last_git_tag() -> str:
     get_fetch_command = ["git", "fetch"]
-    subprocess.run(
-        get_fetch_command, stderr=subprocess.STDOUT, check=True
-    )
+    subprocess.run(get_fetch_command, stderr=subprocess.STDOUT, check=True)
     get_main_branch_command = ["git", "symbolic-ref", "refs/remotes/origin/HEAD"]
-    get_main_branch_result = subprocess.run(get_main_branch_command, stdout=subprocess.PIPE)
+    get_main_branch_result = subprocess.run(
+        get_main_branch_command, stdout=subprocess.PIPE
+    )
     get_main_branch_result.check_returncode()
 
     main_branch_name = get_main_branch_result.stdout.decode("utf-8").strip()
@@ -378,7 +378,7 @@ def generate_dependency_diff_report_for_all_flavors(
         f"{working_copy_1_name} and "
         f"{working_copy_2_name}\n\n"
     )
-    for flavor_path in Path(working_copy_1_root, "flavors").iterdir():
+    for flavor_path in sorted(Path(working_copy_1_root, "flavors").iterdir()):
         if flavor_path.is_dir():
             relative_flavor_path = flavor_path.relative_to(working_copy_1_root)
             relative_flavor_path_2 = relative_flavor_path
