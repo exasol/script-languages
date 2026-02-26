@@ -1,23 +1,39 @@
 import re
 import subprocess
-import tempfile
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict, List, Optional, Tuple
 
 import click
+import numpy as np
 import pandas as pd
 
 
+def _remove_comments(line: str) -> str:
+    import re
+    comment_start = "#"
+
+    # 1) line is only (optional) whitespace + comment
+    if re.fullmatch(rf"[ \t]*{re.escape(comment_start)}.*", line):
+        return ""
+
+    # 2) capture first non-whitespace token, optionally followed by whitespace+comment, then trailing whitespace
+    m = re.fullmatch(rf"[ \t]*([^ \t]+)([ \t]{re.escape(comment_start)}.*)?[ \t]*", line)
+    if m:
+        return m.group(1)
+
+    raise ValueError(f"'{line}' doesn't match regex")
+
+
 def parse_package_list_file(file_path: Path) -> str:
-    parse_package_list_file_command = [
-        "perl", "ext/scripts/list_newest_versions/extract_columns_from_package_lisl.pl",
-        "--file", str(file_path), "--columns", "0,1"]
-    result = subprocess.run(parse_package_list_file_command, stdout=subprocess.PIPE)
-    result.check_returncode()
-    result_string = result.stdout.decode("UTF-8")
-    return result_string
+    result = ""
+    with open(file_path, "r") as f:
+        for line in f:
+            line_without_comments = _remove_comments(line.strip())
+            if line_without_comments:
+                result += line_without_comments + "\n"
+    return result
 
 
 def check_for_duplicated_packages(df: pd.DataFrame):
@@ -28,10 +44,10 @@ def check_for_duplicated_packages(df: pd.DataFrame):
 
 def compare_package_lists(package_list_1: str, package_list_2: str) -> pd.DataFrame:
     package_list_1_df = pd.read_csv(StringIO(package_list_1), delimiter="|", names=["Package", "Version1"])
-    package_list_1_df["Version1"] = package_list_1_df["Version1"].replace("<<<<1>>>>", "No version specified")
+    package_list_1_df["Version1"] = package_list_1_df["Version1"].replace(np.nan, "No version specified")
     package_list_2_df = pd.read_csv(StringIO(package_list_2), delimiter="|", names=["Package", "Version2"])
     check_for_duplicated_packages(package_list_2_df)
-    package_list_2_df["Version2"] = package_list_2_df["Version2"].replace("<<<<1>>>>", "No version specified")
+    package_list_2_df["Version2"] = package_list_2_df["Version2"].replace(np.nan, "No version specified")
     diff_df = pd.merge(package_list_1_df, package_list_2_df, how='outer', on='Package', sort=False)
     new = diff_df["Version1"].isnull() & ~diff_df["Version2"].isnull()
     removed = diff_df["Version2"].isnull() & ~diff_df["Version1"].isnull()
