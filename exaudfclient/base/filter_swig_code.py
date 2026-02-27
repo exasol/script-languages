@@ -33,6 +33,36 @@ def filter_swig_code(target, source):
                     line = ''
                 elif line == '  PyDict_SetItemString(md, "__all__", public_interface);':
                     line = '  PyDict_SetItemString(d, "__all__", public_interface);'
+            elif source.endswith('exascript_python.py') and line.strip() == 'import imp':
+                indent = line[:len(line) - len(line.lstrip())]
+                output.append(f'{indent}try:')
+                output.append(f'{indent}    import imp')
+                output.append(f'{indent}except ImportError:')
+                output.append(f'{indent}    import importlib.machinery as _imp_machinery')
+                output.append(f'{indent}    import importlib.util as _imp_util')
+                output.append(f'{indent}    import sys as _imp_sys')
+                output.append(f'{indent}    import types as _imp_types')
+                output.append(f'{indent}    class _ImpCompat(object):')
+                output.append(f'{indent}        @staticmethod')
+                output.append(f'{indent}        def new_module(name):')
+                output.append(f'{indent}            return _imp_types.ModuleType(name)')
+                output.append(f'{indent}        @staticmethod')
+                output.append(f'{indent}        def find_module(name, path=None):')
+                output.append(f'{indent}            spec = _imp_machinery.PathFinder.find_spec(name, path)')
+                output.append(f'{indent}            if spec is None:')
+                output.append(f'{indent}                raise ImportError("No module named %s" % name)')
+                output.append(f'{indent}            return None, spec.origin, None')
+                output.append(f'{indent}        @staticmethod')
+                output.append(f'{indent}        def load_module(name, file_obj, pathname, description):')
+                output.append(f'{indent}            spec = _imp_util.spec_from_file_location(name, pathname)')
+                output.append(f'{indent}            if spec is None or spec.loader is None:')
+                output.append(f'{indent}                raise ImportError("No module named %s" % name)')
+                output.append(f'{indent}            module = _imp_util.module_from_spec(spec)')
+                output.append(f'{indent}            _imp_sys.modules[name] = module')
+                output.append(f'{indent}            spec.loader.exec_module(module)')
+                output.append(f'{indent}            return module')
+                output.append(f'{indent}    imp = _ImpCompat()')
+                continue
             elif source.endswith('_r_tmp.cc') or source.endswith('_r_tmp.h'):
                 if line == '  const char *p = typeName;':
                     output.append('#if 0')
