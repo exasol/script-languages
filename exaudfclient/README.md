@@ -22,7 +22,7 @@ The exaudfclient was tested with the following versions of its dependencies:
 For the language support:
 
 - Python 3.10 for pythoncontainer
-    - for Python 3 the build requires [Numpy](http://www.numpy.org/) and [Pandas](https://pandas.pydata.org/) in addition for the Pandas Dataframe Support
+    - for Python 3 the build requires [Numpy](https://www.numpy.org/) and [Pandas](https://pandas.pydata.org/) in addition for the Pandas Dataframe Support
 - OpenJDK 11 for javacontainer
 - R 4.4 for the rcontainer
 
