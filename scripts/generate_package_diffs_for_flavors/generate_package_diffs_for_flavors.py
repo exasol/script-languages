@@ -507,3 +507,6 @@ def main(
                     Path(output_directory),
                     Path(relative_output_directory),
                 )
+
+if __name__ == "__main__":
+    main()
