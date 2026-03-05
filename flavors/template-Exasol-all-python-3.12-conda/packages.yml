@@ -1,0 +1,117 @@
+build_steps:
+- name: build_deps
+  phases:
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages:
+      - name: protobuf
+        version: 6.31.1
+      - name: pcre
+        version: '8.45'
+      - name: bazel
+        version: 8.3.1
+      - name: make
+        version: 4.4.1
+      - name: chrpath
+        version: '0.16'
+      - name: gxx_linux-64
+        version: 15.1.0
+      - name: gcc_linux-64
+        version: 15.1.0
+      binary: Mamba
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_base_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: tzdata
+        version: 2025b-0ubuntu0.24.04.1
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages: []
+      binary: Mamba
+  validation_cfg:
+    version_mandatory: true
+- name: language_deps
+  phases:
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages:
+      - name: python
+        version: 3.12.11
+      - name: numpy
+        version: 1.26.2
+      - name: pandas
+        version: 2.3.3
+      - name: pyarrow
+        version: 22.0.0
+      - name: mamba
+        version: 2.3.3
+      binary: Micromamba
+  validation_cfg:
+    version_mandatory: true
+- name: udfclient_deps
+  phases:
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages:
+      - name: libprotobuf
+        version: 6.31.1
+      - name: zeromq
+        version: 4.3.5
+      - name: nss
+        version: '3.116'
+      - name: cppzmq
+        version: 4.10.0
+      binary: Micromamba
+  validation_cfg:
+    version_mandatory: true
+- name: conda_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: coreutils
+        version: 9.4-3ubuntu6.1
+      - name: adduser
+        version: 3.137ubuntu1
+      - name: locales
+        version: 2.39-0ubuntu8.7
+      - name: curl
+        version: 8.5.0-2ubuntu10.7
+      - name: ca-certificates
+        version: '20240203'
+      - name: bzip2
+        version: 1.0.8-5.1build0.1
+      - name: libxml2
+        version: 2.9.14+dfsg-1.3ubuntu3.7
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_customization
+  phases:
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages: []
+#        - name: cuda-compat
+#          version: 12.9.1
+      binary: Mamba
+  - name: install_pip_packages
+    pip:
+      packages: []
+#        - name: tensorflow-probability
+#          version: 0.9.0
+  validation_cfg:
+    version_mandatory: false
+version: 1.0.0
