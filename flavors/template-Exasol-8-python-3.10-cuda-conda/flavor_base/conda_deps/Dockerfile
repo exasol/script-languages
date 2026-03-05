@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM exasol/slc_base:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV ARCHIVE_UBUNTU_PREFIX=""
@@ -9,24 +9,16 @@ COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 COPY scripts /scripts
 
 RUN mkdir -p /build_info/packages
-COPY conda_deps/packages /build_info/packages/conda_deps
-RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/conda_deps/apt_get_packages --with-versions
+COPY conda_deps_packages.yml /build_info/packages/conda_deps_packages.yml
+RUN exaslpm install --package-file /build_info/packages/conda_deps_packages.yml --build-step conda_deps
 
-ENV ENV_NAME="base"
-ENV MAMBA_ROOT_PREFIX="/opt/conda"
-ENV MAMBA_EXE="/bin/micromamba"
-ENV MAMBA_DOCKERFILE_ACTIVATE=1
 
-COPY scripts/virtual_environment/_activate_current_conda_env.sh /usr/local/bin/_activate_current_env.sh
 
 RUN addgroup --gid 1000 exasolution
 RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
 RUN addgroup --gid 500 exausers
 RUN adduser --disabled-login --uid 500 --gid 500 exadefusr --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
 
-SHELL ["/bin/bash", "-l", "-c"]
-ENV MICROMAMBA_VERSION=0.24.0
-RUN /scripts/install_scripts/install_micromamba.sh "$MICROMAMBA_VERSION"
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

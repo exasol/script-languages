@@ -98,6 +98,11 @@ build_steps:
         version: 1.0.8-5build1
       - name: libxml2
         version: 2.9.13+dfsg-1ubuntu0.11
+  - name: install_micromamba
+    tools:
+      micromamba:
+        version: 2.5.0-1
+        root_prefix: /opt/conda
   validation_cfg:
     version_mandatory: true
 - name: flavor_customization

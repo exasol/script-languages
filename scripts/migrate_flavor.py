@@ -12,12 +12,14 @@ from exasol.exaslpm.model.package_file_config import (
     CondaBinary,
     CondaPackage,
     CondaPackages,
+    Micromamba,
     PackageFile,
     Phase,
     PipPackage,
     PipPackages,
     RPackage,
     RPackages,
+    Tools,
     ValidationConfig,
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
@@ -38,6 +40,7 @@ BUILD_STEP_MAPPING = {
     "security_scan": INTERNAL_PACKAGE_FILE,
     "udfclient_deps": PUBLIC_PACKAGE_FILE,
     "conda_deps": PUBLIC_PACKAGE_FILE,
+    "conda": PUBLIC_PACKAGE_FILE,
     "flavor_customization": PUBLIC_PACKAGE_FILE,
 }
 
@@ -269,6 +272,34 @@ def _sort_build_steps(build_steps: list[BuildStep]) -> list[BuildStep]:
     return sorted(build_steps, key=lambda bs: (mapping_order.get(bs.name, 999), bs.name))
 
 
+def _read_micromamba_version_from_conda_deps(flavor_path: Path) -> str | None:
+    dockerfile_path = flavor_path / "flavor_base" / "conda_deps" / "Dockerfile"
+    if not dockerfile_path.is_file():
+        return None
+    dockerfile = dockerfile_path.read_text(encoding="utf-8")
+    match = re.search(r"^\s*ENV\s+MICROMAMBA_VERSION\s*=\s*([^\s#]+)\s*$", dockerfile, re.MULTILINE)
+    if not match:
+        return None
+    return match.group(1).strip().strip("\"'")
+
+
+def _create_conda_tools_build_step(flavor_path: Path) -> BuildStep | None:
+    micromamba_version = _read_micromamba_version_from_conda_deps(flavor_path)
+    if not micromamba_version:
+        return None
+    return BuildStep(
+        name="conda",
+        phases=[
+            Phase(
+                name="install_micromamba",
+                tools=Tools(
+                    micromamba=Micromamba(version=micromamba_version, root_prefix=Path("/opt/conda"))
+                ),
+            )
+        ],
+    )
+
+
 def migrate_flavor(flavor_path: Path) -> None:
     output_build_steps: dict[Path, list[BuildStep]] = defaultdict(list)
     grouped_build_steps: dict[str, list[BuildStep]] = defaultdict(list)
@@ -298,11 +329,20 @@ def migrate_flavor(flavor_path: Path) -> None:
             )
         )
 
+    conda_tools_build_step = _create_conda_tools_build_step(flavor_path)
+    if conda_tools_build_step:
+        output_build_steps[PUBLIC_PACKAGE_FILE].append(conda_tools_build_step)
+
     for package_file in {PUBLIC_PACKAGE_FILE, INTERNAL_PACKAGE_FILE}:
         package_file_path = flavor_path / package_file
         package_file_path.parent.mkdir(parents=True, exist_ok=True)
+        build_steps = _sort_build_steps(output_build_steps.get(package_file, []))
+        if not build_steps:
+            if package_file_path.exists():
+                package_file_path.unlink()
+            continue
         package_file_model = PackageFile(
-            build_steps=_sort_build_steps(output_build_steps.get(package_file, []))
+            build_steps=build_steps
         )
         package_file_path.write_text(
             to_yaml_str(package_file_model),

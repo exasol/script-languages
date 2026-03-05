@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM exasol/slc_base:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV ARCHIVE_UBUNTU_PREFIX=""
@@ -8,8 +8,8 @@ COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 COPY scripts /scripts
 
 RUN mkdir -p /build_info/packages
-COPY udfclient_deps/packages /build_info/packages/udfclient_deps
-RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/udfclient_deps/apt_get_packages --with-versions
+COPY udfclient_deps_packages.yml /build_info/packages/udfclient_deps_packages.yml
+RUN exaslpm install --package-file /build_info/packages/udfclient_deps_packages.yml --build-step udfclient_deps
 
 RUN usermod -l exasolution ubuntu
 RUN groupmod -n exasolution ubuntu
