@@ -26,6 +26,10 @@ build_steps:
     tools:
       bazel:
         version: '8.3.1'
+  - name: build_variables
+    variables:
+      PROTOBUF_BIN: /usr/bin/protoc
+      JAVA_HOME: usr/lib/jvm/java-1.17.0-openjdk-{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}
   validation_cfg:
     version_mandatory: true
 - name: flavor_base_deps
@@ -75,6 +79,10 @@ build_steps:
         version: 22.0.0
         extras: []
       install_build_tools_ephemerally: false
+  - name: language_variables
+    variables:
+      PYTHON3_PREFIX: /usr
+      PYTHON3_VERSION: python3.12
   validation_cfg:
     version_mandatory: true
 - name: udfclient_deps
@@ -98,6 +106,12 @@ build_steps:
         version: 3.21.12-8.2ubuntu0.3
       - name: libssl-dev
         version: 3.0.13-0ubuntu3.7
+  - name: udf_client_variables
+    variables:
+      PROTOBUF_LIBRARY_PREFIX: /usr/lib/
+      PROTOBUF_INCLUDE_PREFIX: /usr/include/
+      ZMQ_LIBRARY_PREFIX: /usr/lib
+      ZMQ_INCLUDE_PREFIX: /usr/include
   validation_cfg:
     version_mandatory: true
 - name: flavor_customization
