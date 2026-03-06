@@ -16,7 +16,6 @@ build_steps:
         version: 3.12.4-1ubuntu7.22.04.6
       - name: libssl-dev
         version: 3.0.2-0ubuntu1.21
-  - name: udf_client_variables
     variables:
       PROTOBUF_LIBRARY_PREFIX: /usr/lib/
       PROTOBUF_INCLUDE_PREFIX: /usr/include/
@@ -37,6 +36,9 @@ build_steps:
         version: 3.10.8-1~22.04
       - name: curl
         version: 7.81.0-1ubuntu1.22
+    variables:
+      PYTHON3_PREFIX: /usr
+      PYTHON3_VERSION: python3.10
   - name: phase_python_binary
     tools:
       python_binary_path: /usr/bin/python3.10
@@ -58,10 +60,6 @@ build_steps:
         version: ==22.0.0
         extras: []
       install_build_tools_ephemerally: false
-  - name: language_variables
-    variables:
-      PYTHON3_PREFIX: /usr
-      PYTHON3_VERSION: python3.10
   validation_cfg:
     version_mandatory: true
 - name: flavor_base_deps

@@ -41,17 +41,15 @@ build_steps:
         version: 3.12.4-1ubuntu7.22.04.6
       - name: chrpath
         version: 0.16-2
+    variables:
+      PROTOBUF_BIN: /usr/bin/protoc
+      JAVA_HOME: usr/lib/jvm/java-1.11.0-openjdk-{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}
   - name: install_bazel
     tools:
       bazel:
         version: '8.3.1'
-  - name: build_variables
-    variables:
-      PROTOBUF_BIN: /usr/bin/protoc
-      JAVA_HOME: usr/lib/jvm/java-1.11.0-openjdk-{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}
   validation_cfg:
     version_mandatory: true
-
 - name: security_scan
   phases:
   - name: install_deps
