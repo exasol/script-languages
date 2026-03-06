@@ -38,8 +38,4 @@ WORKDIR /exaudf
 
 RUN rm -r /exaudfclient
 
-COPY --from={{build_deps}} /build_info /build_info
-RUN true # workaround for https://github.com/moby/moby/issues/37965
-
-
 RUN mkdir /conf /buckets
