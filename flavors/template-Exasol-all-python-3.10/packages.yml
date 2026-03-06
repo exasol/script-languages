@@ -85,12 +85,12 @@ build_steps:
     apt:
       packages: []
 #        - name: p7zip-full
-#          version: 16.02+dfsg-6
+#          version: ==16.02+dfsg-6
   - name: install_pip_packages
     pip:
       packages: []
 #        - name: tensorflow-probability
-#          version: 0.9.0
+#          version: ==0.9.0
   validation_cfg:
     version_mandatory: false
 version: 1.0.0
