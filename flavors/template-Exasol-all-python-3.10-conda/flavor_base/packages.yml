@@ -1,0 +1,68 @@
+build_steps:
+- name: build_deps
+  phases:
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages:
+      - name: protobuf
+        version: =6.31.1
+      - name: pcre
+        version: '=8.45'
+      - name: bazel
+        version: =8.3.1
+      - name: gxx_linux-64
+        version: =12.4.0
+      - name: gcc_linux-64
+        version: =12.4.0
+      - name: make
+        version: '=4.3'
+      - name: chrpath
+        version: '=0.16'
+      binary: Mamba
+    variables:
+      PROTOBUF_BIN: /opt/conda/bin/protoc
+      LD_LIBRARY_PATH: '$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/'
+      CPLUS_INCLUDE_PATH: '$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/'
+      C_INCLUDE_PATH: '$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/'
+  validation_cfg:
+    version_mandatory: true
+- name: base_test_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: gdb
+        version: 12.1-0ubuntu1~22.04.2
+      - name: valgrind
+        version: 1:3.18.1-1ubuntu2
+      - name: gdbserver
+        version: 12.1-0ubuntu1~22.04.2
+      - name: binutils
+        version: 2.38-4ubuntu2.12
+      - name: patchelf
+        version: 0.14.3-1
+      - name: strace
+        version: 5.16-0ubuntu3
+  validation_cfg:
+    version_mandatory: true
+- name: security_scan
+  phases:
+  - name: install_deps
+    apt:
+      packages:
+        - name: gnupg
+  - name: install_trivy
+    apt:
+      repos:
+        trivy:
+          key_url: https://aquasecurity.github.io/trivy-repo/deb/public.key
+          entry: deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb
+            generic main
+          out_file: trivy.list
+      packages:
+        - name: trivy
+  validation_cfg:
+    version_mandatory: false
+version: 1.0.0

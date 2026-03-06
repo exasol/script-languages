@@ -16,11 +16,9 @@ FROM {{flavor_base_deps}}
 
 RUN mkdir -p /build_info/packages/flavor_customization
 
-COPY flavor_customization/packages /build_info/packages/flavor_customization
-RUN /scripts/install_scripts/install_via_conda.pl --file /build_info/packages/flavor_customization/conda_packages --channel-file /build_info/packages/flavor_customization/conda_channels --with-versions --allow-no-version --conda-binary "$MAMBA_ROOT_PREFIX/bin/mamba"
+COPY flavor_customization_packages.yaml /build_info/packages/flavor_customization_packages.yaml
+RUN exaslpm install --package-file /build_info/packages/flavor_customization_packages.yaml --build-step flavor_customization
 
-COPY flavor_customization/packages/python3_pip_packages /build_info/packages/flavor_customization
-RUN /scripts/install_scripts/install_via_pip.pl --file /build_info/packages/flavor_customization/python3_pip_packages --python-binary "$MAMBA_ROOT_PREFIX/bin/python3.10" --with-versions --allow-no-version
 
 ##########################################################################
 ##########################################################################
