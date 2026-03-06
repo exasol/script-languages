@@ -69,7 +69,6 @@ build_steps:
     variables:
       PYTHON3_PREFIX: $MAMBA_ROOT_PREFIX
       PYTHON3_VERSION: python3.10
-      MAMBA_BIN: $MAMBA_ROOT_PREFIX/bin/mamba
   - name: configure_tools
     tools:
      mamba_binary_path: /opt/conda/bin/mamba
