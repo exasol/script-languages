@@ -11,7 +11,7 @@ COPY /exaudfclient/ /exaudfclient/
 
 WORKDIR /exaudfclient/
 # We need to build with optimize here, because the debug build fails to run with a runtime linking error regarding protobuf
-RUN ["/bin/bash", "-c", "source /env && bash build.sh --config no-tty -c dbg --config python --config test-binaries"]
+RUN bash -c "source /env && ./build.sh --config no-tty -c dbg --config python --config test-binaries"
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base

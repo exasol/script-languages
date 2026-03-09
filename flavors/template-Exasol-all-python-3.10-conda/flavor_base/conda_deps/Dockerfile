@@ -1,4 +1,4 @@
-FROM exasol/script-language-container:exaslpm-ubuntu-22.04
+FROM exasol/script-language-container:exaslpm-1.0.0-ubuntu-22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 
