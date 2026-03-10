@@ -1,6 +1,6 @@
 FROM {{build_deps}}
 
 RUN mkdir -p /build_info/packages
-COPY base_test_deps/packages /build_info/packages/base_test_deps
 
-RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/base_test_deps/apt_get_packages --with-versions
+COPY base_test_deps_packages.yaml /build_info/packages/base_test_deps_packages.yaml
+RUN exaslpm install --package-file /build_info/packages/base_test_deps_packages.yaml --build-step base_test_deps
