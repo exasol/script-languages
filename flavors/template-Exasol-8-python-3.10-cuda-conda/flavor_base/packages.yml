@@ -17,9 +17,9 @@ build_steps:
       - name: chrpath
         version: '=0.16'
       - name: gxx_linux-64
-        version: =11.2.0
+        version: =13.4.0
       - name: gcc_linux-64
-        version: =11.2.0
+        version: =13.4.0
       binary: Mamba
     variables:
       PROTOBUF_BIN: '$MAMBA_ROOT_PREFIX/bin/protoc'
