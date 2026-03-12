@@ -1,4 +1,4 @@
-FROM exasol/script-language-container:exaslpm-1.0.0-ubuntu-24.04
+FROM exasol/script-language-container:exaslpm-1.1.0-ubuntu-24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV ARCHIVE_UBUNTU_PREFIX=""
