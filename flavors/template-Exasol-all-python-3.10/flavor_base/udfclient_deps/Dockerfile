@@ -1,4 +1,4 @@
-FROM exasol/script-language-container:exaslpm-1.0.0-ubuntu-22.04
+FROM exasol/script-language-container:exaslpm-1.1.0-ubuntu-22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
