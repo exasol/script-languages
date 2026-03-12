@@ -6,8 +6,8 @@ COPY scripts /scripts
 
 RUN mkdir -p /build_info/packages
 
-COPY build_deps_packages.yaml /build_info/packages/build_deps_packages.yaml
-RUN exaslpm install --package-file /build_info/packages/build_deps_packages.yaml --build-step build_deps
+COPY build_deps_packages.yml /build_info/packages/build_deps_packages.yml
+RUN exaslpm install --package-file /build_info/packages/build_deps_packages.yml --build-step build_deps
 
 RUN curl -L -o swig-2.0.4.tar.gz https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
