@@ -9,8 +9,8 @@ COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 COPY scripts /scripts
 
 RUN mkdir -p /build_info/packages
-COPY conda_deps_packages.yaml /build_info/packages/conda_deps_packages.yaml
-RUN exaslpm install --package-file /build_info/packages/conda_deps_packages.yaml --build-step conda_deps
+COPY conda_deps_packages.yml /build_info/packages/conda_deps_packages.yml
+RUN exaslpm install --package-file /build_info/packages/conda_deps_packages.yml --build-step conda_deps
 
 
 RUN usermod -l exasolution ubuntu
