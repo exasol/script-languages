@@ -2,7 +2,6 @@ FROM exasol/script-language-container:exaslpm-1.1.0-ubuntu-24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
-COPY scripts /scripts
 
 RUN mkdir -p /build_info/packages
 
