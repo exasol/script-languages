@@ -1,3 +1,5 @@
+import os
+import platform
 from pathlib import Path
 
 
@@ -56,3 +58,16 @@ def run_oft_udf_client_html(session: nox.Session):
     """
     html_file = session.posargs[0] if session.posargs else "report.html"
     run_oft_for_udf_client(session, "-o", "html", "-f", html_file)
+
+@nox.session(name="detect-platform", python=False)
+def detect_platform(session: nox.Session):
+    """
+    Detects the platform of the current runner and sets it as a GitHub Actions output.
+    Only temporary solution until https://github.com/exasol/script-languages-container-ci/issues/140 is available.
+    """
+    machine = platform.machine()
+
+    github_output = os.getenv("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a") as f:
+            f.write(f"platform_machine={machine}\n")
