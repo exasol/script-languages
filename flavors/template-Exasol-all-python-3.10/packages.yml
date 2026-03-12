@@ -35,7 +35,7 @@ build_steps:
       - name: python3-distutils
         version: 3.10.8-1~22.04
       - name: curl
-        version: 7.81.0-1ubuntu1.22
+        version: 7.81.0-1ubuntu1.23
     variables:
       PYTHON3_PREFIX: /usr
       PYTHON3_VERSION: python3.10
@@ -72,7 +72,7 @@ build_steps:
       - name: git
         version: 1:2.34.1-1ubuntu1.17
       - name: libcurl4-openssl-dev
-        version: 7.81.0-1ubuntu1.22
+        version: 7.81.0-1ubuntu1.23
       - name: build-essential
         version: 12.9ubuntu3
       - name: tzdata
