@@ -7,9 +7,9 @@ build_steps:
       - name: ca-certificates
         version: '20240203'
       - name: python3.12-dev
-        version: 3.12.3-1ubuntu0.11
+        version: 3.12.3-1ubuntu0.12
       - name: curl
-        version: 8.5.0-2ubuntu10.7
+        version: 8.5.0-2ubuntu10.8
     variables:
       PYTHON3_PREFIX: /usr
       PYTHON3_VERSION: python3.12
@@ -74,7 +74,7 @@ build_steps:
       - name: git
         version: 1:2.43.0-1ubuntu7.3
       - name: libcurl4-openssl-dev
-        version: 8.5.0-2ubuntu10.7
+        version: 8.5.0-2ubuntu10.8
       - name: build-essential
         version: 12.10ubuntu1
   validation_cfg:

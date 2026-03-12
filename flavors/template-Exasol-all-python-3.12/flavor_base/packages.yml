@@ -9,7 +9,7 @@ build_steps:
       - name: tar
         version: 1.35+dfsg-3build1
       - name: curl
-        version: 8.5.0-2ubuntu10.7
+        version: 8.5.0-2ubuntu10.8
       - name: openjdk-17-jdk
         version: 17.0.18+8-1~24.04.1
       - name: build-essential
