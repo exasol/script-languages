@@ -9,7 +9,7 @@ build_steps:
       - name: locales
         version: 2.35-0ubuntu3.13
       - name: curl
-        version: 7.81.0-1ubuntu1.22
+        version: 7.81.0-1ubuntu1.23
       - name: ca-certificates
         version: 20240203~22.04.1
       - name: bzip2
