@@ -1,0 +1,118 @@
+build_steps:
+- name: conda_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: coreutils
+        version: 8.32-4.1ubuntu1.2
+      - name: locales
+        version: 2.35-0ubuntu3.13
+      - name: curl
+        version: 7.81.0-1ubuntu1.23
+      - name: ca-certificates
+        version: 20240203~22.04.1
+      - name: bzip2
+        version: 1.0.8-5build1
+      - name: libxml2
+        version: 2.9.13+dfsg-1ubuntu0.11
+  - name: install_micromamba
+    tools:
+      micromamba:
+        version: 2.5.0-1
+        root_prefix: /opt/conda
+    variables:
+      MAMBA_ROOT_PREFIX: /opt/conda
+  validation_cfg:
+    version_mandatory: true
+- name: udfclient_deps
+  phases:
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages:
+      - name: libprotobuf
+        version: =6.31.1
+      - name: zeromq
+        version: =4.3.5
+      - name: nss
+        version: '=3.100'
+      - name: cppzmq
+        version: =4.10.0
+      binary: Micromamba
+    variables:
+      PROTOBUF_LIBRARY_PREFIX: $MAMBA_ROOT_PREFIX/lib
+      PROTOBUF_INCLUDE_PREFIX: $MAMBA_ROOT_PREFIX/include
+      ZMQ_LIBRARY_PREFIX: $MAMBA_ROOT_PREFIX/lib
+      ZMQ_INCLUDE_PREFIX: $MAMBA_ROOT_PREFIX/include
+  validation_cfg:
+    version_mandatory: true
+- name: language_deps
+  phases:
+  - name: setup_cuda
+    variables:
+      CONDA_OVERRIDE_CUDA: '12.9'
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      - nvidia
+      packages:
+      - name: python
+        version: =3.10.4
+      - name: numpy
+        version: =1.26.2
+      - name: pandas
+        version: =2.3.1
+      - name: pyarrow
+        version: =22.0.0
+      - name: cuda-toolkit
+        version: =12.9.1
+      - name: libarrow
+        version: =22.0.0=h552f9d5_3_cuda
+      - name: mamba
+        version: =2.3.3
+      binary: Micromamba
+    variables:
+      PYTHON3_PREFIX: $MAMBA_ROOT_PREFIX
+      PYTHON3_VERSION: python3.10
+  - name: configure_tools
+    tools:
+       mamba_binary_path: /opt/conda/bin/mamba
+       python_binary_path: /opt/conda/bin/python3.10
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_base_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: tzdata
+        version: 2025b-0ubuntu0.22.04.1
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages: []
+      binary: Mamba
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_customization
+  phases:
+  - name: install_conda_packages
+    conda:
+      channels:
+      - conda-forge
+      packages: []
+#        - name: cuda-compat
+#          version: =12.9.1
+      binary: Mamba
+  - name: install_pip_packages
+    pip:
+      packages: []
+#        - name: tensorflow-probability
+#          version: =0.9.0
+  validation_cfg:
+    version_mandatory: false
+version: 1.0.0
