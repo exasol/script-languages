@@ -1,0 +1,96 @@
+build_steps:
+- name: udfclient_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: coreutils
+        version: 8.32-4.1ubuntu1.2
+      - name: locales
+        version: 2.35-0ubuntu3.13
+      - name: libnss-db
+        version: 2.2.3pre1-6ubuntu3
+      - name: libzmq3-dev
+        version: 4.3.4-2
+      - name: libprotobuf-dev
+        version: 3.12.4-1ubuntu7.22.04.6
+      - name: libssl-dev
+        version: 3.0.2-0ubuntu1.21
+    variables:
+      PROTOBUF_LIBRARY_PREFIX: /usr/lib/
+      PROTOBUF_INCLUDE_PREFIX: /usr/include/
+      ZMQ_LIBRARY_PREFIX: /usr/lib
+      ZMQ_INCLUDE_PREFIX: /usr/include
+  validation_cfg:
+    version_mandatory: true
+- name: language_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: ca-certificates
+        version: 20240203~22.04.1
+      - name: python3.10-dev
+        version: 3.10.12-1~22.04.15
+      - name: python3-distutils
+        version: 3.10.8-1~22.04
+      - name: curl
+        version: 7.81.0-1ubuntu1.23
+    variables:
+      PYTHON3_PREFIX: /usr
+      PYTHON3_VERSION: python3.10
+  - name: phase_python_binary
+    tools:
+      python_binary_path: /usr/bin/python3.10
+  - name: install_pip
+    tools:
+      pip:
+        version: '21.3.1'
+        needs_break_system_packages: false
+  - name: install_pip_packages
+    pip:
+      packages:
+      - name: pandas
+        version: ==2.2.3
+        extras: []
+      - name: numpy
+        version: ==1.26.4
+        extras: []
+      - name: pyarrow
+        version: ==22.0.0
+        extras: []
+      install_build_tools_ephemerally: false
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_base_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: unzip
+        version: 6.0-26ubuntu3.2
+      - name: git
+        version: 1:2.34.1-1ubuntu1.17
+      - name: libcurl4-openssl-dev
+        version: 7.81.0-1ubuntu1.23
+      - name: build-essential
+        version: 12.9ubuntu3
+      - name: tzdata
+        version: 2025b-0ubuntu0.22.04.1
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_customization
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages: []
+#        - name: p7zip-full
+#          version: ==16.02+dfsg-6
+  - name: install_pip_packages
+    pip:
+      packages: []
+#        - name: tensorflow-probability
+#          version: ==0.9.0
+  validation_cfg:
+    version_mandatory: false
+version: 1.0.0
