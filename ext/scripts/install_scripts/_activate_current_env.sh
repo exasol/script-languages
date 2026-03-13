@@ -1,3 +1,5 @@
+# shellcheck disable=SC2148
+
 # This script should never be called directly, only sourced:
 
 #     source _activate_current_env.sh
