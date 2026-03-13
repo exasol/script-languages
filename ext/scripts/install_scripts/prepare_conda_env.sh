@@ -28,3 +28,4 @@ chmod -R a+rx /usr/local/bin/_activate_current_env.sh
 
 # Add conda lib directory to ld.so.conf
 echo "$MAMBA_ROOT_PREFIX/lib" > /etc/ld.so.conf.d/conda.conf
+
