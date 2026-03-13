@@ -1,0 +1,42 @@
+module(name="exaudfclient_base", version = "1.0")
+
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "googletest", version = "1.15.0")
+bazel_dep(name = "rules_jvm_external", version = "6.2")
+
+# The following is necessary to build the UDF client for Java
+# Since Bazel >8 the Python hermetic build rules must not run as root
+# However, since the UDF client is built as root in a docker container
+# we must disable this behavior. The only way is to configure the Python hermetic toolchain
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.defaults(python_version = "3.11")
+python.toolchain(python_version = "3.11", ignore_root_user_error = True,)
+
+
+numpy_local_repository = use_repo_rule("@exaudfclient_base//:python_repository.bzl", "numpy_local_repository")
+numpy_local_repository(name = "numpy")
+
+python_local_repository = use_repo_rule("@exaudfclient_base//:python_repository.bzl", "python_local_repository")
+python_local_repository(name = "python3", python_version="python3")
+
+zmq_local_repository = use_repo_rule("@exaudfclient_base//:zmq_repository.bzl", "zmq_local_repository")
+zmq_local_repository(name = "zmq")
+
+protobuf_local_repository = use_repo_rule("@exaudfclient_base//:protobuf_repository.bzl", "protobuf_local_repository")
+protobuf_local_repository(name = "protobuf")
+
+java_local_repository = use_repo_rule("@exaudfclient_base//:java_repository.bzl", "java_local_repository")
+java_local_repository(name = "java")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "com.exasol:udf-api-java:1.0.5",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "maven")

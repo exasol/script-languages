@@ -6,7 +6,7 @@ from exasol_python_test_framework.exatest.utils import obj_from_json_file
 
 class WebsocketAPIConnectionTest(udf.TestCase):
     # TODO use dsn and credentials injected into the testcase
-    db_port = obj_from_json_file("/environment_info.json").database_info.ports.database
+    db_port = obj_from_json_file("/environment_info.json").database_info.ports._database
     connection = f"localhost:{db_port}"
     user = "sys"
     pwd = "exasol"

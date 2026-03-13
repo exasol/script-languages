@@ -1,8 +1,8 @@
-#include "base/script_options_parser/legacy/script_option_lines.h"
+#include "script_options_parser/legacy/script_option_lines.h"
 #include <gtest/gtest.h>
 #include <string>
 #include <exception>
-#include "base/script_options_parser/exception.h"
+#include "script_options_parser/exception.h"
 
 const std::string whitespace = " \t\f\v";
 const std::string lineEnd = ";";

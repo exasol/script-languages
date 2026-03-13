@@ -1,5 +1,5 @@
-#include "base/javacontainer/script_options/parser_ctpg_jvm_options_parser.h"
-#include "base/script_options_parser/ctpg/ctpg.hpp"
+#include "javacontainer/script_options/parser_ctpg_jvm_options_parser.h"
+#include "script_options_parser/ctpg/ctpg.hpp"
 #include <sstream>
 
 using namespace exaudf_ctpg;

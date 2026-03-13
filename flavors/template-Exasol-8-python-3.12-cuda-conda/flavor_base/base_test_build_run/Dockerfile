@@ -2,16 +2,17 @@ FROM {{base_test_deps}}
 
 RUN mkdir /conf /buckets
 
+RUN exaslpm export-variables --out-file /env
+
 RUN ldconfig
 
 RUN mkdir /exaudfclient /exaudf
 COPY /exaudfclient/ /exaudfclient/
 
 WORKDIR /exaudfclient/
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/
-ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-RUN ./build.sh --config no-tty -c dbg --config python --config test-binaries
+
+RUN bash -c "source /env && ./build.sh --config no-tty -c dbg --config python --config test-binaries"
+
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base

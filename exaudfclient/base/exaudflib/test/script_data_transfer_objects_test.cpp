@@ -1,4 +1,4 @@
-#include "base/exaudflib/swig/script_data_transfer_objects.h"
+#include "exaudflib/swig/script_data_transfer_objects.h"
 #include <gtest/gtest.h>
 
 using namespace ExecutionGraph;

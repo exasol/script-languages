@@ -20,5 +20,5 @@ RUN true # workaround for https://github.com/moby/moby/issues/37965
 
 RUN mkdir -p /build_info/actual_installed_packages/release && \
     /scripts/list_installed_scripts/list_installed_apt.sh > /build_info/actual_installed_packages/release/apt_get_packages && \
-    /scripts/list_installed_scripts/list_installed_pip.sh "$MAMBA_ROOT_PREFIX/bin/python3.10" > /build_info/actual_installed_packages/release/python3_pip_packages && \
+    /scripts/list_installed_scripts/list_installed_pip.sh "$MAMBA_ROOT_PREFIX/bin/python3.12" > /build_info/actual_installed_packages/release/python3_pip_packages && \
    /scripts/list_installed_scripts/list_installed_conda.sh > /build_info/actual_installed_packages/release/conda_packages

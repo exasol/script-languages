@@ -1,0 +1,96 @@
+build_steps:
+- name: language_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: ca-certificates
+        version: '20240203'
+      - name: python3.12-dev
+        version: 3.12.3-1ubuntu0.12
+      - name: curl
+        version: 8.5.0-2ubuntu10.8
+    variables:
+      PYTHON3_PREFIX: /usr
+      PYTHON3_VERSION: python3.12
+  - name: phase_python_binary
+    tools:
+      python_binary_path: /usr/bin/python3.12
+  - name: install_pip
+    tools:
+      pip:
+        version: '25.2'
+        needs_break_system_packages: true
+  - name: install_pip_packages
+    pip:
+      packages:
+      - name: pandas
+        version: ==2.2.3
+        extras: []
+      - name: numpy
+        version: ==1.26.4
+        extras: []
+      - name: pyarrow
+        version: ==22.0.0
+        extras: []
+      install_build_tools_ephemerally: false
+  validation_cfg:
+    version_mandatory: true
+- name: udfclient_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: coreutils
+        version: 9.4-3ubuntu6.1
+      - name: adduser
+        version: 3.137ubuntu1
+      - name: locales
+        version: 2.39-0ubuntu8.7
+      - name: libnss-db
+        version: 2.2.3pre1-9build3
+      - name: libzmq3-dev
+        version: 4.3.5-1build2
+      - name: cppzmq-dev
+        version: 4.10.0-1build1
+      - name: libprotobuf-dev
+        version: 3.21.12-8.2ubuntu0.3
+      - name: libssl-dev
+        version: 3.0.13-0ubuntu3.7
+    variables:
+      PROTOBUF_LIBRARY_PREFIX: /usr/lib/
+      PROTOBUF_INCLUDE_PREFIX: /usr/include/
+      ZMQ_LIBRARY_PREFIX: /usr/lib
+      ZMQ_INCLUDE_PREFIX: /usr/include
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_base_deps
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: unzip
+        version: 6.0-28ubuntu4.1
+      - name: git
+        version: 1:2.43.0-1ubuntu7.3
+      - name: libcurl4-openssl-dev
+        version: 8.5.0-2ubuntu10.8
+      - name: build-essential
+        version: 12.10ubuntu1
+  validation_cfg:
+    version_mandatory: true
+- name: flavor_customization
+  phases:
+  - name: install_apt_packages
+    apt:
+      packages: []
+#        - name: p7zip-full
+#          version: 16.02+dfsg-6
+  - name: install_pip_packages
+    pip:
+      packages: []
+#        - name: tensorflow-probability
+#          version: ==0.9.0
+  validation_cfg:
+    version_mandatory: false
+version: 1.0.0

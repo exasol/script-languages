@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "base/script_options_parser/exception.h"
+#include "script_options_parser/exception.h"
 
 using namespace exaudf_ctpg;
 using namespace exaudf_ctpg::ftors;

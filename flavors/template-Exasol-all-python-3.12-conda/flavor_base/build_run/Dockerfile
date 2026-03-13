@@ -1,13 +1,12 @@
 FROM {{build_deps}}
 
+RUN exaslpm export-variables --out-file /env
+
 RUN mkdir /exaudfclient /exaudf
 COPY exaudfclient/ /exaudfclient/
 
 WORKDIR /exaudfclient/
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/
-ENV CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-ENV C_INCLUDE_PATH=$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/
-RUN ./build.sh --config no-tty --config optimize --config python --config fast-binary --config fix_conda_ar_tool
+RUN bash -c "source /env && ./build.sh --config no-tty --config optimize --config python --config fast-binary --config fix_conda_ar_tool"
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base
@@ -16,9 +15,5 @@ RUN ./test_udfclient.sh /exaudf/exaudfclient
 WORKDIR /exaudf
 
 RUN rm -r /exaudfclient
-
-COPY --from={{build_deps}} /build_info /build_info
-RUN true # workaround for https://github.com/moby/moby/issues/37965
-
 
 RUN mkdir /conf /buckets

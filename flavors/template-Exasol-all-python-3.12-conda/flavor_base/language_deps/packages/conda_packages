@@ -1,5 +1,5 @@
 python|3.12.11
 numpy|1.26.2
 pandas|2.3.3
-pyarrow|21.0.0
-mamba|2.3.2
+pyarrow|22.0.0
+mamba|2.3.3

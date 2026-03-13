@@ -1,0 +1,19 @@
+build --lockfile_mode=off --copt='-std=c++17' --force_pic --action_env=PROTOBUF_BIN --action_env=PROTOBUF_LIBRARY_PREFIX --action_env=PROTOBUF_INCLUDE_PREFIX
+build:benchmark --define benchmark=true
+build:java  --define java=true --action_env=JAVA_PREFIX
+build:python --define python=true --action_env=NUMPY_PREFIX --action_env=PYTHON3_SYSPATH --action_env=PYTHON3_PREFIX --action_env=PYTHON3_VERSION
+build:debug-build --sandbox_debug --config=verbose
+build:no-symlinks --symlink_prefix=/
+build:asan --strip=never
+build:asan --copt -fsanitize=address
+build:asan --copt -DADDRESS_SANITIZER
+build:asan --copt -O1
+build:asan --copt -g
+build:asan --copt -fno-omit-frame-pointer
+build:asan --linkopt -fsanitize=address
+build:asan -c dbg
+build:valgrind --copt -O1
+build:valgrind -c dbg
+build:valgrind --copt -g
+build:valgrind --strip=never
+build:valgrind --copt -DVALGRIND_ACTIVE
