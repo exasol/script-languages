@@ -15,9 +15,10 @@ RUN true # workaround for https://github.com/moby/moby/issues/37965
 COPY --from={{build_deps}} /etc /etc
 RUN true # workaround for https://github.com/moby/moby/issues/37965
 
-COPY --from={{build_deps}} /env /env
+COPY --from={{build_deps}} /build_info /build_info
 RUN true # workaround for https://github.com/moby/moby/issues/37965
 
+RUN exaslpm export-variables --out-file /env
 
 RUN ldconfig
 
@@ -35,9 +36,6 @@ RUN ./test_udfclient.sh /exaudf/exaudfclient
 WORKDIR /exaudf
 
 RUN rm -r /exaudfclient
-
-COPY --from={{build_deps}} /build_info /build_info
-RUN true # workaround for https://github.com/moby/moby/issues/37965
 
 
 RUN mkdir /conf /buckets
