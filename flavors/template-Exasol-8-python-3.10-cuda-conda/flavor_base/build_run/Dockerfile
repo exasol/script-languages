@@ -7,7 +7,7 @@ RUN exaslpm export-variables --out-file /env
 
 WORKDIR /exaudfclient/
 
-RUN bash -c "source /env && ./build.sh --config no-tty --config optimize --config python --config slow-wrapper --config fix_conda_ar_tool"
+RUN bash -c "source /env && ./build.sh --config no-tty --config optimize --config python --config slow-wrapper --config fix_conda_ar_tool_amd64"
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base
