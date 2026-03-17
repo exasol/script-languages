@@ -1,7 +1,7 @@
 {
-  "build_runners": ["ubuntu-24.04"],
+  "build_runners": ["ubuntu-24.04", "ubuntu-24.04-arm"],
   "test_config": {
-    "default_test_runners": ["ubuntu-24.04", "ubuntu-24.04-arm"],
+    "default_test_runners": ["ubuntu-24.04"],
     "test_sets": [
       {
         "name": "python",
