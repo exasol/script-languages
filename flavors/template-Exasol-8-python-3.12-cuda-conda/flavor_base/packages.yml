@@ -16,9 +16,9 @@ build_steps:
         version: =4.4.1
       - name: chrpath
         version: '=0.16'
-      - name: gxx_linux-64
+      - name: gxx
         version: =13.4.0
-      - name: gcc_linux-64
+      - name: gcc
         version: =13.4.0
       binary: Mamba
     variables:
@@ -26,6 +26,8 @@ build_steps:
       LD_LIBRARY_PATH: '$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/'
       CPLUS_INCLUDE_PATH: '$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/'
       C_INCLUDE_PATH: '$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/'
+      SWIG_BUILD_ARCH: "{% if platform == 'x86_64' %}x86_64{% else %}aarch64{% endif %}"
+      HOST_PLATFORM: "{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}"
   validation_cfg:
     version_mandatory: true
 - name: base_test_deps
