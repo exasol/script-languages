@@ -764,14 +764,14 @@ PyGithub = ">=2.3.0,<3.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
-version = "4.0.2"
+version = "4.0.3"
 description = "Script Languages Container Tool"
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "exasol_script_languages_container_tool-4.0.2-py3-none-any.whl", hash = "sha256:b4ff796a55de874c737605761db0151327708bb46b93a5dac63eb9a078055c9b"},
-    {file = "exasol_script_languages_container_tool-4.0.2.tar.gz", hash = "sha256:72dee7ee86bd06d826bc4b98f083b3c5d466b2c965ffc3a66071d450502f6ba3"},
+    {file = "exasol_script_languages_container_tool-4.0.3-py3-none-any.whl", hash = "sha256:0a9319203114743f1b80d7d74a0af4d8fb62461151c73ac6cc5f0b34b83544c6"},
+    {file = "exasol_script_languages_container_tool-4.0.3.tar.gz", hash = "sha256:2e2916106d1ecb1fea7b0ea6e1ef746cb56a5d4f80eb5a93e22dcb2901e32e87"},
 ]
 
 [package.dependencies]
@@ -2816,4 +2816,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <3.14.0"
-content-hash = "c0dce5ced473e6f2fbf52661a674f2a88e7e506ff51ba49a05a4e91f708308b2"
+content-hash = "2053b0ff21a1c1b3c04ac3ba76e02fa3628625acbc3a8c0aad67446a912737d3"
