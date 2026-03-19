@@ -1,32 +1,33 @@
-FROM ubuntu:24.04
+FROM exasol/script-language-container:exaslpm-1.1.0-ubuntu-24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
-ENV ARCHIVE_UBUNTU_PREFIX=""
-RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1$ARCHIVE_UBUNTU_PREFIX\2/" /etc/apt/sources.list
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
 COPY scripts /scripts
 
 RUN mkdir -p /build_info/packages
-COPY conda_deps/packages /build_info/packages/conda_deps
-RUN /scripts/install_scripts/install_via_apt.pl --file /build_info/packages/conda_deps/apt_get_packages --with-versions
+COPY conda_deps_packages.yml /build_info/packages/conda_deps_packages.yml
+RUN exaslpm install --package-file /build_info/packages/conda_deps_packages.yml --build-step conda_deps
 
-ENV ENV_NAME="base"
-ENV MAMBA_ROOT_PREFIX="/opt/conda"
-ENV MAMBA_EXE="/bin/micromamba"
-ENV MAMBA_DOCKERFILE_ACTIVATE=1
 
-COPY scripts/virtual_environment/_activate_current_conda_env.sh /usr/local/bin/_activate_current_env.sh
 
 RUN usermod -l exasolution ubuntu
 RUN groupmod -n exasolution ubuntu
 RUN addgroup --gid 500 exausers
 RUN adduser --disabled-login --uid 500 --gid 500 exadefusr --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
 
+
+ENV MAMBA_EXE="/bin/micromamba"
+ENV MAMBA_DOCKERFILE_ACTIVATE=1
+ENV ENV_NAME="base"
+ENV MAMBA_ROOT_PREFIX="/opt/conda"
+
+COPY scripts/install_scripts/_activate_current_env.sh /usr/local/bin/_activate_current_env.sh
+
+RUN /scripts/install_scripts/prepare_conda_env.sh
+
 SHELL ["/bin/bash", "-l", "-c"]
-ENV MICROMAMBA_VERSION=0.24.0
-RUN /scripts/install_scripts/install_micromamba.sh "$MICROMAMBA_VERSION"
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

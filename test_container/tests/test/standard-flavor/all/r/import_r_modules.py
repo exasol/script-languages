@@ -10,23 +10,71 @@ class ImportAllModulesTest(udf.TestCase):
         self.query('create schema import_all_r_modules', ignore_errors=True)
 
     def get_all_root_modules(self) -> List[Tuple[str, str]]:
-        self.query(udf.fixindent('''
+        self.query(udf.fixindent(r'''
             CREATE OR REPLACE r SCALAR SCRIPT import_all_r_modules.get_all_root_modules() 
             EMITS (module_name VARCHAR(200000), version VARCHAR(200)) AS
-                run <- function(ctx) {
-                    library(data.table)
-                    file_pattern <- "cran_packages"
-                    directory <- "/build_info/packages"
-                    files <- list.files(path = directory, pattern = file_pattern, full.names = TRUE, recursive = TRUE)
-                    for (input_file in files) {
-                        package_list <- tryCatch(read.table(file = input_file, header=FALSE, sep = "|", comment.char = "#"), error=function(e) NULL)
-                        if (!is.null(package_list)) {
-                            package_names <- package_list[,1]
-                            versions <- package_list[,2]
-                            ctx$emit(package_names, versions)
-                        }
-                    }
+            run <- function(ctx) {
+              library(yaml)
+            
+              directory <- "/build_info/packages"
+              file_pattern <- "packages\\.yml$"
+              files <- list.files(
+                path = directory,
+                pattern = file_pattern,
+                full.names = TRUE,
+                recursive = FALSE
+              )
+            
+              if (!length(files)) return(invisible(NULL))
+            
+              # Merge by package name; if multiple versions appear, keep the first non-empty one
+              merged <- new.env(parent = emptyenv())
+            
+              add_pkg <- function(name, version) {
+                if (is.null(name) || !nzchar(name)) return()
+                if (is.null(version) || is.na(version)) version <- ""
+            
+                if (!exists(name, envir = merged, inherits = FALSE)) {
+                  assign(name, version, envir = merged)
+                } else {
+                  cur <- get(name, envir = merged, inherits = FALSE)
+                  if ((is.null(cur) || !nzchar(cur)) && nzchar(version)) {
+                    assign(name, version, envir = merged)
+                  }
                 }
+              }
+            
+              for (f in files) {
+                pkg_file <- tryCatch(yaml::read_yaml(f), error = function(e) NULL)
+                if (is.null(pkg_file)) next
+            
+                build_steps <- pkg_file$build_steps
+                if (is.null(build_steps) || !length(build_steps)) next
+            
+                for (bs in build_steps) {
+                  phases <- bs$phases
+                  if (is.null(phases) || !length(phases)) next
+            
+                  for (ph in phases) {
+                    r_section <- ph$r
+                    if (is.null(r_section)) next
+            
+                    r_pkgs <- r_section$packages
+                    if (is.null(r_pkgs) || !length(r_pkgs)) next
+            
+                    for (p in r_pkgs) {
+                      add_pkg(p$name, p$version)
+                    }
+                  }
+                }
+              }
+            
+              pkg_names <- ls(envir = merged, all.names = TRUE)
+              if (!length(pkg_names)) return(invisible(NULL))
+            
+              versions <- vapply(pkg_names, function(n) get(n, envir = merged, inherits = FALSE), "")
+              ctx$emit(pkg_names, versions)
+            }
             /
             '''))
         rows = self.query('''SELECT import_all_r_modules.get_all_root_modules() FROM dual''')

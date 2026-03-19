@@ -17,9 +17,10 @@ RUN true # workaround for https://github.com/moby/moby/issues/37965
 COPY --from={{base_test_deps}} /etc /etc
 RUN true # workaround for https://github.com/moby/moby/issues/37965
 
-COPY --from={{base_test_deps}} /env /env
+COPY --from={{base_test_deps}} /build_info /build_info
 RUN true # workaround for https://github.com/moby/moby/issues/37965
 
+RUN exaslpm export-variables --out-file /env
 
 RUN ldconfig
 

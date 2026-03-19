@@ -75,11 +75,15 @@ jobs:
           python-version: "3.10"
           poetry-version: "2.3.0"
 
+      - name: Detect Platform
+        id: detect-platform
+        run: poetry run -- exaslc-ci get-platform --github-output-var platform_machine
+
       - name: Download SLC ${{matrix.goal}}
         id: download-slc
         uses: actions/download-artifact@v7
         with:
-          name: slc-${{inputs.flavor}}-${{matrix.goal}}
+          name: slc-${{ inputs.flavor }}-${{ matrix.goal }}-${{ steps.detect-platform.outputs.platform_machine }}
           path: "slc"
 
       - name: Print SLC's
@@ -107,7 +111,7 @@ jobs:
         if: ${{ always() }}
         name: Upload log artifacts
         with:
-          name: logs_tests_${{inputs.flavor}}_${{ matrix.test-set-name }}
+          name: logs_tests_${{inputs.flavor}}_${{ matrix.test-set-name }}_${{ matrix.test-runner }}
           path: |
             .build_output/jobs/**/*
             .build_output/meta_data/**/*
