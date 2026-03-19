@@ -11,7 +11,7 @@ RUN exaslpm install --package-file /build_info/packages/build_deps_packages.yml 
 
 RUN curl -L -o swig-2.0.4.tar.gz https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/swig-2.0.4.tar.gz && \
     tar zxf swig-2.0.4.tar.gz && \
-    (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && \
+    (cd swig-2.0.4 && ./configure --build=$(arch)-unknown-linux-gnu --prefix=/usr && make && make install) && \
     rm -rf swig-2.0.4 swig-2.0.4.tar.gz
 
 RUN locale-gen en_US.UTF-8 && \
