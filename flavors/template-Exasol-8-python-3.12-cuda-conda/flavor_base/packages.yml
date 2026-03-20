@@ -43,7 +43,7 @@ build_steps:
       - name: gdbserver
         version: 15.0.50.20240403-0ubuntu1
       - name: binutils
-        version: 2.42-4ubuntu2.8
+        version: 2.42-4ubuntu2.10
       - name: patchelf
         version: 0.18.0-1.1build1
       - name: strace

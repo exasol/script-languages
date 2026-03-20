@@ -138,18 +138,18 @@ typecheck = ["mypy"]
 
 [[package]]
 name = "boto3"
-version = "1.42.68"
+version = "1.42.70"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "boto3-1.42.68-py3-none-any.whl", hash = "sha256:dbff353eb7dc93cbddd7926ed24793e0174c04adbe88860dfa639568442e4962"},
-    {file = "boto3-1.42.68.tar.gz", hash = "sha256:3f349f967ab38c23425626d130962bcb363e75f042734fe856ea8c5a00eef03c"},
+    {file = "boto3-1.42.70-py3-none-any.whl", hash = "sha256:18a108c4d5df89a200b3949de0d39c0879b100c455e3229ea38275dd392db0f4"},
+    {file = "boto3-1.42.70.tar.gz", hash = "sha256:d060b0d83d2832e403671b9a895e73c3b025df8bb5896d89e401b0678705aac4"},
 ]
 
 [package.dependencies]
-botocore = ">=1.42.68,<1.43.0"
+botocore = ">=1.42.70,<1.43.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.16.0,<0.17.0"
 
@@ -158,14 +158,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.42.68"
+version = "1.42.70"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "botocore-1.42.68-py3-none-any.whl", hash = "sha256:9df7da26374601f890e2f115bfa573d65bf15b25fe136bb3aac809f6145f52ab"},
-    {file = "botocore-1.42.68.tar.gz", hash = "sha256:3951c69e12ac871dda245f48dac5c7dd88ea1bfdd74a8879ec356cf2874b806a"},
+    {file = "botocore-1.42.70-py3-none-any.whl", hash = "sha256:54ed9d25f05f810efd22b0dfda0bb9178df3ad8952b2e4359e05156c9321bd3c"},
+    {file = "botocore-1.42.70.tar.gz", hash = "sha256:9ee17553b7febd1a0c1253b3b62ab5d79607eb6163c8fb943470a8893c31d4fa"},
 ]
 
 [package.dependencies]
@@ -764,14 +764,14 @@ PyGithub = ">=2.3.0,<3.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
-version = "4.0.2"
+version = "4.0.3"
 description = "Script Languages Container Tool"
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "exasol_script_languages_container_tool-4.0.2-py3-none-any.whl", hash = "sha256:b4ff796a55de874c737605761db0151327708bb46b93a5dac63eb9a078055c9b"},
-    {file = "exasol_script_languages_container_tool-4.0.2.tar.gz", hash = "sha256:72dee7ee86bd06d826bc4b98f083b3c5d466b2c965ffc3a66071d450502f6ba3"},
+    {file = "exasol_script_languages_container_tool-4.0.3-py3-none-any.whl", hash = "sha256:0a9319203114743f1b80d7d74a0af4d8fb62461151c73ac6cc5f0b34b83544c6"},
+    {file = "exasol_script_languages_container_tool-4.0.3.tar.gz", hash = "sha256:2e2916106d1ecb1fea7b0ea6e1ef746cb56a5d4f80eb5a93e22dcb2901e32e87"},
 ]
 
 [package.dependencies]
@@ -2816,4 +2816,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <3.14.0"
-content-hash = "c0dce5ced473e6f2fbf52661a674f2a88e7e506ff51ba49a05a4e91f708308b2"
+content-hash = "2053b0ff21a1c1b3c04ac3ba76e02fa3628625acbc3a8c0aad67446a912737d3"
