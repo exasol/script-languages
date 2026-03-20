@@ -12,9 +12,9 @@ build_steps:
         version: '=8.45'
       - name: bazel
         version: =8.3.1
-      - name: gxx_linux-64
+      - name: gxx
         version: =12.4.0
-      - name: gcc_linux-64
+      - name: gcc
         version: =12.4.0
       - name: make
         version: '=4.3'
@@ -26,6 +26,9 @@ build_steps:
       LD_LIBRARY_PATH: '$LD_LIBRARY_PATH:$MAMBA_ROOT_PREFIX/lib/'
       CPLUS_INCLUDE_PATH: '$CPLUS_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/'
       C_INCLUDE_PATH: '$C_INCLUDE_PATH:$MAMBA_ROOT_PREFIX/include/'
+      SWIG_BUILD_ARCH: "{% if platform == 'x86_64' %}x86_64{% else %}aarch64{% endif %}"
+      HOST_PLATFORM: "{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}"
+      AR: "{% if platform == 'x86_64' %}x86_64{% else %}aarch64{% endif %}-conda-linux-gnu-gcc-ar"
   validation_cfg:
     version_mandatory: true
 - name: base_test_deps

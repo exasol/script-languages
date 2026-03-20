@@ -6,7 +6,7 @@ RUN mkdir /exaudfclient /exaudf
 COPY exaudfclient/ /exaudfclient/
 
 WORKDIR /exaudfclient/
-RUN bash -c "source /env && ./build.sh --config no-tty --config optimize --config python --config fast-binary --config fix_conda_ar_tool"
+RUN source /env && ./build.sh --config no-tty --config optimize --config python --config fast-binary --config fix_conda_ar_tool
 RUN cp -r -L bazel-bin/* /exaudf
 
 WORKDIR /exaudfclient/base
