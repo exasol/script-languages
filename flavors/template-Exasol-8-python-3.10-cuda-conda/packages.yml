@@ -70,7 +70,7 @@ build_steps:
       - name: cuda-toolkit
         version: =12.9.1
       - name: libarrow
-        version: =22.0.0=h552f9d5_3_cuda
+        version: =22.0.0=*_cuda
       - name: mamba
         version: =2.3.3
       binary: Micromamba
