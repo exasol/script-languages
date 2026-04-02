@@ -83,7 +83,7 @@ build_steps:
     apt:
       packages:
       - name: tzdata
-        version: 2025b-0ubuntu*
+        version: 2026a-0ubuntu*
   - name: install_conda_packages
     conda:
       channels:
