@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include "exaudflib/load_dynamic.h"
+#include "exaudflib/udf_plugin_interface.h"
 
 namespace SWIGVMContainers {
 
