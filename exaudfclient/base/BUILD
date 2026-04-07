@@ -62,6 +62,10 @@ config_setting(
         },
 )
 
+config_setting(
+    name = "protegrity",
+    define_values = {"protegrity": "true"},
+)
 
 cc_library(
     name = "load_dynamic",
