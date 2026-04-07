@@ -109,6 +109,7 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
     assert(exaudflib::global.SWIGVM_params_ref != nullptr);
 
 #ifdef UDF_PLUGIN_CLIENT
+    blablalb
     std::stringstream socket_name_ss;
 #endif
     std::string socket_name = argv[1];
