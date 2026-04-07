@@ -63,8 +63,8 @@ config_setting(
 )
 
 config_setting(
-    name = "protegrity",
-    define_values = {"protegrity": "true"},
+    name = "plugin_client",
+    define_values = {"plugin_client": "true"},
 )
 
 cc_library(
