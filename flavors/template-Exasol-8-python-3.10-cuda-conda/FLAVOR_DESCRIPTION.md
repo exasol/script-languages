@@ -4,19 +4,8 @@
 
 **Remarks:** The packages are grouped by there main usage and their type.
 
-- CondaDeps dependencies
-  - [Ubuntu packages](flavor_base/conda_deps/packages/apt_get_packages)
-- UDFclient dependencies
-  - [Conda Packages](flavor_base/udfclient_deps/packages/conda_packages)
-  - [Conda Channels](flavor_base/udfclient_deps/packages/conda_channels)
-- Language dependencies
-  - [Conda Packages](flavor_base/language_deps/packages/conda_packages)
-  - [Conda Channels](flavor_base/language_deps/packages/conda_channels)
-- Flavor packages
-  - [Conda Packages](flavor_base/flavor_base_deps/packages/conda_packages)
-  - [Conda Channels](flavor_base/flavor_base_deps/packages/conda_channels)
-  - [Python3 pip packages](flavor_base/flavor_base_deps/packages/python3_pip_packages)
-- Customization
-  - [Conda Packages](flavor_customization/packages/conda_packages)
-  - [Conda Channels](flavor_customization/packages/conda_channels)
-  - [Python3 pip packages](flavor_customization/packages/python3_pip_packages)
+Since SLC version 11.0.0 the [script-languages-package-management](https://github.com/exasol/script-languages-package-management)
+tool is used for installing packages.
+The packages for the final image of this flavor can be found in [packages.yml](packages.yml)
+and the packages for the intermediate images, which are needed to build the UDF-client,
+can be found in [flavor_base/packages.yml](flavor_base/packages.yml).
