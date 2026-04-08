@@ -6,6 +6,7 @@
 #include <sstream>
 #include "exaudflib/load_dynamic.h"
 #include "exaudflib/swig/swig_table_iterator.h"
+#include "exaudflib/udf_plugin_interface.h"
 
 #define SWIG_MAX_VAR_DATASIZE 4000000
 

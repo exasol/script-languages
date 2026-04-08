@@ -3,7 +3,7 @@
 
 #ifdef UDF_PLUGIN_CLIENT
 namespace SWIGVMContainers {
-class SWIGMetadata;
+class SWIGMetadataIf;
 class AbstractSWIGTableIterator;
 class SWIGRAbstractResultHandler;
 class SWIGTableIterator;

@@ -62,6 +62,10 @@ config_setting(
         },
 )
 
+config_setting(
+    name = "plugin_client",
+    define_values = {"plugin_client": "true"},
+)
 
 cc_library(
     name = "load_dynamic",

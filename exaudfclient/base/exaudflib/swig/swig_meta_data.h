@@ -4,6 +4,7 @@
 #include "exaudflib/load_dynamic.h"
 #include "exaudflib/swig/swig_common.h"
 #include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
+#include "exaudflib/udf_plugin_interface.h"
 
 namespace SWIGVMContainers {
 

@@ -155,7 +155,7 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
         if (socket_name.compare(0, 11, "ipc:///tmp/") == 0) {
             socket_name_ss << "ipc://" << getenv("NSEXEC_TMP_PATH") << '/' << &(socket_name.c_str()[11]);
             socket_name = socket_name_ss.str();
-            socket_info::set_socket_file_name(::strdup(socket_name.c_str()));
+            exaudflib::socket_info::set_socket_file_name(::strdup(socket_name.c_str()));
         }
 #endif
         exaudflib::socket_info::set_socket_file_name(&(exaudflib::socket_info::get_socket_file_name()[6]));
