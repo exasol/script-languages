@@ -2,7 +2,7 @@
 
 ## Packages
 
-**Remarks:** The packages are grouped by there main usage and their type.
+**Remarks:** The packages are grouped by their main usage and type.
 
 Since SLC version 11.0.0 the [script-languages-package-management](https://github.com/exasol/script-languages-package-management)
 tool is used for installing packages.
