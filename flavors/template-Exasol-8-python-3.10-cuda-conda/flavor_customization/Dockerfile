@@ -1,8 +1,8 @@
 ############################################################################################
 ############################################################################################
 # This Dockerfile allows you to extend this flavor by installing packages or adding files. 
-# IF you didn't change the lines below, you can add packages and their version to the  
-# files in ./packages and they get automatically installed.                                
+# IF you didn't change the lines below, you can add packages and their version in the
+# file ./flavor_customization_packages.yml and they get automatically installed.
 ############################################################################################
 ############################################################################################
 
@@ -69,6 +69,4 @@ RUN exaslpm install --package-file /build_info/packages/flavor_customization_pac
 # if you want to copy files or directories located in the same directory as this Dockerfile
 # -----------------------------------------------------------------------------------------------------
 
-# COPY flavor_customization/packages/python3_pip_packages /build_info/packages/flavor_customization
-# ADD flavor_customization/code.tar.gz /code
-
+# COPY ./code.tar.gz /build_info/packages/flavor_customization
