@@ -1,8 +1,8 @@
 ############################################################################################
 ############################################################################################
 # This Dockerfile allows you to extend this flavor by installing packages or adding files. 
-# IF you didn't change the lines below, you can add packages and their version in the
-# file ./flavor_customization_packages.yml and they get automatically installed.
+# If you didn't change the lines below, you can add packages and their version in the
+# file ../packages.yml (under build-step "flavor_customization") and they get automatically installed.
 ############################################################################################
 ############################################################################################
 
