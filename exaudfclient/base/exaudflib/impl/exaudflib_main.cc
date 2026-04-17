@@ -180,13 +180,18 @@ reinit:
 
     DBGMSG(std::cerr,"Reinit");
     zmq::socket_t socket(context, ZMQ_REQ);
+    DBGMSG(std::cerr,"Reinit - 1");
 
     socket.setsockopt(ZMQ_LINGER, &linger_timeout, sizeof(linger_timeout));
+    DBGMSG(std::cerr,"Reinit - 2");
     socket.setsockopt(ZMQ_RCVTIMEO, &recv_sock_timeout, sizeof(recv_sock_timeout));
+    DBGMSG(std::cerr,"Reinit - 3");
     socket.setsockopt(ZMQ_SNDTIMEO, &send_sock_timeout, sizeof(send_sock_timeout));
+    DBGMSG(std::cerr,"Reinit - 4");
 
     if (exaudflib::check::get_remote_client()) socket.bind(socket_name.c_str());
     else socket.connect(socket_name.c_str());
+    DBGMSG(std::cerr,"Reinit - 5");
 
     exaudflib::global.sock = &socket;
     exaudflib::global.SWIGVM_params_ref->exch = &exaudflib::global.exchandler;
@@ -195,22 +200,27 @@ reinit:
 
     if (!exaudflib::socket_high_level::send_init(socket, socket_name)) {
         if (!exaudflib::check::get_remote_client() && exaudflib::global.exchandler.exthrowed) {
+            DBGMSG(std::cerr,"Reinit - error 1");
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1123: " +
                                 exaudflib::global.exchandler.exmsg, false);
         }else{
             goto reinit;
         }
     }
+    DBGMSG(std::cerr,"Reinit - error 6");
 
     exaudflib::global.initSwigParams();
+    DBGMSG(std::cerr,"Reinit - error 7");
 
     bool shutdown_vm_in_case_of_error = false;
     try {
         vm = vmMaker();
         if (vm == nullptr) {
+            DBGMSG(std::cerr,"Reinit - error 2");
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1124: Unknown or unsupported VM type", false);
         }
         if (vm->exception_msg.size()>0) {
+            DBGMSG(std::cerr,"Reinit - error 3");
             return handle_error(socket, socket_name, vm, "F-UDF-CL-LIB-1125: "+vm->exception_msg, false);
         }
         shutdown_vm_in_case_of_error = true;
