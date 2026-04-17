@@ -41,7 +41,7 @@ class SWIGTableIterator { //: public AbstractSWIGTableIterator {
 public:
     SWIGTableIterator()
     {
-#ifndef UDF_PLUGIN_CLIENT
+#if !defined(UDF_PLUGIN_CLIENT) && !defined(USE_STATIC_SWIG)
         CREATE_TABLEITERATOR_FUN creator = (CREATE_TABLEITERATOR_FUN)load_dynamic("create_SWIGTableIterator");
         impl = creator();
 #else
