@@ -188,9 +188,14 @@ reinit:
     DBGMSG(std::cerr,"Reinit - 3");
     socket.setsockopt(ZMQ_SNDTIMEO, &send_sock_timeout, sizeof(send_sock_timeout));
     DBGMSG(std::cerr,"Reinit - 4");
+    DBGVAR(std::cerr, socket_name);
 
-    if (exaudflib::check::get_remote_client()) socket.bind(socket_name.c_str());
-    else socket.connect(socket_name.c_str());
+    if (exaudflib::check::get_remote_client()) {
+        socket.bind(socket_name.c_str());
+    }
+    else {
+        socket.connect(socket_name.c_str());
+    }
     DBGMSG(std::cerr,"Reinit - 5");
 
     exaudflib::global.sock = &socket;
