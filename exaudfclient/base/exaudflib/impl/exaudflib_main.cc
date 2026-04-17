@@ -134,6 +134,9 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
             PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1121","Remote VM type '" << argv[2] << "' not supported.");
             return 2;
         }
+        else {
+            std::cerr << "Valid language" << std::endl;
+        }
 #endif
     } else {
         PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1122", "socket name '" << socket_name << "' is invalid." );
@@ -145,8 +148,10 @@ int exaudfclient_main(std::function<SWIGVMContainers::SWIGVM*()>vmMaker,int argc
     }
 
     if (socket_name.compare(0, 4, "ipc:") == 0)
-    {        
+    {
+        std::cerr << "Is ipc" << std::endl;
 #ifdef UDF_PLUGIN_CLIENT
+#error Should not happen
 /*
     DO NOT REMOVE, required for Exasol 6.2
 */
