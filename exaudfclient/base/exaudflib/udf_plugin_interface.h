@@ -1,7 +1,7 @@
 #ifndef UDF_PLUGIN_INTERFACE_H
 #define UDF_PLUGIN_INTERFACE_H
 
-#ifdef UDF_PLUGIN_CLIENT
+#if defined(UDF_PLUGIN_CLIENT) || defined(USE_STATIC_SWIG)
 namespace SWIGVMContainers {
 class SWIGMetadataIf;
 class AbstractSWIGTableIterator;
