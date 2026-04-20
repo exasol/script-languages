@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
            || (strcmp(argv[2], "lang=streaming") == 0)
            || (strcmp(argv[2], "lang=benchmark") == 0)) )
     {
-        std::cerr << "F-UDF-CL-LIB-1121","Remote VM type '" << argv[2] << "' not supported.");
+        std::cerr << "F-UDF-CL-LIB-1121","Remote VM type '" << argv[2] << "' not supported.";
         return 2;
     }
 #endif
