@@ -165,6 +165,15 @@ int main(int argc, char **argv) {
     }
 #endif
 
+    if (! ((strcmp(argv[2], "lang=python") == 0)
+           || (strcmp(argv[2], "lang=java") == 0)
+           || (strcmp(argv[2], "lang=streaming") == 0)
+           || (strcmp(argv[2], "lang=benchmark") == 0)) )
+    {
+        PRINT_ERROR_MESSAGE(std::cerr,"F-UDF-CL-LIB-1121","Remote VM type '" << argv[2] << "' not supported.");
+        return 2;
+    }
+
     if (::setenv("HOME", "/tmp", 1) == -1)
     {
         throw SWIGVM::exception("Failed to set HOME directory");

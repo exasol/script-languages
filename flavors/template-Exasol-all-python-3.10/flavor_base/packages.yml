@@ -5,17 +5,17 @@ build_steps:
     apt:
       packages:
       - name: gdb
-        version: 12.1-0ubuntu1~22.04.2
+        version: 12.1-0ubuntu*
       - name: valgrind
-        version: 1:3.18.1-1ubuntu2
+        version: 1:3.18.1-1ubuntu*
       - name: gdbserver
-        version: 12.1-0ubuntu1~22.04.2
+        version: 12.1-0ubuntu*
       - name: binutils
-        version: 2.38-4ubuntu2.12
+        version: 2.38-4ubuntu*
       - name: patchelf
         version: 0.14.3-1
       - name: strace
-        version: 5.16-0ubuntu3
+        version: 5.16-0ubuntu*
   validation_cfg:
     version_mandatory: true
 - name: build_deps
@@ -24,21 +24,21 @@ build_steps:
     apt:
       packages:
       - name: coreutils
-        version: 8.32-4.1ubuntu1.2
+        version: 8.32-4.1ubuntu*
       - name: locales
-        version: 2.35-0ubuntu3.13
+        version: 2.35-0ubuntu*
       - name: tar
-        version: 1.34+dfsg-1ubuntu0.1.22.04.2
+        version: 1.34+dfsg-1ubuntu*
       - name: curl
-        version: 7.81.0-1ubuntu1.23
+        version: 7.81.0-1ubuntu*
       - name: openjdk-11-jdk-headless
-        version: 11.0.30+7-1ubuntu1~22.04
+        version: 11.0.30+7-1ubuntu*
       - name: build-essential
-        version: 12.9ubuntu3
+        version: 12.9ubuntu*
       - name: libpcre3-dev
-        version: 2:8.39-13ubuntu0.22.04.1
+        version: 2:8.39-13ubuntu*
       - name: protobuf-compiler
-        version: 3.12.4-1ubuntu7.22.04.6
+        version: 3.12.4-1ubuntu*
       - name: chrpath
         version: 0.16-2
     variables:

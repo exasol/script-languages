@@ -7,9 +7,9 @@ build_steps:
       - name: ca-certificates
         version: '20240203'
       - name: python3.12-dev
-        version: 3.12.3-1ubuntu0.12
+        version: 3.12.3-1ubuntu*
       - name: curl
-        version: 8.5.0-2ubuntu10.8
+        version: 8.5.0-2ubuntu*
     variables:
       PYTHON3_PREFIX: /usr
       PYTHON3_VERSION: python3.12
@@ -42,11 +42,11 @@ build_steps:
     apt:
       packages:
       - name: coreutils
-        version: 9.4-3ubuntu6.1
+        version: 9.4-3ubuntu*
       - name: adduser
-        version: 3.137ubuntu1
+        version: 3.137ubuntu*
       - name: locales
-        version: 2.39-0ubuntu8.7
+        version: 2.39-0ubuntu*
       - name: libnss-db
         version: 2.2.3pre1-9build3
       - name: libzmq3-dev
@@ -54,9 +54,9 @@ build_steps:
       - name: cppzmq-dev
         version: 4.10.0-1build1
       - name: libprotobuf-dev
-        version: 3.21.12-8.2ubuntu0.3
+        version: 3.21.12-8.2ubuntu*
       - name: libssl-dev
-        version: 3.0.13-0ubuntu3.7
+        version: 3.0.13-0ubuntu*
     variables:
       PROTOBUF_LIBRARY_PREFIX: /usr/lib/
       PROTOBUF_INCLUDE_PREFIX: /usr/include/
@@ -70,13 +70,13 @@ build_steps:
     apt:
       packages:
       - name: unzip
-        version: 6.0-28ubuntu4.1
+        version: 6.0-28ubuntu*
       - name: git
-        version: 1:2.43.0-1ubuntu7.3
+        version: 1:2.43.0-1ubuntu*
       - name: libcurl4-openssl-dev
-        version: 8.5.0-2ubuntu10.8
+        version: 8.5.0-2ubuntu*
       - name: build-essential
-        version: 12.10ubuntu1
+        version: 12.10ubuntu*
   validation_cfg:
     version_mandatory: true
 - name: flavor_customization

@@ -5,17 +5,17 @@ build_steps:
     apt:
       packages:
       - name: coreutils
-        version: 8.32-4.1ubuntu1.2
+        version: 8.32-4.1ubuntu*
       - name: locales
-        version: 2.35-0ubuntu3.13
+        version: 2.35-0ubuntu*
       - name: curl
-        version: 7.81.0-1ubuntu1.23
+        version: 7.81.0-1ubuntu*
       - name: ca-certificates
         version: 20240203~22.04.1
       - name: bzip2
         version: 1.0.8-5build1
       - name: libxml2
-        version: 2.9.13+dfsg-1ubuntu0.11
+        version: 2.9.13+dfsg-1ubuntu*
   - name: install_micromamba
     tools:
       micromamba:
@@ -81,7 +81,7 @@ build_steps:
     apt:
       packages:
       - name: tzdata
-        version: 2025b-0ubuntu0.22.04.1
+        version: 2025b-0ubuntu*
   - name: install_conda_packages
     conda:
       channels:

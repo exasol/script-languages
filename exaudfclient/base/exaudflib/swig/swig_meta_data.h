@@ -4,6 +4,7 @@
 #include "exaudflib/load_dynamic.h"
 #include "exaudflib/swig/swig_common.h"
 #include "exaudflib/swig/script_data_transfer_objects_wrapper.h"
+#include "exaudflib/udf_plugin_interface.h"
 
 namespace SWIGVMContainers {
 
@@ -60,7 +61,7 @@ class SWIGMetadata : public SWIGMetadataIf {
     public:
         SWIGMetadata()
         {
-#ifndef UDF_PLUGIN_CLIENT
+#if !defined(UDF_PLUGIN_CLIENT) && !defined(USE_STATIC_SWIG)
             CREATE_METADATA_FUN create = (CREATE_METADATA_FUN)load_dynamic("create_SWIGMetaData");
             impl = create();
 #else

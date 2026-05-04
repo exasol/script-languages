@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include "exaudflib/load_dynamic.h"
+#include "exaudflib/udf_plugin_interface.h"
 
 namespace SWIGVMContainers {
 
@@ -40,7 +41,7 @@ class SWIGTableIterator { //: public AbstractSWIGTableIterator {
 public:
     SWIGTableIterator()
     {
-#ifndef UDF_PLUGIN_CLIENT
+#if !defined(UDF_PLUGIN_CLIENT) && !defined(USE_STATIC_SWIG)
         CREATE_TABLEITERATOR_FUN creator = (CREATE_TABLEITERATOR_FUN)load_dynamic("create_SWIGTableIterator");
         impl = creator();
 #else

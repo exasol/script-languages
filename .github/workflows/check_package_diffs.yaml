@@ -15,21 +15,11 @@ jobs:
         fetch-depth: 0
 
     - name: Setup Python & Poetry Environment
-      uses: exasol/python-toolbox/.github/actions/python-environment@v5
+      uses: exasol/python-toolbox/.github/actions/python-environment@v6
       with:
         python-version: "3.10"
         poetry-version: '2.3.0'
 
-    - name: Setup Poetry
-      run: |
-        PYTHON_BIN=$(command -v "python3.10")
-        poetry env use "$PYTHON_BIN"
-        poetry install
-        poetry_env_path=$(poetry env info --path)
-        echo "poetry_env_path=$poetry_env_path" >> $GITHUB_ENV
-      working-directory: scripts/generate_package_diffs_for_flavors
-
     - name: Run generate_package_diffs_for_flavors
       run: |
-        source "${{ env.poetry_env_path }}/bin/activate"
-        python3 scripts/generate_package_diffs_for_flavors/generate_package_diffs_for_flavors.py --output-directory /tmp/output --current-working-copy-name test --compare-to-commit master
+        poetry run -- exaslct generate-package-diffs --output-package-diff-directory /tmp/output --current-working-copy-name test --compare-to-commit master

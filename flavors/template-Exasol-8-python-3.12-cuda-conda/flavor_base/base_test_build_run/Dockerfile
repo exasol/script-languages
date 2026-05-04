@@ -11,7 +11,7 @@ COPY /exaudfclient/ /exaudfclient/
 
 WORKDIR /exaudfclient/
 
-RUN bash -c "source /env && ./build.sh --config no-tty -c dbg --config python --config test-binaries"
+RUN source /env && ./build.sh --config no-tty -c dbg --config python --config test-binaries --config fix_conda_ar_tool
 
 RUN cp -r -L bazel-bin/* /exaudf
 

@@ -1,3 +1,0 @@
-humanfriendly|9.1
-requests|
-git+http://github.com/exasol/bucketfs-utils-python.git@0.2.0#egg=exasol-bucketfs-utils-python

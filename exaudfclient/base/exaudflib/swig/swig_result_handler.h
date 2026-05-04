@@ -6,6 +6,7 @@
 #include <sstream>
 #include "exaudflib/load_dynamic.h"
 #include "exaudflib/swig/swig_table_iterator.h"
+#include "exaudflib/udf_plugin_interface.h"
 
 #define SWIG_MAX_VAR_DATASIZE 4000000
 
@@ -37,7 +38,7 @@ class SWIGResultHandler { //: public SWIGRAbstractResultHandler {
 public:
     SWIGResultHandler(SWIGTableIterator* table_iterator)
     {
-#ifndef UDF_PLUGIN_CLIENT
+#if !defined(UDF_PLUGIN_CLIENT) && !defined(USE_STATIC_SWIG)
         CREATE_RESULTHANDLER_FUN creator = (CREATE_RESULTHANDLER_FUN)load_dynamic("create_SWIGResultHandler");
         impl = creator(table_iterator);
 #else

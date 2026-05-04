@@ -1,7 +1,0 @@
-protobuf|6.31.1
-pcre|8.45
-bazel|8.3.1
-gxx_linux-64|12.4.0
-gcc_linux-64|12.4.0
-make|4.3
-chrpath|0.16

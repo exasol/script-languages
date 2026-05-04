@@ -5,17 +5,17 @@ build_steps:
     apt:
       packages:
       - name: coreutils
-        version: 8.32-4.1ubuntu1.2
+        version: 8.32-4.1ubuntu*
       - name: locales
-        version: 2.35-0ubuntu3.13
+        version: 2.35-0ubuntu*
       - name: libnss-db
-        version: 2.2.3pre1-6ubuntu3
+        version: 2.2.3pre1-6ubuntu*
       - name: libzmq3-dev
         version: 4.3.4-2
       - name: libprotobuf-dev
-        version: 3.12.4-1ubuntu7.22.04.6
+        version: 3.12.4-1ubuntu*
       - name: libssl-dev
-        version: 3.0.2-0ubuntu1.21
+        version: 3.0.2-0ubuntu*
     variables:
       PROTOBUF_LIBRARY_PREFIX: /usr/lib/
       PROTOBUF_INCLUDE_PREFIX: /usr/include/
@@ -35,7 +35,7 @@ build_steps:
       - name: python3-distutils
         version: 3.10.8-1~22.04
       - name: curl
-        version: 7.81.0-1ubuntu1.23
+        version: 7.81.0-1ubuntu*
     variables:
       PYTHON3_PREFIX: /usr
       PYTHON3_VERSION: python3.10
@@ -68,15 +68,15 @@ build_steps:
     apt:
       packages:
       - name: unzip
-        version: 6.0-26ubuntu3.2
+        version: 6.0-26ubuntu*
       - name: git
-        version: 1:2.34.1-1ubuntu1.17
+        version: 1:2.34.1-1ubuntu*
       - name: libcurl4-openssl-dev
-        version: 7.81.0-1ubuntu1.23
+        version: 7.81.0-1ubuntu*
       - name: build-essential
-        version: 12.9ubuntu3
+        version: 12.9ubuntu*
       - name: tzdata
-        version: 2025b-0ubuntu0.22.04.1
+        version: 2025b-0ubuntu*
   validation_cfg:
     version_mandatory: true
 - name: flavor_customization

@@ -6,17 +6,15 @@ on:
       - master
   pull_request:
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Init submodules
       run: git submodule update --init --recursive
 
     - name: Check if submodules heads are ancestors of origin/master
       run: bash scripts/check_if_submodules_head_are_ancestors_of_origin_master.sh 
-
