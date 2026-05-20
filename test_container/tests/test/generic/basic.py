@@ -5,8 +5,136 @@ from exasol_python_test_framework.udf import requires
 
 
 class BasicTest(udf.TestCase):
+    
+    def setUp(self):
+        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA FN1')
+        self.query('OPEN SCHEMA FN1')
+        
+        # Create all UDFs needed for BasicTest
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SCALAR SCRIPT basic_range(n INTEGER)
+            EMITS (n INTEGER) AS
+            def run(ctx):
+                if ctx.n is not None:
+                    for i in range(ctx.n):
+                        ctx.emit(i)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT basic_sum(x INTEGER)
+            RETURNS INTEGER AS
+            def run(ctx):
+                s = 0
+                while True:
+                    if ctx.x is not None:
+                        s += ctx.x
+                    if not ctx.next():
+                        break
+                return s
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SCALAR SCRIPT basic_emit_two_ints()
+            EMITS (i INTEGER, j INTEGER) AS
+            def run(ctx):
+                ctx.emit(1,2)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SCALAR SCRIPT basic_nth_partial_sum(n INTEGER)
+            RETURNS INTEGER AS
+            def run(ctx):
+                if ctx.n is not None:
+                    return ctx.n * (ctx.n + 1) / 2
+                return 0
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT basic_sum_grp(x INTEGER)
+            EMITS (s INTEGER) AS
+            def run(ctx):
+                s = 0
+                while True:
+                    if ctx.x is not None:
+                        s += ctx.x
+                    if not ctx.next():
+                        break
+                ctx.emit(s)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SCALAR SCRIPT basic_emit_several_groups(a INTEGER, b INTEGER)
+            EMITS (i INTEGER, j VARCHAR(40)) AS
+            def run(ctx):
+                for n in range(ctx.a):
+                    for i in range(ctx.b):
+                        ctx.emit(i, repr((exa.meta.vm_id, exa.meta.node_count, exa.meta.node_id)))
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT basic_test_reset(i INTEGER, j VARCHAR(40))
+            EMITS (k INTEGER) AS
+            def run(ctx):
+                ctx.emit(ctx.i)
+                ctx.next()
+                ctx.emit(ctx.i)
+                ctx.reset()
+                ctx.emit(ctx.i)
+                ctx.next()
+                ctx.emit(ctx.i)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SCALAR SCRIPT performance_map_characters(text VARCHAR(1000))
+            EMITS (w CHAR(1), c INTEGER) AS
+            def run(ctx):
+                if ctx.text is not None:
+                    for c in ctx.text:
+                        ctx.emit(c, 1)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT performance_reduce_characters(w CHAR(1), c INTEGER)
+            EMITS (w CHAR(1), c INTEGER) AS
+            def run(ctx):
+                c = 0
+                w = ctx.w
+                if w is not None:
+                    while True:
+                        c += 1
+                        if not ctx.next(): break
+                    ctx.emit(w, c)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT set_returns_has_empty_input(a double) 
+            RETURNS boolean AS
+            def run(ctx):
+                return bool(ctx.x is None)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT set_emits_has_empty_input(a double) 
+            EMITS (x double, y varchar(10)) AS
+            def run(ctx):
+                if ctx.x is None:
+                    ctx.emit(1,'1')
+                else:
+                    ctx.emit(2,'2')
+            /
+        '''))
 
-    @requires('BASIC_RANGE')
     def test_basic_scalar_emits(self):
         rows = self.query('''
             SELECT fn1.basic_range(3)
@@ -14,7 +142,6 @@ class BasicTest(udf.TestCase):
             ''')
         self.assertRowsEqual([(x,) for x in range(3)], sorted(rows))
     
-    @requires('BASIC_SUM')
     def test_basic_set_returns(self):
         rows = self.query('''
             SELECT fn1.basic_sum(3)
@@ -22,16 +149,12 @@ class BasicTest(udf.TestCase):
             ''')
         self.assertRowsEqual([(3,)], rows)
 
-    @requires('BASIC_EMIT_TWO_INTS')
     def test_emit_two_ints(self):
         rows = self.query('''
             SELECT fn1.basic_emit_two_ints()
             FROM DUAL''')
         self.assertRowsEqual([(1, 2)], rows)
 
-    @requires('BASIC_SUM')
-    @requires('BASIC_NTH_PARTIAL_SUM')
-    @requires('BASIC_RANGE')
     def test_simple_combination(self):
         rows = self.query('''
             SELECT fn1.basic_sum(psum)
@@ -44,9 +167,6 @@ class BasicTest(udf.TestCase):
             )''')
         self.assertRowsEqual([(165,)], rows)
 
-    @requires('BASIC_SUM_GRP')
-    @requires('BASIC_NTH_PARTIAL_SUM')
-    @requires('BASIC_RANGE')
     def test_simple_combination_grouping(self):
         rows = self.query('''
             SELECT fn1.BASIC_SUM_GRP(psum)
@@ -62,8 +182,6 @@ class BasicTest(udf.TestCase):
             ORDER BY 1''')
         self.assertRowsEqual([(39.0,), (54.0,), (72.0,)], rows)
 
-    @requires('BASIC_EMIT_SEVERAL_GROUPS')
-    @requires('BASIC_TEST_RESET')
     def test_reset(self):
         rows = self.query('''
             SELECT fn1.basic_test_reset(i, j)
@@ -72,8 +190,6 @@ class BasicTest(udf.TestCase):
             ORDER BY 1''')
         self.assertRowsEqual([(0.0,), (0.0,), (0.0,), (0.0,), (1.0,), (1.0,), (1.0,), (1.0,), (2.0,)], rows[:9])
 
-    @requires('PERFORMANCE_REDUCE_CHARACTERS')
-    @requires('PERFORMANCE_MAP_CHARACTERS')
     def test_order_by_clause(self):
         rows = self.query('''
             SELECT fn1.performance_reduce_characters(w, c)
@@ -94,29 +210,48 @@ class BasicTest(udf.TestCase):
 
 class SetWithEmptyInput(udf.TestCase):
     def setUp(self):
+        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA FN1')
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
+        self.query('OPEN SCHEMA FN1')
         self.query('CREATE TABLE FN2.empty_table(c int)')
+        
+        # Create UDFs needed for SetWithEmptyInput tests
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT set_returns_has_empty_input(a double) 
+            RETURNS boolean AS
+            def run(ctx):
+                return bool(ctx.x is None)
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT set_emits_has_empty_input(a double) 
+            EMITS (x double, y varchar(10)) AS
+            def run(ctx):
+                if ctx.x is None:
+                    ctx.emit(1,'1')
+                else:
+                    ctx.emit(2,'2')
+            /
+        '''))
 
-    @requires('SET_RETURNS_HAS_EMPTY_INPUT')
     def test_set_returns_has_empty_input_group_by(self):
-        self.query("""select FN1.set_returns_has_empty_input(c) from empty_table group by 'X'""")
+        self.query("""select FN1.set_returns_has_empty_input(c) from FN2.empty_table group by 'X'""")
         self.assertEqual(0, self.rowcount())
 
-    @requires('SET_RETURNS_HAS_EMPTY_INPUT')
     def test_set_returns_has_empty_input_no_group_by(self):
-        rows = self.query('''select FN1.set_returns_has_empty_input(c) from empty_table''')
+        rows = self.query('''select FN1.set_returns_has_empty_input(c) from FN2.empty_table''')
         self.assertRowsEqual([(None,)], rows)
 
 
-    @requires('SET_EMITS_HAS_EMPTY_INPUT')
     def test_set_emits_has_empty_input_group_by(self):
-        self.query("""select FN1.set_emits_has_empty_input(c) from empty_table group by 'X'""")
+        self.query("""select FN1.set_emits_has_empty_input(c) from FN2.empty_table group by 'X'""")
         self.assertEqual(0, self.rowcount())
 
-    @requires('SET_EMITS_HAS_EMPTY_INPUT')
     def test_set_emits_has_empty_input_no_group_by(self):
-        rows = self.query('''select FN1.set_emits_has_empty_input(c) from empty_table''')
+        rows = self.query('''select FN1.set_emits_has_empty_input(c) from FN2.empty_table''')
         self.assertRowsEqual([(None,None)], rows)
 
 
