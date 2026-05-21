@@ -3,6 +3,11 @@
 from exasol_python_test_framework import udf
 
 
+def setUpModule():
+    """Set default language for manual testing without --lang parameter."""
+    if udf.opts and udf.opts.lang is None:
+        udf.opts.lang = 'python3'
+
 
 class _Python3UdfSetup(udf.TestCase):
     def setUp(self):

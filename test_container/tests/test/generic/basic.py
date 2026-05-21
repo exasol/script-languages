@@ -13,7 +13,7 @@ class BasicTest(udf.TestCase):
             FROM DUAL
             ''')
         self.assertRowsEqual([(x,) for x in range(3)], sorted(rows))
-    
+
     @requires('BASIC_SUM')
     def test_basic_set_returns(self):
         rows = self.query('''
