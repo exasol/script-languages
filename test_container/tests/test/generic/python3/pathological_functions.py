@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class _Python3UdfSetup(udf.TestCase):
+class Test(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -19,8 +19,6 @@ class _Python3UdfSetup(udf.TestCase):
             /
         '''))
 
-class Test(_Python3UdfSetup):
-
     def test_query_timeout(self):
         self.query('ALTER SESSION SET QUERY_TIMEOUT = 10')
         try:
@@ -32,3 +30,4 @@ class Test(_Python3UdfSetup):
 
 if __name__ == '__main__':
     udf.main()
+

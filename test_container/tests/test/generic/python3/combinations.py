@@ -92,11 +92,9 @@ class _Python3UdfSetup(udf.TestCase):
         self.query('CREATE TABLE combinations.small(x DOUBLE, y DOUBLE)')
         self.query('INSERT INTO combinations.small VALUES (0.1, 0.2), (0.2, 0.1)')
 
-class Test(_Python3UdfSetup):
-    pass
 
 
-class Combinations_1_ary(Test):
+class Combinations_1_ary(_Python3UdfSetup):
     def test_set_returns(self):
         rows = self.query('''
                 SELECT fn1.SET_RETURNS(x,y)
@@ -131,7 +129,7 @@ class Combinations_1_ary(Test):
         self.assertRowsEqual([(6,), (6,)], rows)
 
 
-class Combinations_2_ary_scalar_returns(Test):
+class Combinations_2_ary_scalar_returns(_Python3UdfSetup):
     def test_scalar_returns_scalar_emits(self):
         rows = self.query('''
                 SELECT fn1.scalar_returns(x * 10 ,y * 10 )
@@ -200,7 +198,7 @@ class Combinations_2_ary_scalar_returns(Test):
         self.assertRowsEqual([(30,), (30,)], rows)
 
 
-class Combinations_2_ary_scalar_emits(Test):
+class Combinations_2_ary_scalar_emits(_Python3UdfSetup):
     def test_scalar_emits_scalar_returns_inline(self):
         rows = self.query('''
                 SELECT
@@ -270,7 +268,7 @@ class Combinations_2_ary_scalar_emits(Test):
         self.assertRowsEqual(r, rows)
 
 
-class Combinations_2_ary_set_returns(Test):
+class Combinations_2_ary_set_returns(_Python3UdfSetup):
     def test_set_returns_scalar_returns(self):
         rows = self.query('''
             SELECT
@@ -323,7 +321,7 @@ class Combinations_2_ary_set_returns(Test):
         self.assertRowsEqual([(60,)], rows)
 
 
-class Combinations_2_ary_set_emits(Test):
+class Combinations_2_ary_set_emits(_Python3UdfSetup):
     def test_set_emits_scalar_returns(self):
         rows = self.query('''
             SELECT
@@ -379,7 +377,7 @@ class Combinations_2_ary_set_emits(Test):
         self.assertRowsEqual([(10, 20,), (20, 10,)], rows)
 
 
-class Combinations_3_ary(Test):
+class Combinations_3_ary(_Python3UdfSetup):
     def test_set_returns_set_emits_scalar_emits(self):
         rows = self.query('''
             SELECT fn1.basic_sum(s)
@@ -417,7 +415,7 @@ class Combinations_3_ary(Test):
         self.assertRowsEqual([(65,)], rows)
 
 
-class Combinations_n_ary(Test):
+class Combinations_n_ary(_Python3UdfSetup):
     @staticmethod
     def partial_sum(n, degree):
         def basic_range(n, d):
