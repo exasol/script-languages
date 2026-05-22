@@ -3,13 +3,8 @@
 from exasol_python_test_framework import udf
 
 
-def setUpModule():
-    """Set default language for manual testing without --lang parameter."""
-    if udf.opts is not None and getattr(udf.opts, 'lang', None) is None:
-        udf.opts.lang = 'java'
-
-
 class _JavaUdfSetup(udf.TestCase):
+    LANG = 'java'
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -315,10 +310,7 @@ class _JavaUdfSetup(udf.TestCase):
             }
             /
         '''))
-
-class Test(_JavaUdfSetup):
-    def setUp(self):
-        super().setUp()
+        
         self.query('DROP SCHEMA dynamic_input CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA dynamic_input')
         self.query('CREATE TABLE dynamic_input.small(x VARCHAR(2000), y DOUBLE)')
@@ -330,7 +322,7 @@ class Test(_JavaUdfSetup):
                                                 ''')
 
 
-class DynamicMetadataTest(Test):
+class DynamicMetadataTest(_JavaUdfSetup):
 
     def test_meta_scalar_return(self):
         rows = self.query('''
@@ -354,7 +346,7 @@ class DynamicMetadataTest(Test):
         self.assertRowEqual(('DOUBLE',), rows[9])
 
 
-class DynamicInputBasic(Test):
+class DynamicInputBasic(_JavaUdfSetup):
     def test_basic_scalar_emit_constants(self):
         rows = self.query('''
             SELECT fn1.basic_scalar_emit('abc', cast(99 as double))
@@ -464,7 +456,7 @@ class DynamicInputBasic(Test):
                             or rows[0][0] == "result: 1.0 , 1.0 , aa , 2.0 , 2.0 , ba , 1.0 , 2.0 , ab , " or rows[0][0] == "result: 1.0 , 1.0 , 'aa' , 2.0 , 2.0 , 'ba' , 1.0 , 2.0 , 'ab' , ")
 
 
-class DynamicInputDatatypeSpecific(Test):
+class DynamicInputDatatypeSpecific(_JavaUdfSetup):
     def test_type_specific_add_string(self):
         rows = self.query('''
             SELECT fn1.type_specific_add(v, v, v)
@@ -480,16 +472,16 @@ class DynamicInputDatatypeSpecific(Test):
         self.assertTrue(rows[0][0] == 'result:  50' or rows[0][0] == "result: 50.0" or rows[0][0] == 'result: 50')
 
 
-class DynamicInputErrors(Test):
+class DynamicInputErrors(_JavaUdfSetup):
     def test_exception_wrong_arg(self):
-        if udf.opts.lang == 'r':
+        if self.LANG == 'r':
             raise udf.SkipTest('does not work with R currently')
         err_text = {
             'lua': 'out of range',
             'python3': 'does not exist',
             'java': 'does not exist',
             }
-        with self.assertRaisesRegex(Exception, err_text[udf.opts.lang]):
+        with self.assertRaisesRegex(Exception, err_text[self.LANG]):
             self.query('''select fn1.wrong_arg('a') from dual''')
 
     def test_exception_wrong_operation(self):
@@ -499,7 +491,7 @@ class DynamicInputErrors(Test):
             'python3': 'multiply sequence by non-int of type',
             'java': 'bad operand types for binary operator',
             }
-        with self.assertRaisesRegex(Exception, err_text[udf.opts.lang]):
+        with self.assertRaisesRegex(Exception, err_text[self.LANG]):
             self.query('''select fn1.wrong_operation('a','b') from dual''')
 
     def test_exception_empty_set_returns(self):
@@ -510,7 +502,7 @@ class DynamicInputErrors(Test):
         with self.assertRaisesRegex(Exception, 'data exception - missing input parameters for SET UDF script'):
             self.query('''select fn1.empty_set_emits() from dynamic_input.groupt''')
 
-class DynamicInputOptimizations(Test):
+class DynamicInputOptimizations(_JavaUdfSetup):
     def test_mapreduce_optimization(self):
         rows = self.query('''
             select fn1.basic_set_return("v") from ( select fn1.basic_scalar_emit(n,n,n,n,n,n,n,n,n,n) from dynamic_input.groupt)

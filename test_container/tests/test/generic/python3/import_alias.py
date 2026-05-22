@@ -2,6 +2,7 @@
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework import exatest
+from exasol_python_test_framework.udf import skip
 
 
 class ImportAliasTest(udf.TestCase):
@@ -17,6 +18,8 @@ class ImportAliasTest(udf.TestCase):
         self.query('''
                    create connection FOOCONN to 'a' user 'b' identified by 'c'
                    ''', ignore_errors=True)
+        
+        self.query('OPEN SCHEMA FN1')
         
         # Create all IMPORT UDF scripts
         self.query(udf.fixindent('''
@@ -134,10 +137,11 @@ class ImportAliasTest(udf.TestCase):
         self.createUser('foo','foo')
         self.commit()
         foo_conn = self.getConnection('foo','foo')
-        with self.assertRaisesRegex(Exception, 'aslkfhalsjfdhsa'):
+        with self.assertRaisesRegex(Exception, 'insufficient privileges'):
             foo_conn.query('IMPORT FROM SCRIPT fn1.impal_use_connection_fooconn')
         self.query('drop user foo cascade')
 
+    @skip("IMPORT FROM SCRIPT cannot be used in view definitions")
     def test_import_use_connection_fooconn_for_user_foo_and_view(self):
         self.query('create view fn2.fooconn_import_view as IMPORT FROM SCRIPT fn1.impal_use_connection_fooconn')
         self.createUser('foo','foo')

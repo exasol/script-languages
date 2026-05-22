@@ -369,6 +369,7 @@ class MetaDataTest(_JavaUdfSetup):
 
     def test_current_schema_null(self):
         if (udf.opts.is_compat_mode != "true"):
+            self.query('''CLOSE SCHEMA''')
             rows = self.query('''select fn1.get_current_schema() from dual''')
             self.assertRowEqual(('NULL',), rows[0])
 

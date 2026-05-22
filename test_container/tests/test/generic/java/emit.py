@@ -68,7 +68,61 @@ class _JavaUdfSetup(udf.TestCase):
 
 class InputOutputMatchingTest(_JavaUdfSetup):
     def setUp(self):
-        super().setUp()
+        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA FN1')
+        self.query('OPEN SCHEMA FN1')
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT dob_1i_1o(x double)
+            EMITS (y double) AS
+            class DOB_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_1o(x double)
+            EMITS (y double) AS
+            class LINE_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_2o(x double)
+            EMITS (y double, z double) AS
+            class LINE_1I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"), ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_2i_1o(x double, y double)
+            EMITS (z double) AS
+            class LINE_2I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_3i_2o(x double, y double, z double)
+            EMITS (z1 double, z2 double) AS
+            class LINE_3I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"), 3000.0);
+                }
+            }
+            /
+        '''))
+        
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
         self.query('create table fn2.t(id double, x double)')
@@ -112,7 +166,61 @@ class InputOutputMatchingTest(_JavaUdfSetup):
 
 class ColumnNamesTest(_JavaUdfSetup):
     def setUp(self):
-        super().setUp()
+        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA FN1')
+        self.query('OPEN SCHEMA FN1')
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT dob_1i_1o(x double)
+            EMITS (y double) AS
+            class DOB_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_1o(x double)
+            EMITS (y double) AS
+            class LINE_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_2o(x double)
+            EMITS (y double, z double) AS
+            class LINE_1I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"), ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_2i_1o(x double, y double)
+            EMITS (z double) AS
+            class LINE_2I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_3i_2o(x double, y double, z double)
+            EMITS (z1 double, z2 double) AS
+            class LINE_3I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"), 3000.0);
+                }
+            }
+            /
+        '''))
+        
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
         self.query('create table fn2.t(id double, x double)')
@@ -134,7 +242,61 @@ class ColumnNamesTest(_JavaUdfSetup):
 
 class DatatypesTest(_JavaUdfSetup):
     def setUp(self):
-        super().setUp()
+        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA FN1')
+        self.query('OPEN SCHEMA FN1')
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT dob_1i_1o(x double)
+            EMITS (y double) AS
+            class DOB_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_1o(x double)
+            EMITS (y double) AS
+            class LINE_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_2o(x double)
+            EMITS (y double, z double) AS
+            class LINE_1I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"), ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_2i_1o(x double, y double)
+            EMITS (z double) AS
+            class LINE_2I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_3i_2o(x double, y double, z double)
+            EMITS (z1 double, z2 double) AS
+            class LINE_3I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"), 3000.0);
+                }
+            }
+            /
+        '''))
+        
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
 
@@ -405,7 +567,61 @@ class DatatypesTest(_JavaUdfSetup):
 
 class NullTest(_JavaUdfSetup):
     def setUp(self):
-        super().setUp()
+        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA FN1')
+        self.query('OPEN SCHEMA FN1')
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT dob_1i_1o(x double)
+            EMITS (y double) AS
+            class DOB_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_1o(x double)
+            EMITS (y double) AS
+            class LINE_1I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_1i_2o(x double)
+            EMITS (y double, z double) AS
+            class LINE_1I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x"), ctx.getDouble("x"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_2i_1o(x double, y double)
+            EMITS (z double) AS
+            class LINE_2I_1O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"));
+                }
+            }
+            /
+        '''))
+        self.query(udf.fixindent('''
+            CREATE java SCALAR SCRIPT line_3i_2o(x double, y double, z double)
+            EMITS (z1 double, z2 double) AS
+            class LINE_3I_2O {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    ctx.emit(ctx.getDouble("x") + ctx.getDouble("y"), 3000.0);
+                }
+            }
+            /
+        '''))
+        
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
 

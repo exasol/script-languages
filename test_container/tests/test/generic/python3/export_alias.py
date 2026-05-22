@@ -22,6 +22,8 @@ class ExportAliasTest(udf.TestCase):
         self.query("insert into fn2.\"tl\" values (1, 'x')")
         self.query("create connection FOOCONN to 'a' user 'b' identified by 'c'", ignore_errors=True)
         
+        self.query('OPEN SCHEMA FN1')
+        
         # Create all EXPORT UDF scripts
         self.query(udf.fixindent('''
             create or replace python3 scalar script expal_test_pass_fail(res varchar(100)) emits (x int) as

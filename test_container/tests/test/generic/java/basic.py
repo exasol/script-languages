@@ -260,28 +260,56 @@ class BasicTest(_JavaUdfSetup):
         self.assertEqual(sorted_list, unsorted_list)
 
 
-class SetWithEmptyInput(_JavaUdfSetup):
+class SetWithEmptyInput(udf.TestCase):
     def setUp(self):
-        super().setUp()
+        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
+        self.query('CREATE SCHEMA FN1')
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
+        self.query('OPEN SCHEMA FN1')
         self.query('CREATE TABLE FN2.empty_table(c int)')
+        
+        # Create UDFs needed for SetWithEmptyInput tests
+        self.query(udf.fixindent('''
+            CREATE java SET SCRIPT
+            set_returns_has_empty_input(a double) RETURNS boolean AS
+            class SET_RETURNS_HAS_EMPTY_INPUT {
+                static boolean run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    return ctx.getDouble("a") == null;
+                }
+            }
+            /
+        '''))
+        
+        self.query(udf.fixindent('''
+            CREATE java SET SCRIPT
+            set_emits_has_empty_input(a double) EMITS (x double, y varchar(10)) AS
+            class SET_EMITS_HAS_EMPTY_INPUT {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    if (ctx.getDouble("a") == null)
+            ctx.emit(1,"1");
+                    else
+            ctx.emit(2,"2");
+                }
+            }
+            /
+        '''))
 
     def test_set_returns_has_empty_input_group_by(self):
-        self.query("""select FN1.set_returns_has_empty_input(c) from empty_table group by 'X'""")
+        self.query("""select FN1.set_returns_has_empty_input(c) from FN2.empty_table group by 'X'""")
         self.assertEqual(0, self.rowcount())
 
     def test_set_returns_has_empty_input_no_group_by(self):
-        rows = self.query('''select FN1.set_returns_has_empty_input(c) from empty_table''')
+        rows = self.query('''select FN1.set_returns_has_empty_input(c) from FN2.empty_table''')
         self.assertRowsEqual([(None,)], rows)
 
 
     def test_set_emits_has_empty_input_group_by(self):
-        self.query("""select FN1.set_emits_has_empty_input(c) from empty_table group by 'X'""")
+        self.query("""select FN1.set_emits_has_empty_input(c) from FN2.empty_table group by 'X'""")
         self.assertEqual(0, self.rowcount())
 
     def test_set_emits_has_empty_input_no_group_by(self):
-        rows = self.query('''select FN1.set_emits_has_empty_input(c) from empty_table''')
+        rows = self.query('''select FN1.set_emits_has_empty_input(c) from FN2.empty_table''')
         self.assertRowsEqual([(None,None)], rows)
 
 

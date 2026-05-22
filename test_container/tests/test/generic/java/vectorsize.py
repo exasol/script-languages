@@ -3,15 +3,11 @@
 import sys
 
 from exasol_python_test_framework import udf
-
-
-def setUpModule():
-    """Set default language for manual testing without --lang parameter."""
-    if udf.opts is not None and getattr(udf.opts, 'lang', None) is None:
-        udf.opts.lang = 'java'
+from exasol_python_test_framework.udf import useData
 
 
 class _JavaUdfSetup(udf.TestCase):
+    LANG = 'java'
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -139,8 +135,8 @@ class Vectorsize(_JavaUdfSetup):
             'r':        3000,
             'java':     3000
             }
-        if size > limits.get(udf.opts.lang, sys.maxsize):
-            raise SkipTest('test is to slow')
+        if size > limits.get(self.LANG, sys.maxsize):
+            raise udf.SkipTest('test is to slow')
 
         self.query('''
                 SELECT max(fn1.vectorsize(%d, float1))

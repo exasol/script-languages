@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import useData
+
+
 class _JavaUdfSetup(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)

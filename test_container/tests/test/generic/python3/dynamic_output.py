@@ -23,6 +23,7 @@ class DynamicOutputCreateScript(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -304,6 +305,7 @@ class DynamicOutputTest(udf.TestCase):
                                                 ''')
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
+        self.query('OPEN SCHEMA FN1')
         
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
@@ -604,11 +606,11 @@ class DynamicOutputTest(udf.TestCase):
         }
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang or 'python3'))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang or 'python3'))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
 
 
@@ -631,6 +633,7 @@ class DynamicOutputWrongUsage(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -932,6 +935,7 @@ class DynamicOutputInsertInto(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -1237,6 +1241,7 @@ class DynamicOutputCreateTableAs(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -1516,6 +1521,7 @@ class DefaultDynamicOutputCreateScript(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -1800,6 +1806,7 @@ class DefaultDynamicOutputTest(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -2132,11 +2139,11 @@ class DefaultDynamicOutputTest(udf.TestCase):
         }
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang or 'python3'))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang or 'python3'))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
         # now again with intrinsic emits clause
         rows = self.query('''
@@ -2145,11 +2152,11 @@ class DefaultDynamicOutputTest(udf.TestCase):
             ''')
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang or 'python3'))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang or 'python3'))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
 
 
@@ -2172,6 +2179,7 @@ class DefaultDynamicOutputWrongUsage(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -2464,6 +2472,7 @@ class DefaultDynamicOutputInsertInto(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -2769,6 +2778,7 @@ class DefaultDynamicOutputCreateTableAs(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -3045,6 +3055,7 @@ class DefaultDynamicOutputEmptyStringResult(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
@@ -3311,6 +3322,7 @@ class DefaultDynamicOutputFromInputMeta(udf.TestCase):
         self.query('create table dynamic_output.target (a int, b double, c varchar(100));')
         self.query('''create connection SPOT4245 to 'a' user 'b' identified by 'c' ''')
         
+        self.query('OPEN SCHEMA FN1')
         # Create all Python3 UDFs for dynamic output testing
         self.query(udf.fixindent('''
             CREATE PYTHON3 SET SCRIPT VAREMIT_SIMPLE_SET (a double) EMITS (...) AS
