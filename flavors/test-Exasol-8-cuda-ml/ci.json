@@ -49,11 +49,9 @@
       {
         "name": "generic",
         "files": [],
-        "folders": [],
+        "folders": ["generic/python3"],
         "goal": "release",
-        "generic_language_tests": [
-          "python3"
-        ]
+        "generic_language_tests": []
       },
       {
         "name": "gpu",
