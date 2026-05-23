@@ -174,7 +174,7 @@ class Unicode(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -235,7 +235,7 @@ class UnicodeData(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():

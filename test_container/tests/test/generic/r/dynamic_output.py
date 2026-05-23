@@ -3,6 +3,7 @@
 from exasol_python_test_framework import udf
 from exasol_python_test_framework import exatest
 import pathlib
+import re
 
 
 class DynamicOutputCreateScript(udf.TestCase):
@@ -17,11 +18,251 @@ class DynamicOutputCreateScript(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -70,12 +311,251 @@ class DynamicOutputTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -148,13 +628,15 @@ class DynamicOutputTest(udf.TestCase):
             'lua': ["number"],
             'java': ["java.lang.Double"]
         }
+        # Default to 'r' if lang is None (running generic R tests)
+        lang = udf.opts.lang if udf.opts.lang is not None else 'r'
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(lang))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(lang))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
 
 
@@ -169,12 +651,132 @@ class DynamicOutputWrongUsage(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -242,12 +844,132 @@ class DynamicOutputInsertInto(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -318,12 +1040,132 @@ class DynamicOutputCreateTableAs(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -368,12 +1210,132 @@ class DefaultDynamicOutputCreateScript(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -423,12 +1385,132 @@ class DefaultDynamicOutputTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -532,13 +1614,15 @@ class DefaultDynamicOutputTest(udf.TestCase):
             'lua': ["number"],
             'java': ["java.lang.Double"]
         }
+        # Default to 'r' if lang is None (running generic R tests)
+        lang = udf.opts.lang if udf.opts.lang is not None else 'r'
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(lang))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(lang))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
         # now again with intrinsic emits clause
         rows = self.query('''
@@ -547,11 +1631,11 @@ class DefaultDynamicOutputTest(udf.TestCase):
             ''')
         self.assertRowEqual(('2',1.0), rows[0])
         self.assertRowEqual(('A',1.0), rows[1])
-        self.assertTrue(rows[2][0] in stringType.get(udf.opts.lang))
+        self.assertTrue(rows[2][0] in stringType.get(lang))
         self.assertRowEqual(('VARCHAR(123) UTF8',1), rows[3])
         self.assertRowEqual(('123',1.0), rows[6])
         self.assertRowEqual(('B',1.0), rows[7])
-        self.assertTrue(rows[8][0] in numType.get(udf.opts.lang))
+        self.assertTrue(rows[8][0] in numType.get(lang))
         self.assertRowEqual(('DOUBLE',1.0), rows[9])
 
 
@@ -566,12 +1650,132 @@ class DefaultDynamicOutputWrongUsage(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -631,12 +1835,132 @@ class DefaultDynamicOutputInsertInto(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -707,12 +2031,132 @@ class DefaultDynamicOutputCreateTableAs(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -754,12 +2198,132 @@ class DefaultDynamicOutputEmptyStringResult(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -792,12 +2356,132 @@ class DefaultDynamicOutputFromInputMeta(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')
@@ -831,12 +2515,132 @@ class DynamicOutFromConnectionsAndViews(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
                 self.query(stmt)
 
+        
+        # Add R-specific test scripts inline
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_GENERIC_EMIT (a varchar(100)) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_ALL_GENERIC (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[1]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+run <- function(ctx) {
+    ctx$emit(paste(exa$meta$output_column_count), 1)
+    for(i in seq(exa$meta$output_column_count)) {
+        ctx$emit(paste(exa$meta$output_columns[[i]]$name), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$sql_type), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$precision), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$scale), 1)
+        ctx$emit(paste(exa$meta$output_columns[[i]]$length), 1)
+    }
+}
+defaultOutputColumns <- function() {
+    return ("a varchar(123), b double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a double")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_SIMPLE_RETURNS (a int) RETURNS int AS
+run <- function(ctx) {
+  ctx$emit(1)
+}
+defaultOutputColumns <- function() {
+    return ("a int")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$output_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    return ("a int, b double, c varchar(100)")
+}
+''')
+        self.query('''
+CREATE R SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+run <- function(ctx) {
+  outRec <- list()
+  for (i in 1:exa$meta$input_column_count) {
+    outRec[i] <- ctx[[i]]()
+  }
+  do.call(ctx$emit, outRec)
+}
+defaultOutputColumns <- function() {
+    res <- c()
+    for (i in 0:(exa$meta$input_column_count-1)) {
+        col <- exa$meta$input_columns[[i]]
+        col_name <- col$name
+        tryCatch({
+            col_name <- paste0("col_", as.integer(col_name))
+        }, error = function(e) {})
+        res <- c(res, paste(col_name, col$sql_type))
+    }
+    return(paste(res, collapse=", "))
+}
+''')
+        self.query('''
+CREATE R SCALAR SCRIPT OUTPUT_COLUMNS_AS_IN_CONNECTION_SPOT4245 (a double) EMITS (...) AS
+run <- function(ctx) {
+    ctx$emit(1.0, 2.2, 3.3, 4.4)
+}
+defaultOutputColumns <- function() {
+    return("PASSWORD double, A double, B double, C double")
+}
+''')
         
         self.query('''drop connection SPOT4245''', ignore_errors=True)
         self.query('CREATE TABLE small(x VARCHAR(2000), y DOUBLE)')

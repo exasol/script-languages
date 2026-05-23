@@ -2,6 +2,7 @@
 
 from exasol_python_test_framework import udf
 import pathlib
+import re
 
 
 class MetaDataTest(udf.TestCase):
@@ -16,7 +17,7 @@ class MetaDataTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():

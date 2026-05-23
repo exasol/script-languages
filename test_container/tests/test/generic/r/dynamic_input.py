@@ -2,6 +2,7 @@
 
 from exasol_python_test_framework import udf
 import pathlib
+import re
 
 
 class DynamicMetadataTest(udf.TestCase):
@@ -18,7 +19,7 @@ class DynamicMetadataTest(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
@@ -70,7 +71,7 @@ class DynamicInputBasic(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
@@ -207,7 +208,7 @@ class DynamicInputDatatypeSpecific(udf.TestCase):
             sql_file = lang_path / sql_filename
             with open(sql_file, 'r') as f:
                 sql_content = f.read()
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
@@ -250,7 +251,7 @@ class DynamicInputErrors(udf.TestCase):
             sql_file = lang_path / sql_filename
             with open(sql_file, 'r') as f:
                 sql_content = f.read()
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
@@ -267,7 +268,7 @@ class DynamicInputErrors(udf.TestCase):
                                                 ''')
 
     def test_exception_wrong_arg(self):
-        if udf.opts.lang == 'r':
+        if udf.opts.lang == 'r' or udf.opts.lang is None:
             raise udf.SkipTest('does not work with R currently')
         err_text = {
             'lua': 'out of range',
@@ -284,7 +285,9 @@ class DynamicInputErrors(udf.TestCase):
             'python3': 'multiply sequence by non-int of type',
             'java': 'bad operand types for binary operator',
             }
-        with self.assertRaisesRegex(Exception, err_text[udf.opts.lang]):
+        # Default to 'r' if lang is None (running generic R tests)
+        lang = udf.opts.lang if udf.opts.lang is not None else 'r'
+        with self.assertRaisesRegex(Exception, err_text[lang]):
             self.query('''select fn1.wrong_operation('a','b') from dual''')
 
     def test_exception_empty_set_returns(self):
@@ -307,7 +310,7 @@ class DynamicInputOptimizations(udf.TestCase):
             sql_file = lang_path / sql_filename
             with open(sql_file, 'r') as f:
                 sql_content = f.read()
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():

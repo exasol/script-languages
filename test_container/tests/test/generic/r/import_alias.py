@@ -4,6 +4,7 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import skip
 from exasol_python_test_framework import exatest
 import pathlib
+import re
 
 
 class ImportAliasTest(udf.TestCase):
@@ -18,7 +19,7 @@ class ImportAliasTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():

@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 import pathlib
 from exasol_python_test_framework import exatest
-import pathlib
+import re
 
 
 class GetConnectionMemoryBug(udf.TestCase):
@@ -18,7 +18,7 @@ class GetConnectionMemoryBug(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -47,7 +47,7 @@ class AccessConnectionSysPriv(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -70,7 +70,7 @@ class GetConnectionTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -113,7 +113,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -211,7 +211,7 @@ class BigConnectionTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -250,7 +250,7 @@ class ConnectionTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -264,6 +264,7 @@ class ConnectionTest(udf.TestCase):
             CREATE OR REPLACE PYTHON3 ADAPTER SCRIPT adapter.fast_adapter_conn AS
             import json
             import string
+import re
             encodeUTF8 = lambda x: x
 
             def adapter_call(request):
@@ -314,7 +315,7 @@ class OptionalUSERandIDENTIFIEDBYTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -357,7 +358,7 @@ class GetConnectionAccessControlWithViewsTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():

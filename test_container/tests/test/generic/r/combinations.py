@@ -6,6 +6,7 @@ from exasol_python_test_framework.udf import (
     SkipTest,
     useData,
 )
+import re
 
 
 class Combinations_1_ary(udf.TestCase):
@@ -22,7 +23,7 @@ class Combinations_1_ary(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
@@ -81,33 +82,11 @@ class Combinations_2_ary_scalar_returns(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
                     self.query(stmt)
-        
-        self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA combinations')
-        self.query('CREATE TABLE small(x DOUBLE, y DOUBLE)')
-        self.query('INSERT INTO small VALUES (0.1, 0.2), (0.2, 0.1)')
-
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Load R scripts from SQL file
-        sql_file = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r' / 'combinations.sql'
-        with open(sql_file, 'r') as f:
-            sql_content = f.read()
-        
-        # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt and 'CREATE' in stmt.upper():
-                self.query(stmt)
         
         self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA combinations')
@@ -196,33 +175,11 @@ class Combinations_2_ary_scalar_emits(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
                     self.query(stmt)
-        
-        self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA combinations')
-        self.query('CREATE TABLE small(x DOUBLE, y DOUBLE)')
-        self.query('INSERT INTO small VALUES (0.1, 0.2), (0.2, 0.1)')
-
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Load R scripts from SQL file
-        sql_file = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r' / 'combinations.sql'
-        with open(sql_file, 'r') as f:
-            sql_content = f.read()
-        
-        # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt and 'CREATE' in stmt.upper():
-                self.query(stmt)
         
         self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA combinations')
@@ -312,33 +269,11 @@ class Combinations_2_ary_set_returns(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
                     self.query(stmt)
-        
-        self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA combinations')
-        self.query('CREATE TABLE small(x DOUBLE, y DOUBLE)')
-        self.query('INSERT INTO small VALUES (0.1, 0.2), (0.2, 0.1)')
-
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Load R scripts from SQL file
-        sql_file = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r' / 'combinations.sql'
-        with open(sql_file, 'r') as f:
-            sql_content = f.read()
-        
-        # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt and 'CREATE' in stmt.upper():
-                self.query(stmt)
         
         self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA combinations')
@@ -411,33 +346,11 @@ class Combinations_2_ary_set_emits(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
                     self.query(stmt)
-        
-        self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA combinations')
-        self.query('CREATE TABLE small(x DOUBLE, y DOUBLE)')
-        self.query('INSERT INTO small VALUES (0.1, 0.2), (0.2, 0.1)')
-
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Load R scripts from SQL file
-        sql_file = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r' / 'combinations.sql'
-        with open(sql_file, 'r') as f:
-            sql_content = f.read()
-        
-        # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt and 'CREATE' in stmt.upper():
-                self.query(stmt)
         
         self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA combinations')
@@ -513,33 +426,11 @@ class Combinations_3_ary(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
                     self.query(stmt)
-        
-        self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA combinations')
-        self.query('CREATE TABLE small(x DOUBLE, y DOUBLE)')
-        self.query('INSERT INTO small VALUES (0.1, 0.2), (0.2, 0.1)')
-
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Load R scripts from SQL file
-        sql_file = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r' / 'combinations.sql'
-        with open(sql_file, 'r') as f:
-            sql_content = f.read()
-        
-        # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt and 'CREATE' in stmt.upper():
-                self.query(stmt)
         
         self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA combinations')
@@ -597,7 +488,7 @@ class Combinations_n_ary(udf.TestCase):
                 sql_content = f.read()
             
             # Execute each CREATE SCRIPT statement
-            statements = sql_content.split('/')
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
             for stmt in statements:
                 stmt = stmt.strip()
                 if stmt and 'CREATE' in stmt.upper():
@@ -608,28 +499,6 @@ class Combinations_n_ary(udf.TestCase):
         self.query('CREATE TABLE small(x DOUBLE, y DOUBLE)')
         self.query('INSERT INTO small VALUES (0.1, 0.2), (0.2, 0.1)')
 
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Load R scripts from SQL file
-        sql_file = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r' / 'combinations.sql'
-        with open(sql_file, 'r') as f:
-            sql_content = f.read()
-        
-        # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt and 'CREATE' in stmt.upper():
-                self.query(stmt)
-        
-        self.query('DROP SCHEMA combinations CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA combinations')
-        self.query('CREATE TABLE small(x DOUBLE, y DOUBLE)')
-        self.query('INSERT INTO small VALUES (0.1, 0.2), (0.2, 0.1)')
-    @staticmethod
     def partial_sum(n, degree):
         def basic_range(n, d):
             if d == 0:

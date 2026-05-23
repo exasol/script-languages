@@ -5,6 +5,7 @@ import sys
 from exasol_python_test_framework import udf
 import pathlib
 from exasol_python_test_framework.udf import useData, SkipTest
+import re
 
 
 class Vectorsize(udf.TestCase):
@@ -13,17 +14,19 @@ class Vectorsize(udf.TestCase):
         self.query('CREATE SCHEMA FN1')
         self.query('OPEN SCHEMA FN1')
         
-        # Load R scripts from SQL file
-        sql_file = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r' / 'vectorsize.sql'
-        with open(sql_file, 'r') as f:
-            sql_content = f.read()
-        
-        # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt and 'CREATE' in stmt.upper():
-                self.query(stmt)
+        # Load R scripts from SQL files (basic.sql for BASIC_RANGE, vectorsize.sql for test functions)
+        lang_path = pathlib.Path(__file__).parent.parent.parent.parent / 'lang' / 'r'
+        for sql_filename in ['basic.sql', 'vectorsize.sql']:
+            sql_file = lang_path / sql_filename
+            with open(sql_file, 'r') as f:
+                sql_content = f.read()
+            
+            # Execute each CREATE SCRIPT statement
+            statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
+            for stmt in statements:
+                stmt = stmt.strip()
+                if stmt and 'CREATE' in stmt.upper():
+                    self.query(stmt)
 
 
     def test_vectorsize_5000(self):

@@ -2,6 +2,7 @@
 
 from exasol_python_test_framework import udf
 import pathlib
+import re
 
 # ATTENTION!
 # The logic for the tests had to be put in the export_alias.sql files for each language.
@@ -25,7 +26,7 @@ class ExportAliasTest(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():

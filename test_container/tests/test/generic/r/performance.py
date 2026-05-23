@@ -11,6 +11,7 @@ from exasol_python_test_framework.udf import (
     timer,
     skip,
 )
+import re
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
@@ -27,7 +28,7 @@ class WordCount(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
@@ -195,7 +196,7 @@ class FrequencyAnalysis(udf.TestCase):
             sql_content = f.read()
         
         # Execute each CREATE SCRIPT statement
-        statements = sql_content.split('/')
+        statements = re.split(r'^\s*/\s*$', sql_content, flags=re.MULTILINE)
         for stmt in statements:
             stmt = stmt.strip()
             if stmt and 'CREATE' in stmt.upper():
