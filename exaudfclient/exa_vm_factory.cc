@@ -1,7 +1,7 @@
 #include <functional>
 #include "exa_vm_factory.h"
 
-std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lang) {
+std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lang, bool use_ctpg_options_parser) {
 #ifdef UDF_PLUGIN_CLIENT
     return [](){return new SWIGVMContainers::Protegrity(false);};
 #else
@@ -14,7 +14,11 @@ std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lan
     }
     else if(argv_lang.compare("lang=java") == 0) {
         #ifdef ENABLE_JAVA_VM
-            return []() { return SWIGVMContainers::JavaContainerBuilder().build(); };
+            if (use_ctpg_options_parser) {
+                return [&](){return SWIGVMContainers::JavaContainerBuilder().useCtpgParser().build();};
+            } else {
+                return [&](){return SWIGVMContainers::JavaContainerBuilder().build();};
+            }
         #else
             throw SWIGVMContainers::SWIGVM::exception("this exaudfclient has been compilied without Java support");
         #endif

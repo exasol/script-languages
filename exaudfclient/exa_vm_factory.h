@@ -21,4 +21,4 @@
 #include "benchmark_container/benchmark_container.h"
 #endif
 
-std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lang);
+std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lang, bool use_ctpg_options_parser);
