@@ -78,46 +78,15 @@ int main(int argc, char **argv) {
     std::string libexaudflibPath = string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
     std::string libexaudflibPath = ::getenv("LIBEXAUDFLIB_PATH");
-    //std::string libexaudflibPath="libexaudflib_complete.so";
-    //std::string libexaudflibPath = std::string(argv[3]);
-    //std::string libexaudflibPath = std::string("/exaudf/libexaudflib_complete.so");
 #endif
-#if 1
-
-    Lmid_t  my_namespace_id;
-    // DBGMSG(std::cerr, "Load libprotobuf into new namespace");
-    // DBGVAR(std::cerr, libProtobufPath);
-    // handle = dlmopen(LM_ID_NEWLM, libProtobufPath.c_str(),RTLD_NOW);
-    // if (!handle) {
-    //     std::cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
-    //     exit(EXIT_FAILURE);
-    // }
-    // if(dlinfo(handle, RTLD_DI_LMID, &my_namespace_id) != 0) {
-    //     cerr << "Error when getting namespace id " << dlerror() << endl;
-    //     exit(EXIT_FAILURE);
-    // }
     DBGMSG(cerr, "Load libexaudflib");
     DBGVAR(cerr, libexaudflibPath);
     handle = dlmopen(LM_ID_NEWLM, libexaudflibPath.c_str(), RTLD_NOW);
-//    handle = dlopen(libexaudflibPath.c_str(), RTLD_NOW);
 
     if (!handle) {
         fprintf(stderr, "dmlopen: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
-#else
-    handle = dlopen(libProtobufPath.c_str(),RTLD_NOW|RTLD_GLOBAL);
-    if (!handle) {
-        cerr << "Error when dynamically loading libprotobuf: " << dlerror() << endl;
-        exit(EXIT_FAILURE);
-    }
-    handle = dlopen("/exaudf/libexaudflib.so",RTLD_NOW);
-    if (!handle) {
-        fprintf(stderr, "dlopen: %s\n", dlerror());
-        exit(EXIT_FAILURE);
-    }
-#endif
-
 
     MAIN_FUN exaudfclient_main = (MAIN_FUN)load_dynamic("exaudfclient_main");
     VOID_FUN_WITH_SWIGVM_PARAMS_P set_SWIGVM_params = (VOID_FUN_WITH_SWIGVM_PARAMS_P)load_dynamic("set_SWIGVM_params");
