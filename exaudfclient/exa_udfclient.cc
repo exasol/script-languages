@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     bool is_use_ctpg_parser = is_use_ctpg_parser(argv[3]);
 
     setup_environment();
-    std::function<SWIGVMContainers::SWIGVM*()>vmMaker = create_vm(argv[2]);
+    std::function<SWIGVMContainers::SWIGVM*()>vmMaker = create_vm(argv[2], is_use_ctpg_parser);
 
     SWIGVM_params = new SWIGVM_params_t(true);
     set_SWIGVM_params(SWIGVM_params);
