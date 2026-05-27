@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     DBGVAR(std::cerr, libexaudflibPath);
     void* handle = exa_load_libary(libexaudflibPath);
     if (!handle) {
-        fprintf(stderr, "Failed to load library: %s\n", libexaudflibPath.c_str());
+        std::cerr << "Failed to load library: " << libexaudflibPath << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
     bool is_use_ctpg_parser = is_use_ctpg_parser(argv[3]);
 
     setup_environment();
+    
     std::function<SWIGVMContainers::SWIGVM*()>vmMaker = create_vm(argv[2], is_use_ctpg_parser);
 
     SWIGVM_params = new SWIGVM_params_t(true);
