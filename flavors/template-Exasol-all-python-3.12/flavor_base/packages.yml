@@ -11,7 +11,7 @@ build_steps:
       - name: curl
         version: 8.5.0-2ubuntu*
       - name: openjdk-17-jdk
-        version: 17.0.18+8-1~24.04.1
+        version: 17.0.19+10-1~24.04.2
       - name: build-essential
         version: 12.10ubuntu*
       - name: libpcre3-dev
