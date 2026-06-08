@@ -4,11 +4,15 @@
 #include <string>
 
 #include "exaudf_lib_output_path.h"
-#include "vm/swig_vm.h"
+#include "exaudflib/vm/swig_vm.h"
 #include "exa_udf_base.h"
 #include "exa_lib_loader.h"
 #include "exa_set_env.h"
 #include "utils/debug_message.h"
+
+namespace SWIGVMContainers {
+__thread SWIGVM_params_t * SWIGVM_params = nullptr;
+}
 
 
 int ExaUdfClientBase::startClientBase(int argc, char** argv) {
@@ -38,7 +42,7 @@ int ExaUdfClientBase::startClientBase(int argc, char** argv) {
         setup_environment();
         std::function<SWIGVMContainers::SWIGVM*()> vmMaker = create_vm();
 
-        SWIGVMContainers::SWIGVM_params = new SWIGVM_params_t(true);
+        SWIGVMContainers::SWIGVM_params = new SWIGVMContainers::SWIGVM_params_t(true);
         set_SWIGVM_params(SWIGVMContainers::SWIGVM_params);
         return exaudfclient_main(vmMaker, argc, argv);
 }

@@ -2,9 +2,9 @@
 #include <functional>
 #include <string>
 
-#include "vm/swig_vm.h"
+#include "exaudflib/vm/swig_vm.h"
 
-typedef bool (*SET_SWIGVM_PARAMS)(SWIGVM_params_t*);
+typedef bool (*SET_SWIGVM_PARAMS)(SWIGVMContainers::SWIGVM_params_t*);
 typedef int (*MAIN_FUN)(std::function<SWIGVMContainers::SWIGVM*()> vmMaker, int, char**);
 
 class ExaUdfClientBase {

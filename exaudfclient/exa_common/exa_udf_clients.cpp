@@ -6,7 +6,6 @@
 
 void ExaUdfClient::parse_arguments(int argc, char** argv) {
     //  Now assumption is that all cmd line aguments are already validated.
-    m_socket = argv[1];
     m_languageArg = argv[2];
    
     m_useCtpgParser = false;

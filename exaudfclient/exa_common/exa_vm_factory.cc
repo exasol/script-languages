@@ -53,5 +53,4 @@ std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lan
     else {
         throw SWIGVMContainers::SWIGVM::exception("unsupported language specified in argv");
     }   
-#endif
 }

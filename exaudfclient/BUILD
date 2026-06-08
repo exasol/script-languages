@@ -29,13 +29,37 @@ genrule(
     ''',
 )
 
+cc_library(
+    name = "exa_common_lib",
+    srcs = [
+        "exa_common/exa_lib_loader.cc",
+        "exa_common/exa_set_env.cc",
+        "exa_common/exa_udf_base.cpp",
+        "exa_common/exa_udf_clients.cpp",
+        "exa_common/exa_vm_factory.cc",
+        "//:exaudflib_output_path_header",
+    ],
+    hdrs = [
+        "exa_common/exa_lib_loader.h",
+        "exa_common/exa_set_env.h",
+        "exa_common/exa_udf_base.h",
+        "exa_common/exa_udf_clients.h",
+        "exa_common/exa_vm_factory.h",
+    ],
+    linkopts = ["-ldl"],
+    deps = [
+        "@exaudfclient_base//exaudflib:header",
+        "@exaudfclient_base//utils:utils",
+        "@exaudfclient_base//exaudflib:exaudflib-deps",
+    ] + VM_ENABLED_DEPS + VM_PYTHON3_DEPS,
+    defines = VM_ENABLED_DEFINES,
+    data = ["@exaudfclient_base//:libexaudflib_complete.so"],
+)
+
 cc_binary(
     name = "exaudfclient_bin",
-    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic", "//:exaudflib_output_path_header"],
-    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["@exaudfclient_base//exaudflib:header", "@exaudfclient_base//utils:utils"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
-           ["@exaudfclient_base//exaudflib:exaudflib-deps"],
-    defines = VM_ENABLED_DEFINES,
+    srcs = ["exa_udfclient.cc"],
+    deps = [":exa_common_lib"],
     data = ["@exaudfclient_base//:libexaudflib_complete.so"]
 )
 
@@ -54,12 +78,12 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_static_bin",
-    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic", "//:exaudflib_output_path_header"],
-    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["@exaudfclient_base//exaudflib:header", "@exaudfclient_base//utils:utils"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
-            ["@exaudfclient_base//exaudflib:exaudflib-deps"] +
-            [ "@zmq//:zmq", "@protobuf//:protobuf"],
-    defines = VM_ENABLED_DEFINES,
+    srcs = ["exa_udfclient.cc"],
+    deps = [
+        ":exa_common_lib",
+        "@zmq//:zmq",
+        "@protobuf//:protobuf",
+    ],
     data = ["@exaudfclient_base//:libexaudflib_complete.so"],
 )
 
