@@ -37,6 +37,7 @@ cc_library(
         "exa_common/exa_udf_base.cpp",
         "exa_common/exa_udf_clients.cpp",
         "exa_common/exa_vm_factory.cc",
+        "@exaudfclient_base//:load_dynamic",
         "//:exaudflib_output_path_header",
     ],
     hdrs = [
