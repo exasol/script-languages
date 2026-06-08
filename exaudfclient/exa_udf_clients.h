@@ -7,9 +7,12 @@
 class ExaUdfClient : public ExaUdfClientBase {
 public:
     ~ExaUdfClient() override = default;
-
+    void parse_arguments(int argc, char** argv) override;
     void usage(const std::string& programName) override;
-    std::function<SWIGVMContainers::SWIGVM*()> create_vm(
-        const std::string& languageArg,
-        bool useCtpgParser) override;
+    bool validate_arguments(int argc, char** argv) override;
+    std::function<SWIGVMContainers::SWIGVM*()> create_vm() override;
+    
+protected:
+    std::string m_languageArg;
+    bool m_useCtpgParser = false;
 };

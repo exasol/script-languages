@@ -9,10 +9,6 @@
 #include "python/pythoncontainer.h"
 #endif //ENABLE_PYTHON_VM
 
-#ifdef UDF_PLUGIN_CLIENT
-#include "protegrityclient.h"
-#endif //UDF_PLUGIN_CLIENT
-
 #ifdef ENABLE_STREAMING_VM
 #include "streaming_container/streamingcontainer.h"
 #endif
@@ -22,9 +18,6 @@
 #endif
 
 std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lang, bool use_ctpg_options_parser) {
-#ifdef UDF_PLUGIN_CLIENT
-    return [](){return new SWIGVMContainers::Protegrity(false);};
-#else
     if(argv_lang.compare("lang=python") == 0) {
         #ifdef ENABLE_PYTHON_VM
             return []() { return new  SWIGVMContainers::PythonVM(false); };

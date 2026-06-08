@@ -11,16 +11,8 @@ class ExaUdfClientBase {
 public:
     virtual ~ExaUdfClientBase() = default;
     virtual void usage(const std::string& programName) = 0;
-    virtual std::function<SWIGVMContainers::SWIGVM*()> create_vm(
-        const std::string& languageArg,
-        bool useCtpgParser) = 0;
-
-    bool validate_arguments(int argc, char** argv);
-    void parse_arguments(int argc, char** argv);
-    int startClientBase(int argc, char** argv);
-    
-protected:
-    std::string m_socket;
-    std::string m_languageArg;
-    bool mb_useCtpgParser = false;
+    virtual std::function<SWIGVMContainers::SWIGVM*()> create_vm() = 0;
+    virtual bool validate_arguments(int argc, char** argv) = 0;
+    virtual void parse_arguments(int argc, char** argv) = 0;
+    virtual int startClientBase(int argc, char** argv);
 };
