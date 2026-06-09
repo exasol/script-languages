@@ -1,4 +1,26 @@
+import sys
+print(f"syspath: {sys.path}", flush=True)
+print(f"sys-executable: {sys.executable}", flush=True)
+import sysconfig
+import os
+
+# Get the library directory and the specific library name
+libdir = sysconfig.get_config_var('LIBDIR')
+ldlibrary = sysconfig.get_config_var('LDLIBRARY')
+
+if libdir and ldlibrary:
+    full_path = os.path.join(libdir, ldlibrary)
+    print(f"Linked Library: {full_path}")
+else:
+    # Fallback for Windows or static builds
+    print(f"Library Name: {ldlibrary}")
+print("setup faulthandler", flush=True)
+import faulthandler
+faulthandler.enable()
+print("begin udf", flush=True)
+print("Import ctypes", flush=True)
 from ctypes import *
+
 from typing import List
 
 
@@ -55,4 +77,5 @@ class SymbolScanner:
 def run(ctx):
     search_string = ctx.search_string;
     symbol_scanner = SymbolScanner()
+    raise ValueError(f"Symbol scanning failed: {search_string}")
     return ";".join(symbol_scanner.findSymbols([search_string]))

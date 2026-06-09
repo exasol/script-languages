@@ -9,7 +9,7 @@ from exasol_python_test_framework.udf import get_supported_languages
 
 from exasol_python_test_framework.exatest.clients.odbc import getScriptLanguagesFromArgs
 import linker_namespace_base_test
-
+from exasol_python_test_framework.udf.udf_debug import UdfDebugger
 
 '''
 Purpose of this test if to validate correctness of the other test "linker_namespace.py"
@@ -33,10 +33,11 @@ class LinkerNamespaceSanityTest(linker_namespace_base_test.LinkerNamespaceBaseTe
     @skipIf('PYTHON3' not in get_supported_languages(), "UDF does not support Python3")
     def test_linker_namespace(self):
         self._setup_language_definition()
-        rows = self._execute_linker_namespace_udf(['protobuf', 'zmq'])
-        self.assertGreater(len(rows), 0)
-        for item in rows:
-            self.assertGreater(len(item[0]), 0)
+        with UdfDebugger(test_case=self):
+            rows = self._execute_linker_namespace_udf(['protobuf', 'zmq'])
+            self.assertGreater(len(rows), 0)
+            for item in rows:
+                self.assertGreater(len(item[0]), 0)
 
 
 if __name__ == '__main__':
