@@ -5,11 +5,16 @@
 #include <sstream>
 #include "exaudflib/vm/swig_vm.h"
 
-void* handle;
+static void* exaudflib_handle;
 
 #ifndef UDF_PLUGIN_CLIENT
+
+void set_exaudflib_handle(void* handle) {
+    exaudflib_handle = handle;
+}
+
 void* load_dynamic(const char* name) {
-    void* res = dlsym(handle, name);
+    void* res = dlsym(exaudflib_handle, name);
     char* error;
     if ((error = dlerror()) != nullptr)
     {

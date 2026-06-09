@@ -8,6 +8,7 @@
 #include "exa_udf_base.h"
 #include "exa_lib_loader.h"
 #include "exa_set_env.h"
+#include "exaudflib/load_dynamic.h"
 #include "utils/debug_message.h"
 
 namespace SWIGVMContainers {
@@ -30,14 +31,15 @@ int ExaUdfClientBase::startClientBase(int argc, char** argv) {
 #endif
         DBGMSG(std::cerr, "Load libexaudflib");
         DBGVAR(std::cerr, libexaudflibPath);
-        void* handle = exa_load_libary(libexaudflibPath);
-        if (!handle) {
+        void* exaudflib_handle = exa_load_libary(libexaudflibPath);
+        if (!exaudflib_handle) {
             std::cerr << "Failed to load library: " << libexaudflibPath << std::endl;
             exit(EXIT_FAILURE);
         }
+        set_exaudflib_handle(exaudflib_handle);
 
-        MAIN_FUN exaudfclient_main = (MAIN_FUN)exa_load_symbol(handle, "exaudfclient_main");
-        SET_SWIGVM_PARAMS set_SWIGVM_params = (SET_SWIGVM_PARAMS)exa_load_symbol(handle, "set_SWIGVM_params");
+        MAIN_FUN exaudfclient_main = (MAIN_FUN)exa_load_symbol(exaudflib_handle, "exaudfclient_main");
+        SET_SWIGVM_PARAMS set_SWIGVM_params = (SET_SWIGVM_PARAMS)exa_load_symbol(exaudflib_handle, "set_SWIGVM_params");
 
         setup_environment();
         std::function<SWIGVMContainers::SWIGVM*()> vmMaker = create_vm();
