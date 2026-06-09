@@ -4,13 +4,38 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import requires
 
 
-class BasicTest(udf.TestCase):
-    
-    def setUp(self):
+class _Python3UdfSetup(udf.TestCase):
+    def _setup_fn1_schema(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
         self.query('OPEN SCHEMA FN1')
-        
+
+    def _create_empty_input_udfs(self):
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT set_returns_has_empty_input(a double)
+            RETURNS boolean AS
+            def run(ctx):
+                return bool(ctx.x is None)
+            /
+        '''))
+
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SET SCRIPT set_emits_has_empty_input(a double)
+            EMITS (x double, y varchar(10)) AS
+            def run(ctx):
+                if ctx.x is None:
+                    ctx.emit(1,'1')
+                else:
+                    ctx.emit(2,'2')
+            /
+        '''))
+
+
+class BasicTest(_Python3UdfSetup):
+
+    def setUp(self):
+        self._setup_fn1_schema()
+
         # Create all UDFs needed for BasicTest
         self.query(udf.fixindent('''
             CREATE PYTHON3 SCALAR SCRIPT basic_range(n INTEGER)
@@ -115,25 +140,8 @@ class BasicTest(udf.TestCase):
                     ctx.emit(w, c)
             /
         '''))
-        
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SET SCRIPT set_returns_has_empty_input(a double) 
-            RETURNS boolean AS
-            def run(ctx):
-                return bool(ctx.x is None)
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SET SCRIPT set_emits_has_empty_input(a double) 
-            EMITS (x double, y varchar(10)) AS
-            def run(ctx):
-                if ctx.x is None:
-                    ctx.emit(1,'1')
-                else:
-                    ctx.emit(2,'2')
-            /
-        '''))
+
+        self._create_empty_input_udfs()
 
     def test_basic_scalar_emits(self):
         rows = self.query('''
@@ -208,34 +216,16 @@ class BasicTest(udf.TestCase):
         self.assertEqual(sorted_list, unsorted_list)
 
 
-class SetWithEmptyInput(udf.TestCase):
+class SetWithEmptyInput(_Python3UdfSetup):
     def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
+        self._setup_fn1_schema()
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
-        self.query('OPEN SCHEMA FN1')
         self.query('CREATE TABLE FN2.empty_table(c int)')
-        
+        self.query('OPEN SCHEMA FN1')
+
         # Create UDFs needed for SetWithEmptyInput tests
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SET SCRIPT set_returns_has_empty_input(a double) 
-            RETURNS boolean AS
-            def run(ctx):
-                return bool(ctx.x is None)
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SET SCRIPT set_emits_has_empty_input(a double) 
-            EMITS (x double, y varchar(10)) AS
-            def run(ctx):
-                if ctx.x is None:
-                    ctx.emit(1,'1')
-                else:
-                    ctx.emit(2,'2')
-            /
-        '''))
+        self._create_empty_input_udfs()
 
     def test_set_returns_has_empty_input_group_by(self):
         self.query("""select FN1.set_returns_has_empty_input(c) from FN2.empty_table group by 'X'""")

@@ -4,8 +4,8 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework import exatest
 
 
-class GetConnectionMemoryBug(udf.TestCase):
-    def setUp(self):
+class _Python3UdfSetup(udf.TestCase):
+    def _setup_common_udfs(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
         self.query('OPEN SCHEMA FN1')
@@ -30,6 +30,14 @@ class GetConnectionMemoryBug(udf.TestCase):
                 ctx.emit(c.type, c.address, c.user, c.password)
             /
         '''))
+
+    def setUp(self):
+        self._setup_common_udfs()
+
+
+class GetConnectionMemoryBug(_Python3UdfSetup):
+    def setUp(self):
+        self._setup_common_udfs()
         
         self.query(
             '''CREATE OR REPLACE CONNECTION test_get_connection_bug_connection TO '' USER 'ialjksdhfalskdjhflaskdjfhalskdjhflaksjdhflaksdjfhalksjdfhlaksjdhflaksjdhfalskjdfhalskdjhflaksjdhflaksjdfhlaksjsadajksdhfaksjdfhalksdjfhalksdjfhalksjdfhqwiueryqw;er;lkjqwe;rdhflaksjdfhlaksdjfhaabcdefghijklmnopqrstuvwxyz' IDENTIFIED BY 'abcdeoqsdfgsdjfglksjdfhglskjdfhglskdjfglskjdfghuietyewlrkjthertrewerlkjhqwelrkjhqwerlkjnwqerlkjhqwerkjlhqwerlkjhqwerlkhqwerkljhqwerlkjhqwerfghijklmnopqrstuvwxyz';''')
@@ -48,32 +56,9 @@ class AccessConnectionSysPriv(udf.TestCase):
         self.assertRowsEqual([("DBA", "ACCESS ANY CONNECTION", True)], sys_priv)
 
 
-class GetConnectionTest(udf.TestCase):
+class GetConnectionTest(_Python3UdfSetup):
     def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Create Python3 UDFs for get_connection testing
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT PRINT_CONNECTION(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT PRINT_CONNECTION_SET_EMITS(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
+        self._setup_common_udfs()
         
         self.query('''
         create connection FOOCONN to 'a' user 'b' identified by 'c'
@@ -95,32 +80,9 @@ class GetConnectionTest(udf.TestCase):
                 ''')
 
 
-class GetConnectionAccessControlTest(udf.TestCase):
+class GetConnectionAccessControlTest(_Python3UdfSetup):
     def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Create Python3 UDFs for get_connection testing
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT PRINT_CONNECTION(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT PRINT_CONNECTION_SET_EMITS(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
+        self._setup_common_udfs()
         
         self.query('''
         create connection AC_FOOCONN to 'a' user 'b' identified by 'c'
@@ -202,7 +164,7 @@ class GetConnectionAccessControlTest(udf.TestCase):
         self.commit()
 
 
-class BigConnectionTest(udf.TestCase):
+class BigConnectionTest(_Python3UdfSetup):
     # Should be max. size 2.000.000, but this will cause our odbc driver to crash (sigsegv) during logging (DWA-20290).
     # Will be increased to max size when bug is fixed
     address = "a" * 2 * 1000 * 100
@@ -210,30 +172,7 @@ class BigConnectionTest(udf.TestCase):
     password = "p" * 2 * 1000 * 100
 
     def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Create Python3 UDFs for get_connection testing
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT PRINT_CONNECTION(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT PRINT_CONNECTION_SET_EMITS(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
+        self._setup_common_udfs()
         
         self.query('''
             create connection LARGEST_CONN to '{address}' user '{user}' identified by '{password}'
@@ -296,32 +235,7 @@ class ConnectionTest(udf.TestCase):
         self.query("DROP FORCE VIRTUAL SCHEMA VS CASCADE")
 
 
-class OptionalUSERandIDENTIFIEDBYTest(udf.TestCase):
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Create Python3 UDFs for get_connection testing
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT PRINT_CONNECTION(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT PRINT_CONNECTION_SET_EMITS(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
+class OptionalUSERandIDENTIFIEDBYTest(_Python3UdfSetup):
 
     def testNoUSERandNoIDENTIFIEDBY(self):
         self.query("CREATE or replace CONNECTION my_conn1 TO 'MYADDRESS'")
@@ -342,32 +256,9 @@ class OptionalUSERandIDENTIFIEDBYTest(udf.TestCase):
         self.query("drop CONNECTION my_conn3")
 
 
-class GetConnectionAccessControlWithViewsTest(udf.TestCase):
+class GetConnectionAccessControlWithViewsTest(_Python3UdfSetup):
     def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        
-        # Create Python3 UDFs for get_connection testing
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SCALAR SCRIPT PRINT_CONNECTION(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE OR REPLACE PYTHON3 SET SCRIPT PRINT_CONNECTION_SET_EMITS(conn varchar(1000))
-            EMITS(type varchar(200), addr varchar(2000000), usr varchar(2000000), pwd varchar(2000000))
-            AS
-            def run(ctx):
-                c = exa.get_connection(ctx.conn)
-                ctx.emit(c.type, c.address, c.user, c.password)
-            /
-        '''))
+        self._setup_common_udfs()
         
         self.query('''
         create connection AC_FOOCONN to 'a' user 'b' identified by 'c'

@@ -10,12 +10,18 @@ from exasol_python_test_framework.udf import timer, SkipTest, skip
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 
-class WordCount(udf.TestCase):
+class _Python3UdfSetup(udf.TestCase):
 
-    def setUp(self):
+    def _setup_fn1_schema(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
         self.query('OPEN SCHEMA FN1')
+
+
+class WordCount(_Python3UdfSetup):
+
+    def setUp(self):
+        self._setup_fn1_schema()
         
         # Create Python3 UDFs for performance testing
         self.query(udf.fixindent('''
@@ -97,13 +103,11 @@ class WordCount(udf.TestCase):
 
 
 @skip('csv data for tables wiki_freq and wiki_names is currently not available')
-class FrequencyAnalysis(udf.TestCase):
+class FrequencyAnalysis(_Python3UdfSetup):
     maxDiff = 1024 * 20
 
     def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
+        self._setup_fn1_schema()
         
         # Create Python3 UDFs for character frequency analysis
         self.query(udf.fixindent('''

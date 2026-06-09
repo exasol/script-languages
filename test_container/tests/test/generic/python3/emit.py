@@ -51,57 +51,12 @@ class _Python3UdfSetup(udf.TestCase):
             /
         '''))
 
-class InputOutputMatchingTest(_Python3UdfSetup):
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT dob_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_2o(x double)
-            EMITS (y double, z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x, ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_2i_1o(x double, y double)
-            EMITS (z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_3i_2o(x double, y double, z double)
-            EMITS (z1 double, z2 double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y, 3000)
-            /
-        '''))
-        
         self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN2')
         self.query('create table fn2.t(id double, x double)')
         self.query('insert into fn2.t values (100,1),(100,2),(200,3)')
 
+class InputOutputMatchingTest(_Python3UdfSetup):
     def test_iomatch_1i_1o(self):
         rows = self.query('''
             select x*2, fn1.line_1i_1o(x), x*3
@@ -139,56 +94,6 @@ class InputOutputMatchingTest(_Python3UdfSetup):
 
 
 class ColumnNamesTest(_Python3UdfSetup):
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT dob_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_2o(x double)
-            EMITS (y double, z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x, ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_2i_1o(x double, y double)
-            EMITS (z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_3i_2o(x double, y double, z double)
-            EMITS (z1 double, z2 double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y, 3000)
-            /
-        '''))
-        
-        self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN2')
-        self.query('create table fn2.t(id double, x double)')
-        self.query('insert into fn2.t values (100,1),(100,2),(200,3)')
-
     def test_col_names(self):
         self.query('''
             create or replace table fn2.foo as select x*2 a, fn1.line_3i_2o(x,id,id), x*3 b
@@ -204,54 +109,6 @@ class ColumnNamesTest(_Python3UdfSetup):
 
 
 class DatatypesTest(_Python3UdfSetup):
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT dob_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_2o(x double)
-            EMITS (y double, z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x, ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_2i_1o(x double, y double)
-            EMITS (z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_3i_2o(x double, y double, z double)
-            EMITS (z1 double, z2 double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y, 3000)
-            /
-        '''))
-        
-        self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN2')
-
     def test_boolean(self):
         self.query('CREATE OR REPLACE TABLE fn2.DT(x BOOLEAN)')
         self.query('insert into fn2.dt values false')
@@ -518,54 +375,6 @@ class DatatypesTest(_Python3UdfSetup):
 
 
 class NullTest(_Python3UdfSetup):
-    def setUp(self):
-        self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN1')
-        self.query('OPEN SCHEMA FN1')
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT dob_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_1o(x double)
-            EMITS (y double) AS
-            def run(ctx):
-                ctx.emit(ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_1i_2o(x double)
-            EMITS (y double, z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x, ctx.x)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_2i_1o(x double, y double)
-            EMITS (z double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y)
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE PYTHON3 SCALAR SCRIPT line_3i_2o(x double, y double, z double)
-            EMITS (z1 double, z2 double) AS
-            def run(ctx):
-                ctx.emit(ctx.x + ctx.y, 3000)
-            /
-        '''))
-        
-        self.query('DROP SCHEMA FN2 CASCADE', ignore_errors=True)
-        self.query('CREATE SCHEMA FN2')
-
     def test_boolean_null(self):
         self.query('CREATE OR REPLACE TABLE fn2.DT(x BOOLEAN)')
         self.query('insert into fn2.dt values NULL')
