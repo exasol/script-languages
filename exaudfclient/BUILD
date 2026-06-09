@@ -63,6 +63,7 @@ cc_binary(
     ],
     linkopts = ["-ldl"],
     deps = [":exa_common_lib"],
+    defines = VM_ENABLED_DEFINES,
     data = ["@exaudfclient_base//:libexaudflib_complete.so"]
 )
 
@@ -81,16 +82,21 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_static_bin",
+    #srcs = glob(["exa_common/*.cc", "exa_common/*.cpp", "exa_common/*.h"]) + [
     srcs = [
-        "exa_udfclient.cc",
+        "exaudfclient.cc",
+        "//:exaudflib_output_path_header",
         "@exaudfclient_base//:load_dynamic",
     ],
     linkopts = ["-ldl"],
+    defines = VM_ENABLED_DEFINES,
     deps = [
-        ":exa_common_lib",
+        "@exaudfclient_base//exaudflib:header",
+        "@exaudfclient_base//utils:utils",
+        "@exaudfclient_base//exaudflib:exaudflib-deps",
         "@zmq//:zmq",
         "@protobuf//:protobuf",
-    ],
+    ] + VM_ENABLED_DEPS + VM_PYTHON3_DEPS,
     data = ["@exaudfclient_base//:libexaudflib_complete.so"],
 )
 
