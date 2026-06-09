@@ -37,7 +37,6 @@ cc_library(
         "exa_common/exa_udf_base.cpp",
         "exa_common/exa_udf_clients.cpp",
         "exa_common/exa_vm_factory.cc",
-        "@exaudfclient_base//:load_dynamic",
         "//:exaudflib_output_path_header",
     ],
     hdrs = [
@@ -47,7 +46,6 @@ cc_library(
         "exa_common/exa_udf_clients.h",
         "exa_common/exa_vm_factory.h",
     ],
-    linkopts = ["-ldl"],
     deps = [
         "@exaudfclient_base//exaudflib:header",
         "@exaudfclient_base//utils:utils",
@@ -59,7 +57,11 @@ cc_library(
 
 cc_binary(
     name = "exaudfclient_bin",
-    srcs = ["exa_udfclient.cc"],
+    srcs = [
+        "exa_udfclient.cc",
+        "@exaudfclient_base//:load_dynamic",
+    ],
+    linkopts = ["-ldl"],
     deps = [":exa_common_lib"],
     data = ["@exaudfclient_base//:libexaudflib_complete.so"]
 )
@@ -79,7 +81,11 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_static_bin",
-    srcs = ["exa_udfclient.cc"],
+    srcs = [
+        "exa_udfclient.cc",
+        "@exaudfclient_base//:load_dynamic",
+    ],
+    linkopts = ["-ldl"],
     deps = [
         ":exa_common_lib",
         "@zmq//:zmq",
