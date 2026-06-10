@@ -34,8 +34,8 @@ cc_library(
     srcs = [
         "exa_common/exa_lib_loader.cc",
         "exa_common/exa_set_env.cc",
-        "exa_common/exa_udf_base.cpp",
-        "exa_common/exa_udf_clients.cpp",
+        "exa_common/exa_udf_base.cc",
+        "exa_common/exa_udf_client.cc",
         "exa_common/exa_vm_factory.cc",
         "//:exaudflib_output_path_header",
     ],
@@ -43,7 +43,7 @@ cc_library(
         "exa_common/exa_lib_loader.h",
         "exa_common/exa_set_env.h",
         "exa_common/exa_udf_base.h",
-        "exa_common/exa_udf_clients.h",
+        "exa_common/exa_udf_client.h",
         "exa_common/exa_vm_factory.h",
     ],
     deps = [

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstring>
 
-#include "exa_udf_clients.h"
+#include "exa_udf_client.h"
 #include "exa_vm_factory.h"
 
 void ExaUdfClient::parse_arguments(int argc, char** argv) {
