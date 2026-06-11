@@ -58,6 +58,28 @@ class SysExecutableTest(udf.TestCase):
         rows = self.query("select check_sys_executable()")
         self.assertEqual(rows[0][0], rows[0][1])
 
+    def test_path_var_prefixed_with_conda(self):
+        """
+        Check the PATH env var if it starts with /opt/conda/bin
+        """
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE python3 SCALAR SCRIPT
+                check_path_prefix()
+                RETURNS VARCHAR(10000) AS
+
+                import os
+
+                def run(ctx):
+                    return os.environ.get("PATH", "")
+                /
+                '''))
+        rows = self.query("select check_path_prefix()")
+        path_value = rows[0][0]
+        self.assertTrue(
+            path_value.startswith("/opt/conda/bin:"),
+            f"PATH shall start with '/opt/conda/bin', but got: {path_value}"
+        )
+
 
 if __name__ == '__main__':
     udf.main()
