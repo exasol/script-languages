@@ -20,6 +20,14 @@
 std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lang, bool use_ctpg_options_parser) {
     if(argv_lang.compare("lang=python") == 0) {
         #ifdef ENABLE_PYTHON_VM
+            char *path_var = getenv("PATH");
+            if(path_var != NULL) {
+                std::string path_var_str = std::string(path_var);
+                path_var_str.insert(0, "/opt/conda/bin:");
+                if (::setenv("PATH", path_var_str.c_str(), 1) == -1) {
+                    cerr << "Unable to prefix PATH env variable with /opt/conda/bin";
+                }
+            }
             return []() { return new  SWIGVMContainers::PythonVM(false); };
         #else
             throw SWIGVMContainers::SWIGVM::exception("this exaudfclient has been compilied without Python support");
