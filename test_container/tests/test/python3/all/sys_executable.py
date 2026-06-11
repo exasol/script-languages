@@ -58,6 +58,51 @@ class SysExecutableTest(udf.TestCase):
         rows = self.query("select check_sys_executable()")
         self.assertEqual(rows[0][0], rows[0][1])
 
+    def test_python_env_uses_conda_runtime(self):
+        """
+        Check if the python interpreter env is from /opt/conda
+        Check sys.executable, sys.prefix, stdlib and libpython.
+        """
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE python3 SCALAR SCRIPT
+                check_conda_runtime()
+                RETURNS VARCHAR(10000) AS
+
+                import sys
+                import sysconfig
+                from pathlib import Path
+
+                def run(ctx):
+                    expected_prefix = "/opt/conda"
+                    failures = []
+
+                    libdir = sysconfig.get_config_var("LIBDIR") or ""
+                    ldlibrary = sysconfig.get_config_var("LDLIBRARY") or ""
+                    libpython = str(Path(libdir) / ldlibrary)
+                    stdlib = sysconfig.get_path("stdlib") or ""
+
+                    checks = [
+                        ("sys.executable", sys.executable),
+                        ("sys.prefix",     sys.prefix),
+                        ("stdlib",         stdlib),
+                        ("libpython",      libpython),
+                    ]
+
+                    for name, value in checks:
+                        path_value = str(Path(value).resolve())
+                        if not path_value.startswith(expected_prefix):
+                            failures.append(f"{name} outside {expected_prefix}: {value}")
+
+                    return "; ".join(failures) if failures else "OK"
+                /
+                '''))
+        rows = self.query("select check_conda_runtime()")
+        result = rows[0][0]
+        self.assertEqual(
+            result, "OK",
+            f"Python env check failed. Got: {result}"
+        )
+
     def test_path_var_prefixed_with_conda(self):
         """
         Check the PATH env var if it starts with /opt/conda/bin
