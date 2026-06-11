@@ -1,4 +1,5 @@
 #include <functional>
+#include <iostream>
 #include "exa_vm_factory.h"
 
 #ifdef ENABLE_JAVA_VM
@@ -25,7 +26,7 @@ std::function<SWIGVMContainers::SWIGVM*()> create_vm(const std::string& argv_lan
                 std::string path_var_str = std::string(path_var);
                 path_var_str.insert(0, "/opt/conda/bin:");
                 if (::setenv("PATH", path_var_str.c_str(), 1) == -1) {
-                    cerr << "Unable to prefix PATH env variable with /opt/conda/bin";
+                    std::cerr << "Unable to prefix PATH env variable with /opt/conda/bin";
                 }
             }
             return []() { return new  SWIGVMContainers::PythonVM(false); };
