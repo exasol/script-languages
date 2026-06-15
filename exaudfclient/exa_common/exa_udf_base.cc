@@ -15,7 +15,6 @@ namespace SWIGVMContainers {
 __thread SWIGVM_params_t * SWIGVM_params = nullptr;
 }
 
-
 int ExaUdfClientBase::startClientBase(int argc, char** argv) {
     if (!validate_arguments(argc, argv)) {
         usage(argv[0]);
@@ -25,26 +24,26 @@ int ExaUdfClientBase::startClientBase(int argc, char** argv) {
 
     std::string libexaudflibPath;
 #ifdef CUSTOM_LIBEXAUDFLIB_PATH
-        libexaudflibPath = std::string(CUSTOM_LIBEXAUDFLIB_PATH);
+    libexaudflibPath = std::string(CUSTOM_LIBEXAUDFLIB_PATH);
 #else
-        libexaudflibPath = std::string(::getenv("LIBEXAUDFLIB_PATH"));
+    libexaudflibPath = std::string(::getenv("LIBEXAUDFLIB_PATH"));
 #endif
-        DBGMSG(std::cerr, "Load libexaudflib");
-        DBGVAR(std::cerr, libexaudflibPath);
-        void* exaudflib_handle = exa_load_libary(libexaudflibPath);
-        if (!exaudflib_handle) {
-            std::cerr << "Failed to load library: " << libexaudflibPath << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        set_exaudflib_handle(exaudflib_handle);
+    DBGMSG(std::cerr, "Load libexaudflib");
+    DBGVAR(std::cerr, libexaudflibPath);
+    void* exaudflib_handle = exa_lib::load_library(libexaudflibPath);
+    if (!exaudflib_handle) {
+        std::cerr << "Failed to load library: " << libexaudflibPath << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    set_exaudflib_handle(exaudflib_handle);
 
-        MAIN_FUN exaudfclient_main = (MAIN_FUN)exa_load_symbol(exaudflib_handle, "exaudfclient_main");
-        SET_SWIGVM_PARAMS set_SWIGVM_params = (SET_SWIGVM_PARAMS)exa_load_symbol(exaudflib_handle, "set_SWIGVM_params");
+    MAIN_FUN exaudfclient_main = (MAIN_FUN)exa_lib::load_symbol(exaudflib_handle, "exaudfclient_main");
+    SET_SWIGVM_PARAMS set_SWIGVM_params = (SET_SWIGVM_PARAMS)exa_lib::load_symbol(exaudflib_handle, "set_SWIGVM_params");
 
-        setup_environment();
-        std::function<SWIGVMContainers::SWIGVM*()> vmMaker = create_vm();
+    exa_env::setup_environment();
+    std::function<SWIGVMContainers::SWIGVM*()> vmMaker = create_vm();
 
-        SWIGVMContainers::SWIGVM_params = new SWIGVMContainers::SWIGVM_params_t(true);
-        set_SWIGVM_params(SWIGVMContainers::SWIGVM_params);
-        return exaudfclient_main(vmMaker, argc, argv);
+    SWIGVMContainers::SWIGVM_params = new SWIGVMContainers::SWIGVM_params_t(true);
+    set_SWIGVM_params(SWIGVMContainers::SWIGVM_params);
+    return exaudfclient_main(vmMaker, argc, argv);
 }

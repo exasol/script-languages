@@ -9,6 +9,13 @@ void ExaUdfClient::parse_arguments(int argc, char** argv) {
     m_languageArg = argv[2];
    
     m_useCtpgParser = false;
+    
+    /*
+     * The given script-options-parser version set by the environment variable "SCRIPT_OPTIONS_PARSER_VERSION"
+     * must have priority over the CLI argument "scriptOptionsParserVersion=x".
+     * This allows clients to override the parser version in a specific UDF, if needed,
+     * via "%env SCRIPT_OPTIONS_PARSER_VERSION=x".
+     */
     const char* env_val = ::getenv("SCRIPT_OPTIONS_PARSER_VERSION");
     if(env_val && strcmp(env_val, "2") == 0) {
         m_useCtpgParser = true;

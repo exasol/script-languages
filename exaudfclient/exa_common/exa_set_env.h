@@ -1,3 +1,5 @@
 #pragma once
 
-void setup_environment();
+namespace exa_env {
+    void setup_environment();
+}
