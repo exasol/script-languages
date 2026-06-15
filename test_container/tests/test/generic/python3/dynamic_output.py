@@ -470,7 +470,7 @@ class DynamicOutputCreateTableAs(_Python3UdfSetup):
 ## The same as above but now with default output columns
 ## #####################################################
 
-class DefaultDynamicOutputCreateScript(_Python3UdfSetup):
+class DynamicOutputUDFsExistInExaAllScripts(_Python3UdfSetup):
     def test_create_script_set(self):
         rows = self.query('''
             select count(*) from exa_all_scripts where script_name='DEFAULT_VAREMIT_SIMPLE_SET' and SCRIPT_TEXT LIKE 'CREATE % SET SCRIPT "DEFAULT_VAREMIT_SIMPLE_SET" ("a" DOUBLE) EMITS (...) AS%';
