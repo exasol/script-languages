@@ -30,21 +30,21 @@ genrule(
 )
 
 cc_library(
-    name = "exa_common_lib",
+    name = "exa_udfclient_binary_common_lib",
     srcs = [
-        "exa_common/exa_lib_loader.cc",
-        "exa_common/exa_set_env.cc",
-        "exa_common/exa_udf_base.cc",
-        "exa_common/exa_udf_client.cc",
-        "exa_common/exa_vm_factory.cc",
+        "exa_udfclient_binary_common/exa_lib_loader.cc",
+        "exa_udfclient_binary_common/exa_set_env.cc",
+        "exa_udfclient_binary_common/exa_udf_base.cc",
+        "exa_udfclient_binary_common/exa_udf_client.cc",
+        "exa_udfclient_binary_common/exa_vm_factory.cc",
         "//:exaudflib_output_path_header",
     ],
     hdrs = [
-        "exa_common/exa_lib_loader.h",
-        "exa_common/exa_set_env.h",
-        "exa_common/exa_udf_base.h",
-        "exa_common/exa_udf_client.h",
-        "exa_common/exa_vm_factory.h",
+        "exa_udfclient_binary_common/exa_lib_loader.h",
+        "exa_udfclient_binary_common/exa_set_env.h",
+        "exa_udfclient_binary_common/exa_udf_base.h",
+        "exa_udfclient_binary_common/exa_udf_client.h",
+        "exa_udfclient_binary_common/exa_vm_factory.h",
     ],
     deps = [
         "@exaudfclient_base//exaudflib:header",
@@ -62,7 +62,7 @@ cc_binary(
         "@exaudfclient_base//:load_dynamic",
     ],
     linkopts = ["-ldl"],
-    deps = [":exa_common_lib"],
+    deps = [":exa_udfclient_binary_common_lib"],
     data = ["@exaudfclient_base//:libexaudflib_complete.so"]
 )
 
@@ -87,7 +87,7 @@ cc_binary(
     ],
     linkopts = ["-ldl"],
     deps = [
-        ":exa_common_lib",
+        ":exa_udfclient_binary_common_lib",
         "@zmq//:zmq",
         "@protobuf//:protobuf",
     ],
