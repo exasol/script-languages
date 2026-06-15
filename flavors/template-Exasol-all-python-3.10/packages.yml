@@ -76,7 +76,7 @@ build_steps:
       - name: build-essential
         version: 12.9ubuntu*
       - name: tzdata
-        version: 2025b-0ubuntu*
+        version: 2026a-0ubuntu*
   validation_cfg:
     version_mandatory: true
 - name: flavor_customization
