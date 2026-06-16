@@ -3,7 +3,38 @@
 from exasol_python_test_framework import udf
 
 
-class _JavaUdfSetup(udf.TestCase):
+class _SetEmptyInputUdfs:
+    """Mixin providing creation helpers for the set_*_has_empty_input UDFs."""
+
+    def _create_set_returns_has_empty_input(self):
+        self.query(udf.fixindent('''
+            CREATE java SET SCRIPT
+            set_returns_has_empty_input(a double) RETURNS boolean AS
+            class SET_RETURNS_HAS_EMPTY_INPUT {
+                static boolean run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    return ctx.getDouble("a") == null;
+                }
+            }
+            /
+        '''))
+
+    def _create_set_emits_has_empty_input(self):
+        self.query(udf.fixindent('''
+            CREATE java SET SCRIPT
+            set_emits_has_empty_input(a double) EMITS (x double, y varchar(10)) AS
+            class SET_EMITS_HAS_EMPTY_INPUT {
+                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+                    if (ctx.getDouble("a") == null)
+            ctx.emit(1,"1");
+                    else
+            ctx.emit(2,"2");
+                }
+            }
+            /
+        '''))
+
+
+class _JavaUdfSetup(_SetEmptyInputUdfs, udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -160,30 +191,8 @@ class _JavaUdfSetup(udf.TestCase):
             /
         '''))
 
-        self.query(udf.fixindent('''
-            CREATE java SET SCRIPT
-            set_emits_has_empty_input(a double) EMITS (x double, y varchar(10)) AS
-            class SET_EMITS_HAS_EMPTY_INPUT {
-                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    if (ctx.getDouble("x") == null)
-            ctx.emit(1,"1")
-                    else
-            ctx.emit(2,"2")
-                }
-            }
-            /
-        '''))
-
-        self.query(udf.fixindent('''
-            CREATE java SET SCRIPT
-            set_returns_has_empty_input(a double) RETURNS boolean AS
-            class SET_RETURNS_HAS_EMPTY_INPUT {
-                static boolean run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    return ctx.getInteger("x") == null;
-                }
-            }
-            /
-        '''))
+        self._create_set_emits_has_empty_input()
+        self._create_set_returns_has_empty_input()
 
 class BasicTest(_JavaUdfSetup):
 
@@ -260,7 +269,7 @@ class BasicTest(_JavaUdfSetup):
         self.assertEqual(sorted_list, unsorted_list)
 
 
-class SetWithEmptyInput(udf.TestCase):
+class SetWithEmptyInput(_SetEmptyInputUdfs, udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -269,31 +278,8 @@ class SetWithEmptyInput(udf.TestCase):
         self.query('OPEN SCHEMA FN1')
         self.query('CREATE TABLE FN2.empty_table(c int)')
         
-        # Create UDFs needed for SetWithEmptyInput tests
-        self.query(udf.fixindent('''
-            CREATE java SET SCRIPT
-            set_returns_has_empty_input(a double) RETURNS boolean AS
-            class SET_RETURNS_HAS_EMPTY_INPUT {
-                static boolean run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    return ctx.getDouble("a") == null;
-                }
-            }
-            /
-        '''))
-        
-        self.query(udf.fixindent('''
-            CREATE java SET SCRIPT
-            set_emits_has_empty_input(a double) EMITS (x double, y varchar(10)) AS
-            class SET_EMITS_HAS_EMPTY_INPUT {
-                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    if (ctx.getDouble("a") == null)
-            ctx.emit(1,"1");
-                    else
-            ctx.emit(2,"2");
-                }
-            }
-            /
-        '''))
+        self._create_set_returns_has_empty_input()
+        self._create_set_emits_has_empty_input()
 
     def test_set_returns_has_empty_input_group_by(self):
         self.query("""select FN1.set_returns_has_empty_input(c) from FN2.empty_table group by 'X'""")

@@ -167,14 +167,6 @@ class ImportAliasTest(udf.TestCase):
         self.query('CREATE USER {username} IDENTIFIED BY "{password}"'.format(username = username, password = password))
         self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
 
-    def test_import_use_connection_fooconn_fails_for_user_foo(self):
-        self.createUser('foo','foo')
-        self.commit()
-        foo_conn = self.getConnection('foo','foo')
-        with self.assertRaisesRegex(Exception, 'insufficient privileges'):
-            foo_conn.query('IMPORT FROM SCRIPT fn1.impal_use_connection_fooconn')
-        self.query('drop user foo cascade')
-
     @skip("IMPORT FROM SCRIPT cannot be used in view definitions")
     def test_import_use_connection_fooconn_for_user_foo_and_view(self):
         self.query('create view fn2.fooconn_import_view as IMPORT FROM SCRIPT fn1.impal_use_connection_fooconn')

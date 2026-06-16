@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
-
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import useData
 
@@ -129,13 +127,7 @@ class Vectorsize(_JavaUdfSetup):
 
     @useData(data)
     def test_vectorsize(self, size):
-        limits = {
-            'lua':      100000,
-            'python3':   8000,
-            'r':        3000,
-            'java':     3000
-            }
-        if size > limits.get(self.LANG, sys.maxsize):
+        if size > 3000:
             raise udf.SkipTest('test is to slow')
 
         self.query('''

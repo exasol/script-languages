@@ -224,7 +224,6 @@ class TestEcho(_JavaUdfSetup):
             FROM DUAL''')
         self.assertRowsEqual([(True, True, True, True)], rows)
 
-    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_integer_limits(self):
         """DWA-13784 (R)"""
         rows = self.query('''
@@ -255,7 +254,6 @@ class TestEcho(_JavaUdfSetup):
             FROM DUAL''')
         self.assertRowsEqual([(True, True, True)], rows)
 
-    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_decimal_36_0_limits(self):
         """DWA-13784 (R)"""
         rows = self.query('''
@@ -274,7 +272,6 @@ class TestEcho(_JavaUdfSetup):
             FROM DUAL''')
         self.assertRowsEqual([(True, True, True)], rows)
 
-    @udf.TestCase.expectedFailureIfLang('r')
     def test_echo_decimal_36_36_limits(self):
         """DWA-13784 (R)"""
         rows = self.query('''

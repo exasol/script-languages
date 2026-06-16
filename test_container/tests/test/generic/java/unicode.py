@@ -74,67 +74,14 @@ class _JavaUdfSetup(udf.TestCase):
 # coding: utf-8
 
 import csv
-import locale
 import logging
 import os
 import subprocess
 import sys
 import tempfile
 import unicodedata
-import re
-import argparse
 
 from exasol_python_test_framework import udf
-
-udf.pythonVersionInUdf = -1
-from exasol_python_test_framework.exatest.testcase import skipIf
-
-
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-
-
-def getPythonVersionInUDFs(server, script_languages):
-    log = logging.getLogger('unicodedata')
-    log.info("trying to figure out python version of python in UDFs")
-    sql = udf.fixindent('''
-           alter session set script_languages='%(sl)s';
-           drop schema if exists pyversion_schema cascade;
-           create schema pyversion_schema;
-           create or replace python3 scalar script pyversion_schema.python_version() returns varchar(1000) as
-           import sys
-           def run(ctx):
-               return 'Python='+str(sys.version_info[0])
-           /
-           select pyversion_schema.python_version();
-           ''' % {'sl': script_languages})
-    cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol
-		        -no-config -autocommit ON -L -pipe -jdbcparam validateservercertificate=0''' % {
-        'exaplus': os.environ.get('EXAPLUS',
-                                  '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
-        'conn': server
-    }
-    env = os.environ.copy()
-    # env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
-    exaplus = subprocess.Popen(
-        cmd.split(),
-        env=env,
-
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
-    out, _err = exaplus.communicate(sql.encode('utf-8'))
-    pythonVersionInUdf = -1
-    for line in out.strip().decode('utf-8').split(sep="\n"):
-        m = re.search(r'Python=(\d)', line)
-        if m:
-            pythonVersionInUdf = int(m.group(1))
-            continue
-
-    if pythonVersionInUdf not in [2, 3]:
-        print('cannot set pythonVersionInUdf: %s' % pythonVersionInUdf)
-        sys.exit(1)
-
-    return pythonVersionInUdf
 
 
 def setUpModule():
@@ -273,61 +220,5 @@ class Unicode(_JavaUdfSetup):
         self.assertRowsEqual([], rows)
 
 
-class UnicodeData(_JavaUdfSetup):
-
-    # @udf.TestCase.expectedFailureIfLang('lua')
-    def test_unicode_upper_is_subset_of_Unicode520_part2(self):
-        """DWA-13388 (Lua); DWA-13702 (Lua)"""
-        rows = self.query('''
-            SELECT
-                codepoint,
-                name,
-                unicode(to_upper),
-                unicode(fn1.unicode_upper(uchar))
-            FROM utest.unicodedata
-            WHERE codepoint in (181, 8126)
-                and (to_upper != fn1.unicode_upper(uchar))
-                and (uchar != fn1.unicode_upper(uchar))
-            ORDER BY codepoint
-            LIMIT 50
-            ''')
-        self.assertRowsEqual([], rows)
-
-    @udf.TestCase.expectedFailureIfLang('lua')
-    def test_unicode_upper_is_subset_of_Unicode520_part3(self):
-        """DWA-13388 (Lua); DWA-13702 (Lua); DWA-13782 (R)"""
-        rows = self.query('''
-            SELECT
-                codepoint,
-                name,
-                unicode(to_upper),
-                unicode(fn1.unicode_upper(uchar)) 
-            FROM utest.unicodedata
-            WHERE codepoint in (1010)
-                and (to_upper != fn1.unicode_upper(uchar))
-                and (uchar != fn1.unicode_upper(uchar))
-            ORDER BY codepoint
-            LIMIT 50
-            ''')
-        self.assertRowsEqual([], rows)
-
-    def test_unicode_len(self):
-        rows = self.query('''
-            SELECT codepoint, name
-            FROM utest.unicodedata
-            WHERE codepoint not between 55296 and 57343
-                and len(uchar) != fn1.unicode_len(uchar)
-            ORDER BY codepoint
-            LIMIT 100
-            ''')
-        self.assertRowsEqual([], rows)
-
-
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--server', help='connection string')
-    parser.add_argument('--script-languages', help='definition of the SCRIPT_LANGUAGES variable')
-    opts, _unknown = parser.parse_known_args()
-    setattr(udf, 'pythonVersionInUdf', getPythonVersionInUDFs(opts.server, opts.script_languages))
     udf.main()

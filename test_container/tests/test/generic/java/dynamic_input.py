@@ -474,24 +474,11 @@ class DynamicInputDatatypeSpecific(_JavaUdfSetup):
 
 class DynamicInputErrors(_JavaUdfSetup):
     def test_exception_wrong_arg(self):
-        if self.LANG == 'r':
-            raise udf.SkipTest('does not work with R currently')
-        err_text = {
-            'lua': 'out of range',
-            'python3': 'does not exist',
-            'java': 'does not exist',
-            }
-        with self.assertRaisesRegex(Exception, err_text[self.LANG]):
+        with self.assertRaisesRegex(Exception, 'does not exist'):
             self.query('''select fn1.wrong_arg('a') from dual''')
 
     def test_exception_wrong_operation(self):
-        err_text = {
-            'lua': 'attempt to perform arithmetic on field',
-            'r': 'non-numeric argument to binary operator',
-            'python3': 'multiply sequence by non-int of type',
-            'java': 'bad operand types for binary operator',
-            }
-        with self.assertRaisesRegex(Exception, err_text[self.LANG]):
+        with self.assertRaisesRegex(Exception, 'bad operand types for binary operator'):
             self.query('''select fn1.wrong_operation('a','b') from dual''')
 
     def test_exception_empty_set_returns(self):
