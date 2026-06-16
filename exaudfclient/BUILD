@@ -29,6 +29,11 @@ genrule(
     ''',
 )
 
+## Here it may seem like exaudflib is linked twice; one at "deps" and another at "data"
+## "deps" is basically used by Bazel for compile and link dependencies.
+## "data" basically places the .so file into the runtime-runfiles-location
+## so that it can be loaded using apis like load_library / load_symbol later
+## therefore, it is not linked twice
 cc_library(
     name = "exa_udfclient_binary_common_lib",
     srcs = [
