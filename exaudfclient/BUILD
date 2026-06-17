@@ -29,13 +29,45 @@ genrule(
     ''',
 )
 
+## Here it may seem like exaudflib is linked twice; one at "deps" and another at "data"
+## "deps" is basically used by Bazel for compile and link dependencies.
+## "data" basically places the .so file into the runtime-runfiles-location
+## so that it can be loaded using apis like load_library / load_symbol later
+## therefore, it is not linked twice
+cc_library(
+    name = "exa_udfclient_binary_common_lib",
+    srcs = [
+        "exa_udfclient_binary_common/exa_lib_loader.cc",
+        "exa_udfclient_binary_common/exa_set_env.cc",
+        "exa_udfclient_binary_common/exa_udf_base.cc",
+        "exa_udfclient_binary_common/exa_udf_client.cc",
+        "exa_udfclient_binary_common/exa_vm_factory.cc",
+        "//:exaudflib_output_path_header",
+    ],
+    hdrs = [
+        "exa_udfclient_binary_common/exa_lib_loader.h",
+        "exa_udfclient_binary_common/exa_set_env.h",
+        "exa_udfclient_binary_common/exa_udf_base.h",
+        "exa_udfclient_binary_common/exa_udf_client.h",
+        "exa_udfclient_binary_common/exa_vm_factory.h",
+    ],
+    deps = [
+        "@exaudfclient_base//exaudflib:header",
+        "@exaudfclient_base//utils:utils",
+        "@exaudfclient_base//exaudflib:exaudflib-deps",
+    ] + VM_ENABLED_DEPS + VM_PYTHON3_DEPS,
+    defines = VM_ENABLED_DEFINES,
+    data = ["@exaudfclient_base//:libexaudflib_complete.so"],
+)
+
 cc_binary(
     name = "exaudfclient_bin",
-    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic", "//:exaudflib_output_path_header"],
-    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["@exaudfclient_base//exaudflib:header", "@exaudfclient_base//utils:utils"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
-           ["@exaudfclient_base//exaudflib:exaudflib-deps"],
-    defines = VM_ENABLED_DEFINES,
+    srcs = [
+        "exa_udfclient.cc",
+        "@exaudfclient_base//:load_dynamic",
+    ],
+    linkopts = ["-ldl"],
+    deps = [":exa_udfclient_binary_common_lib"],
     data = ["@exaudfclient_base//:libexaudflib_complete.so"]
 )
 
@@ -54,12 +86,16 @@ cc_binary(
 
 cc_binary(
     name = "exaudfclient_static_bin",
-    srcs = ["exaudfclient.cc", "@exaudfclient_base//:load_dynamic", "//:exaudflib_output_path_header"],
-    linkopts = ["-ldl"], # needed for dynamicly loading libexaudflib_complete.so into another linker namespace
-    deps = ["@exaudfclient_base//exaudflib:header", "@exaudfclient_base//utils:utils"]+VM_ENABLED_DEPS+VM_PYTHON3_DEPS+
-            ["@exaudfclient_base//exaudflib:exaudflib-deps"] +
-            [ "@zmq//:zmq", "@protobuf//:protobuf"],
-    defines = VM_ENABLED_DEFINES,
+    srcs = [
+        "exa_udfclient.cc",
+        "@exaudfclient_base//:load_dynamic",
+    ],
+    linkopts = ["-ldl"],
+    deps = [
+        ":exa_udfclient_binary_common_lib",
+        "@zmq//:zmq",
+        "@protobuf//:protobuf",
+    ],
     data = ["@exaudfclient_base//:libexaudflib_complete.so"],
 )
 
