@@ -1,7 +1,21 @@
 #!/usr/bin/env python3
 
+# coding: utf-8
+
+import csv
+import locale
+import logging
+import os
+import subprocess
+import sys
+import tempfile
+import unicodedata
+
+from exasol_python_test_framework.exatest.testcase import skipIf
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import useData
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 class _Python3UdfSetup(udf.TestCase):
     def setUp(self):
@@ -49,70 +63,6 @@ class _Python3UdfSetup(udf.TestCase):
                             return x
             /
         '''))
-
-# coding: utf-8
-
-import csv
-import locale
-import logging
-import os
-import subprocess
-import sys
-import tempfile
-import unicodedata
-import re
-import argparse
-
-udf.pythonVersionInUdf = -1
-
-from exasol_python_test_framework.exatest.testcase import skipIf
-
-
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-
-
-def getPythonVersionInUDFs(server, script_languages):
-    log = logging.getLogger('unicodedata')
-    log.info("trying to figure out python version of python in UDFs")
-    sql = udf.fixindent('''
-           alter session set script_languages='%(sl)s';
-           drop schema if exists pyversion_schema cascade;
-           create schema pyversion_schema;
-           create or replace python3 scalar script pyversion_schema.python_version() returns varchar(1000) as
-           import sys
-           def run(ctx):
-               return 'Python='+str(sys.version_info[0])
-           /
-           select pyversion_schema.python_version();
-           ''' % {'sl': script_languages})
-    cmd = '''%(exaplus)s -c %(conn)s -u sys -P exasol
-		        -no-config -autocommit ON -L -pipe -jdbcparam validateservercertificate=0''' % {
-        'exaplus': os.environ.get('EXAPLUS',
-                                  '/usr/opt/EXASuite-4/EXASolution-4.2.9/bin/Console/exaplus'),
-        'conn': server
-    }
-    env = os.environ.copy()
-    # env['PATH'] = '/usr/opt/jdk1.8.0_latest/bin:' + env['PATH']
-    exaplus = subprocess.Popen(
-        cmd.split(),
-        env=env,
-
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
-    out, _err = exaplus.communicate(sql.encode('utf-8'))
-    pythonVersionInUdf = -1
-    for line in out.strip().decode('utf-8').split(sep="\n"):
-        m = re.search(r'Python=(\d)', line)
-        if m:
-            pythonVersionInUdf = int(m.group(1))
-            continue
-
-    if pythonVersionInUdf not in [2, 3]:
-        print('cannot set pythonVersionInUdf: %s' % pythonVersionInUdf)
-        sys.exit(1)
-
-    return pythonVersionInUdf
 
 
 def setUpModule():
@@ -301,11 +251,5 @@ class UnicodeData(_Python3UdfSetup):
         self.assertRowsEqual([], rows)
 
 
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--server', help='connection string')
-    parser.add_argument('--script-languages', help='definition of the SCRIPT_LANGUAGES variable')
-    opts, _unknown = parser.parse_known_args()
-    setattr(udf, 'pythonVersionInUdf', getPythonVersionInUDFs(opts.server, opts.script_languages))
     udf.main()

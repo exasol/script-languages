@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class _Python3UdfSetup(udf.TestCase):
+class Test(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -62,7 +62,6 @@ class _Python3UdfSetup(udf.TestCase):
             /
         '''))
 
-class Test(_Python3UdfSetup):
     def test_pi(self):
         rows = self.query('''
             SELECT fn1.pi()

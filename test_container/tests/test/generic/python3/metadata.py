@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class _Python3UdfSetup(udf.TestCase):
+class MetaDataTest(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -259,8 +259,6 @@ class _Python3UdfSetup(udf.TestCase):
         # Close schema so test_current_schema_null passes (expects NULL)
         self.query('CLOSE SCHEMA')
 
-class MetaDataTest(_Python3UdfSetup):
-
     def test_database_name(self):
         rows = self.query('''SELECT fn1.get_database_name() FROM DUAL''')
         self.assertTrue(len(rows[0][0]) > 0)
@@ -278,31 +276,26 @@ class MetaDataTest(_Python3UdfSetup):
         self.assertRowEqual(('GET_SCRIPT_NAME',), rows[0])
 
     def test_script_schema(self):
-        if (udf.opts.is_compat_mode != "true"):
-            rows = self.query('''select fn1.get_script_schema() from dual''')
-            self.assertRowEqual(('FN1',), rows[0])
+        rows = self.query('''select fn1.get_script_schema() from dual''')
+        self.assertRowEqual(('FN1',), rows[0])
 
     def test_script_user(self):
-        if (udf.opts.is_compat_mode != "true"):
-            rows = self.query('''select fn1.get_current_user() from dual''')
-            self.assertRowEqual(('SYS',), rows[0])
+        rows = self.query('''select fn1.get_current_user() from dual''')
+        self.assertRowEqual(('SYS',), rows[0])
 
     def test_scope_user(self):
-        if (udf.opts.is_compat_mode != "true"):
-            rows = self.query('''select fn1.get_scope_user() from dual''')
-            self.assertRowEqual(('SYS',), rows[0])
+        rows = self.query('''select fn1.get_scope_user() from dual''')
+        self.assertRowEqual(('SYS',), rows[0])
 
     def test_current_schema_null(self):
-        if (udf.opts.is_compat_mode != "true"):
-            rows = self.query('''select fn1.get_current_schema() from dual''')
-            self.assertRowEqual(('NULL',), rows[0])
+        rows = self.query('''select fn1.get_current_schema() from dual''')
+        self.assertRowEqual(('NULL',), rows[0])
 
     def test_current_schema(self):
-        if (udf.opts.is_compat_mode != "true"):
-            self.query('''create schema test_schema''')
-            rows = self.query('''select fn1.get_current_schema() from dual''')
-            self.assertRowEqual(('TEST_SCHEMA',), rows[0])
-            self.query('''drop schema test_schema cascade''')
+        self.query('''create schema test_schema''')
+        rows = self.query('''select fn1.get_current_schema() from dual''')
+        self.assertRowEqual(('TEST_SCHEMA',), rows[0])
+        self.query('''drop schema test_schema cascade''')
 
     def test_script_code(self):
         rows = self.query('''select fn1.get_script_code() from dual''')
