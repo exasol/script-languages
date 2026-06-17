@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
+import csv
+import logging
+import os
+import subprocess
+import sys
+import tempfile
+import unicodedata
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import useData
-
+from exasol_python_test_framework import udf
 
 class _JavaUdfSetup(udf.TestCase):
     def setUp(self):
@@ -70,18 +77,6 @@ class _JavaUdfSetup(udf.TestCase):
             }
             /
         '''))
-
-# coding: utf-8
-
-import csv
-import logging
-import os
-import subprocess
-import sys
-import tempfile
-import unicodedata
-
-from exasol_python_test_framework import udf
 
 
 def setUpModule():

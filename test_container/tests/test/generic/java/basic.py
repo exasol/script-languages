@@ -3,11 +3,8 @@
 from exasol_python_test_framework import udf
 
 
-class _SetEmptyInputUdfs:
-    """Mixin providing creation helpers for the set_*_has_empty_input UDFs."""
-
-    def _create_set_returns_has_empty_input(self):
-        self.query(udf.fixindent('''
+def create_set_returns_has_empty_input(test_case):
+    test_case.query(udf.fixindent('''
             CREATE java SET SCRIPT
             set_returns_has_empty_input(a double) RETURNS boolean AS
             class SET_RETURNS_HAS_EMPTY_INPUT {
@@ -18,8 +15,8 @@ class _SetEmptyInputUdfs:
             /
         '''))
 
-    def _create_set_emits_has_empty_input(self):
-        self.query(udf.fixindent('''
+def create_set_emits_has_empty_input(test_case):
+    test_case.query(udf.fixindent('''
             CREATE java SET SCRIPT
             set_emits_has_empty_input(a double) EMITS (x double, y varchar(10)) AS
             class SET_EMITS_HAS_EMPTY_INPUT {
@@ -31,10 +28,10 @@ class _SetEmptyInputUdfs:
                 }
             }
             /
-        '''))
+            '''))
 
 
-class _JavaUdfSetup(_SetEmptyInputUdfs, udf.TestCase):
+class _JavaUdfSetup(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -191,8 +188,8 @@ class _JavaUdfSetup(_SetEmptyInputUdfs, udf.TestCase):
             /
         '''))
 
-        self._create_set_emits_has_empty_input()
-        self._create_set_returns_has_empty_input()
+        create_set_emits_has_empty_input(self)
+        create_set_returns_has_empty_input(self)
 
 class BasicTest(_JavaUdfSetup):
 
@@ -269,7 +266,7 @@ class BasicTest(_JavaUdfSetup):
         self.assertEqual(sorted_list, unsorted_list)
 
 
-class SetWithEmptyInput(_SetEmptyInputUdfs, udf.TestCase):
+class SetWithEmptyInput(udf.TestCase):
     def setUp(self):
         self.query('DROP SCHEMA FN1 CASCADE', ignore_errors=True)
         self.query('CREATE SCHEMA FN1')
@@ -278,8 +275,8 @@ class SetWithEmptyInput(_SetEmptyInputUdfs, udf.TestCase):
         self.query('OPEN SCHEMA FN1')
         self.query('CREATE TABLE FN2.empty_table(c int)')
         
-        self._create_set_returns_has_empty_input()
-        self._create_set_emits_has_empty_input()
+        create_set_returns_has_empty_input(self)
+        create_set_emits_has_empty_input(self)
 
     def test_set_returns_has_empty_input_group_by(self):
         self.query("""select FN1.set_returns_has_empty_input(c) from FN2.empty_table group by 'X'""")

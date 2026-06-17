@@ -256,10 +256,6 @@ class ExportAliasTest(udf.TestCase):
             /
         '''))
 
-# ATTENTION!
-# ATTENTION!
-# The logic for the tests had to be put in the export_alias.sql files for each language.
-# This was required because EXPORT INTO SCRIPT can only return a single integer.
 
     def test_export_use_params(self):
         rows = self.executeStatement("EXPORT fn2.t INTO SCRIPT fn1.expal_use_param_foo_bar with foo='bar' bar='foo'")
