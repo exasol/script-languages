@@ -62,7 +62,7 @@ Bazel allows to query the dependencies of a target. Furthermore, it can export t
 
 # How is the exaudfclient structured?
 
-The exaudfclient consists mainly out of three parts the main function in [exaudfclient.cc](exaudfclient.cc), the libexaudf and the language implementations. The first part the main function actually only loads the two other parts. However, in this case it is important how it loads the two other parts, because we need the libexaudf in a different linker namespace than the language implementation to prevent library conflicts. The libexaudf uses  [ZeroMQ](http://zeromq.org/) and  [Protobuf](https://developers.google.com/protocol-buffers/) to communicate with the Exsol Database, but UDFs could be use the same libraries in a different version which would lead to library conflict. The following figure shows the dependencies between the components.
+The exaudfclient consists mainly out of three parts the main function in [exa_udfclient.cc](exa_udfclient.cc), the libexaudf and the language implementations. The first part the main function actually only loads the two other parts. However, in this case it is important how it loads the two other parts, because we need the libexaudf in a different linker namespace than the language implementation to prevent library conflicts. The libexaudf uses  [ZeroMQ](http://zeromq.org/) and  [Protobuf](https://developers.google.com/protocol-buffers/) to communicate with the Exsol Database, but UDFs could be use the same libraries in a different version which would lead to library conflict. The following figure shows the dependencies between the components.
 
 ![exaudfclient dependencies](docs/exaudfclient.png)
 

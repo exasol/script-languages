@@ -5,11 +5,21 @@
 #include <sstream>
 #include "exaudflib/vm/swig_vm.h"
 
-void* handle;
+static void* exaudflib_handle = nullptr;
 
 #ifndef UDF_PLUGIN_CLIENT
+
+void set_exaudflib_handle(void* handle) {
+    if(handle != nullptr) {
+        exaudflib_handle = handle;
+    }
+}
+
 void* load_dynamic(const char* name) {
-    void* res = dlsym(handle, name);
+    if(exaudflib_handle == nullptr) {
+        throw SWIGVMContainers::SWIGVM::exception("Error: exaudflib_handle is not set.");
+    }
+    void* res = dlsym(exaudflib_handle, name);
     char* error;
     if ((error = dlerror()) != nullptr)
     {

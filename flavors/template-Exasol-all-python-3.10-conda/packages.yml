@@ -11,7 +11,7 @@ build_steps:
       - name: curl
         version: 7.81.0-1ubuntu*
       - name: ca-certificates
-        version: 20240203~22.04.1
+        version: 20260601~22.04.1
       - name: bzip2
         version: 1.0.8-5build1
       - name: libxml2
