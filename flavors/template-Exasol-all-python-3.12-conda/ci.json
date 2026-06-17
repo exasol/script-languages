@@ -37,6 +37,13 @@
         "folders": ["linker_namespace_sanity"],
         "goal": "base_test_build_run",
         "generic_language_tests": []
+      },
+      {
+        "name": "generic",
+        "files": [],
+        "folders": ["generic/python3"],
+        "goal": "release",
+        "generic_language_tests": []
       }
     ]
   }

@@ -2,4 +2,8 @@ downloads
 *.tar.gz
 tests
 udf-script-signature-generator
+exaudfclient/bazel-bin
+exaudfclient/bazel-out
+exaudfclient/bazel-testlogs
+exaudfclient/bazel-exaudfclient
 .build_output
