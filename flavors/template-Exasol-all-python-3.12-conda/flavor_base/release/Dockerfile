@@ -1,9 +1,5 @@
 FROM {{flavor_customization}}
 
-ENV ENV_NAME="base"
-ENV MAMBA_ROOT_PREFIX="/opt/conda"
-ENV MAMBA_EXE="/bin/micromamba"
-
 RUN mkdir /conf /buckets
 
 COPY --from={{flavor_base_deps}} /build_info /build_info
