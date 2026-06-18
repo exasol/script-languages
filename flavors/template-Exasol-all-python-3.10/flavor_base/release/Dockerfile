@@ -17,4 +17,4 @@ RUN true # workaround for https://github.com/moby/moby/issues/37965
 
 
 RUN mkdir -p /build_info/actual_installed_packages/release && \
-    exaslpm list-all-installed-packages --out-file /build_info/actual_installed_packages/release/packages
+    exaslpm list-all-installed-packages --out-file /build_info/actual_installed_packages/release/packages.yml
