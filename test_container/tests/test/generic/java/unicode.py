@@ -9,7 +9,6 @@ import unicodedata
 
 from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import useData
-from exasol_python_test_framework import udf
 
 class _JavaUdfSetup(udf.TestCase):
     def setUp(self):
@@ -210,6 +209,52 @@ class Unicode(_JavaUdfSetup):
             FROM test.enginetablebigunicodevarchar
             WHERE len(c2_varchar100) != fn1.unicode_len(c2_varchar100)
             ORDER BY c1_integer
+            LIMIT 100
+            ''')
+        self.assertRowsEqual([], rows)
+
+
+class UnicodeData(_JavaUdfSetup):
+
+    def test_unicode_upper_is_subset_of_Unicode520_part2(self):
+        rows = self.query('''
+            SELECT
+                codepoint,
+                name,
+                unicode(to_upper),
+                unicode(fn1.unicode_upper(uchar))
+            FROM utest.unicodedata
+            WHERE codepoint in (181, 8126)
+                and (to_upper != fn1.unicode_upper(uchar))
+                and (uchar != fn1.unicode_upper(uchar))
+            ORDER BY codepoint
+            LIMIT 50
+            ''')
+        self.assertRowsEqual([], rows)
+
+    def test_unicode_upper_is_subset_of_Unicode520_part3(self):
+        rows = self.query('''
+            SELECT
+                codepoint,
+                name,
+                unicode(to_upper),
+                unicode(fn1.unicode_upper(uchar))
+            FROM utest.unicodedata
+            WHERE codepoint in (1010)
+                and (to_upper != fn1.unicode_upper(uchar))
+                and (uchar != fn1.unicode_upper(uchar))
+            ORDER BY codepoint
+            LIMIT 50
+            ''')
+        self.assertRowsEqual([], rows)
+
+    def test_unicode_len(self):
+        rows = self.query('''
+            SELECT codepoint, name
+            FROM utest.unicodedata
+            WHERE codepoint not between 55296 and 57343
+                and len(uchar) != fn1.unicode_len(uchar)
+            ORDER BY codepoint
             LIMIT 100
             ''')
         self.assertRowsEqual([], rows)
