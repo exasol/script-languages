@@ -102,6 +102,11 @@ build_steps:
     version_mandatory: true
 - name: flavor_customization
   phases:
+  - name: setup_pip
+    tools:
+      pip:
+        version: '25.2'
+        needs_break_system_packages: true
   - name: install_conda_packages
     conda:
       channels:
