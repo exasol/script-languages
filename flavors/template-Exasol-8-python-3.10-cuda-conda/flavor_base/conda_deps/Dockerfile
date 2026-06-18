@@ -1,4 +1,4 @@
-FROM exasol/script-language-container:exaslpm-1.2.0-ubuntu-22.04
+FROM exasol/script-language-container:exaslpm-1.3.1-ubuntu-22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
@@ -16,15 +16,6 @@ RUN adduser --disabled-login --uid 1000 --gid 1000 exasolution --gecos "First La
 RUN addgroup --gid 500 exausers
 RUN adduser --disabled-login --uid 500 --gid 500 exadefusr --gecos "First Last,RoomNumber,WorkPhone,HomePhone"
 
-
-ENV MAMBA_EXE="/bin/micromamba"
-ENV MAMBA_DOCKERFILE_ACTIVATE=1
-ENV ENV_NAME="base"
-ENV MAMBA_ROOT_PREFIX="/opt/conda"
-
-COPY scripts/install_scripts/_activate_current_env.sh /usr/local/bin/_activate_current_env.sh
-
-RUN /scripts/install_scripts/prepare_conda_env.sh
 
 SHELL ["/bin/bash", "-l", "-c"]
 
