@@ -11,7 +11,7 @@ build_steps:
       - name: curl
         version: 7.81.0-1ubuntu*
       - name: ca-certificates
-        version: 20240203~22.04.1
+        version: 20260601~22.04.1
       - name: bzip2
         version: 1.0.8-5build1
       - name: libxml2
@@ -81,7 +81,7 @@ build_steps:
     apt:
       packages:
       - name: tzdata
-        version: 2025b-0ubuntu*
+        version: 2026a-0ubuntu*
   - name: install_conda_packages
     conda:
       channels:
@@ -92,6 +92,11 @@ build_steps:
     version_mandatory: true
 - name: flavor_customization
   phases:
+  - name: setup_pip
+    tools:
+      pip:
+        version: '21.3.1'
+        needs_break_system_packages: false
   - name: install_conda_packages
     conda:
       channels:

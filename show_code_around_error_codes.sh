@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 # Usage
-# show_code_arround_error_codes.sh <regex-pattern1> <regex-pattern2>
+# show_code_around_error_codes.sh <regex-pattern1> <regex-pattern2>
 # pattern filter line of <filename>:<linenumber>|<error-code>
 # multiple pattern get merged with | to an or construction
 

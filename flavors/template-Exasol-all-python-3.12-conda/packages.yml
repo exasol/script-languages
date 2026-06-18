@@ -13,7 +13,7 @@ build_steps:
       - name: curl
         version: 8.5.0-2ubuntu*
       - name: ca-certificates
-        version: '20240203'
+        version: '20260601~24.04.1'
       - name: bzip2
         version: 1.0.8-5.1build0.1
       - name: libxml2
@@ -94,6 +94,11 @@ build_steps:
     version_mandatory: true
 - name: flavor_customization
   phases:
+  - name: setup_pip
+    tools:
+      pip:
+        version: '25.2'
+        needs_break_system_packages: true
   - name: install_conda_packages
     conda:
       channels:

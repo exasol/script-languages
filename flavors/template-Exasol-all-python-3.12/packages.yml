@@ -5,7 +5,7 @@ build_steps:
     apt:
       packages:
       - name: ca-certificates
-        version: '20240203'
+        version: '20260601~24.04.1'
       - name: python3.12-dev
         version: 3.12.3-1ubuntu*
       - name: curl

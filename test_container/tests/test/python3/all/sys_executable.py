@@ -58,6 +58,95 @@ class SysExecutableTest(udf.TestCase):
         rows = self.query("select check_sys_executable()")
         self.assertEqual(rows[0][0], rows[0][1])
 
+    def test_python_runtime_env_is_consistent(self):
+        """
+        Check that Python runtime paths are consistent with the active interpreter.
+        For conda flavors, paths must be under /opt/conda.
+        For non-conda flavors, paths must be under /usr.
+        """
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE python3 SCALAR SCRIPT
+                check_python_runtime()
+                RETURNS VARCHAR(10000) AS
+
+                import sys
+                import sysconfig
+                from pathlib import Path
+
+                def run(ctx):
+                    failures = []
+
+                    libdir = sysconfig.get_config_var("LIBDIR") or ""
+                    ldlibrary = sysconfig.get_config_var("LDLIBRARY") or ""
+                    libpython = str(Path(libdir) / ldlibrary)
+                    stdlib = sysconfig.get_path("stdlib") or ""
+                    executable = str(Path(sys.executable).resolve())
+
+                    if executable.startswith("/opt/conda"):
+                        expected_prefix = "/opt/conda"
+                    else:
+                        expected_prefix = "/usr"
+
+                    checks = [
+                        ("sys.executable", executable),
+                        ("sys.prefix",     sys.prefix),
+                        ("stdlib",         stdlib),
+                        ("libpython",      libpython),
+                    ]
+
+                    for name, value in checks:
+                        path_value = str(Path(value).resolve())
+                        if not path_value.startswith(expected_prefix):
+                            failures.append(f"{name} outside {expected_prefix}: {value}")
+
+                    return "; ".join(failures) if failures else "OK"
+                /
+                '''))
+        rows = self.query("select check_python_runtime()")
+        result = rows[0][0]
+        self.assertEqual(
+            result, "OK",
+            f"Python env check failed. Got: {result}"
+        )
+
+    def test_path_var_matches_runtime(self):
+        """
+        Check that Python runtime is either conda-based or apt-based.
+        For conda runtimes, PATH starts with /opt/conda.
+        For apt runtimes, it starts with /usr or /usr/lib and PATH
+        must include /usr/bin.
+        """
+        self.query(udf.fixindent('''
+                CREATE OR REPLACE python3 SCALAR SCRIPT
+                check_runtime_installation()
+                RETURNS VARCHAR(10000) AS
+
+                import os
+                import sys
+                from pathlib import Path
+
+                def run(ctx):
+                    path_value = os.environ.get("PATH", "")
+                    executable = str(Path(sys.executable).resolve())
+
+                    if executable.startswith("/opt/conda"):
+                        return "OK" if path_value.startswith("/opt/conda") else (
+                            f"conda runtime, but PATH is: {path_value}"
+                        )
+
+                    if executable.startswith("/usr"):
+                        path_entries = path_value.split(":") if path_value else []
+                        return "OK" if "/usr/bin" in path_entries else (
+                            f"apt runtime but PATH misses /usr/bin: {path_value}"
+                        )
+
+                    return f"unsupported runtime executable: {executable}"
+                /
+                '''))
+        rows = self.query("select check_runtime_installation()")
+        result = rows[0][0]
+        self.assertEqual(result, "OK", f"Runtime/PATH check failed. Got: {result}")
+
 
 if __name__ == '__main__':
     udf.main()
