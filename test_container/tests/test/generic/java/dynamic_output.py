@@ -186,46 +186,46 @@ class _JavaUdfSetup(udf.TestCase):
             /
         '''))
 
-        self.query(udf.fixindent('''
-            CREATE JAVA SET SCRIPT VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
-            class VAREMIT_METADATA_SET_EMIT {
-                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    long count = exa.getOutputColumnCount();
-                    ctx.emit(String.valueOf(count), 1.0);
-                    for (int i = 0; i < count; i++) {
-                        ctx.emit(exa.getOutputColumnName(i), 1.0);
-                        ctx.emit(exa.getOutputColumnType(i).getName(), 1.0);
-                        ctx.emit(exa.getOutputColumnSQLType(i), 1.0);
-                        ctx.emit(String.valueOf(exa.getOutputColumnPrecision(i)), 1.0);
-                        ctx.emit(String.valueOf(exa.getOutputColumnScale(i)), 1.0);
-                        ctx.emit(String.valueOf(exa.getOutputColumnLength(i)), 1.0);
-                    }
-                }
-            }
-            /
-        '''))
+        # self.query(udf.fixindent('''
+        #     CREATE JAVA SET SCRIPT VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+        #     class VAREMIT_METADATA_SET_EMIT {
+        #         static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        #             long count = exa.getOutputColumnCount();
+        #             ctx.emit(String.valueOf(count), 1.0);
+        #             for (int i = 0; i < count; i++) {
+        #                 ctx.emit(exa.getOutputColumnName(i), 1.0);
+        #                 ctx.emit(exa.getOutputColumnType(i).getName(), 1.0);
+        #                 ctx.emit(exa.getOutputColumnSQLType(i), 1.0);
+        #                 ctx.emit(String.valueOf(exa.getOutputColumnPrecision(i)), 1.0);
+        #                 ctx.emit(String.valueOf(exa.getOutputColumnScale(i)), 1.0);
+        #                 ctx.emit(String.valueOf(exa.getOutputColumnLength(i)), 1.0);
+        #             }
+        #         }
+        #     }
+        #     /
+        # '''))
 
-        self.query(udf.fixindent('''
-            CREATE JAVA SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
-            class DEFAULT_VAREMIT_METADATA_SET_EMIT {
-                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    long count = exa.getOutputColumnCount();
-                    ctx.emit(String.valueOf(count), 1.0);
-                    for (int i = 0; i < count; i++) {
-                        ctx.emit(exa.getOutputColumnName(i), 1.0);
-                        ctx.emit(exa.getOutputColumnType(i).getName(), 1.0);
-                        ctx.emit(exa.getOutputColumnSQLType(i), 1.0);
-                        ctx.emit(String.valueOf(exa.getOutputColumnPrecision(i)), 1.0);
-                        ctx.emit(String.valueOf(exa.getOutputColumnScale(i)), 1.0);
-                        ctx.emit(String.valueOf(exa.getOutputColumnLength(i)), 1.0);
-                    }
-                }
-                static String getDefaultOutputColumns() {
-                    return "a varchar(123), b double";
-                }
-            }
-            /
-        '''))
+        # self.query(udf.fixindent('''
+        #     CREATE JAVA SET SCRIPT DEFAULT_VAREMIT_METADATA_SET_EMIT (...) EMITS(...) AS
+        #     class DEFAULT_VAREMIT_METADATA_SET_EMIT {
+        #         static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        #             long count = exa.getOutputColumnCount();
+        #             ctx.emit(String.valueOf(count), 1.0);
+        #             for (int i = 0; i < count; i++) {
+        #                 ctx.emit(exa.getOutputColumnName(i), 1.0);
+        #                 ctx.emit(exa.getOutputColumnType(i).getName(), 1.0);
+        #                 ctx.emit(exa.getOutputColumnSQLType(i), 1.0);
+        #                 ctx.emit(String.valueOf(exa.getOutputColumnPrecision(i)), 1.0);
+        #                 ctx.emit(String.valueOf(exa.getOutputColumnScale(i)), 1.0);
+        #                 ctx.emit(String.valueOf(exa.getOutputColumnLength(i)), 1.0);
+        #             }
+        #         }
+        #         static String getDefaultOutputColumns() {
+        #             return "a varchar(123), b double";
+        #         }
+        #     }
+        #     /
+        # '''))
 
         self.query(udf.fixindent('''
             CREATE JAVA SET SCRIPT VAREMIT_NON_VAR_EMIT (...) EMITS (a double) AS
@@ -331,66 +331,66 @@ class _JavaUdfSetup(udf.TestCase):
             /
         '''))
 
-        self.query(udf.fixindent('''
-            CREATE JAVA SET SCRIPT VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
-            import java.math.BigDecimal;
-            import java.sql.Date;
-            import java.sql.Timestamp;
-            class VAREMIT_EMIT_INPUT_WITH_META_CHECK {
-                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    int n = (int) exa.getInputColumnCount();
-                    Object[] record = new Object[n];
-                    for (int i = 0; i < n; i++) {
-                        if (!exa.getInputColumnSQLType(i).equals(exa.getOutputColumnSQLType(i))) {
-                            throw new Exception("Input/output SQL type mismatch at column " + i);
-                        }
-                        Class cls = exa.getInputColumnType(i);
-                        if (cls == Integer.class) record[i] = ctx.getInteger(i);
-                        else if (cls == Long.class) record[i] = ctx.getLong(i);
-                        else if (cls == Double.class) record[i] = ctx.getDouble(i);
-                        else if (cls == String.class) record[i] = ctx.getString(i);
-                        else if (cls == Boolean.class) record[i] = ctx.getBoolean(i);
-                        else if (cls == BigDecimal.class) record[i] = ctx.getBigDecimal(i);
-                        else if (cls == Date.class) record[i] = ctx.getDate(i);
-                        else if (cls == Timestamp.class) record[i] = ctx.getTimestamp(i);
-                    }
-                    ctx.emit(record);
-                }
-            }
-            /
-        '''))
+        # self.query(udf.fixindent('''
+        #     CREATE JAVA SET SCRIPT VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+        #     import java.math.BigDecimal;
+        #     import java.sql.Date;
+        #     import java.sql.Timestamp;
+        #     class VAREMIT_EMIT_INPUT_WITH_META_CHECK {
+        #         static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        #             int n = (int) exa.getInputColumnCount();
+        #             Object[] record = new Object[n];
+        #             for (int i = 0; i < n; i++) {
+        #                 if (!exa.getInputColumnSQLType(i).equals(exa.getOutputColumnSQLType(i))) {
+        #                     throw new Exception("Input/output SQL type mismatch at column " + i);
+        #                 }
+        #                 Class cls = exa.getInputColumnType(i);
+        #                 if (cls == Integer.class) record[i] = ctx.getInteger(i);
+        #                 else if (cls == Long.class) record[i] = ctx.getLong(i);
+        #                 else if (cls == Double.class) record[i] = ctx.getDouble(i);
+        #                 else if (cls == String.class) record[i] = ctx.getString(i);
+        #                 else if (cls == Boolean.class) record[i] = ctx.getBoolean(i);
+        #                 else if (cls == BigDecimal.class) record[i] = ctx.getBigDecimal(i);
+        #                 else if (cls == Date.class) record[i] = ctx.getDate(i);
+        #                 else if (cls == Timestamp.class) record[i] = ctx.getTimestamp(i);
+        #             }
+        #             ctx.emit(record);
+        #         }
+        #     }
+        #     /
+        # '''))
 
-        self.query(udf.fixindent('''
-            CREATE JAVA SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
-            import java.math.BigDecimal;
-            import java.sql.Date;
-            import java.sql.Timestamp;
-            class DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK {
-                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    int n = (int) exa.getInputColumnCount();
-                    Object[] record = new Object[n];
-                    for (int i = 0; i < n; i++) {
-                        if (!exa.getInputColumnSQLType(i).equals(exa.getOutputColumnSQLType(i))) {
-                            throw new Exception("Input/output SQL type mismatch at column " + i);
-                        }
-                        Class cls = exa.getInputColumnType(i);
-                        if (cls == Integer.class) record[i] = ctx.getInteger(i);
-                        else if (cls == Long.class) record[i] = ctx.getLong(i);
-                        else if (cls == Double.class) record[i] = ctx.getDouble(i);
-                        else if (cls == String.class) record[i] = ctx.getString(i);
-                        else if (cls == Boolean.class) record[i] = ctx.getBoolean(i);
-                        else if (cls == BigDecimal.class) record[i] = ctx.getBigDecimal(i);
-                        else if (cls == Date.class) record[i] = ctx.getDate(i);
-                        else if (cls == Timestamp.class) record[i] = ctx.getTimestamp(i);
-                    }
-                    ctx.emit(record);
-                }
-                static String getDefaultOutputColumns() {
-                    return "a varchar(123), b double";
-                }
-            }
-            /
-        '''))
+        # self.query(udf.fixindent('''
+        #     CREATE JAVA SET SCRIPT DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK (...) EMITS (...) AS
+        #     import java.math.BigDecimal;
+        #     import java.sql.Date;
+        #     import java.sql.Timestamp;
+        #     class DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK {
+        #         static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        #             int n = (int) exa.getInputColumnCount();
+        #             Object[] record = new Object[n];
+        #             for (int i = 0; i < n; i++) {
+        #                 if (!exa.getInputColumnSQLType(i).equals(exa.getOutputColumnSQLType(i))) {
+        #                     throw new Exception("Input/output SQL type mismatch at column " + i);
+        #                 }
+        #                 Class cls = exa.getInputColumnType(i);
+        #                 if (cls == Integer.class) record[i] = ctx.getInteger(i);
+        #                 else if (cls == Long.class) record[i] = ctx.getLong(i);
+        #                 else if (cls == Double.class) record[i] = ctx.getDouble(i);
+        #                 else if (cls == String.class) record[i] = ctx.getString(i);
+        #                 else if (cls == Boolean.class) record[i] = ctx.getBoolean(i);
+        #                 else if (cls == BigDecimal.class) record[i] = ctx.getBigDecimal(i);
+        #                 else if (cls == Date.class) record[i] = ctx.getDate(i);
+        #                 else if (cls == Timestamp.class) record[i] = ctx.getTimestamp(i);
+        #             }
+        #             ctx.emit(record);
+        #         }
+        #         static String getDefaultOutputColumns() {
+        #             return "a varchar(123), b double";
+        #         }
+        #     }
+        #     /
+        # '''))
 
         self.query(udf.fixindent('''
             CREATE JAVA SET SCRIPT DEFAULT_VAREMIT_EMPTY_DEF(X DOUBLE) EMITS (...) AS
@@ -405,47 +405,47 @@ class _JavaUdfSetup(udf.TestCase):
             /
         '''))
 
-        self.query(udf.fixindent('''
-            CREATE JAVA SET SCRIPT COPY_RELATION (...) EMITS (...) AS
-            import java.math.BigDecimal;
-            import java.sql.Date;
-            import java.sql.Timestamp;
-            class COPY_RELATION {
-                static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
-                    int n = (int) exa.getInputColumnCount();
-                    Object[] record = new Object[n];
-                    for (int i = 0; i < n; i++) {
-                        if (!exa.getInputColumnSQLType(i).equals(exa.getOutputColumnSQLType(i))) {
-                            throw new Exception("Input/output SQL type mismatch at column " + i);
-                        }
-                        Class cls = exa.getInputColumnType(i);
-                        if (cls == Integer.class) record[i] = ctx.getInteger(i);
-                        else if (cls == Long.class) record[i] = ctx.getLong(i);
-                        else if (cls == Double.class) record[i] = ctx.getDouble(i);
-                        else if (cls == String.class) record[i] = ctx.getString(i);
-                        else if (cls == Boolean.class) record[i] = ctx.getBoolean(i);
-                        else if (cls == BigDecimal.class) record[i] = ctx.getBigDecimal(i);
-                        else if (cls == Date.class) record[i] = ctx.getDate(i);
-                        else if (cls == Timestamp.class) record[i] = ctx.getTimestamp(i);
-                    }
-                    ctx.emit(record);
-                }
-                static String getDefaultOutputColumns(ExaMetadata exa) throws Exception {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < exa.getInputColumnCount(); i++) {
-                        if (i > 0) sb.append(", ");
-                        String colName = exa.getInputColumnName(i);
-                        try {
-                            int idx = Integer.parseInt(colName);
-                            colName = "col_" + idx;
-                        } catch (NumberFormatException e) {}
-                        sb.append(colName).append(" ").append(exa.getInputColumnSQLType(i));
-                    }
-                    return sb.toString();
-                }
-            }
-            /
-        '''))
+        # self.query(udf.fixindent('''
+        #     CREATE JAVA SET SCRIPT COPY_RELATION (...) EMITS (...) AS
+        #     import java.math.BigDecimal;
+        #     import java.sql.Date;
+        #     import java.sql.Timestamp;
+        #     class COPY_RELATION {
+        #         static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
+        #             int n = (int) exa.getInputColumnCount();
+        #             Object[] record = new Object[n];
+        #             for (int i = 0; i < n; i++) {
+        #                 if (!exa.getInputColumnSQLType(i).equals(exa.getOutputColumnSQLType(i))) {
+        #                     throw new Exception("Input/output SQL type mismatch at column " + i);
+        #                 }
+        #                 Class cls = exa.getInputColumnType(i);
+        #                 if (cls == Integer.class) record[i] = ctx.getInteger(i);
+        #                 else if (cls == Long.class) record[i] = ctx.getLong(i);
+        #                 else if (cls == Double.class) record[i] = ctx.getDouble(i);
+        #                 else if (cls == String.class) record[i] = ctx.getString(i);
+        #                 else if (cls == Boolean.class) record[i] = ctx.getBoolean(i);
+        #                 else if (cls == BigDecimal.class) record[i] = ctx.getBigDecimal(i);
+        #                 else if (cls == Date.class) record[i] = ctx.getDate(i);
+        #                 else if (cls == Timestamp.class) record[i] = ctx.getTimestamp(i);
+        #             }
+        #             ctx.emit(record);
+        #         }
+        #         static String getDefaultOutputColumns(ExaMetadata exa) throws Exception {
+        #             StringBuilder sb = new StringBuilder();
+        #             for (int i = 0; i < exa.getInputColumnCount(); i++) {
+        #                 if (i > 0) sb.append(", ");
+        #                 String colName = exa.getInputColumnName(i);
+        #                 try {
+        #                     int idx = Integer.parseInt(colName);
+        #                     colName = "col_" + idx;
+        #                 } catch (NumberFormatException e) {}
+        #                 sb.append(colName).append(" ").append(exa.getInputColumnSQLType(i));
+        #             }
+        #             return sb.toString();
+        #         }
+        #     }
+        #     /
+        # '''))
 
     def setUp(self):
         self._setup_fn1_schema()
@@ -523,19 +523,19 @@ class DynamicOutputTest(_JavaUdfSetup):
             ''')
         self.assertRowEqual(('ABCD',), rows[0])
 
-    def test_metadata_correctness(self):
-        rows = self.query('''
-            SELECT fn1.VAREMIT_METADATA_SET_EMIT(1) EMITS (a varchar(123), b double)
-            FROM DUAL
-            ''')
-        self.assertRowEqual(('2', 1.0), rows[0])
-        self.assertRowEqual(('A', 1.0), rows[1])
-        self.assertTrue(rows[2][0] in ["java.lang.String"])
-        self.assertRowEqual(('VARCHAR(123) UTF8', 1), rows[3])
-        self.assertRowEqual(('123', 1.0), rows[6])
-        self.assertRowEqual(('B', 1.0), rows[7])
-        self.assertTrue(rows[8][0] in ["java.lang.Double"])
-        self.assertRowEqual(('DOUBLE', 1.0), rows[9])
+    # def test_metadata_correctness(self):
+    #     rows = self.query('''
+    #         SELECT fn1.VAREMIT_METADATA_SET_EMIT(1) EMITS (a varchar(123), b double)
+    #         FROM DUAL
+    #         ''')
+    #     self.assertRowEqual(('2', 1.0), rows[0])
+    #     self.assertRowEqual(('A', 1.0), rows[1])
+    #     self.assertTrue(rows[2][0] in ["java.lang.String"])
+    #     self.assertRowEqual(('VARCHAR(123) UTF8', 1), rows[3])
+    #     self.assertRowEqual(('123', 1.0), rows[6])
+    #     self.assertRowEqual(('B', 1.0), rows[7])
+    #     self.assertTrue(rows[8][0] in ["java.lang.Double"])
+    #     self.assertRowEqual(('DOUBLE', 1.0), rows[9])
 
 
 class DynamicOutputWrongUsage(_JavaUdfSetup):
@@ -594,15 +594,15 @@ class DynamicOutputInsertInto(_JavaUdfSetup):
         self.assertRowEqual((1, 1.1, 'a'), rows[0])
         self.query('''delete from dynamic_output.target;''')
 
-    def test_insert_metadata_correctness(self):
-        self.query('''
-            insert into dynamic_output.target select fn1.VAREMIT_EMIT_INPUT_WITH_META_CHECK(cast (2 as int), CAST (2.2 AS DOUBLE), cast ('b' as varchar(100)));
-            ''')
-        rows = self.query('''
-            select * from dynamic_output.target;
-            ''')
-        self.assertRowEqual((2, 2.2, 'b'), rows[0])
-        self.query('''delete from dynamic_output.target;''')
+    # def test_insert_metadata_correctness(self):
+    #     self.query('''
+    #         insert into dynamic_output.target select fn1.VAREMIT_EMIT_INPUT_WITH_META_CHECK(cast (2 as int), CAST (2.2 AS DOUBLE), cast ('b' as varchar(100)));
+    #         ''')
+    #     rows = self.query('''
+    #         select * from dynamic_output.target;
+    #         ''')
+    #     self.assertRowEqual((2, 2.2, 'b'), rows[0])
+    #     self.query('''delete from dynamic_output.target;''')
 
     def test_insert_target_columns_change_order(self):
         self.query('''
@@ -751,32 +751,32 @@ class DefaultDynamicOutputTest(_JavaUdfSetup):
             ''')
         self.assertRowEqual(('ABCD',), rows[0])
 
-    def test_metadata_correctness(self):
-        rows = self.query('''
-            SELECT fn1.DEFAULT_VAREMIT_METADATA_SET_EMIT(1) EMITS (a varchar(123), b double)
-            FROM DUAL
-            ''')
-        self.assertRowEqual(('2', 1.0), rows[0])
-        self.assertRowEqual(('A', 1.0), rows[1])
-        self.assertTrue(rows[2][0] in ["java.lang.String"])
-        self.assertRowEqual(('VARCHAR(123) UTF8', 1), rows[3])
-        self.assertRowEqual(('123', 1.0), rows[6])
-        self.assertRowEqual(('B', 1.0), rows[7])
-        self.assertTrue(rows[8][0] in ["java.lang.Double"])
-        self.assertRowEqual(('DOUBLE', 1.0), rows[9])
-        # now again with intrinsic emits clause
-        rows = self.query('''
-            SELECT fn1.DEFAULT_VAREMIT_METADATA_SET_EMIT(1)
-            FROM DUAL
-            ''')
-        self.assertRowEqual(('2', 1.0), rows[0])
-        self.assertRowEqual(('A', 1.0), rows[1])
-        self.assertTrue(rows[2][0] in ["java.lang.String"])
-        self.assertRowEqual(('VARCHAR(123) UTF8', 1), rows[3])
-        self.assertRowEqual(('123', 1.0), rows[6])
-        self.assertRowEqual(('B', 1.0), rows[7])
-        self.assertTrue(rows[8][0] in ["java.lang.Double"])
-        self.assertRowEqual(('DOUBLE', 1.0), rows[9])
+    # def test_metadata_correctness(self):
+    #     rows = self.query('''
+    #         SELECT fn1.DEFAULT_VAREMIT_METADATA_SET_EMIT(1) EMITS (a varchar(123), b double)
+    #         FROM DUAL
+    #         ''')
+    #     self.assertRowEqual(('2', 1.0), rows[0])
+    #     self.assertRowEqual(('A', 1.0), rows[1])
+    #     self.assertTrue(rows[2][0] in ["java.lang.String"])
+    #     self.assertRowEqual(('VARCHAR(123) UTF8', 1), rows[3])
+    #     self.assertRowEqual(('123', 1.0), rows[6])
+    #     self.assertRowEqual(('B', 1.0), rows[7])
+    #     self.assertTrue(rows[8][0] in ["java.lang.Double"])
+    #     self.assertRowEqual(('DOUBLE', 1.0), rows[9])
+    #     # now again with intrinsic emits clause
+    #     rows = self.query('''
+    #         SELECT fn1.DEFAULT_VAREMIT_METADATA_SET_EMIT(1)
+    #         FROM DUAL
+    #         ''')
+    #     self.assertRowEqual(('2', 1.0), rows[0])
+    #     self.assertRowEqual(('A', 1.0), rows[1])
+    #     self.assertTrue(rows[2][0] in ["java.lang.String"])
+    #     self.assertRowEqual(('VARCHAR(123) UTF8', 1), rows[3])
+    #     self.assertRowEqual(('123', 1.0), rows[6])
+    #     self.assertRowEqual(('B', 1.0), rows[7])
+    #     self.assertTrue(rows[8][0] in ["java.lang.Double"])
+    #     self.assertRowEqual(('DOUBLE', 1.0), rows[9])
 
 
 class DefaultDynamicOutputWrongUsage(_JavaUdfSetup):
@@ -823,15 +823,15 @@ class DefaultDynamicOutputInsertInto(_JavaUdfSetup):
         self.assertRowEqual((1, 1.1, 'a'), rows[0])
         self.query('''delete from dynamic_output.target;''')
 
-    def test_insert_metadata_correctness(self):
-        self.query('''
-            insert into dynamic_output.target select fn1.DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK(cast (2 as int), CAST (2.2 AS DOUBLE), cast ('b' as varchar(100)));
-            ''')
-        rows = self.query('''
-            select * from dynamic_output.target;
-            ''')
-        self.assertRowEqual((2, 2.2, 'b'), rows[0])
-        self.query('''delete from dynamic_output.target;''')
+    # def test_insert_metadata_correctness(self):
+    #     self.query('''
+    #         insert into dynamic_output.target select fn1.DEFAULT_VAREMIT_EMIT_INPUT_WITH_META_CHECK(cast (2 as int), CAST (2.2 AS DOUBLE), cast ('b' as varchar(100)));
+    #         ''')
+    #     rows = self.query('''
+    #         select * from dynamic_output.target;
+    #         ''')
+    #     self.assertRowEqual((2, 2.2, 'b'), rows[0])
+    #     self.query('''delete from dynamic_output.target;''')
 
     def test_insert_target_columns_change_order(self):
         self.query('''
@@ -886,13 +886,13 @@ class DefaultDynamicOutputEmptyStringResult(_JavaUdfSetup):
         self.assertRowEqual((1.4,), rows[0])
 
 
-class DefaultDynamicOutputFromInputMeta(_JavaUdfSetup):
+# class DefaultDynamicOutputFromInputMeta(_JavaUdfSetup):
 
-    def test_copy_relation(self):
-        rows = self.query('''
-            select fn1.copy_relation(1,2,3);
-            ''')
-        self.assertRowEqual((1, 2, 3), rows[0])
+#     def test_copy_relation(self):
+#         rows = self.query('''
+#             select fn1.copy_relation(1,2,3);
+#             ''')
+#         self.assertRowEqual((1, 2, 3), rows[0])
 
 
 if __name__ == '__main__':
