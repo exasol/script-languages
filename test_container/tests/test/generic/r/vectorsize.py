@@ -52,6 +52,30 @@ class VectorSizeRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('0123456789',)], rows)
 
+    def test_vectorsize_100(self):
+        rows = self.query("""
+            SELECT LENGTH(gr_vec.vectorsize(100, 1.0))
+            FROM DUAL
+        """)
+        expected_len = len(''.join(str(i) for i in range(100)))
+        self.assertRowsEqual([(expected_len,)], rows)
+
+    def test_vectorsize_1000(self):
+        rows = self.query("""
+            SELECT LENGTH(gr_vec.vectorsize(1000, 1.0))
+            FROM DUAL
+        """)
+        expected_len = len(''.join(str(i) for i in range(1000)))
+        self.assertRowsEqual([(expected_len,)], rows)
+
+    def test_vectorsize_3000(self):
+        rows = self.query("""
+            SELECT LENGTH(gr_vec.vectorsize(3000, 1.0))
+            FROM DUAL
+        """)
+        expected_len = len(''.join(str(i) for i in range(3000)))
+        self.assertRowsEqual([(expected_len,)], rows)
+
     def test_vectorsize_set(self):
         rows = self.query("""
             SELECT COUNT(*)
@@ -64,6 +88,32 @@ class VectorSizeRTest(udf.TestCase):
             )
         """)
         self.assertRowsEqual([(6,)], rows)
+
+    def test_vectorsize_set_10_10(self):
+        rows = self.query("""
+            SELECT COUNT(*)
+            FROM (
+                SELECT gr_vec.vectorsize_set(10, 10, n)
+                FROM (
+                    SELECT gr_vec.basic_range(3)
+                    FROM DUAL
+                )
+            )
+        """)
+        self.assertRowsEqual([(30,)], rows)
+
+    def test_vectorsize_set_100_100(self):
+        rows = self.query("""
+            SELECT COUNT(*)
+            FROM (
+                SELECT gr_vec.vectorsize_set(100, 100, n)
+                FROM (
+                    SELECT gr_vec.basic_range(5)
+                    FROM DUAL
+                )
+            )
+        """)
+        self.assertRowsEqual([(500,)], rows)
 
 
 if __name__ == "__main__":
