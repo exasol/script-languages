@@ -113,35 +113,5 @@ class WordCount(_JavaUdfSetup):
         self.assertLessEqual(t.duration, 160)
 
 
-@skip('csv data for tables wiki_freq and wiki_names is currently not available')
-class FrequencyAnalysis(_JavaUdfSetup):
-    maxDiff = 1024 * 20
-
-    def setUp(self):
-        self._setup_fn1_schema()
-        self._create_character_udfs()
-
-    def compare(self, old, new):
-        self.log.info('compare new data with reference data')
-        n_old = len(list(old))
-        n_new = len(list(new))
-        self.log.info('old data has %d lines', n_old)
-        self.log.info('new data has %d lines', n_new)
-        if max(n_old, n_new) <= 50:
-            self.assertEqual(old, new)
-        else:
-            self.log.info('switching to compact comparison')
-            old_set = set(old)
-            new_set = set(new)
-            only_new = list(sorted(new_set.difference(old_set)))
-            only_old = list(sorted(old_set.difference(new_set)))
-            if max(len(only_new), len(only_old)) <= 200:
-                self.assertEqual(([], []), (only_old, only_new))
-            else:
-                self.log.info('diff is still too big')
-                self.fail("difference: +%d/-%d elements" %
-                          (len(only_new), len(only_old)))
-
-
 if __name__ == '__main__':
     udf.main()

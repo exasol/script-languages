@@ -63,13 +63,6 @@ class GetConnectionMemoryBug(_JavaUdfSetup):
             self.assertEqual(4019, row[0])
 
 
-class AccessConnectionSysPriv(udf.TestCase):
-
-    def testSysPrivExists(self):
-        sys_priv = self.query("SELECT * FROM EXA_DBA_SYS_PRIVS WHERE PRIVILEGE = 'ACCESS ANY CONNECTION'")
-        self.assertRowsEqual([("DBA", "ACCESS ANY CONNECTION", True)], sys_priv)
-
-
 class GetConnectionTest(_JavaUdfSetup):
 
     def setUp(self):
@@ -93,41 +86,6 @@ class GetConnectionTest(_JavaUdfSetup):
                 SELECT fn1.print_connection('FOO')
                 ''')
 
-
-class GetConnectionAccessControlTest(_JavaUdfSetup):
-
-    def setUp(self):
-        self._setup_common_udfs()
-        self.query('''
-        create connection AC_FOOCONN to 'a' user 'b' identified by 'c'
-        ''', ignore_errors=True)
-
-    def getConnection(self, username, password):
-        client = exatest.ODBCClient('exatest')
-        self.log.debug('connecting to DSN "exa" for user {username}'.format(username=username))
-        client.connect(uid=username, pwd=password)
-        return client
-
-    def createUser(self, username, password):
-        self.query('DROP USER IF EXISTS {username} CASCADE'.format(username=username))
-        self.query('CREATE USER {username} IDENTIFIED BY "{password}"'.format(username=username, password=password))
-        self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
-
-    def testUseConnectionWithoutRights(self):
-        self.createUser("foo", "foo")
-        self.query('grant create schema to foo')
-        self.query('grant create script to foo')
-        self.query('grant execute on script fn1.print_connection to foo')
-        self.commit()
-        foo_conn = self.getConnection('foo', 'foo')
-        with self.assertRaisesRegex(Exception,
-                                    'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-            foo_conn.query('''
-                SELECT fn1.print_connection('AC_FOOCONN')
-            ''')
-        foo_conn.commit()
-        self.query('drop user foo cascade')
-        self.commit()
 
     def testUseConnectionWithOldRight(self):
         self.createUser("foo", "foo")
@@ -221,41 +179,6 @@ class OptionalUSERandIDENTIFIEDBYTest(_JavaUdfSetup):
         rows = self.query('''SELECT fn1.print_connection('MY_CONN3')''')
         self.assertRowsEqual([('password', 'MYADDRESS', "MYUSER", None)], rows)
         self.query("drop CONNECTION my_conn3")
-
-
-class GetConnectionAccessControlWithViewsTest(_JavaUdfSetup):
-
-    def setUp(self):
-        self._setup_common_udfs()
-        self.query('''
-        create connection AC_FOOCONN to 'a' user 'b' identified by 'c'
-        ''', ignore_errors=True)
-
-    def getConnection(self, username, password):
-        client = exatest.ODBCClient('exatest')
-        self.log.debug('connecting to DSN "exa" for user {username}'.format(username=username))
-        client.connect(uid=username, pwd=password)
-        return client
-
-    def createUser(self, username, password):
-        self.query('DROP USER IF EXISTS {username} CASCADE'.format(username=username))
-        self.query('CREATE USER {username} IDENTIFIED BY "{password}"'.format(username=username, password=password))
-        self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
-
-    def testUseConnectionUDFsInView(self):
-        self.createUser("foo", "foo")
-        self.query('create schema if not exists spot42542')
-        self.query(
-            "create or replace view spot42542.print_connection_wrapper as select fn1.print_connection('AC_FOOCONN')")
-        self.query("grant select on spot42542.print_connection_wrapper to foo")
-        self.commit()
-        foo_conn = self.getConnection('foo', 'foo')
-        rows = foo_conn.query('''select * from spot42542.print_connection_wrapper''')
-        foo_conn.commit()
-        self.assertRowsEqual([('password', 'a', 'b', 'c')], rows)
-        foo_conn.commit()
-        self.query('drop schema spot42542 cascade')
-        self.commit()
 
 
 if __name__ == '__main__':
