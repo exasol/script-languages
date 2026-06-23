@@ -40,7 +40,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     ctx.emit(1.0);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "x double";
                 }
             }
@@ -63,7 +63,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     ctx.emit(1.0);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "x double";
                 }
             }
@@ -86,7 +86,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     ctx.emit(1.0);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "x double";
                 }
             }
@@ -109,7 +109,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     ctx.emit(1.0);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "x double";
                 }
             }
@@ -144,7 +144,7 @@ class _JavaUdfSetup(udf.TestCase):
                     }
                     ctx.emit(record);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "a varchar(100)";
                 }
             }
@@ -179,7 +179,7 @@ class _JavaUdfSetup(udf.TestCase):
                     }
                     ctx.emit(record);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "a varchar(100)";
                 }
             }
@@ -220,7 +220,7 @@ class _JavaUdfSetup(udf.TestCase):
                         ctx.emit(String.valueOf(exa.getOutputColumnLength(i)), 1.0);
                     }
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "a varchar(123), b double";
                 }
             }
@@ -243,7 +243,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     ctx.emit(1.0);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "a int";
                 }
             }
@@ -256,7 +256,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static long run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     return 1L;
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "x double";
                 }
             }
@@ -269,7 +269,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static long run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     return 1L;
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "a int";
                 }
             }
@@ -324,7 +324,7 @@ class _JavaUdfSetup(udf.TestCase):
                     }
                     ctx.emit(record);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "a int";
                 }
             }
@@ -385,7 +385,7 @@ class _JavaUdfSetup(udf.TestCase):
                     }
                     ctx.emit(record);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "a varchar(123), b double";
                 }
             }
@@ -398,7 +398,7 @@ class _JavaUdfSetup(udf.TestCase):
                 static void run(ExaMetadata exa, ExaIterator ctx) throws Exception {
                     ctx.emit(1.4);
                 }
-                static String getDefaultOutputColumns() {
+                static String getDefaultOutputColumns(ExaMetadata exa) {
                     return "";
                 }
             }
