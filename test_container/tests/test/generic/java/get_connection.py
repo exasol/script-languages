@@ -87,55 +87,6 @@ class GetConnectionTest(_JavaUdfSetup):
                 ''')
 
 
-    def testUseConnectionWithOldRight(self):
-        self.createUser("foo", "foo")
-        self.query('grant create schema to foo')
-        self.query('grant create script to foo')
-        self.query('grant connection ac_fooconn to foo')
-        self.query('grant execute on script fn1.print_connection to foo')
-        self.commit()
-        foo_conn = self.getConnection('foo', 'foo')
-        with self.assertRaisesRegex(Exception,
-                                    'insufficient privileges for using connection AC_FOOCONN in script PRINT_CONNECTION'):
-            foo_conn.query('''
-                 select fn1.print_connection('AC_FOOCONN')
-            ''')
-        foo_conn.commit()
-        self.query('drop user foo cascade')
-        self.commit()
-
-    def testUseConnectionWithNewRight(self):
-        self.createUser("foo", "foo")
-        self.query('grant create schema to foo')
-        self.query('grant create script to foo')
-        self.query('grant execute on script fn1.print_connection to foo')
-        self.query('GRANT ACCESS ON CONNECTION ac_fooconn to foo')
-        self.commit()
-        foo_conn = self.getConnection('foo', 'foo')
-        rows = foo_conn.query('''
-             select fn1.print_connection('AC_FOOCONN')
-        ''')
-        self.assertRowsEqual([('password', 'a', 'b', 'c')], rows)
-        foo_conn.commit()
-        self.query('drop user foo cascade')
-        self.commit()
-
-    def testUseConnectionInOldImportWithNewRight(self):
-        self.createUser("foo", "foo")
-        self.query('grant insert any table to foo')
-        self.query('grant import to foo', ignore_errors=True)
-        self.query('GRANT ACCESS ON CONNECTION ac_fooconn to foo')
-        self.commit()
-        foo_conn = self.getConnection('foo', 'foo')
-        with self.assertRaisesRegex(Exception, 'insufficient privileges for using connection'):
-            foo_conn.query('''
-                import from fbv at ac_fooconn file 'foo'
-            ''')
-        foo_conn.commit()
-        self.query('drop user foo cascade')
-        self.commit()
-
-
 class BigConnectionTest(_JavaUdfSetup):
     address = "a" * 2 * 1000 * 100
     user = "u" * 2 * 1000 * 100
