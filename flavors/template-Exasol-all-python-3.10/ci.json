@@ -6,7 +6,7 @@
       {
         "name": "python",
         "files": [],
-        "folders": ["python3/all/fast"],
+        "folders": ["python3/all/fast", "python3/python_apt"],
         "goal": "release",
         "generic_language_tests": []
       },
