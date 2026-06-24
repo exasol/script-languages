@@ -91,23 +91,9 @@ class ExaWrapper {
         try {
             Class<?> scriptClass = Class.forName(scriptClassName);
             if (args == null) {
-                // First try with ExaMetadata parameter, then fall back to no-parameter variant
-                Method method = null;
-                boolean withMetadata = true;
-                try {
-                    Class[] params = {ExaMetadata.class};
-                    method = scriptClass.getDeclaredMethod(fn, params);
-                } catch (NoSuchMethodException ex) {
-                    try {
-                        method = scriptClass.getDeclaredMethod(fn);
-                        withMetadata = false;
-                    } catch (NoSuchMethodException ex2) {
-                        throw new ExaUndefinedSingleCallException(fn);
-                    }
-                }
-                String resS = withMetadata
-                    ? String.valueOf(method.invoke(null, exaMetadata))
-                    : String.valueOf(method.invoke(null));
+                Class[] params = {ExaMetadata.class};
+                Method method = scriptClass.getDeclaredMethod(fn, params);
+                String resS = String.valueOf(method.invoke(null, exaMetadata));
                 return resS.getBytes("UTF-8");
             } else {
                 Class[] params = {ExaMetadata.class,argClass};
@@ -123,6 +109,8 @@ class ExaWrapper {
             }
         } catch (InvocationTargetException ex) {
               throw convertReflectiveExceptionToCause("F-UDF-CL-SL-JAVA-1068","Exception during singleCall "+fn,ex);
+        } catch (NoSuchMethodException ex) {
+           throw new ExaUndefinedSingleCallException(fn);
         }
     }
 
