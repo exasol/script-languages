@@ -6,7 +6,7 @@
       {
         "name": "python",
         "files": [],
-        "folders": ["python3/all", "python3/python_conda"],
+        "folders": ["python3/all", "python3/sys_path_check/check_conda"],
         "goal": "release",
         "generic_language_tests": []
       },
