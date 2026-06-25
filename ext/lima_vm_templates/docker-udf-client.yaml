@@ -53,6 +53,12 @@ provision:
    chmod +x /usr/bin/bazel
    pip install --break-system-packages numpy
    curl -L -o swig-2.0.4.tar.gz https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/swig-2.0.4.tar.gz && tar zxf swig-2.0.4.tar.gz && (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && rm -rf swig-2.0.4 swig-2.0.4.tar.gz
+   curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local/bin/poetry python3 -
+- mode: system
+  script: |
+   #!/bin/sh
+   echo 'export PATH="/usr/local/bin/poetry/bin:$PATH"' > /etc/profile.d/poetry.sh
+   chmod +x /etc/profile.d/poetry.sh
 probes:
 - script: |
     #!/bin/bash
