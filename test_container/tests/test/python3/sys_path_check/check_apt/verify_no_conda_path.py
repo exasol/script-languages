@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import json
+
 from exasol_python_test_framework import udf
 
 
@@ -22,6 +24,7 @@ class AptSysPathCheck(udf.TestCase):
                 check_apt_runtime_no_conda_paths()
                 RETURNS VARCHAR(10000) AS
 
+                import json
                 import sys
                 from pathlib import Path
 
@@ -32,26 +35,37 @@ class AptSysPathCheck(udf.TestCase):
                         return str(path_value)
 
                 def run(ctx):
-                    failures = []
-
                     executable = normalize(sys.executable)
-                    if "/opt/conda" in executable:
-                        failures.append(f"sys.executable contains /opt/conda: {executable}")
+                    normalized_sys_path_entries = [
+                        normalize(path_entry) for path_entry in sys.path if path_entry
+                    ]
 
-                    for path_entry in [entry for entry in sys.path if entry]:
-                        normalized_path = normalize(path_entry)
-                        if "/opt/conda" in normalized_path:
-                            failures.append(
-                                f"sys.path contains /opt/conda entry: {normalized_path}"
-                            )
-
-                    return "; ".join(failures) if failures else "OK"
+                    return json.dumps(
+                        {
+                            "sys_executable": executable,
+                            "sys_path_entries": normalized_sys_path_entries,
+                        }
+                    )
                 /
                 '''))
 
         rows = self.query("SELECT check_apt_runtime_no_conda_paths()")
-        result = rows[0][0]
-        self.assertEqual(result, "OK", f"Apt runtime conda-path check failed. Got: {result}")
+        result = json.loads(rows[0][0])
+
+        executable = result["sys_executable"]
+        sys_path_entries = result["sys_path_entries"]
+
+        self.assertNotIn(
+            "/opt/conda",
+            executable,
+            f"sys.executable shall not contain /opt/conda; But the value is {executable}",
+        )
+        for path_entry in sys_path_entries:
+            self.assertNotIn(
+                "/opt/conda",
+                path_entry,
+                f"sys.path entry shall not contain /opt/conda; But the value is {path_entry}",
+            )
 
 
 if __name__ == '__main__':

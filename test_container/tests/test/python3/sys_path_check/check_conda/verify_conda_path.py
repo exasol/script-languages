@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import json
+
 from exasol_python_test_framework import udf
 
 
@@ -23,6 +25,7 @@ class CondaSysPathCheck(udf.TestCase):
                 check_conda_runtime()
                 RETURNS VARCHAR(10000) AS
 
+                import json
                 import sys
                 from pathlib import Path
 
@@ -33,29 +36,33 @@ class CondaSysPathCheck(udf.TestCase):
                         return str(path_value)
 
                 def run(ctx):
-                    failures = []
-
                     executable = normalize(sys.executable)
-                    if not executable.startswith("/opt/conda"):
-                        failures.append(f"sys.executable outside /opt/conda: {executable}")
-
                     path_entries = [entry for entry in sys.path if entry]
-                    if not path_entries:
-                        failures.append("sys.path has no non-empty entries")
-                    else:
-                        first_path = normalize(path_entries[0])
-                        if not first_path.startswith("/opt/conda"):
-                            failures.append(
-                                f"sys.path first entry outside /opt/conda: {first_path}"
-                            )
+                    first_path = normalize(path_entries[0]) if path_entries else ""
 
-                    return "; ".join(failures) if failures else "OK"
+                    return json.dumps(
+                        {
+                            "sys_executable": executable,
+                            "first_sys_path_entry": first_path,
+                        }
+                    )
                 /
                 '''))
 
         rows = self.query("SELECT check_conda_runtime()")
-        result = rows[0][0]
-        self.assertEqual(result, "OK", f"Conda runtime check failed. Got: {result}")
+        result = json.loads(rows[0][0])
+
+        executable = result["sys_executable"]
+        first_path = result["first_sys_path_entry"]
+
+        self.assertTrue(
+            executable.startswith("/opt/conda"),
+            f"sys.executable shall start with /opt/conda; But the value is {executable}",
+        )
+        self.assertTrue(
+            first_path.startswith("/opt/conda"),
+            f"sys.path first entry shall start with /opt/conda; But the value is {first_path}",
+        )
 
 
 if __name__ == '__main__':
