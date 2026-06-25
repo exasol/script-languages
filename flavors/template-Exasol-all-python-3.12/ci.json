@@ -6,7 +6,7 @@
       {
         "name": "python",
         "files": [],
-        "folders": ["python3/all"],
+        "folders": ["python3/all", "python3/sys_path_check/check_apt"],
         "goal": "release",
         "generic_language_tests": []
       },
