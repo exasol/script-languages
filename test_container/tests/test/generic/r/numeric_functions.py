@@ -6,7 +6,17 @@ from exasol_python_test_framework import udf
 class NumericFunctionsRTest(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_num CASCADE", ignore_errors=True)
+        self.query("DROP SCHEMA gr_num_data CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_num")
+        self.query("CREATE SCHEMA gr_num_data")
+        self.query("CREATE TABLE gr_num_data.enginetable(int_index INT, float1 DOUBLE, float2 DOUBLE)")
+        self.query("""
+            INSERT INTO gr_num_data.enginetable VALUES
+            (1, 2.0, 3.0),
+            (2, 1.5, 2.0),
+            (3, NULL, 2.0),
+            (4, 4.0, NULL)
+        """)
 
         self.query(udf.fixindent("""
             CREATE OR REPLACE R SCALAR SCRIPT gr_num.add_two_doubles(x DOUBLE, y DOUBLE)
@@ -35,6 +45,17 @@ class NumericFunctionsRTest(udf.TestCase):
             RETURNS DOUBLE AS
             run <- function(ctx) {
                 pi
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SCALAR SCRIPT gr_num.double_mult(x DOUBLE, y DOUBLE)
+            RETURNS DOUBLE AS
+            run <- function(ctx) {
+                if (is.null(ctx$x) || is.null(ctx$y)) {
+                    return(NULL)
+                }
+                ctx$x * ctx$y
             };
         """))
 
@@ -133,6 +154,52 @@ class NumericFunctionsRTest(udf.TestCase):
             FROM DUAL
         """)
         self.assertEqual(5, len(rows))
+
+    def test_select(self):
+        rows = self.query("""
+            SELECT DISTINCT
+                gr_num.double_mult(float1, float2) = float1 * float2 AS a
+            FROM gr_num_data.enginetable
+            ORDER BY a
+        """)
+        self.assertRowsEqual([(True,), (None,)], rows)
+
+    def test_select_into(self):
+        self.query("CREATE TABLE gr_num_data.t(diff DOUBLE)")
+        self.query("""
+            INSERT INTO gr_num_data.t
+            SELECT gr_num.double_mult(float1, float2) - float1 * float2 AS a
+            FROM gr_num_data.enginetable
+        """)
+        rows = self.query("""
+            SELECT DISTINCT diff
+            FROM gr_num_data.t
+            WHERE diff != 0 AND diff IS NOT NULL
+        """)
+        self.assertEqual(0, len(rows))
+
+    def test_subselect(self):
+        rows = self.query("""
+            SELECT i, a
+            FROM (
+                SELECT int_index AS i,
+                    (gr_num.double_mult(float1, float2) - float1 * float2) AS a
+                FROM gr_num_data.enginetable
+            )
+            WHERE a IS NOT NULL
+            ORDER BY a
+            LIMIT 20
+        """)
+        for row in rows:
+            rows2 = self.query("""
+                SELECT
+                    float1,
+                    float2,
+                    gr_num.double_mult(float1, float2) - float1 * float2 AS a
+                FROM gr_num_data.enginetable
+                WHERE int_index = ?
+            """, row[0])
+            self.assertEqual(row[1], rows2[0][2])
 
 
 if __name__ == "__main__":

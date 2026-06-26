@@ -71,6 +71,46 @@ class UnicodeRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('a', 2), ('b', 1)], rows)
 
+    def _assert_unicode_char_roundtrip(self, codepoint):
+        rows = self.query("""
+            SELECT count, unicode(uchar) AS u
+            FROM (
+                SELECT gr_unicode.unicode_count(unicodechr(%d))
+                FROM DUAL
+            )
+        """ % codepoint)
+        self.assertRowsEqual([(1, codepoint)], rows)
+
+    def test_unicode(self):
+        for codepoint in (65, 255, 382, 65279, 63882, 65534, 66432, 173746, 1114111):
+            self._assert_unicode_char_roundtrip(codepoint)
+
+    def test_unicode_upper_is_subset_of_Unicode520_part2(self):
+        rows = self.query("""
+            SELECT codepoint
+            FROM (
+                SELECT 181 AS codepoint FROM DUAL
+                UNION ALL
+                SELECT 8126 AS codepoint FROM DUAL
+            ) cp
+            WHERE upper(unicodechr(codepoint)) != gr_unicode.unicode_upper(unicodechr(codepoint))
+                AND unicodechr(codepoint) != gr_unicode.unicode_upper(unicodechr(codepoint))
+            ORDER BY codepoint
+        """)
+        self.assertRowsEqual([], rows)
+
+    def test_unicode_upper_is_subset_of_Unicode520_part3(self):
+        rows = self.query("""
+            SELECT codepoint
+            FROM (
+                SELECT 1010 AS codepoint FROM DUAL
+            ) cp
+            WHERE upper(unicodechr(codepoint)) != gr_unicode.unicode_upper(unicodechr(codepoint))
+                AND unicodechr(codepoint) != gr_unicode.unicode_upper(unicodechr(codepoint))
+            ORDER BY codepoint
+        """)
+        self.assertRowsEqual([], rows)
+
 
 if __name__ == "__main__":
     udf.main()

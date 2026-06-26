@@ -132,8 +132,47 @@ class EmitRTest(udf.TestCase):
         rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
         self.assertRowsEqual([(32768, 0)], rows)
 
+    def test_dec_32bit_with_scale(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x DECIMAL(9,1))")
+        self.query("INSERT INTO gr_emit_data.dt VALUES 99999999.1")
+        rows = self.query("""
+            SELECT x = 99999999.1 FROM (
+                SELECT x, gr_emit.line_1i_1o(0)
+                FROM gr_emit_data.dt
+            )
+        """)
+        self.assertRowsEqual([(True,)], rows)
+
+    def test_dec_64bit_with_scale(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x DECIMAL(18,1))")
+        self.query("INSERT INTO gr_emit_data.dt VALUES 9999999999999999.1")
+        rows = self.query("""
+            SELECT x = 9999999999999999.1 FROM (
+                SELECT x, gr_emit.line_1i_1o(0)
+                FROM gr_emit_data.dt
+            )
+        """)
+        self.assertRowsEqual([(True,)], rows)
+
+    def test_dec_128bit_with_scale(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x DECIMAL(36,1))")
+        self.query("INSERT INTO gr_emit_data.dt VALUES 999999999999999999999999999999999.1")
+        rows = self.query("""
+            SELECT x = 999999999999999999999999999999999.1 FROM (
+                SELECT x, gr_emit.line_1i_1o(0)
+                FROM gr_emit_data.dt
+            )
+        """)
+        self.assertRowsEqual([(True,)], rows)
+
     def test_timestamp(self):
         self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x TIMESTAMP)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES '2010-01-01 23:33:33'")
+        rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
+        self.assertRowsEqual([(datetime.datetime(2010, 1, 1, 23, 33, 33), 0)], rows)
+
+    def test_timestamp_with_timezone(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x TIMESTAMP WITH LOCAL TIME ZONE)")
         self.query("INSERT INTO gr_emit_data.dt VALUES '2010-01-01 23:33:33'")
         rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
         self.assertRowsEqual([(datetime.datetime(2010, 1, 1, 23, 33, 33), 0)], rows)
@@ -156,6 +195,36 @@ class EmitRTest(udf.TestCase):
         rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
         self.assertRowsEqual([('5' * 300, 0)], rows)
 
+    def test_char_utf8(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x CHAR(2000) UTF8)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES REPEAT(5, 2000)")
+        rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
+        self.assertRowsEqual([('5' * 2000, 0)], rows)
+
+    def test_char_ascii(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x CHAR(2000) ASCII)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES REPEAT(5, 2000)")
+        rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
+        self.assertRowsEqual([('5' * 2000, 0)], rows)
+
+    def test_interval_ym(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x INTERVAL YEAR TO MONTH)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES '23-11'")
+        rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
+        self.assertRowsEqual([('+23-11', 0)], rows)
+
+    def test_interval_ds(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x INTERVAL DAY TO SECOND)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES '30 23:33:33'")
+        rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
+        self.assertRowsEqual([('+30 23:33:33.000', 0)], rows)
+
+    def test_geometry(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x GEOMETRY)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES 'POINT(1 1)'")
+        rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
+        self.assertRowsEqual([('POINT (1 1)', 0)], rows)
+
     def test_boolean_null(self):
         self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x BOOLEAN)")
         self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
@@ -173,6 +242,87 @@ class EmitRTest(udf.TestCase):
         self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
         rows = self.query("SELECT x IS NULL FROM gr_emit_data.dt")
         self.assertRowsEqual([(True,)], rows)
+
+    def test_int32_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x DECIMAL(9,0))")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0), NVL(x, 1)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0, 1), (None, 0, 1)], rows)
+
+    def test_int64_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x DECIMAL(18,0))")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0), NVL(x, 1)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0, 1), (None, 0, 1)], rows)
+
+    def test_int128_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x DECIMAL(36,0))")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0), NVL(x, 1)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0, 1), (None, 0, 1)], rows)
+
+    def test_timestamp_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x TIMESTAMP)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0), (None, 0)], rows)
+
+    def test_date_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x DATE)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0), (None, 0)], rows)
+
+    def test_intervalym_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x INTERVAL YEAR TO MONTH)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0), (None, 0)], rows)
+
+    def test_intervalds_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x INTERVAL DAY TO SECOND)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0), (None, 0)], rows)
+
+    def test_geo_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x GEOMETRY)")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0), (None, 0)], rows)
+
+    def test_char_null(self):
+        self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x CHAR(2000))")
+        self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
+        rows = self.query("""
+            SELECT x, gr_emit.dob_1i_1o(0)
+            FROM gr_emit_data.dt
+        """)
+        self.assertRowsEqual([(None, 0), (None, 0)], rows)
 
 
 if __name__ == "__main__":

@@ -417,6 +417,67 @@ class CombinationsRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(65,)], rows)
 
+    def test_scalar_emits_scalar_emits(self):
+        rows = self.query("""
+            SELECT gr_combi.scalar_emits(x * 10, y * 10)
+            FROM (
+                SELECT gr_combi.scalar_emits(x * 10, y * 10)
+                FROM gr_combi_data.small
+            )
+            ORDER BY x, y
+        """)
+        r = [(10.0, 100.0)]
+        r.extend([(float(i), float(i * i)) for i in range(20, 41)])
+        self.assertRowsEqual(r, rows)
+
+    def test_scalar_emits_set_returns_inline(self):
+        with self.assertRaisesRegex(Exception, 'encapsulated set function'):
+            self.query("""
+                SELECT
+                    gr_combi.scalar_emits(
+                        gr_combi.set_returns(x * 10, y * 10),
+                        gr_combi.set_returns(x * 10, y * 10)
+                    )
+                FROM gr_combi_data.small
+            """)
+
+    def test_set_returns_set_emits_scalar_emits(self):
+        self.test_3ary_set_returns_set_emits_scalar_emits()
+
+    def test_set_returns_scalar_emits_scalar_emits(self):
+        self.test_3ary_set_returns_scalar_emits_scalar_emits()
+
+    def test_set_returns_scalar_returns_scalar_emits(self):
+        self.test_3ary_set_returns_scalar_returns_scalar_emits()
+
+    @staticmethod
+    def _partial_sum(n, degree):
+        def basic_range(k, d):
+            if d == 0:
+                return list(range(k))
+            return sum([list(range(x)) for x in basic_range(k + 1, d - 1)], [])
+
+        return len(basic_range(n, degree))
+
+    def test_n_scalar_emits(self):
+        for n in range(10):
+            self.query(
+                'SELECT gr_combi.basic_range(n+1) FROM (\n' * n +
+                'SELECT gr_combi.basic_range(5) FROM DUAL\n' +
+                ')' * n
+            )
+            self.assertEqual(self._partial_sum(5, n), self.rowcount())
+
+    def test_set_returns_n_scalar_emits(self):
+        for n in range(10):
+            rows = self.query(
+                'SELECT max(n) FROM (' +
+                'SELECT gr_combi.basic_range(n+1) FROM (\n' * n +
+                'SELECT gr_combi.basic_range(5) FROM DUAL\n' +
+                ')' * (n + 1)
+            )
+            self.assertEqual(4, rows[0][0])
+
 
 if __name__ == "__main__":
     udf.main()

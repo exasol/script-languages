@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from exasol_python_test_framework import udf
+from exasol_python_test_framework import exatest
+from exasol_python_test_framework.udf import skip
 
 
 class ImportAliasRTest(udf.TestCase):
@@ -75,6 +77,8 @@ class ImportAliasRTest(udf.TestCase):
                 conn_str <- 'X'
                 conn_name <- 'Y'
                 foo <- 'Z'
+                types <- 'T'
+                names <- 'N'
                 if (!is.null(import_spec$connection)) {
                     c <- import_spec$connection
                     conn_str <- paste0(c$user, c$password, c$address, c$type)
@@ -85,13 +89,30 @@ class ImportAliasRTest(udf.TestCase):
                 if (!is.null(import_spec$parameters[['FOO']])) {
                     foo <- import_spec$parameters[['FOO']]
                 }
-                paste0("select 1, '", is_sub, '_', conn_name, '_', conn_str, '_', foo, "'")
+                if (!is.null(import_spec$subselect_column_types)) {
+                    for (i in seq_along(import_spec$subselect_column_types)) {
+                        types <- paste0(types, import_spec$subselect_column_types[[i]])
+                        names <- paste0(names, import_spec$subselect_column_names[[i]])
+                    }
+                }
+                paste0("select 1, '", is_sub, '_', conn_name, '_', conn_str, '_', foo, '_', types, '_', names, "'")
             }
             /
         """))
 
     def tearDown(self):
         self.query("DROP CONNECTION gr_impal_fooconn", ignore_errors=True)
+
+    def getConnection(self, username, password):
+        client = exatest.ODBCClient('exatest')
+        self.log.debug('connecting to DSN "exa" for user {username}'.format(username=username))
+        client.connect(uid=username, pwd=password)
+        return client
+
+    def createUser(self, username, password):
+        self.query('DROP USER IF EXISTS {username} CASCADE'.format(username=username))
+        self.query('CREATE USER {username} IDENTIFIED BY "{password}"'.format(username=username, password=password))
+        self.query('GRANT CREATE SESSION TO {username}'.format(username=username))
 
     def test_import_use_params(self):
         self.query("""
@@ -110,6 +131,11 @@ class ImportAliasRTest(udf.TestCase):
             )
         """)
         self.assertRowsEqual([('bar', 'foo')], rows)
+        rows = self.query("""
+            IMPORT FROM SCRIPT gr_impal.impal_use_param_foo_bar
+            WITH FOO='bar' BAR='foo'
+        """)
+        self.assertRowsEqual([('bar', 'foo')], rows)
 
     def test_import_use_is_subselect(self):
         self.query("""
@@ -124,6 +150,10 @@ class ImportAliasRTest(udf.TestCase):
             SELECT * FROM (IMPORT FROM SCRIPT gr_impal.impal_use_is_subselect)
         """)
         self.assertRowsEqual([('true',)], rows)
+        rows = self.query("""
+            IMPORT FROM SCRIPT gr_impal.impal_use_is_subselect
+        """)
+        self.assertRowsEqual([('true',)], rows)
 
     def test_import_use_connection_name(self):
         self.query("IMPORT INTO gr_impal_data.t FROM SCRIPT gr_impal.impal_use_connection_name AT GR_IMPAL_FOOCONN")
@@ -136,10 +166,33 @@ class ImportAliasRTest(udf.TestCase):
             SELECT * FROM (IMPORT FROM SCRIPT gr_impal.impal_use_connection_name AT GR_IMPAL_FOOCONN)
         """)
         self.assertRowsEqual([('GR_IMPAL_FOOCONN',)], rows)
+        rows = self.query("""
+            IMPORT FROM SCRIPT gr_impal.impal_use_connection_name AT GR_IMPAL_FOOCONN
+        """)
+        self.assertRowsEqual([('GR_IMPAL_FOOCONN',)], rows)
 
     def test_import_use_connection_fooconn(self):
         rows = self.query("IMPORT FROM SCRIPT gr_impal.impal_use_connection_fooconn")
         self.assertRowsEqual([('abc',)], rows)
+
+    def test_import_use_connection_fooconn_fails_for_user_foo(self):
+        self.createUser('foo', 'foo')
+        self.commit()
+        foo_conn = self.getConnection('foo', 'foo')
+        with self.assertRaisesRegex(Exception, 'insufficient privileges'):
+            foo_conn.query('IMPORT FROM SCRIPT gr_impal.impal_use_connection_fooconn')
+        self.query('DROP USER foo CASCADE')
+
+    @skip("IMPORT FROM SCRIPT cannot be used in view definitions")
+    def test_import_use_connection_fooconn_for_user_foo_and_view(self):
+        self.query('CREATE VIEW gr_impal_data.fooconn_import_view AS IMPORT FROM SCRIPT gr_impal.impal_use_connection_fooconn')
+        self.createUser('foo', 'foo')
+        self.commit()
+        foo_conn = self.getConnection('foo', 'foo')
+        rows = foo_conn.query('SELECT * FROM gr_impal_data.fooconn_import_view')
+        self.assertRowsEqual([('abc',)], rows)
+        self.query('DROP USER foo CASCADE')
+        self.query('DROP VIEW gr_impal_data.fooconn_import_view')
 
     def test_import_use_connection(self):
         self.query("""
@@ -158,6 +211,11 @@ class ImportAliasRTest(udf.TestCase):
             )
         """)
         self.assertRowsEqual([('hansmeiserapassword',)], rows)
+        rows = self.query("""
+            IMPORT FROM SCRIPT gr_impal.impal_use_connection
+            AT 'a' USER 'hans' IDENTIFIED BY 'meiser'
+        """)
+        self.assertRowsEqual([('hansmeiserapassword',)], rows)
 
     def test_import_use_all(self):
         self.query("""
@@ -165,9 +223,50 @@ class ImportAliasRTest(udf.TestCase):
             AT 'a' USER 'hans' IDENTIFIED BY 'meiser' WITH FOO='a value'
         """)
         rows = self.query("SELECT * FROM gr_impal_data.t2")
-        self.assertTrue(len(rows) == 1)
-        self.assertIn('a value', rows[0][1])
+        self.assertRowsEqual([('1', 'FALSE_Y_hansmeiserapassword_a value_T_N')], rows)
         self.query("TRUNCATE TABLE gr_impal_data.t2")
+
+    def test_import_use_all_subselect(self):
+        rows = self.query("""
+            SELECT * FROM (
+                IMPORT INTO (a DOUBLE, b VARCHAR(3000)) FROM SCRIPT gr_impal.impal_use_all
+                AT 'a' USER 'hans' IDENTIFIED BY 'meiser' WITH FOO='a value'
+            )
+        """)
+        self.assertRowsEqual([(1, 'TRUE_Y_hansmeiserapassword_a value_TDOUBLEVARCHAR(3000) UTF8_NAB')], rows)
+        rows = self.query("""
+            IMPORT INTO (a DOUBLE, b VARCHAR(3000)) FROM SCRIPT gr_impal.impal_use_all
+            AT 'a' USER 'hans' IDENTIFIED BY 'meiser' WITH FOO='a value'
+        """)
+        self.assertRowsEqual([(1, 'TRUE_Y_hansmeiserapassword_a value_TDOUBLEVARCHAR(3000) UTF8_NAB')], rows)
+
+    def test_prepared_statement_params(self):
+        with self.assertRaisesRegex(Exception, "syntax error, unexpected '\\?'"):
+            self.query("""
+                SELECT * FROM (
+                    IMPORT INTO (a DOUBLE, b VARCHAR(3000)) FROM SCRIPT gr_impal.impal_use_all
+                    AT 'a' USER 'hans' IDENTIFIED BY 'meiser' WITH FOO=?
+                )
+            """, 'bar')
+
+    def test_prepared_statement_conn(self):
+        with self.assertRaisesRegex(Exception, "syntax error, unexpected '\\?'"):
+            self.query("""
+                SELECT * FROM (
+                    IMPORT INTO (a DOUBLE, b VARCHAR(3000)) FROM SCRIPT gr_impal.impal_use_all
+                    AT ? USER ? IDENTIFIED BY ? WITH FOO='bar'
+                )
+            """, 'a', 'hans', 'meiser')
+
+    def test_import_in_lua_scripting(self):
+        self.query("""
+            CREATE OR REPLACE SCRIPT gr_impal_data.s1() AS
+                res = pquery [[ IMPORT INTO gr_impal_data.t FROM SCRIPT gr_impal.impal_use_is_subselect ]]
+        """)
+        self.query("EXECUTE SCRIPT gr_impal_data.s1()")
+        rows = self.query("SELECT * FROM gr_impal_data.t")
+        self.assertRowsEqual([('false',)], rows)
+        self.query("TRUNCATE TABLE gr_impal_data.t")
 
 
 if __name__ == "__main__":

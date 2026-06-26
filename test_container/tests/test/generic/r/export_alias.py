@@ -114,6 +114,34 @@ class ExportAliasRTest(udf.TestCase):
             /
         """))
 
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SCALAR SCRIPT gr_expal.expal_use_column_name_lower_case(...)
+            RETURNS INT AS
+            generate_sql_for_export_spec <- function(export_spec) {
+                n <- export_spec$source_column_names
+                if (length(n) >= 2 && n[[2]] == 'z') {
+                    paste0("select ", exa$meta$script_schema, ".expal_test_pass_fail('ok')")
+                } else {
+                    paste0("select ", exa$meta$script_schema, ".expal_test_pass_fail('failed')")
+                }
+            }
+            /
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SCALAR SCRIPT gr_expal.expal_use_column_selection(...)
+            RETURNS INT AS
+            generate_sql_for_export_spec <- function(export_spec) {
+                n <- export_spec$source_column_names
+                if (length(n) == 2 && toupper(n[[1]]) == 'A' && n[[2]] == 'z') {
+                    paste0("select ", exa$meta$script_schema, ".expal_test_pass_fail('ok')")
+                } else {
+                    paste0("select ", exa$meta$script_schema, ".expal_test_pass_fail('failed')")
+                }
+            }
+            /
+        """))
+
     def tearDown(self):
         self.query("DROP CONNECTION gr_expal_fooconn", ignore_errors=True)
 
@@ -169,6 +197,22 @@ class ExportAliasRTest(udf.TestCase):
         rows = self.query("""
             EXPORT (SELECT a AS col1, z AS col2 FROM gr_expal_data.t)
             INTO SCRIPT gr_expal.expal_use_column_names
+            WITH FOO='bar' BAR='foo'
+        """)
+        self.assertRowsEqual([(1,)], rows)
+
+    def test_export_use_column_name_lower_case(self):
+        rows = self.query("""
+            EXPORT gr_expal_data."tl"
+            INTO SCRIPT gr_expal.expal_use_column_name_lower_case
+            WITH FOO='bar' BAR='foo'
+        """)
+        self.assertRowsEqual([(1,)], rows)
+
+    def test_export_use_column_selection(self):
+        rows = self.query("""
+            EXPORT gr_expal_data."tl"(a, "z")
+            INTO SCRIPT gr_expal.expal_use_column_selection
             WITH FOO='bar' BAR='foo'
         """)
         self.assertRowsEqual([(1,)], rows)

@@ -7,6 +7,25 @@ class PerformanceRTest(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_perf CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_perf")
+        self.query("""
+            CREATE OR REPLACE TABLE gr_perf.wiki_names(text VARCHAR(350))
+        """)
+        self.query("""
+            INSERT INTO gr_perf.wiki_names VALUES
+                ('aba'),
+                ('cab'),
+                ('bbb'),
+                (NULL)
+        """)
+        self.query("""
+            CREATE OR REPLACE TABLE gr_perf.wiki_freq(w VARCHAR(1), c INTEGER)
+        """)
+        self.query("""
+            INSERT INTO gr_perf.wiki_freq VALUES
+                ('b', 5),
+                ('a', 3),
+                ('c', 1)
+        """)
 
         self.query(udf.fixindent("""
             CREATE OR REPLACE R SCALAR SCRIPT gr_perf.performance_map_words(w VARCHAR(1000))
@@ -35,6 +54,208 @@ class PerformanceRTest(udf.TestCase):
                 ctx$emit(word, cnt)
             };
         """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_counts_fast0(w VARCHAR(1000), c INTEGER)
+            EMITS (w VARCHAR(1000), c INTEGER) AS
+            run <- function(ctx) {
+                word <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(word, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_counts_fast7(w VARCHAR(1000), c INTEGER)
+            EMITS (w VARCHAR(1000), c INTEGER) AS
+            run <- function(ctx) {
+                word <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(word, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_counts_fast77(w VARCHAR(1000), c INTEGER)
+            EMITS (w VARCHAR(1000), c INTEGER) AS
+            run <- function(ctx) {
+                word <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(word, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_counts_fast777(w VARCHAR(1000), c INTEGER)
+            EMITS (w VARCHAR(1000), c INTEGER) AS
+            run <- function(ctx) {
+                word <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(word, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_counts_fast7777(w VARCHAR(1000), c INTEGER)
+            EMITS (w VARCHAR(1000), c INTEGER) AS
+            run <- function(ctx) {
+                word <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(word, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_counts_fast777777(w VARCHAR(1000), c INTEGER)
+            EMITS (w VARCHAR(1000), c INTEGER) AS
+            run <- function(ctx) {
+                word <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(word, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_counts_fast77777777(w VARCHAR(1000), c INTEGER)
+            EMITS (w VARCHAR(1000), c INTEGER) AS
+            run <- function(ctx) {
+                word <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(word, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SCALAR SCRIPT gr_perf.performance_map_characters(txt VARCHAR(2000))
+            EMITS (w VARCHAR(1), c INTEGER) AS
+            run <- function(ctx) {
+                if (is.null(ctx$txt)) {
+                    return(NULL)
+                }
+                chars <- unlist(strsplit(ctx$txt, ''))
+                for (ch in chars) {
+                    if (ch != '') {
+                        ctx$emit(ch, 1L)
+                    }
+                }
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SCALAR SCRIPT gr_perf.performance_map_characters_fast(txt VARCHAR(2000))
+            EMITS (w VARCHAR(1), c INTEGER) AS
+            run <- function(ctx) {
+                if (is.null(ctx$txt)) {
+                    return(NULL)
+                }
+                chars <- unlist(strsplit(ctx$txt, ''))
+                for (ch in chars) {
+                    if (ch != '') {
+                        ctx$emit(ch, 1L)
+                    }
+                }
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SCALAR SCRIPT gr_perf.performance_map_characters_fast0(txt VARCHAR(2000))
+            EMITS (w VARCHAR(1), c INTEGER) AS
+            run <- function(ctx) {
+                if (is.null(ctx$txt)) {
+                    return(NULL)
+                }
+                chars <- unlist(strsplit(ctx$txt, ''))
+                for (ch in chars) {
+                    if (ch != '') {
+                        ctx$emit(ch, 1L)
+                    }
+                }
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_characters(w VARCHAR(1), c INTEGER)
+            EMITS (w VARCHAR(1), c INTEGER) AS
+            run <- function(ctx) {
+                ch <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(ch, cnt)
+            };
+        """))
+
+        self.query(udf.fixindent("""
+            CREATE OR REPLACE R SET SCRIPT gr_perf.performance_reduce_characters_fast(w VARCHAR(1), c INTEGER)
+            EMITS (w VARCHAR(1), c INTEGER) AS
+            run <- function(ctx) {
+                ch <- ctx$w
+                cnt <- as.integer(ctx$c)
+                while (ctx$next_row()) {
+                    cnt <- cnt + as.integer(ctx$c)
+                }
+                ctx$emit(ch, cnt)
+            };
+        """))
+
+    def _assert_word_count_with_reducer(self, reducer_name):
+        rows = self.query("""
+            SELECT COUNT(*)
+            FROM (
+                SELECT %s(w, c)
+                FROM (
+                    SELECT gr_perf.performance_map_words(varchar02)
+                    FROM (
+                        VALUES
+                            ('hello hello exasol'),
+                            ('exasol rocks')
+                        AS t(varchar02)
+                    )
+                )
+                GROUP BY w
+            )
+        """ % reducer_name)
+        self.assertRowsEqual([(3,)], rows)
+
+    def _assert_frequency_analysis(self, mapper_name):
+        rows = self.query("""
+            SELECT gr_perf.performance_reduce_characters_fast(w, c)
+            FROM (
+                SELECT %s(text)
+                FROM gr_perf.wiki_names
+                WHERE text IS NOT NULL
+            )
+            GROUP BY w
+            ORDER BY c DESC, w ASC
+        """ % mapper_name)
+        reference = self.query("""
+            SELECT w, c
+            FROM gr_perf.wiki_freq
+            ORDER BY c DESC, w ASC
+        """)
+        self.assertRowsEqual(reference, rows)
 
     def test_word_count_query(self):
         rows = self.query("""
@@ -79,6 +300,54 @@ class PerformanceRTest(udf.TestCase):
         self.assertEqual(2, words.get('fox'))
         self.assertEqual(1, words.get('quick'))
         self.assertEqual(1, words.get('brown'))
+
+    def test_word_count(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts')
+
+    def test_word_count_fast0(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast0')
+
+    def test_word_count_fast7(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast7')
+
+    def test_word_count_fast77(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast77')
+
+    def test_word_count_fast777(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast777')
+
+    def test_word_count_fast7777(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast7777')
+
+    def test_word_count_fast777777(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast777777')
+
+    def test_word_count_fast77777777(self):
+        self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast77777777')
+
+    def test_frequency_analysis(self):
+        rows = self.query("""
+            SELECT gr_perf.performance_reduce_characters(w, c)
+            FROM (
+                SELECT gr_perf.performance_map_characters(text)
+                FROM gr_perf.wiki_names
+                WHERE text IS NOT NULL
+            )
+            GROUP BY w
+            ORDER BY c DESC, w ASC
+        """)
+        reference = self.query("""
+            SELECT w, c
+            FROM gr_perf.wiki_freq
+            ORDER BY c DESC, w ASC
+        """)
+        self.assertRowsEqual(reference, rows)
+
+    def test_frequency_analysis_fast(self):
+        self._assert_frequency_analysis('gr_perf.performance_map_characters_fast')
+
+    def test_frequency_analysis_fast0(self):
+        self._assert_frequency_analysis('gr_perf.performance_map_characters_fast0')
 
 
 if __name__ == "__main__":

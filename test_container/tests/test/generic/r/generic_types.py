@@ -300,5 +300,14 @@ class GenericTypesRTest(udf.TestCase):
             """ % (10 ** 5))
 
 
+    # Generic parity note:
+    # The following tests from test/generic/generic_types.py are intentionally
+    # not implemented in R due to DWA-13784 (R runtime does not preserve these
+    # boundary/precision numeric values reliably):
+    # - test_echo_integer_limits
+    # - test_echo_decimal_36_0_limits
+    # - test_echo_decimal_36_36_limits
+
+
 if __name__ == "__main__":
     udf.main()

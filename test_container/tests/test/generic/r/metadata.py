@@ -200,6 +200,28 @@ class MetadataRTest(udf.TestCase):
         """))
 
         self.query(udf.fixindent("""
+            CREATE OR REPLACE R SCALAR SCRIPT gr_meta.get_output_columns()
+            EMITS (column_id DOUBLE, column_name VARCHAR(200), column_type VARCHAR(100),
+                   column_sql_type VARCHAR(100), column_precision DOUBLE, column_scale DOUBLE,
+                   column_length DOUBLE) AS
+            run <- function(ctx) {
+                cols <- exa$meta$output_columns
+                for (i in seq_along(cols)) {
+                    col <- cols[[i]]
+                    ctx$emit(
+                        as.double(i),
+                        as.character(col$name),
+                        as.character(col$type),
+                        as.character(col$sql_type),
+                        as.double(if (is.null(col$precision)) 0 else col$precision),
+                        as.double(if (is.null(col$scale)) 0 else col$scale),
+                        as.double(if (is.null(col$length)) 0 else col$length)
+                    )
+                }
+            };
+        """))
+
+        self.query(udf.fixindent("""
             CREATE OR REPLACE R SCALAR SCRIPT gr_meta.get_precision_scale_length(n DECIMAL(6, 3), v VARCHAR(10))
             EMITS (precision1 DOUBLE, scale1 DOUBLE, length1 DOUBLE,
                    precision2 DOUBLE, scale2 DOUBLE, length2 DOUBLE) AS
@@ -342,6 +364,24 @@ class MetadataRTest(udf.TestCase):
     def test_output_column_count_emit(self):
         rows = self.query("SELECT gr_meta.get_output_column_count_emit() FROM DUAL")
         self.assertRowEqual((3, 3, 3), rows[0])
+
+    def test_output_columns(self):
+        rows = self.query("SELECT gr_meta.get_output_columns() FROM DUAL ORDER BY column_id")
+        self.assertEqual(7, len(rows))
+        self.assertEqual('COLUMN_ID', rows[0][1].upper())
+        self.assertEqual('COLUMN_NAME', rows[1][1].upper())
+        self.assertEqual('COLUMN_TYPE', rows[2][1].upper())
+        self.assertEqual('COLUMN_SQL_TYPE', rows[3][1].upper())
+        self.assertEqual('COLUMN_PRECISION', rows[4][1].upper())
+        self.assertEqual('COLUMN_SCALE', rows[5][1].upper())
+        self.assertEqual('COLUMN_LENGTH', rows[6][1].upper())
+        self.assertEqual('DOUBLE', rows[0][3].upper())
+        self.assertTrue(rows[1][3].upper().startswith('VARCHAR(200)'))
+        self.assertTrue(rows[2][3].upper().startswith('VARCHAR(100)'))
+        self.assertTrue(rows[3][3].upper().startswith('VARCHAR(100)'))
+        self.assertEqual('DOUBLE', rows[4][3].upper())
+        self.assertEqual('DOUBLE', rows[5][3].upper())
+        self.assertEqual('DOUBLE', rows[6][3].upper())
 
     def test_precision_scale_length(self):
         rows = self.query("SELECT gr_meta.get_precision_scale_length(1.234, 'abc') FROM DUAL")

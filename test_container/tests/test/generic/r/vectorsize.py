@@ -76,6 +76,14 @@ class VectorSizeRTest(udf.TestCase):
         expected_len = len(''.join(str(i) for i in range(3000)))
         self.assertRowsEqual([(expected_len,)], rows)
 
+    def test_vectorsize_5000(self):
+        rows = self.query("""
+            SELECT LENGTH(gr_vec.vectorsize(5000, 1.0))
+            FROM DUAL
+        """)
+        expected_len = len(''.join(str(i) for i in range(5000)))
+        self.assertRowsEqual([(expected_len,)], rows)
+
     def test_vectorsize_set(self):
         rows = self.query("""
             SELECT COUNT(*)
