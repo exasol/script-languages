@@ -132,6 +132,7 @@ class NumericFunctionsRTest(udf.TestCase):
         """)
         self.assertRowsEqual([tuple([True] * 5)], rows)
 
+    # R-only compact smoke assertion for add-two and add-three helpers.
     def test_add_functions(self):
         rows = self.query("""
             SELECT
@@ -141,6 +142,7 @@ class NumericFunctionsRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(True, True)], rows)
 
+    # R-only focused smoke test for digit split output ordering.
     def test_digit_split(self):
         rows = self.query("""
             SELECT gr_num.split_integer_into_digits(123)

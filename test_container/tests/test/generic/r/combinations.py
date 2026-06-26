@@ -378,6 +378,7 @@ class CombinationsRTest(udf.TestCase):
 
     # --- 3-ary ---
 
+    # R-only explicit 3-ary chaining case retained as regression coverage.
     def test_3ary_set_returns_set_emits_scalar_emits(self):
         rows = self.query("""
             SELECT gr_combi.basic_sum(s)
@@ -391,6 +392,7 @@ class CombinationsRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(45,)], rows)
 
+    # R-only explicit 3-ary scalar-emits chain retained as regression coverage.
     def test_3ary_set_returns_scalar_emits_scalar_emits(self):
         rows = self.query("""
             SELECT gr_combi.basic_sum(x)
@@ -404,6 +406,7 @@ class CombinationsRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(165,)], rows)
 
+    # R-only explicit 3-ary scalar-return chain retained as regression coverage.
     def test_3ary_set_returns_scalar_returns_scalar_emits(self):
         rows = self.query("""
             SELECT gr_combi.basic_sum(x)

@@ -140,6 +140,7 @@ class GenericTypesRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(True, True, True)], rows)
 
+    # R-only smoke test kept for a minimal integer echo path.
     def test_echo_integer(self):
         rows = self.query("""
             SELECT
@@ -172,6 +173,7 @@ class GenericTypesRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(True, True, True, True)], rows)
 
+    # R-only mixed-type smoke test for double and varchar together.
     def test_echo_double_and_varchar(self):
         rows = self.query("""
             SELECT

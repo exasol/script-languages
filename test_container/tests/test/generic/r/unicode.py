@@ -56,6 +56,7 @@ class UnicodeRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(3,)], rows)
 
+    # R-only lightweight umlaut upper-case smoke test.
     def test_unicode_upper(self):
         rows = self.query("""
             SELECT gr_unicode.unicode_upper('äöü')

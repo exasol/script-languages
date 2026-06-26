@@ -235,6 +235,7 @@ class BasicRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(None,)], rows)
 
+    # R-only compatibility alias kept for historical naming in downstream runs.
     def test_set_with_empty_input(self):
         rows = self.query("""
             SELECT gr_basic.set_returns_has_empty_input(c)

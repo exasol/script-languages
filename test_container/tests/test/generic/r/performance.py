@@ -257,6 +257,7 @@ class PerformanceRTest(udf.TestCase):
         """)
         self.assertRowsEqual(reference, rows)
 
+    # R-only small deterministic smoke query complementing heavy word-count tests.
     def test_word_count_query(self):
         rows = self.query("""
             SELECT COUNT(*)

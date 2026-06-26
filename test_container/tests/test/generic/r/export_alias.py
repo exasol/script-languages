@@ -185,6 +185,7 @@ class ExportAliasRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(1,)], rows)
 
+    # R-only relation-export smoke case retained next to query export coverage.
     def test_export_use_column_names(self):
         rows = self.query("""
             EXPORT gr_expal_data.t

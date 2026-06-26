@@ -255,6 +255,7 @@ class DynamicOutputRTest(udf.TestCase):
         for i in range(len(expected_rows)):
             self.assertRowEqual(expected_rows[i][0:2], rows[i][0:2])
 
+    # R-only compatibility name for default dynamic output smoke behavior.
     def test_default_dynamic_output_columns(self):
         rows = self.query("""
             SELECT gr_dynout.varemit_simple_set(1.2)
@@ -262,6 +263,7 @@ class DynamicOutputRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(1.0,)], rows)
 
+    # R-only compatibility name for copying input relation in dynamic output.
     def test_copy_input_relation(self):
         rows = self.query("""
             SELECT gr_dynout.varemit_emit_input(x, y)

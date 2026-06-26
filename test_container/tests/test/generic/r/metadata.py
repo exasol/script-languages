@@ -294,10 +294,12 @@ class MetadataRTest(udf.TestCase):
         """)
         self.assertRowEqual(('GR_META',), rows[0])
 
+    # R-only compatibility wrapper for scalar input-column-count coverage.
     def test_input_column_count(self):
         rows = self.query("SELECT gr_meta.get_input_column_count_scalar(1.0, 'x') FROM DUAL")
         self.assertRowsEqual([(2.0,)], rows)
 
+    # R-only compatibility wrapper for emitted output-column-count coverage.
     def test_output_column_count(self):
         rows = self.query("SELECT gr_meta.get_output_column_count_emit() FROM DUAL")
         self.assertRowsEqual([(3.0, 3.0, 3.0)], rows)

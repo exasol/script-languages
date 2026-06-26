@@ -164,6 +164,7 @@ class DynamicInputRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('abc',), ('99',)], rows)
 
+    # R-only helper keeps table-input coverage separate; generic alias calls this.
     def test_basic_scalar_emit_table(self):
         rows = self.query("""
             SELECT gr_dynin.basic_scalar_emit(x, y)

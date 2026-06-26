@@ -52,6 +52,7 @@ class VectorSizeRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('0123456789',)], rows)
 
+    # R-only intermediate vectorsize checkpoint between tiny and large limits.
     def test_vectorsize_100(self):
         rows = self.query("""
             SELECT LENGTH(gr_vec.vectorsize(100, 1.0))
@@ -60,6 +61,7 @@ class VectorSizeRTest(udf.TestCase):
         expected_len = len(''.join(str(i) for i in range(100)))
         self.assertRowsEqual([(expected_len,)], rows)
 
+    # R-only intermediate vectorsize checkpoint used for regression isolation.
     def test_vectorsize_1000(self):
         rows = self.query("""
             SELECT LENGTH(gr_vec.vectorsize(1000, 1.0))
@@ -68,6 +70,7 @@ class VectorSizeRTest(udf.TestCase):
         expected_len = len(''.join(str(i) for i in range(1000)))
         self.assertRowsEqual([(expected_len,)], rows)
 
+    # R-only intermediate vectorsize checkpoint used for regression isolation.
     def test_vectorsize_3000(self):
         rows = self.query("""
             SELECT LENGTH(gr_vec.vectorsize(3000, 1.0))
@@ -96,6 +99,7 @@ class VectorSizeRTest(udf.TestCase):
             )
         """)
         self.assertRowsEqual([(6,)], rows)
+            # R-only intermediate vectorsize checkpoint before max-size variant.
 
     def test_vectorsize_set_10_10(self):
         rows = self.query("""
@@ -110,6 +114,7 @@ class VectorSizeRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(30,)], rows)
 
+    # R-only high-load set variant to cover large set-vector combinations.
     def test_vectorsize_set_100_100(self):
         rows = self.query("""
             SELECT COUNT(*)
