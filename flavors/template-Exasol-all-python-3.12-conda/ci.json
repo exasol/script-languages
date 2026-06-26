@@ -6,7 +6,7 @@
       {
         "name": "python",
         "files": [],
-        "folders": ["python3/all"],
+        "folders": ["python3/all", "python3/sys_path_check/check_conda"],
         "goal": "release",
         "generic_language_tests": []
       },
@@ -32,9 +32,9 @@
         "generic_language_tests": []
       },
       {
-        "name": "linker_namespace",
+        "name": "linker_interpreter_sanity",
         "files": [],
-        "folders": ["linker_namespace_sanity"],
+        "folders": ["linker_namespace_sanity", "python3/sys_path_check/check_conda"],
         "goal": "base_test_build_run",
         "generic_language_tests": []
       },
