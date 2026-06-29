@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+import sys
+
 from exasol_python_test_framework import udf
+from exasol_python_test_framework.udf import SkipTest, useData
 
 
-class VectorSizeRTest(udf.TestCase):
+class Vectorsize(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_vec CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_vec")
@@ -45,40 +48,6 @@ class VectorSizeRTest(udf.TestCase):
             };
         """))
 
-    def test_vectorsize(self):
-        rows = self.query("""
-            SELECT gr_vec.vectorsize(10, 1.0)
-            FROM DUAL
-        """)
-        self.assertRowsEqual([('0123456789',)], rows)
-
-    # R-only intermediate vectorsize checkpoint between tiny and large limits.
-    def test_vectorsize_100(self):
-        rows = self.query("""
-            SELECT LENGTH(gr_vec.vectorsize(100, 1.0))
-            FROM DUAL
-        """)
-        expected_len = len(''.join(str(i) for i in range(100)))
-        self.assertRowsEqual([(expected_len,)], rows)
-
-    # R-only intermediate vectorsize checkpoint used for regression isolation.
-    def test_vectorsize_1000(self):
-        rows = self.query("""
-            SELECT LENGTH(gr_vec.vectorsize(1000, 1.0))
-            FROM DUAL
-        """)
-        expected_len = len(''.join(str(i) for i in range(1000)))
-        self.assertRowsEqual([(expected_len,)], rows)
-
-    # R-only intermediate vectorsize checkpoint used for regression isolation.
-    def test_vectorsize_3000(self):
-        rows = self.query("""
-            SELECT LENGTH(gr_vec.vectorsize(3000, 1.0))
-            FROM DUAL
-        """)
-        expected_len = len(''.join(str(i) for i in range(3000)))
-        self.assertRowsEqual([(expected_len,)], rows)
-
     def test_vectorsize_5000(self):
         rows = self.query("""
             SELECT LENGTH(gr_vec.vectorsize(5000, 1.0))
@@ -87,46 +56,66 @@ class VectorSizeRTest(udf.TestCase):
         expected_len = len(''.join(str(i) for i in range(5000)))
         self.assertRowsEqual([(expected_len,)], rows)
 
-    def test_vectorsize_set(self):
-        rows = self.query("""
-            SELECT COUNT(*)
-            FROM (
-                SELECT gr_vec.vectorsize_set(5, 3, n)
-                FROM (
-                    SELECT gr_vec.basic_range(2)
-                    FROM DUAL
-                )
-            )
-        """)
-        self.assertRowsEqual([(6,)], rows)
+    data = [
+        (10,),
+        (30,),
+        (100,),
+        (300,),
+        (1000,),
+        (3000,),
+        (10000,),
+        (30000,),
+        (100000,),
+        (200000,),
+        (351850,),
+    ]
 
-    # R-only intermediate vectorsize checkpoint before max-size variant.
-    def test_vectorsize_set_10_10(self):
+    @useData(data)
+    def test_vectorsize(self, size):
+        limits = {
+            'lua': 100000,
+            'python3': 8000,
+            'r': 3000,
+            'java': 3000,
+        }
+        if size > limits.get('r', sys.maxsize):
+            raise SkipTest('test is to slow')
         rows = self.query("""
-            SELECT COUNT(*)
-            FROM (
-                SELECT gr_vec.vectorsize_set(10, 10, n)
-                FROM (
-                    SELECT gr_vec.basic_range(3)
-                    FROM DUAL
-                )
-            )
-        """)
-        self.assertRowsEqual([(30,)], rows)
+            SELECT LENGTH(gr_vec.vectorsize(%d, 1.0))
+            FROM DUAL
+        """ % size)
+        expected_len = len(''.join(str(i) for i in range(size)))
+        self.assertRowsEqual([(expected_len,)], rows)
 
-    # R-only high-load set variant to cover large set-vector combinations.
-    def test_vectorsize_set_100_100(self):
+    data = [
+        (10, 10, 10),
+        (100, 100, 100),
+        (1000, 100, 100),
+        (10000, 100, 100),
+        (100000, 100, 100),
+        (351850, 100, 100),
+        (100, 10, 100000),
+        (100, 100, 10000),
+        (100, 1000, 1000),
+        (100, 10000, 100),
+        (100, 100000, 10),
+    ]
+
+    @useData(data)
+    def test_vectorsize_set(self, a, b, c):
+        if max(a, b, c) > 3000:
+            raise SkipTest('test is to slow')
         rows = self.query("""
             SELECT COUNT(*)
             FROM (
-                SELECT gr_vec.vectorsize_set(100, 100, n)
+                SELECT gr_vec.vectorsize_set(%d, %d, n)
                 FROM (
-                    SELECT gr_vec.basic_range(5)
+                    SELECT gr_vec.basic_range(%d)
                     FROM DUAL
                 )
             )
-        """)
-        self.assertRowsEqual([(500,)], rows)
+        """ % (a, b, c))
+        self.assertRowsEqual([(b * c,)], rows)
 
 
 if __name__ == "__main__":
