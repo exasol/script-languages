@@ -22,7 +22,7 @@ class DynamicOutputRTest(udf.TestCase):
                 ctx$emit(1)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'x DOUBLE'
             }
             /
@@ -39,7 +39,7 @@ class DynamicOutputRTest(udf.TestCase):
                 do.call(ctx$emit, out)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'a VARCHAR(2000), b DOUBLE'
             }
             /
@@ -52,7 +52,7 @@ class DynamicOutputRTest(udf.TestCase):
                 ctx$emit(1)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'x DOUBLE'
             }
             /
@@ -65,7 +65,7 @@ class DynamicOutputRTest(udf.TestCase):
                 ctx$emit(1)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'x DOUBLE'
             }
             /
@@ -78,7 +78,7 @@ class DynamicOutputRTest(udf.TestCase):
                 ctx$emit(1)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'x DOUBLE'
             }
             /
@@ -91,7 +91,7 @@ class DynamicOutputRTest(udf.TestCase):
                 ctx$emit(1)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'x DOUBLE'
             }
             /
@@ -105,7 +105,7 @@ class DynamicOutputRTest(udf.TestCase):
                 do.call(ctx$emit, args)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'a VARCHAR(100)'
             }
             /
@@ -119,7 +119,7 @@ class DynamicOutputRTest(udf.TestCase):
                 do.call(ctx$emit, args)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'a VARCHAR(100)'
             }
             /
@@ -139,7 +139,7 @@ class DynamicOutputRTest(udf.TestCase):
                 1L
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'x DOUBLE'
             }
             /
@@ -152,7 +152,7 @@ class DynamicOutputRTest(udf.TestCase):
                 ctx$emit(1.4)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 ''
             }
             /
@@ -169,7 +169,7 @@ class DynamicOutputRTest(udf.TestCase):
                 do.call(ctx$emit, out)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'a DOUBLE, b DOUBLE, c DOUBLE'
             }
             /
@@ -192,7 +192,7 @@ class DynamicOutputRTest(udf.TestCase):
                 }
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'a VARCHAR(123), b DOUBLE'
             }
             /
@@ -209,7 +209,7 @@ class DynamicOutputRTest(udf.TestCase):
                 do.call(ctx$emit, out)
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 'a INT, b DOUBLE, c VARCHAR(100)'
             }
             /
@@ -223,7 +223,7 @@ class DynamicOutputRTest(udf.TestCase):
                 ctx$emit(as.double(ctx$a), as.double(ctx$a), as.double(ctx$a), as.double(ctx$a))
             }
 
-            default_output_columns <- function() {
+            defaultOutputColumns <- function() {
                 c <- exa$get_connection('SPOT4245')
                 paste0(toupper(c$type), ' DOUBLE, ', toupper(c$address), ' DOUBLE, ', toupper(c$user), ' DOUBLE, ', toupper(c$password), ' DOUBLE')
             }

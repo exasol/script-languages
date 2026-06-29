@@ -94,7 +94,7 @@ class DynamicInputRTest(udf.TestCase):
         """))
 
         self.query(udf.fixindent("""
-            CREATE OR REPLACE R SET SCRIPT gr_dynin.empty_set_returns()
+            CREATE OR REPLACE R SET SCRIPT gr_dynin.empty_set_returns(...)
             RETURNS VARCHAR(2000) AS
             run <- function(ctx) {
                 'not_used'
@@ -102,7 +102,7 @@ class DynamicInputRTest(udf.TestCase):
         """))
 
         self.query(udf.fixindent("""
-            CREATE OR REPLACE R SET SCRIPT gr_dynin.empty_set_emits()
+            CREATE OR REPLACE R SET SCRIPT gr_dynin.empty_set_emits(...)
             EMITS (v VARCHAR(2000)) AS
             run <- function(ctx) {
                 ctx$emit('not_used')

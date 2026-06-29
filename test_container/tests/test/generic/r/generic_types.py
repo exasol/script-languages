@@ -58,8 +58,9 @@ class GenericTypesRTest(udf.TestCase):
             CREATE OR REPLACE R SCALAR SCRIPT gr_types.echo_char10(x CHAR(10))
             RETURNS CHAR(10) AS
             run <- function(ctx) {
-                if (is.null(ctx$x)) return(NULL)
-                if (nchar(ctx$x) != 10L) return(NULL)
+                if (is.null(ctx$x) || is.na(ctx$x)) return(NULL)
+                len <- nchar(ctx$x, type = 'chars', allowNA = TRUE, keepNA = TRUE)
+                if (is.na(len) || len != 10L) return(NULL)
                 ctx$x
             };
         """))
