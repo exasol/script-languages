@@ -99,8 +99,8 @@ class VectorSizeRTest(udf.TestCase):
             )
         """)
         self.assertRowsEqual([(6,)], rows)
-            # R-only intermediate vectorsize checkpoint before max-size variant.
 
+    # R-only intermediate vectorsize checkpoint before max-size variant.
     def test_vectorsize_set_10_10(self):
         rows = self.query("""
             SELECT COUNT(*)

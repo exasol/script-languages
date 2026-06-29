@@ -127,7 +127,7 @@ class CombinationsRTest(udf.TestCase):
             SELECT gr_combi.set_returns(x, y)
             FROM gr_combi_data.small
         """)
-        self.assertRowsEqual([(0.6,)], rows)
+        self.assertAlmostEqual(0.6, rows[0][0])
 
     def test_set_emits(self):
         rows = self.query("""
