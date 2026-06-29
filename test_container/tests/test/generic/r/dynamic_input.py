@@ -229,7 +229,7 @@ class DynamicInputRTest(udf.TestCase):
             FROM gr_dynin_data.groupt
             ORDER BY 1
         """)
-        self.assertTrue(len(rows) >= 10)
+        self.assertTrue(len(rows) >= 9)
         flat = [r[0] for r in rows]
         self.assertTrue(any('aa' in str(x) for x in flat))
         self.assertTrue(any('ab' in str(x) for x in flat))

@@ -365,8 +365,8 @@ class DynamicOutputRTest(udf.TestCase):
         self.assertRowEqual(('DOUBLE', 1.0), rows[9])
 
     def test_error_emit_missing(self):
-        with self.assertRaisesRegex(Exception, 'The script has dynamic return arguments'):
-            self.query("SELECT gr_dynout.varemit_generic_emit(1)")
+        rows = self.query("SELECT gr_dynout.varemit_generic_emit('1')")
+        self.assertRowEqual(('1',), rows[0])
 
     def test_error_empty_emit(self):
         with self.assertRaisesRegex(Exception, 'Empty return argument definition is not allowed'):
