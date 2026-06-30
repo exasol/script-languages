@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class PathologicalFunctionsRTest(udf.TestCase):
+class _PathologicalFunctionsBase(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_path CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_path")
@@ -17,6 +17,7 @@ class PathologicalFunctionsRTest(udf.TestCase):
             };
         """))
 
+class Test(_PathologicalFunctionsBase):
     def test_query_timeout(self):
         self.query("ALTER SESSION SET QUERY_TIMEOUT = 10")
         try:

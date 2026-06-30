@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class ExportAliasRTest(udf.TestCase):
+class ExportAliasTest(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_expal CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_expal_data CASCADE", ignore_errors=True)
@@ -187,14 +187,6 @@ class ExportAliasRTest(udf.TestCase):
             WITH FOO='bar' BAR='foo' REPLACE CREATED BY 'create table t(a int, z varchar(100))'
         """)
 
-    # R-only relation-export smoke case retained next to query export coverage.
-    def test_export_use_column_names(self):
-        self._assert_export_ok("""
-            EXPORT gr_expal_data.t
-            INTO SCRIPT gr_expal.expal_use_column_names
-            WITH FOO='bar' BAR='foo'
-        """)
-
     def test_export_use_query(self):
         self._assert_export_ok("""
             EXPORT (SELECT a AS col1, z AS col2 FROM gr_expal_data.t)
@@ -213,6 +205,17 @@ class ExportAliasRTest(udf.TestCase):
         self._assert_export_ok("""
             EXPORT gr_expal_data."tl"(a, "z")
             INTO SCRIPT gr_expal.expal_use_column_selection
+            WITH FOO='bar' BAR='foo'
+        """)
+
+class ExportAliasROnly(ExportAliasTest):
+    """R-only tests without a generic counterpart."""
+
+    # R-only relation-export smoke case retained next to query export coverage.
+    def test_export_use_column_names(self):
+        self._assert_export_ok("""
+            EXPORT gr_expal_data.t
+            INTO SCRIPT gr_expal.expal_use_column_names
             WITH FOO='bar' BAR='foo'
         """)
 

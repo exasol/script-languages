@@ -7,7 +7,7 @@ from exasol_python_test_framework import udf
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 
-class UnicodeRTest(udf.TestCase):
+class Test(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_unicode CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_unicode")
@@ -49,12 +49,8 @@ class UnicodeRTest(udf.TestCase):
             };
         """))
 
-    def test_unicode_len(self):
-        rows = self.query("""
-            SELECT gr_unicode.unicode_len('ÄÖÜ')
-            FROM DUAL
-        """)
-        self.assertRowsEqual([(3,)], rows)
+class UnicodeROnly(Test):
+    """R-only tests without a generic counterpart."""
 
     # R-only lightweight umlaut upper-case smoke test.
     def test_unicode_upper(self):
@@ -64,6 +60,7 @@ class UnicodeRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('ÄÖÜ',)], rows)
 
+class Unicode(Test):
     def test_unicode_count(self):
         rows = self.query("""
             SELECT gr_unicode.unicode_count('aab')
@@ -85,6 +82,14 @@ class UnicodeRTest(udf.TestCase):
     def test_unicode(self):
         for codepoint in (65, 255, 382, 65279, 63882, 65534, 66432, 173746, 1114111):
             self._assert_unicode_char_roundtrip(codepoint)
+
+class UnicodeData(Test):
+    def test_unicode_len(self):
+        rows = self.query("""
+            SELECT gr_unicode.unicode_len('ÄÖÜ')
+            FROM DUAL
+        """)
+        self.assertRowsEqual([(3,)], rows)
 
     def test_unicode_upper_is_subset_of_Unicode520_part2(self):
         rows = self.query("""

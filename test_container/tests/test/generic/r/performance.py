@@ -4,7 +4,7 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import skip
 
 
-class WordCount(udf.TestCase):
+class _PerformanceBase(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_perf CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_perf")
@@ -240,6 +240,9 @@ class WordCount(udf.TestCase):
         """ % reducer_name)
         self.assertRowsEqual([(3,)], rows)
 
+class PerformanceROnly(_PerformanceBase):
+    """R-only tests without a generic counterpart."""
+
     # R-only small deterministic smoke query complementing heavy word-count tests.
     def test_word_count_query(self):
         rows = self.query("""
@@ -255,6 +258,7 @@ class WordCount(udf.TestCase):
         """)
         self.assertRowsEqual([(2,)], rows)
 
+class WordCount(_PerformanceBase):
     def test_word_unicode_count(self):
         rows = self.query("""
             SELECT COUNT(*)
@@ -268,22 +272,6 @@ class WordCount(udf.TestCase):
             )
         """)
         self.assertRowsEqual([(2,)], rows)
-
-    def test_frequency_analysis_light(self):
-        rows = self.query("""
-            SELECT gr_perf.performance_reduce_counts(w, c)
-            FROM (
-                SELECT gr_perf.performance_map_words('the quick brown fox the fox')
-                FROM DUAL
-            )
-            GROUP BY w
-            ORDER BY c DESC
-        """)
-        words = dict(rows)
-        self.assertEqual(2, words.get('the'))
-        self.assertEqual(2, words.get('fox'))
-        self.assertEqual(1, words.get('quick'))
-        self.assertEqual(1, words.get('brown'))
 
     def test_word_count(self):
         self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts')
@@ -310,20 +298,33 @@ class WordCount(udf.TestCase):
         self._assert_word_count_with_reducer('gr_perf.performance_reduce_counts_fast77777777')
 
 
-@skip('csv data for tables wiki_freq and wiki_names is currently not available')
-class FrequencyAnalysis(udf.TestCase):
-    # Keep class and test names aligned with the original generic suite,
-    # but skip execution because external wiki CSV inputs are unavailable.
+class FrequencyAnalysis(_PerformanceBase):
+    def test_frequency_analysis_light(self):
+        rows = self.query("""
+            SELECT gr_perf.performance_reduce_counts(w, c)
+            FROM (
+                SELECT gr_perf.performance_map_words('the quick brown fox the fox')
+                FROM DUAL
+            )
+            GROUP BY w
+            ORDER BY c DESC
+        """)
+        words = dict(rows)
+        self.assertEqual(2, words.get('the'))
+        self.assertEqual(2, words.get('fox'))
+        self.assertEqual(1, words.get('quick'))
+        self.assertEqual(1, words.get('brown'))
+
+    @skip('csv data for tables wiki_freq and wiki_names is currently not available')
     def test_frequency_analysis(self):
         pass
 
+    @skip('csv data for tables wiki_freq and wiki_names is currently not available')
     def test_frequency_analysis_fast(self):
         pass
 
+    @skip('csv data for tables wiki_freq and wiki_names is currently not available')
     def test_frequency_analysis_fast0(self):
-        pass
-
-    def test_frequency_analysis_light(self):
         pass
 
 

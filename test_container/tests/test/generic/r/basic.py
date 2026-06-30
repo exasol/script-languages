@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class BasicRTest(udf.TestCase):
+class BasicTest(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_basic CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_basic_data CASCADE", ignore_errors=True)
@@ -221,6 +221,7 @@ class BasicRTest(udf.TestCase):
         sorted_list = sorted(unsorted_list, key=lambda x: x[1], reverse=True)
         self.assertEqual(sorted_list, unsorted_list)
 
+class SetWithEmptyInput(BasicTest):
     def test_set_returns_has_empty_input_group_by(self):
         self.query("""
             SELECT gr_basic.set_returns_has_empty_input(c)
@@ -229,14 +230,6 @@ class BasicRTest(udf.TestCase):
         self.assertEqual(0, self.rowcount())
 
     def test_set_returns_has_empty_input_no_group_by(self):
-        rows = self.query("""
-            SELECT gr_basic.set_returns_has_empty_input(c)
-            FROM gr_basic_data.empty_table
-        """)
-        self.assertRowsEqual([(None,)], rows)
-
-    # R-only compatibility alias kept for historical naming in downstream runs.
-    def test_set_with_empty_input(self):
         rows = self.query("""
             SELECT gr_basic.set_returns_has_empty_input(c)
             FROM gr_basic_data.empty_table
@@ -256,6 +249,17 @@ class BasicRTest(udf.TestCase):
             FROM gr_basic_data.empty_table
         """)
         self.assertRowsEqual([(None, None)], rows)
+
+class BasicROnly(BasicTest):
+    """R-only tests without a generic counterpart."""
+
+    # R-only compatibility alias kept for historical naming in downstream runs.
+    def test_set_with_empty_input(self):
+        rows = self.query("""
+            SELECT gr_basic.set_returns_has_empty_input(c)
+            FROM gr_basic_data.empty_table
+        """)
+        self.assertRowsEqual([(None,)], rows)
 
 
 if __name__ == "__main__":

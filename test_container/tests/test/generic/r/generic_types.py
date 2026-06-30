@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class GenericTypesRTest(udf.TestCase):
+class _GenericTypesBase(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_types CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_types")
@@ -131,23 +131,13 @@ class GenericTypesRTest(udf.TestCase):
             };
         """))
 
+class TestEcho(_GenericTypesBase):
     def test_echo_boolean(self):
         rows = self.query("""
             SELECT
                 gr_types.echo_boolean(NULL) IS NULL,
                 gr_types.echo_boolean(TRUE) = TRUE,
                 gr_types.echo_boolean(FALSE) = FALSE
-            FROM DUAL
-        """)
-        self.assertRowsEqual([(True, True, True)], rows)
-
-    # R-only smoke test kept for a minimal integer echo path.
-    def test_echo_integer(self):
-        rows = self.query("""
-            SELECT
-                gr_types.echo_integer(NULL) IS NULL,
-                gr_types.echo_integer(1) = 1,
-                gr_types.echo_integer(-1) = -1
             FROM DUAL
         """)
         self.assertRowsEqual([(True, True, True)], rows)
@@ -173,16 +163,6 @@ class GenericTypesRTest(udf.TestCase):
             FROM DUAL
         """)
         self.assertRowsEqual([(True, True, True, True)], rows)
-
-    # R-only mixed-type smoke test for double and varchar together.
-    def test_echo_double_and_varchar(self):
-        rows = self.query("""
-            SELECT
-                gr_types.echo_double(1.5) = 1.5,
-                gr_types.echo_varchar10('abc') = 'abc'
-            FROM DUAL
-        """)
-        self.assertRowsEqual([(True, True)], rows)
 
     def test_echo_char1(self):
         rows = self.query("""
@@ -256,6 +236,7 @@ class GenericTypesRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(True, True, True, True, True)], rows)
 
+class EmptyTest(_GenericTypesBase):
     def test_run_func_is_empty(self):
         rows = self.query("""
             SELECT gr_types.run_func_is_empty() IS NULL
@@ -263,6 +244,7 @@ class GenericTypesRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(True,)], rows)
 
+class BottleneckTest(_GenericTypesBase):
     def test_varchar10(self):
         for i in [0, 1, 5, 10]:
             rows = self.query("""
@@ -301,6 +283,31 @@ class GenericTypesRTest(udf.TestCase):
                 SELECT gr_types.bottleneck_decimal5(%d)
                 FROM DUAL
             """ % (10 ** 5))
+
+
+class GenericTypesROnly(_GenericTypesBase):
+    """R-only tests without a generic counterpart."""
+
+    # R-only smoke test kept for a minimal integer echo path.
+    def test_echo_integer(self):
+        rows = self.query("""
+            SELECT
+                gr_types.echo_integer(NULL) IS NULL,
+                gr_types.echo_integer(1) = 1,
+                gr_types.echo_integer(-1) = -1
+            FROM DUAL
+        """)
+        self.assertRowsEqual([(True, True, True)], rows)
+
+    # R-only mixed-type smoke test for double and varchar together.
+    def test_echo_double_and_varchar(self):
+        rows = self.query("""
+            SELECT
+                gr_types.echo_double(1.5) = 1.5,
+                gr_types.echo_varchar10('abc') = 'abc'
+            FROM DUAL
+        """)
+        self.assertRowsEqual([(True, True)], rows)
 
 
     # Generic parity note:

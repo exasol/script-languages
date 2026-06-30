@@ -4,7 +4,7 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework.udf import skip
 
 
-class DynamicInputRTest(udf.TestCase):
+class Test(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_dynin CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_dynin_data CASCADE", ignore_errors=True)
@@ -157,6 +157,7 @@ class DynamicInputRTest(udf.TestCase):
         self.query("CREATE TABLE gr_dynin_data.groupt(id INT, n DOUBLE, v VARCHAR(999))")
         self.query("INSERT INTO gr_dynin_data.groupt VALUES (1, 1, 'aa'), (1, 2, 'ab'), (2, 2, 'ba')")
 
+class DynamicInputBasic(DynamicInputBasic):
     def test_basic_scalar_emit_constants(self):
         rows = self.query("""
             SELECT gr_dynin.basic_scalar_emit('abc', CAST(99 AS DOUBLE))
@@ -164,17 +165,12 @@ class DynamicInputRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('abc',), ('99',)], rows)
 
-    # R-only helper keeps table-input coverage separate; generic alias calls this.
-    def test_basic_scalar_emit_table(self):
+    def test_basic_scalar_emit(self):
         rows = self.query("""
             SELECT gr_dynin.basic_scalar_emit(x, y)
             FROM gr_dynin_data.small
         """)
         self.assertRowsEqual([('Some string ... and some more',), ('2.2',)], rows)
-
-    def test_basic_scalar_emit(self):
-        # Parity alias for generic test naming.
-        self.test_basic_scalar_emit_table()
 
     def test_basic_scalar_return_constants(self):
         rows = self.query("""
@@ -190,6 +186,7 @@ class DynamicInputRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('2.2',)], rows)
 
+class DynamicMetadataTest(Test):
     def test_meta_scalar_return(self):
         rows = self.query("""
             SELECT gr_dynin.metadata_scalar_return('abc', CAST(99 AS DOUBLE))
@@ -204,6 +201,7 @@ class DynamicInputRTest(udf.TestCase):
         """)
         self.assertEqual('2', rows[0][0])
 
+class DynamicInputBasic(Test):
     def test_basic_set_emit_constants(self):
         rows = self.query("""
             SELECT gr_dynin.basic_set_emit(CAST(99 AS DOUBLE), '77', 'aaaa')
@@ -266,6 +264,7 @@ class DynamicInputRTest(udf.TestCase):
         self.assertIn('ab', rows[0][0])
         self.assertIn('ba', rows[0][0])
 
+class DynamicInputErrors(Test):
     def test_exception_empty_set_returns(self):
         with self.assertRaisesRegex(Exception, 'missing input parameters for SET UDF script'):
             self.query("""
@@ -291,6 +290,7 @@ class DynamicInputRTest(udf.TestCase):
                 FROM DUAL
             """)
 
+class DynamicInputOptimizations(Test):
     def test_mapreduce_optimization(self):
         rows = self.query("""
             SELECT gr_dynin.basic_set_return(v)
@@ -303,6 +303,7 @@ class DynamicInputRTest(udf.TestCase):
         self.assertIn('1', rows[0][0])
         self.assertIn('2', rows[0][0])
 
+class DynamicInputDatatypeSpecific(Test):
     def test_type_specific_add_string(self):
         rows = self.query("""
             SELECT gr_dynin.type_specific_add(v, v, v)
@@ -320,6 +321,18 @@ class DynamicInputRTest(udf.TestCase):
         """)
         self.assertEqual(1, len(rows))
         self.assertIn('50', rows[0][0])
+
+
+class DynamicInputROnly(Test):
+    """R-only tests without a generic counterpart."""
+
+    # R-only helper keeps table-input coverage separate; generic alias calls this.
+    def test_basic_scalar_emit_table(self):
+        rows = self.query("""
+            SELECT gr_dynin.basic_scalar_emit(x, y)
+            FROM gr_dynin_data.small
+        """)
+        self.assertRowsEqual([('Some string ... and some more',), ('2.2',)], rows)
 
 
 if __name__ == "__main__":

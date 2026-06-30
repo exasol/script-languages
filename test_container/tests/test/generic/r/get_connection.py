@@ -4,7 +4,7 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework import exatest
 
 
-class GetConnectionRTest(udf.TestCase):
+class _GetConnectionBase(udf.TestCase):
     _BUG_CONN_USER = (
         'ialjksdhfalskdjhflaskdjfhalskdjhflaksjdhflaksdjfhalksjdfhlaksjdhflaksjdhfalskjdfhalskdjhflaksjdhflaksjdfhlaksjsadajksdhfaksjdfhalksdjfhalksdjfhalksjdfhqwiueryqw;er;lkjqwe;rdhflaksjdfhlaksdjfhaabcdefghijklmnopqrstuvwxyz'
     )
@@ -84,6 +84,7 @@ class GetConnectionRTest(udf.TestCase):
     def tearDown(self):
         self._drop_common_objects()
 
+class GetConnectionTest(_GetConnectionBase):
     def test_print_existing_connection(self):
         rows = self.query("""
             SELECT gr_conn.print_connection('GR_CONN_FOOCONN')
@@ -105,6 +106,7 @@ class GetConnectionRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('password', 'a', 'b', 'c')], rows)
 
+class GetConnectionMemoryBug(_GetConnectionBase):
     def test_get_connection(self):
         for _ in range(10):
             row = self.query("""
@@ -118,10 +120,12 @@ class GetConnectionRTest(udf.TestCase):
             """)[0]
             self.assertEqual(4019, row[0])
 
+class AccessConnectionSysPriv(_GetConnectionBase):
     def test_sys_priv_exists(self):
         sys_priv = self.query("SELECT * FROM EXA_DBA_SYS_PRIVS WHERE PRIVILEGE = 'ACCESS ANY CONNECTION'")
         self.assertRowsEqual([("DBA", "ACCESS ANY CONNECTION", True)], sys_priv)
 
+class GetConnectionAccessControlTest(_GetConnectionBase):
     def test_use_connection_without_rights(self):
         self.query("CREATE CONNECTION gr_conn_ac_fooconn TO 'a' USER 'b' IDENTIFIED BY 'c'", ignore_errors=True)
         self._create_user('foo', 'foo')
@@ -180,6 +184,7 @@ class GetConnectionRTest(udf.TestCase):
             """)
         foo_conn.commit()
 
+class BigConnectionTest(_GetConnectionBase):
     def test_get_big_connection(self):
         self.query(
             """
@@ -197,6 +202,7 @@ class GetConnectionRTest(udf.TestCase):
             ('password', self._BIG_CONN_ADDRESS, self._BIG_CONN_USER, self._BIG_CONN_PASSWORD)
         ], rows)
 
+class ConnectionTest(_GetConnectionBase):
     def test_access_connection_in_adapter(self):
         self.query("CREATE SCHEMA IF NOT EXISTS adapter")
         self.query("CREATE CONNECTION gr_conn_my_conn TO 'MYADDRESS' USER 'MYUSER' IDENTIFIED BY 'MYPASSWORD'")
@@ -236,6 +242,7 @@ class GetConnectionRTest(udf.TestCase):
         rows = self.query("SELECT COLUMN_NAME FROM EXA_ALL_COLUMNS WHERE COLUMN_TABLE='T1' ORDER BY COLUMN_NAME")
         self.assertRowsEqual([('MYADDRESS',), ('MYPASSWORD',), ('MYUSER',)], rows)
 
+class OptionalUSERandIDENTIFIEDBYTest(_GetConnectionBase):
     def test_no_user_and_no_identified_by(self):
         self.query("CREATE OR REPLACE CONNECTION gr_conn_my_conn1 TO 'MYADDRESS'")
         rows = self.query("SELECT gr_conn.print_connection('GR_CONN_MY_CONN1')")
@@ -251,6 +258,7 @@ class GetConnectionRTest(udf.TestCase):
         rows = self.query("SELECT gr_conn.print_connection('GR_CONN_MY_CONN3')")
         self.assertRowsEqual([('password', 'MYADDRESS', 'MYUSER', None)], rows)
 
+class GetConnectionAccessControlWithViewsTest(_GetConnectionBase):
     def test_use_connection_udfs_in_view(self):
         self.query("CREATE CONNECTION gr_conn_ac_fooconn TO 'a' USER 'b' IDENTIFIED BY 'c'", ignore_errors=True)
         self._create_user('foo', 'foo')

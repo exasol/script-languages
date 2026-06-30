@@ -4,7 +4,7 @@ from exasol_python_test_framework import udf
 from exasol_python_test_framework import exatest
 
 
-class DynamicOutputRTest(udf.TestCase):
+class Test(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_dynout CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_dynout_data CASCADE", ignore_errors=True)
@@ -255,6 +255,9 @@ class DynamicOutputRTest(udf.TestCase):
         for i in range(len(expected_rows)):
             self.assertRowEqual(expected_rows[i][0:2], rows[i][0:2])
 
+class DynamicOutputROnly(Test):
+    """R-only tests without a generic counterpart."""
+
     # R-only compatibility name for default dynamic output smoke behavior.
     def test_default_dynamic_output_columns(self):
         rows = self.query("""
@@ -271,6 +274,7 @@ class DynamicOutputRTest(udf.TestCase):
         """)
         self.assertRowsEqual([('abc', 2.2)], rows)
 
+class DefaultDynamicOutputFromInputMeta(Test):
     def test_copy_relation(self):
         rows = self.query("""
             SELECT gr_dynout.copy_relation(1, 2, 3)
@@ -278,6 +282,7 @@ class DynamicOutputRTest(udf.TestCase):
         """)
         self.assertRowEqual((1.0, 2.0, 3.0), rows[0])
 
+class DynamicOutputCreateScript(Test):
     def test_create_script_set(self):
         rows = self.query("""
             SELECT COUNT(*) FROM EXA_ALL_SCRIPTS
@@ -310,6 +315,7 @@ class DynamicOutputRTest(udf.TestCase):
         """)
         self.assertRowEqual((1,), rows[0])
 
+class DynamicOutputTest(Test):
     def test_generic_emit(self):
         rows = self.query("""
             SELECT gr_dynout.varemit_generic_emit('SUPERDYNAMIC') EMITS (a VARCHAR(100))
@@ -364,6 +370,7 @@ class DynamicOutputRTest(udf.TestCase):
         self.assertTrue(rows[8][0] in ['double'])
         self.assertRowEqual(('DOUBLE', 1.0), rows[9])
 
+class DynamicOutputWrongUsage(Test):
     def test_error_emit_missing(self):
         rows = self.query("SELECT gr_dynout.varemit_generic_emit('1')")
         self.assertRowEqual(('1',), rows[0])
@@ -404,12 +411,14 @@ class DynamicOutputRTest(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'emits specification is not allowed for built-in functions'):
             self.query("SELECT -ABS(a) EMITS(a INT) FROM (VALUES 1, 2, 3) AS t(a)")
 
+class DefaultDynamicOutputEmptyStringResult(Test):
     def test_empty_string_error(self):
         with self.assertRaisesRegex(Exception, 'Empty default output columns'):
             self.query("SELECT gr_dynout.default_varemit_empty_def(42.42)")
         rows = self.query("SELECT gr_dynout.default_varemit_empty_def(42.42) EMITS (x DOUBLE)")
         self.assertRowEqual((1.4,), rows[0])
 
+class DynamicOutputInsertInto(Test):
     def test_insert_basic(self):
         self.query("DELETE FROM gr_dynout_data.target")
         self.query("""
@@ -454,6 +463,7 @@ class DynamicOutputRTest(udf.TestCase):
         with self.assertRaisesRegex(Exception, 'The return arguments for EMITS functions are inferred'):
             self.query("INSERT INTO gr_dynout_data.target SELECT gr_dynout.varemit_emit_input(1) EMITS (a INT)")
 
+class DynamicOutFromConnectionsAndViews(Test):
     def test_dynamic_out_from_connection_SPOT4245(self):
         expected_rows = [
             ('PASSWORD', 'DOUBLE', 'TRUE', 'FALSE'),
@@ -486,6 +496,30 @@ class DynamicOutputRTest(udf.TestCase):
         self.assertEqual(['PASSWORD', 'A', 'B', 'C'], [col[0] for col in foo_conn.cursorDescription()])
         self.query('DROP USER foo CASCADE')
         self.query('DROP VIEW gr_dynout.output_columns_as_in_connection_spot4245_view')
+
+
+class DynamicOutputCreateTableAs(Test):
+    pass
+
+
+class DefaultDynamicOutputCreateScript(Test):
+    pass
+
+
+class DefaultDynamicOutputTest(Test):
+    pass
+
+
+class DefaultDynamicOutputWrongUsage(Test):
+    pass
+
+
+class DefaultDynamicOutputInsertInto(Test):
+    pass
+
+
+class DefaultDynamicOutputCreateTableAs(Test):
+    pass
 
 
 if __name__ == "__main__":

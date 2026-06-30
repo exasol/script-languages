@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class NumericFunctionsRTest(udf.TestCase):
+class _NumericFunctionsBase(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_num CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_num_data CASCADE", ignore_errors=True)
@@ -78,6 +78,7 @@ class NumericFunctionsRTest(udf.TestCase):
             };
         """))
 
+class Test(_NumericFunctionsBase):
     def test_pi(self):
         rows = self.query("SELECT gr_num.pi() FROM DUAL")
         self.assertAlmostEqual(3.1415926535, rows[0][0])
@@ -132,6 +133,9 @@ class NumericFunctionsRTest(udf.TestCase):
         """)
         self.assertRowsEqual([tuple([True] * 5)], rows)
 
+class NumericFunctionsROnly(_NumericFunctionsBase):
+    """R-only tests without a generic counterpart."""
+
     # R-only compact smoke assertion for add-two and add-three helpers.
     def test_add_functions(self):
         rows = self.query("""
@@ -149,7 +153,6 @@ class NumericFunctionsRTest(udf.TestCase):
             FROM DUAL
         """)
         self.assertRowsEqual([(3,), (2,), (1,)], rows)
-
     def test_right_number_of_emitted_rows(self):
         rows = self.query("""
             SELECT gr_num.split_integer_into_digits(12345)

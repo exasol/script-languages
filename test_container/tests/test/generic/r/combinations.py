@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class CombinationsRTest(udf.TestCase):
+class Test(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_combi CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_combi_data CASCADE", ignore_errors=True)
@@ -97,6 +97,7 @@ class CombinationsRTest(udf.TestCase):
             };
         """))
 
+class Combinations_1_ary(Test):
     def test_scalar_returns(self):
         rows = self.query("""
             SELECT ROUND(gr_combi.scalar_returns(x, y) / 2)
@@ -138,6 +139,7 @@ class CombinationsRTest(udf.TestCase):
 
     # --- 2-ary: scalar_returns outer ---
 
+class Combinations_2_ary_scalar_returns(Test):
     def test_scalar_returns_scalar_emits(self):
         rows = self.query("""
             SELECT gr_combi.scalar_returns(x * 10, y * 10)
@@ -210,6 +212,7 @@ class CombinationsRTest(udf.TestCase):
 
     # --- 2-ary: scalar_emits outer ---
 
+class Combinations_2_ary_scalar_emits(Test):
     def test_scalar_emits_scalar_returns_inline(self):
         rows = self.query("""
             SELECT
@@ -260,6 +263,7 @@ class CombinationsRTest(udf.TestCase):
 
     # --- 2-ary: set_returns outer ---
 
+class Combinations_2_ary_set_returns(Test):
     def test_set_returns_scalar_returns(self):
         rows = self.query("""
             SELECT
@@ -318,6 +322,7 @@ class CombinationsRTest(udf.TestCase):
 
     # --- 2-ary: set_emits outer ---
 
+class Combinations_2_ary_set_emits(Test):
     def test_set_emits_scalar_returns(self):
         rows = self.query("""
             SELECT
@@ -378,6 +383,9 @@ class CombinationsRTest(udf.TestCase):
 
     # --- 3-ary ---
 
+class CombinationsROnly(Test):
+    """R-only tests without a generic counterpart."""
+
     # R-only explicit 3-ary chaining case retained as regression coverage.
     def test_3ary_set_returns_set_emits_scalar_emits(self):
         rows = self.query("""
@@ -420,6 +428,7 @@ class CombinationsRTest(udf.TestCase):
         """)
         self.assertRowsEqual([(65,)], rows)
 
+class Combinations_2_ary_scalar_emits(Combinations_2_ary_scalar_emits):
     def test_scalar_emits_scalar_emits(self):
         rows = self.query("""
             SELECT gr_combi.scalar_emits(x * 10, y * 10)
@@ -444,15 +453,47 @@ class CombinationsRTest(udf.TestCase):
                 FROM gr_combi_data.small
             """)
 
+class Combinations_3_ary(Test):
     def test_set_returns_set_emits_scalar_emits(self):
-        self.test_3ary_set_returns_set_emits_scalar_emits()
+        rows = self.query("""
+            SELECT gr_combi.basic_sum(s)
+            FROM (
+                SELECT gr_combi.basic_sum_grp(n)
+                FROM (
+                    SELECT gr_combi.basic_range(10)
+                    FROM DUAL
+                )
+            )
+        """)
+        self.assertRowsEqual([(45,)], rows)
 
     def test_set_returns_scalar_emits_scalar_emits(self):
-        self.test_3ary_set_returns_scalar_emits_scalar_emits()
+        rows = self.query("""
+            SELECT gr_combi.basic_sum(x)
+            FROM (
+                SELECT gr_combi.scalar_emits(n, n + 2)
+                FROM (
+                    SELECT gr_combi.basic_range(10)
+                    FROM DUAL
+                )
+            )
+        """)
+        self.assertRowsEqual([(165,)], rows)
 
     def test_set_returns_scalar_returns_scalar_emits(self):
-        self.test_3ary_set_returns_scalar_returns_scalar_emits()
+        rows = self.query("""
+            SELECT gr_combi.basic_sum(x)
+            FROM (
+                SELECT gr_combi.scalar_returns(n, 2) AS x
+                FROM (
+                    SELECT gr_combi.basic_range(10)
+                    FROM DUAL
+                )
+            )
+        """)
+        self.assertRowsEqual([(65,)], rows)
 
+class Combinations_n_ary(Test):
     @staticmethod
     def _partial_sum(n, degree):
         def basic_range(k, d):

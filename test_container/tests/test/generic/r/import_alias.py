@@ -5,7 +5,7 @@ from exasol_python_test_framework import exatest
 from exasol_python_test_framework.udf import skip
 
 
-class ImportAliasRTest(udf.TestCase):
+class ImportAliasTest(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_impal CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_impal_data CASCADE", ignore_errors=True)

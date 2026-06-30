@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class MetadataRTest(udf.TestCase):
+class MetaDataTest(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_meta CASCADE", ignore_errors=True)
         self.query("CREATE SCHEMA gr_meta")
@@ -294,16 +294,6 @@ class MetadataRTest(udf.TestCase):
         """)
         self.assertIn(rows[0][0], ('GR_META', 'NULL'))
 
-    # R-only compatibility wrapper for scalar input-column-count coverage.
-    def test_input_column_count(self):
-        rows = self.query("SELECT gr_meta.get_input_column_count_scalar(1.0, 'x') FROM DUAL")
-        self.assertRowsEqual([(2.0,)], rows)
-
-    # R-only compatibility wrapper for emitted output-column-count coverage.
-    def test_output_column_count(self):
-        rows = self.query("SELECT gr_meta.get_output_column_count_emit() FROM DUAL")
-        self.assertRowsEqual([(3.0, 3.0, 3.0)], rows)
-
     def test_script_code(self):
         rows = self.query("SELECT gr_meta.get_script_code() FROM DUAL")
         self.assertTrue(rows[0][0].lower().find('ctx') >= 0)
@@ -398,6 +388,20 @@ class MetadataRTest(udf.TestCase):
         self.assertEqual(10, r[0])   # CHAR(10) input length
         self.assertEqual(20, r[1])   # CHAR(20) output length
         self.assertEqual('9876543210', r[2].rstrip())
+
+
+class MetaDataROnly(MetaDataTest):
+    """R-only tests without a generic counterpart."""
+
+    # R-only compatibility wrapper for scalar input-column-count coverage.
+    def test_input_column_count(self):
+        rows = self.query("SELECT gr_meta.get_input_column_count_scalar(1.0, 'x') FROM DUAL")
+        self.assertRowsEqual([(2.0,)], rows)
+
+    # R-only compatibility wrapper for emitted output-column-count coverage.
+    def test_output_column_count(self):
+        rows = self.query("SELECT gr_meta.get_output_column_count_emit() FROM DUAL")
+        self.assertRowsEqual([(3.0, 3.0, 3.0)], rows)
 
 
 if __name__ == "__main__":

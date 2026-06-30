@@ -5,7 +5,7 @@ import datetime
 from exasol_python_test_framework import udf
 
 
-class EmitRTest(udf.TestCase):
+class _EmitBase(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_emit CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_emit_data CASCADE", ignore_errors=True)
@@ -55,6 +55,7 @@ class EmitRTest(udf.TestCase):
             };
         """))
 
+class InputOutputMatchingTest(_EmitBase):
     def test_iomatch_1i_1o(self):
         rows = self.query("""
             SELECT x * 2, gr_emit.line_1i_1o(x), x * 3
@@ -90,6 +91,7 @@ class EmitRTest(udf.TestCase):
         """)
         self.assertRowsEqual(sorted([(2,1,3),(2,1,3),(6,3,9),(6,3,9),(4,2,6),(4,2,6)]), sorted(rows))
 
+class ColumnNamesTest(_EmitBase):
     def test_col_names(self):
         self.query("""
             CREATE OR REPLACE TABLE gr_emit_data.foo AS
@@ -102,6 +104,7 @@ class EmitRTest(udf.TestCase):
         self.assertEqual('Z2', rows[2][0])
         self.assertEqual('B', rows[3][0])
 
+class DatatypesTest(_EmitBase):
     def test_boolean(self):
         self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x BOOLEAN)")
         self.query("INSERT INTO gr_emit_data.dt VALUES FALSE")
@@ -225,6 +228,7 @@ class EmitRTest(udf.TestCase):
         rows = self.query("SELECT x, gr_emit.line_1i_1o(0) FROM gr_emit_data.dt")
         self.assertRowsEqual([('POINT (1 1)', 0)], rows)
 
+class NullTest(_EmitBase):
     def test_boolean_null(self):
         self.query("CREATE OR REPLACE TABLE gr_emit_data.dt(x BOOLEAN)")
         self.query("INSERT INTO gr_emit_data.dt VALUES NULL")
