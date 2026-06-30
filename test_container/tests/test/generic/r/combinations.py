@@ -261,6 +261,30 @@ class Combinations_2_ary_scalar_emits(Test):
         r = [(float(i), float(i * i)) for i in range(10, 21)]
         self.assertRowsEqual(r, rows)
 
+    def test_scalar_emits_scalar_emits(self):
+        rows = self.query("""
+            SELECT gr_combi.scalar_emits(x * 10, y * 10)
+            FROM (
+                SELECT gr_combi.scalar_emits(x * 10, y * 10)
+                FROM gr_combi_data.small
+            )
+            ORDER BY x, y
+        """)
+        r = [(10.0, 100.0)]
+        r.extend([(float(i), float(i * i)) for i in range(20, 41)])
+        self.assertRowsEqual(r, rows)
+
+    def test_scalar_emits_set_returns_inline(self):
+        with self.assertRaisesRegex(Exception, 'encapsulated set function'):
+            self.query("""
+                SELECT
+                    gr_combi.scalar_emits(
+                        gr_combi.set_returns(x * 10, y * 10),
+                        gr_combi.set_returns(x * 10, y * 10)
+                    )
+                FROM gr_combi_data.small
+            """)
+
     # --- 2-ary: set_returns outer ---
 
 class Combinations_2_ary_set_returns(Test):
@@ -427,31 +451,6 @@ class CombinationsROnly(Test):
             )
         """)
         self.assertRowsEqual([(65,)], rows)
-
-class Combinations_2_ary_scalar_emits(Combinations_2_ary_scalar_emits):
-    def test_scalar_emits_scalar_emits(self):
-        rows = self.query("""
-            SELECT gr_combi.scalar_emits(x * 10, y * 10)
-            FROM (
-                SELECT gr_combi.scalar_emits(x * 10, y * 10)
-                FROM gr_combi_data.small
-            )
-            ORDER BY x, y
-        """)
-        r = [(10.0, 100.0)]
-        r.extend([(float(i), float(i * i)) for i in range(20, 41)])
-        self.assertRowsEqual(r, rows)
-
-    def test_scalar_emits_set_returns_inline(self):
-        with self.assertRaisesRegex(Exception, 'encapsulated set function'):
-            self.query("""
-                SELECT
-                    gr_combi.scalar_emits(
-                        gr_combi.set_returns(x * 10, y * 10),
-                        gr_combi.set_returns(x * 10, y * 10)
-                    )
-                FROM gr_combi_data.small
-            """)
 
 class Combinations_3_ary(Test):
     def test_set_returns_set_emits_scalar_emits(self):

@@ -157,7 +157,7 @@ class Test(udf.TestCase):
         self.query("CREATE TABLE gr_dynin_data.groupt(id INT, n DOUBLE, v VARCHAR(999))")
         self.query("INSERT INTO gr_dynin_data.groupt VALUES (1, 1, 'aa'), (1, 2, 'ab'), (2, 2, 'ba')")
 
-class DynamicInputBasic(DynamicInputBasic):
+class DynamicInputBasic(Test):
     def test_basic_scalar_emit_constants(self):
         rows = self.query("""
             SELECT gr_dynin.basic_scalar_emit('abc', CAST(99 AS DOUBLE))
@@ -201,7 +201,6 @@ class DynamicMetadataTest(Test):
         """)
         self.assertEqual('2', rows[0][0])
 
-class DynamicInputBasic(Test):
     def test_basic_set_emit_constants(self):
         rows = self.query("""
             SELECT gr_dynin.basic_set_emit(CAST(99 AS DOUBLE), '77', 'aaaa')
