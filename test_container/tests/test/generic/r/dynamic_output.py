@@ -282,7 +282,7 @@ class DefaultDynamicOutputFromInputMeta(Test):
         """)
         self.assertRowEqual((1.0, 2.0, 3.0), rows[0])
 
-class DynamicOutputCreateScript(Test):
+class DefaultDynamicOutputCreateScript(Test):
     def test_create_script_set(self):
         rows = self.query("""
             SELECT COUNT(*) FROM EXA_ALL_SCRIPTS
@@ -315,7 +315,7 @@ class DynamicOutputCreateScript(Test):
         """)
         self.assertRowEqual((1,), rows[0])
 
-class DynamicOutputTest(Test):
+class DefaultDynamicOutputTest(Test):
     def test_generic_emit(self):
         rows = self.query("""
             SELECT gr_dynout.varemit_generic_emit('SUPERDYNAMIC') EMITS (a VARCHAR(100))
@@ -370,7 +370,7 @@ class DynamicOutputTest(Test):
         self.assertTrue(rows[8][0] in ['double'])
         self.assertRowEqual(('DOUBLE', 1.0), rows[9])
 
-class DynamicOutputWrongUsage(Test):
+class DefaultDynamicOutputWrongUsage(Test):
     def test_error_emit_missing(self):
         rows = self.query("SELECT gr_dynout.varemit_generic_emit('1')")
         self.assertRowEqual(('1',), rows[0])
@@ -418,7 +418,7 @@ class DefaultDynamicOutputEmptyStringResult(Test):
         rows = self.query("SELECT gr_dynout.default_varemit_empty_def(42.42) EMITS (x DOUBLE)")
         self.assertRowEqual((1.4,), rows[0])
 
-class DynamicOutputInsertInto(Test):
+class DefaultDynamicOutputInsertInto(Test):
     def test_insert_basic(self):
         self.query("DELETE FROM gr_dynout_data.target")
         self.query("""
@@ -501,39 +501,30 @@ class DynamicOutFromConnectionsAndViews(Test):
 class DynamicOutputCreateTableAs(Test):
     # Placeholder for mirrored class naming across language suites.
     # No dedicated R test currently mirrors generic DynamicOutputCreateTableAs.
-    pass
+    def test_insert_basic(self):
+        self.query("DROP TABLE IF EXISTS gr_dynout_data.targetcreated")
+        self.query("""
+            CREATE TABLE gr_dynout_data.targetcreated AS
+            SELECT gr_dynout.varemit_emit_input(1, CAST(1.1 AS DOUBLE), 'a')
+            EMITS (a DECIMAL(20,0), b DOUBLE, c VARCHAR(100))
+        """)
+        rows = self.query("SELECT * FROM gr_dynout_data.targetcreated")
+        self.assertRowEqual((1, 1.1, 'a'), rows[0])
 
-
-class DefaultDynamicOutputCreateScript(Test):
-    # Placeholder for mirrored class naming across language suites.
-    # Default-output script creation behavior is covered by
-    # DynamicOutputCreateScript.test_create_script_*.
-    pass
-
-
-class DefaultDynamicOutputTest(Test):
-    # Placeholder for mirrored class naming across language suites.
-    # Default-output query behavior is covered by DynamicOutputTest.test_* and
-    # DynamicOutputROnly.test_default_dynamic_output_columns.
-    pass
-
-
-class DefaultDynamicOutputWrongUsage(Test):
-    # Placeholder for mirrored class naming across language suites.
-    # Wrong-usage behavior is covered by DynamicOutputWrongUsage.test_*.
-    pass
-
-
-class DefaultDynamicOutputInsertInto(Test):
-    # Placeholder for mirrored class naming across language suites.
-    # Default-output INSERT behavior is covered by DynamicOutputInsertInto.test_*.
-    pass
 
 
 class DefaultDynamicOutputCreateTableAs(Test):
     # Placeholder for mirrored class naming across language suites.
     # No dedicated R test currently mirrors generic DefaultDynamicOutputCreateTableAs.
-    pass
+    def test_insert_basic(self):
+        self.query("DROP TABLE IF EXISTS gr_dynout_data.targetcreated")
+        self.query("""
+            CREATE TABLE gr_dynout_data.targetcreated AS
+            SELECT gr_dynout.varemit_emit_input(x, y)
+            FROM gr_dynout_data.small
+        """)
+        rows = self.query("SELECT * FROM gr_dynout_data.targetcreated")
+        self.assertRowEqual(('abc', 2.2), rows[0])
 
 
 if __name__ == "__main__":
