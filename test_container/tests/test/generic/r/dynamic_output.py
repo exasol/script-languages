@@ -499,26 +499,40 @@ class DynamicOutFromConnectionsAndViews(Test):
 
 
 class DynamicOutputCreateTableAs(Test):
+    # Placeholder for mirrored class naming across language suites.
+    # No dedicated R test currently mirrors generic DynamicOutputCreateTableAs.
     pass
 
 
 class DefaultDynamicOutputCreateScript(Test):
+    # Placeholder for mirrored class naming across language suites.
+    # Default-output script creation behavior is covered by
+    # DynamicOutputCreateScript.test_create_script_*.
     pass
 
 
 class DefaultDynamicOutputTest(Test):
+    # Placeholder for mirrored class naming across language suites.
+    # Default-output query behavior is covered by DynamicOutputTest.test_* and
+    # DynamicOutputROnly.test_default_dynamic_output_columns.
     pass
 
 
 class DefaultDynamicOutputWrongUsage(Test):
+    # Placeholder for mirrored class naming across language suites.
+    # Wrong-usage behavior is covered by DynamicOutputWrongUsage.test_*.
     pass
 
 
 class DefaultDynamicOutputInsertInto(Test):
+    # Placeholder for mirrored class naming across language suites.
+    # Default-output INSERT behavior is covered by DynamicOutputInsertInto.test_*.
     pass
 
 
 class DefaultDynamicOutputCreateTableAs(Test):
+    # Placeholder for mirrored class naming across language suites.
+    # No dedicated R test currently mirrors generic DefaultDynamicOutputCreateTableAs.
     pass
 
 

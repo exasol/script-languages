@@ -3,7 +3,7 @@
 from exasol_python_test_framework import udf
 
 
-class ExportAliasTest(udf.TestCase):
+class ExportAliasSetup(udf.TestCase):
     def setUp(self):
         self.query("DROP SCHEMA gr_expal CASCADE", ignore_errors=True)
         self.query("DROP SCHEMA gr_expal_data CASCADE", ignore_errors=True)
@@ -152,6 +152,7 @@ class ExportAliasTest(udf.TestCase):
             return
         self.assertRowsEqual([(1,)], rows)
 
+class ExportAliasTest(ExportAliasSetup):
     def test_export_use_params(self):
         self._assert_export_ok("""
             EXPORT gr_expal_data.t
@@ -208,7 +209,7 @@ class ExportAliasTest(udf.TestCase):
             WITH FOO='bar' BAR='foo'
         """)
 
-class ExportAliasROnly(ExportAliasTest):
+class ExportAliasROnly(ExportAliasSetup):
     """R-only tests without a generic counterpart."""
 
     # R-only relation-export smoke case retained next to query export coverage.

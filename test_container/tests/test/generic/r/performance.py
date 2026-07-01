@@ -315,18 +315,6 @@ class FrequencyAnalysis(_PerformanceBase):
         self.assertEqual(1, words.get('quick'))
         self.assertEqual(1, words.get('brown'))
 
-    @skip('csv data for tables wiki_freq and wiki_names is currently not available')
-    def test_frequency_analysis(self):
-        pass
-
-    @skip('csv data for tables wiki_freq and wiki_names is currently not available')
-    def test_frequency_analysis_fast(self):
-        pass
-
-    @skip('csv data for tables wiki_freq and wiki_names is currently not available')
-    def test_frequency_analysis_fast0(self):
-        pass
-
 
 if __name__ == "__main__":
     udf.main()
