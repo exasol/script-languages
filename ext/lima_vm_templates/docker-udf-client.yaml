@@ -48,11 +48,17 @@ provision:
 - mode: system
   script: |
    export DEBIAN_FRONTEND=noninteractive
-   apt update && apt install -y protobuf-compiler libzmq3-dev openjdk-17-jdk build-essential git python3.12-dev python3-pip libpcre3-dev
+   apt update && apt install -y protobuf-compiler libzmq3-dev openjdk-17-jdk build-essential git python3.12-dev python3-pip libpcre3-dev clang-tidy-20
    curl -L  https://github.com/bazelbuild/bazelisk/releases/download/v1.27.0/bazelisk-linux-amd64 -o /usr/bin/bazel
    chmod +x /usr/bin/bazel
    pip install --break-system-packages numpy
    curl -L -o swig-2.0.4.tar.gz https://exasol-script-languages-dependencies.s3.eu-central-1.amazonaws.com/swig-2.0.4.tar.gz && tar zxf swig-2.0.4.tar.gz && (cd swig-2.0.4 && ./configure --prefix=/usr && make && make install) && rm -rf swig-2.0.4 swig-2.0.4.tar.gz
+   curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local/bin/poetry python3 -
+- mode: system
+  script: |
+   #!/bin/sh
+   echo 'export PATH="/usr/local/bin/poetry/bin:$PATH"' > /etc/profile.d/poetry.sh
+   chmod +x /etc/profile.d/poetry.sh
 probes:
 - script: |
     #!/bin/bash
@@ -91,6 +97,7 @@ env:
    PROTOBUF_BIN: /usr/bin/protoc
    USE_BAZEL_VERSION: 8.4.2
    JAVA_PREFIX: /usr/lib/jvm/java-17-openjdk-amd64
+   EXASOL_TELEMETRY_DISABLE: yes
 mounts:
   - location: "~"
     writable: true
