@@ -67,12 +67,13 @@ class GetConnectionTest(_JavaUdfSetup):
 
     def setUp(self):
         self._setup_common_udfs()
+        self.query('drop connection FOOCONN', ignore_errors=True)
         self.query('''
         create connection FOOCONN to 'a' user 'b' identified by 'c'
         ''')
 
     def tearDown(self):
-        self.query('drop connection FOOCONN')
+        self.query('drop connection FOOCONN', ignore_errors=True)
 
     def test_print_existing_connection(self):
         rows = self.query('''
@@ -94,12 +95,13 @@ class BigConnectionTest(_JavaUdfSetup):
 
     def setUp(self):
         self._setup_common_udfs()
+        self.query('DROP CONNECTION LARGEST_CONN', ignore_errors=True)
         self.query('''
             create connection LARGEST_CONN to '{address}' user '{user}' identified by '{password}'
             '''.format(address=self.address, user=self.user, password=self.password))
 
     def tearDown(self):
-        self.query("DROP CONNECTION LARGEST_CONN")
+        self.query("DROP CONNECTION LARGEST_CONN", ignore_errors=True)
 
     def testGetBigConnection(self):
         rows = self.query('''

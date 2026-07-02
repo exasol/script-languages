@@ -15,6 +15,7 @@ class ImportAliasTest(udf.TestCase):
         self.query('CREATE SCHEMA FN2')
         self.query('create or replace table fn2.t(z varchar(3000))')
         self.query('create or replace table fn2.t2(y varchar(2000), z varchar(3000))')
+        self.query('drop connection FOOCONN', ignore_errors=True)
         self.query('''
                    create connection FOOCONN to 'a' user 'b' identified by 'c'
                    ''', ignore_errors=True)
