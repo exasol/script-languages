@@ -56,7 +56,7 @@ build_steps:
       - conda-forge
       packages:
       - name: python
-        version: =3.10.4
+        version: =3.10.18
       - name: numpy
         version: =1.26.2
       - name: pandas

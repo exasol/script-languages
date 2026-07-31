@@ -62,7 +62,7 @@ build_steps:
       - nvidia
       packages:
       - name: python
-        version: =3.12.11
+        version: =3.12.13
       - name: numpy
         version: =1.26.2
       - name: pandas
