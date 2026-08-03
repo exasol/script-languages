@@ -68,7 +68,7 @@ build_steps:
       - name: pandas
         version: =2.3.3
       - name: pyarrow
-        version: =22.0.0
+        version: =25.0.0
       - name: libarrow
         version: =22.0.0=*_cuda
       - name: mamba

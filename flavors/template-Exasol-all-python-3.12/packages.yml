@@ -31,7 +31,7 @@ build_steps:
         version: ==1.26.4
         extras: []
       - name: pyarrow
-        version: ==22.0.0
+        version: ==25.0.0
         extras: []
       install_build_tools_ephemerally: false
   validation_cfg:
