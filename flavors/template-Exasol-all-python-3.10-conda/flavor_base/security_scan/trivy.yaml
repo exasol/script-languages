@@ -1,5 +1,5 @@
 scan:
   skip-files:
     - /usr/bin/trivy
-    - /opt/conda/lib/python*/site-packages/pip/_vendor/bom.cdx.json
+    - "**/pip/_vendor/bom.cdx.json"
 ignore-policy: /trivy.rego
