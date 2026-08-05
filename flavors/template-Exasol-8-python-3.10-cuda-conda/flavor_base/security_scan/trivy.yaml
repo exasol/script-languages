@@ -2,4 +2,5 @@ scan:
   skip-files:
     - /usr/bin/trivy
     - "**/pip/_vendor/bom.cdx.json"
+    - "**/nsight-compute*/host/target-linux-x64/plugins/efa_metrics/nic_sampler"
 ignore-policy: /trivy.rego
