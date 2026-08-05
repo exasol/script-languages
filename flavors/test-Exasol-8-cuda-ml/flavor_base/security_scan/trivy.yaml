@@ -3,4 +3,5 @@ scan:
     - /usr/bin/trivy
     - "**/pip/_vendor/bom.cdx.json"
     - "**/nsight-compute*/host/target-linux-x64/plugins/efa_metrics/nic_sampler"
+    - "**/libnvvp/plugins/org.apache.ant_*/lib/ant.jar"
 ignore-policy: /trivy.rego
