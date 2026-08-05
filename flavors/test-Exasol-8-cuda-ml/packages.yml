@@ -54,7 +54,7 @@ build_steps:
   phases:
   - name: setup_cuda
     variables:
-      CONDA_OVERRIDE_CUDA: '13.3'
+      CONDA_OVERRIDE_CUDA: '13.0'
   - name: install_conda_packages
     conda:
       channels:
