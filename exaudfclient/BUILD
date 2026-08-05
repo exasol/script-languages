@@ -1,6 +1,7 @@
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
-
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
 
 
 VM_ENABLED_DEPS=select({
@@ -74,11 +75,11 @@ cc_binary(
 ## The purpose of the static binaries is to verify if the linker namespace test work correctly.
 ## It is crucial that all linker symbols of exaudflib and all it's dependency are loaded into a new linker namespace,
 ## so that the user can load it's own versions of those dependencies without any conflict.
-## With this binary we simulate an error in our build system, that is a direct depedency to protobuf/zmq,
+## With this binary we simulate an error in our build system, that is a direct dependency to protobuf/zmq,
 ## which then must be detected with the linker namespace tests:
 ## test/linker_namespace_sanity/linker_namespace_sanity.py checks the wrong configuration
 ## Besides this the test under test/python3/all/linker_namespace.py checks the normal build, which expects
-## not to find any occurence of the dependencies (protobuf/zmq) in the primary linker namespace.
+## not to find any occurrence of the dependencies (protobuf/zmq) in the primary linker namespace.
 ##
 ## We need to explicitly declare the dependency of protobuf/zmq here, as the exaudflib is a static lib (//exaudflib:exaudflib)
 ## and hence does not contain dependency information. We cannot declare the shared lib (:exaudflib_complete.so)
@@ -99,11 +100,11 @@ cc_binary(
     data = ["@exaudfclient_base//:libexaudflib_complete.so"],
 )
 
-# Workarround for the hardcoded paths in exaudfclient for libexaudflib_complete.so and python_ext_dataframe.cc
+# Workaround for the hardcoded paths in exaudfclient for libexaudflib_complete.so and python_ext_dataframe.cc
 # - libexaudflib_complete.so and python_ext_dataframe.cc get dynamically loaded, therefore the exaudfclient needs to know their paths
 # - Most flexible way to provides these paths would environment variables
 # - The exasol database can't provide these paths, because they depend on the container
-# - A workarround to provide these paths would be wrapper bash script which set these environment variables
+# - A workaround to provide these paths would be wrapper bash script which set these environment variables
 # - For performance reason, we can not wrap the binary into a shell script, as such this is only for local debugging and testing
 #   and we hardcode the paths for the production container
 

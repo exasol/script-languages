@@ -1,4 +1,7 @@
 package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 exports_files([
     "exascript_python_preset_core.py",
     "exascript_python_wrap.py",

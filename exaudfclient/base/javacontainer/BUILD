@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 genrule(
     name = "exascript_java_tmp_cc",
     cmd = """

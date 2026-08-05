@@ -6,6 +6,7 @@ exports_files(["filter_swig_code.py", "build_integrated.py",
 	       "replace_swig_import_helper.py"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 config_setting(
     name = "benchmark",

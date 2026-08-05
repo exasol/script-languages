@@ -4,14 +4,14 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 # Problem Description:
 # - Bazel creates for all external local repositories symlinks into its build directory
 # - Bazel than writes during compilation these paths to the rpath of the binary
-# - JNI/JVM uses the rpath for loading additonal shared libraries, 
-#   but for a unknown reason it seems to truncate these pathes. 
+# - JNI/JVM uses the rpath for loading additional shared libraries,
+#   but for a unknown reason it seems to truncate these paths.
 # - We assume two possible reason, the symlink paths of bazel contain a @, or
 #   the paths are to long and get for that reason truncated
-# - In the end, it we wasn't able to convinve JNI/JVM from other pathes 
-#   for its libraries, as the original pathes where apt installed the files.
+# - In the end, it we wasn't able to convince JNI/JVM from other paths
+#   for its libraries, as the original paths where apt installed the files.
 # Solution:
-# - We solved the problem by adding the original pahtes for the libraries into the rpath via the linkopts
+# - We solved the problem by adding the original paths for the libraries into the rpath via the linkopts
 
 def _find_shared_libraries(prefix,library,p_repository_ctx):
     command_result = p_repository_ctx.execute(["find", '%s'%prefix,'-name','%s'%library]) #TODO only one result
@@ -32,6 +32,8 @@ def _java_local_repository_impl(repository_ctx):
 
     defines = '"ENABLE_JAVA_VM"'
     build_file_content = """
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "java",
     srcs = glob(["{prefix}/include/*.h"], allow_empty=False),
@@ -50,4 +52,3 @@ java_local_repository = repository_rule(
     implementation=_java_local_repository_impl,
     local = True,
     environ = ["JAVA_PREFIX"])
-

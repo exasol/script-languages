@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
 genrule(
     name = "exascript_python_tmp_cc",
     cmd = """
@@ -11,7 +13,7 @@ genrule(
         #Run replace_swig_import_helper.py because the generated exascript_python.py is not compatible with Python 3.12
         #TODO: Update Swig to a new version which produces code compatible with Python 3.12
         cd ..
-        python3 "$(location //:replace_swig_import_helper.py)" "$(location exascript_python.py)" "$(location exascript_python.py)"
+        $$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION "$(location //:replace_swig_import_helper.py)" "$(location exascript_python.py)" "$(location exascript_python.py)"
         """,
     outs = ["exascript_python_tmp.cc", "exascript_python.py"],
     srcs = ["//exaudflib:exascript.i","//exaudflib:swig/script_data_transfer_objects_wrapper.h"],
@@ -44,7 +46,7 @@ genrule(
     name = "exascript_python_int",
     cmd = """
       cp $(SRCS) .
-      python3 $(location //:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"
+      $$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION $(location //:build_integrated.py) "$(location exascript_python_int.h)" "exascript_python.py" "exascript_python_wrap.py" "exascript_python_preset.py"
     """,
     outs = ["exascript_python_int.h"],
     srcs = [":exascript_python_tmp_cc", "//python:exascript_python_wrap.py", ":extend_exascript_python_preset_py"],
@@ -56,7 +58,7 @@ genrule(
     cmd = """
         ACTUAL_PYTHON_VERSION=`$$PYTHON3_PREFIX/bin/$$PYTHON3_VERSION -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
         if [[ $$ACTUAL_PYTHON_VERSION == 2* ]] ; then
-            python3 $(location //:filter_swig_code.py) "$@" "$<"
+            python $(location //:filter_swig_code.py) "$@" "$<"
         else
             cp "$<" "$@" 
         fi

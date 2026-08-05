@@ -28,7 +28,7 @@ For the language support:
 
 ## Start a build
 
-The exaudfclient is a multi-language projects. Therefore, we are using [Bazel](https://docs.bazel.build/versions/master/bazel-overview.html) as build system, because it provide build support for many languages and allows to mix these languages. Because the exaudfclient has language bindings to Python 2/3, Java and R, we need specify where Bazel can find the correponding library- and header-files. This is done by Environment Variables.
+The exaudfclient is a multi-language project. Therefore, we are using [Bazel](https://docs.bazel.build/versions/master/bazel-overview.html) as build system, because it provides build support for many languages and allows to mix these languages. Because the exaudfclient has language bindings to Python 2/3, Java and R, we need specify where Bazel can find the correponding library- and header-files. This is done by Environment Variables.
 
 For executing the build locally, you can use the script 
 

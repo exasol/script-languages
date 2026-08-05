@@ -2,6 +2,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["exascript.i"])
 
 load("//:variables.bzl", "VM_ENABLED_DEFINES")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
     name = "script_data_transfer_objects",
