@@ -68,7 +68,7 @@ build_steps:
       - name: pyarrow
         version: =25.0.0
       - name: cuda-toolkit
-        version: =12.9.1
+        version: =13.3.1
       - name: libarrow
         version: =25.0.0=*_cuda
       - name: mamba
@@ -111,7 +111,7 @@ build_steps:
       - conda-forge
       packages: []
 #        - name: cuda-compat
-#          version: =12.9.1
+#          version: =13.3.1
       binary: Mamba
   - name: install_pip_packages
     pip:
