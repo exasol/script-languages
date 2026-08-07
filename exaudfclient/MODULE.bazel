@@ -4,7 +4,9 @@ bazel_dep(name = "exaudfclient_base", version = "1.0.0")
 #For now, the Bazel Modul "exaudfclient_base" is stored in subdirectory "base".
 #Later we might fetch it via Http or Git (after splitting up script-languages repository)
 local_path_override(module_name="exaudfclient_base", path="base")
-bazel_dep(name = "rules_jvm_external", version = "6.2")
+bazel_dep(name = "rules_cc", version = "0.2.22")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
+bazel_dep(name = "rules_shell", version = "0.8.0")
 
 numpy_local_repository = use_repo_rule("@exaudfclient_base//:python_repository.bzl", "numpy_local_repository")
 numpy_local_repository(name = "numpy")

@@ -33,13 +33,13 @@ build_steps:
       - conda-forge
       packages:
       - name: libprotobuf
-        version: =6.31.1
+        version: =7.35.1
       - name: zeromq
         version: =4.3.5
       - name: nss
-        version: '=3.100'
+        version: '=3.118'
       - name: cppzmq
-        version: =4.10.0
+        version: =4.11.0
       binary: Micromamba
     variables:
       PROTOBUF_LIBRARY_PREFIX: $MAMBA_ROOT_PREFIX/lib
@@ -56,15 +56,15 @@ build_steps:
       - conda-forge
       packages:
       - name: python
-        version: =3.10.4
+        version: =3.10.20
       - name: numpy
-        version: =1.26.2
+        version: =2.2.6
       - name: pandas
-        version: =2.2.3
-      - name: pyarrow
-        version: =22.0.0
-      - name: mamba
         version: =2.3.3
+      - name: pyarrow
+        version: =25.0.0
+      - name: mamba
+        version: =2.8.1
       binary: Micromamba
     variables:
       PYTHON3_PREFIX: $MAMBA_ROOT_PREFIX

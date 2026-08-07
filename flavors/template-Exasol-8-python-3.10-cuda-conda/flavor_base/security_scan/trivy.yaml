@@ -1,4 +1,8 @@
 scan:
   skip-files:
     - /usr/bin/trivy
+    # pip v26.2.1: SBOM lists packages affected by CVEs which are not installed or have been updated separately
+    - "**/pip/_vendor/bom.cdx.json"
+    # go binary - the included stdlib in v1.26.1 is affected by 20 CVEs
+    - "**/nsight-compute-2026.2.1/host/target-linux-x64/plugins/efa_metrics/nic_sampler"
 ignore-policy: /trivy.rego

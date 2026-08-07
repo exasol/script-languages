@@ -60,6 +60,8 @@ def _python_local_repository_impl(repository_ctx):
         defines.append('"ENABLE_PYTHON3"')
     defines_str = ",".join(defines) 
     build_file_content = """
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "{name}",
     srcs = glob(["{lib_glob}"]),
@@ -118,6 +120,8 @@ def _numpy_local_repository_impl(repository_ctx):
     numpy_include_dir =_get_numpy_include_dir(binary,repository_ctx)
     hdrs = numpy_include_dir + "/*/*.h"
     build_file_content = """
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "numpy",
     srcs = [],
@@ -135,4 +139,3 @@ numpy_local_repository = repository_rule(
     implementation=_numpy_local_repository_impl,
     local = True,
     environ = ["PYTHON3_PREFIX","PYTHON3_VERSION"])
-

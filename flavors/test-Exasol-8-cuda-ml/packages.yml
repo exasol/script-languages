@@ -35,13 +35,13 @@ build_steps:
       - conda-forge
       packages:
       - name: libprotobuf
-        version: =6.31.1
+        version: =7.35.1
       - name: zeromq
         version: =4.3.5
       - name: nss
-        version: '=3.116'
+        version: '=3.118'
       - name: cppzmq
-        version: =4.10.0
+        version: =4.11.0
       binary: Micromamba
     variables:
       PROTOBUF_LIBRARY_PREFIX: $MAMBA_ROOT_PREFIX/lib
@@ -54,7 +54,8 @@ build_steps:
   phases:
   - name: setup_cuda
     variables:
-      CONDA_OVERRIDE_CUDA: '12.9'
+      # CUDA compatibility ensures that package compiled against older CUDA versions still work.
+      CONDA_OVERRIDE_CUDA: '13'
   - name: install_conda_packages
     conda:
       channels:
@@ -62,17 +63,17 @@ build_steps:
       - nvidia
       packages:
       - name: python
-        version: =3.12.11
+        version: =3.12.13
       - name: numpy
-        version: =1.26.2
+        version: =2.4.6
       - name: pandas
         version: =2.3.3
       - name: pyarrow
-        version: =22.0.0
+        version: =25.0.0
       - name: libarrow
-        version: =22.0.0=*_cuda
+        version: =25.0.0=*_cuda
       - name: mamba
-        version: =2.3.3
+        version: =2.8.1
       binary: Micromamba
     variables:
       PYTHON3_PREFIX: $MAMBA_ROOT_PREFIX
@@ -97,19 +98,19 @@ build_steps:
       - nvidia
       packages:
       - name: cudnn
-        version: =9.13.1.26
+        version: =9.25.0.15
       - name: cuda-toolkit
-        version: =12.9.1
+        version: =13.3.1
       - name: cuda-nvcc
-        version: =12.9.86
+        version: =13.3.73
       - name: cuda-nvrtc
-        version: =12.9.86
+        version: =13.3.33
       - name: numba
-        version: =0.62.1
+        version: =0.66.0
       - name: numba-cuda
-        version: =0.20.0
+        version: =0.30.4
       - name: pytorch
-        version: =2.8.0=cuda129_generic_py312_*
+        version: =2.13.0=cuda130_generic_py312_*
       binary: Mamba
   validation_cfg:
     version_mandatory: true

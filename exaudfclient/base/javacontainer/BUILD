@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 genrule(
     name = "exascript_java_tmp_cc",
     cmd = """
@@ -98,7 +100,7 @@ cc_library(
     copts= ["-O0","-fno-lto"],
     # We limit this target to -O0 (no optimization) and -fno-lto. because otherwise we get compiler warnings of the sort 
     # note: "code may be misoptimized unless -fno-strict-aliasing is used." 
-    # Normally, this indicates that compiling with higher optimizations levels may break your progrom. Unitl now, we don't have enough tests
+    # Normally, this indicates that compiling with higher optimizations levels may break your program. Until now, we don't have enough tests
     # to verify if higher levels of optimizations might work. We needed to deactivate link time optimization, too, because this delay the compilation
     # until the exaudfclient binary is build and causes than there the same problem.
     alwayslink=True,
