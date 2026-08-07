@@ -10,4 +10,5 @@ then
     export CONDA_DEFAULT_ENV=base
     export CONDA_PREFIX=/opt/conda
     export MAMBA_ROOT_PREFIX=$CONDA_PREFIX
+    export LD_LIBRARY_PATH="$CONDA_PREFIX/cuda-compat/:$LD_LIBRARY_PATH" # Temporary hack for the Cuda ML flavor(s)
 fi

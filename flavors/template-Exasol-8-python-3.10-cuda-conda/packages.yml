@@ -52,7 +52,8 @@ build_steps:
   phases:
   - name: setup_cuda
     variables:
-      CONDA_OVERRIDE_CUDA: '13.0'
+      # CUDA compatibility ensures that package compiled against older CUDA versions still work.
+      CONDA_OVERRIDE_CUDA: '13'
   - name: install_conda_packages
     conda:
       channels:
