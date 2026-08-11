@@ -153,6 +153,7 @@ class ImportAllModulesTest(udf.TestCase):
                 "redis.asyncio.multidb", # Requires optional circuit-breaker module
                 "redis.multidb",  # Requires optional circuit-breaker module
                 "scipy.special.libsf_error_state", # dynamic module does not define module export function
+                "narwhals.sql", # Requires optional sql module
             }
             excluded_submodules = (
                 "sphinxext",
