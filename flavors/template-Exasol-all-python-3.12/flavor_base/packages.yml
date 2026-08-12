@@ -7,7 +7,7 @@ build_steps:
       - name: coreutils
         version: 9.4-3ubuntu*
       - name: tar
-        version: 1.35+dfsg-3build1
+        version: 1.35+dfsg-3ubuntu*
       - name: curl
         version: 8.5.0-2ubuntu*
       - name: openjdk-17-jdk
