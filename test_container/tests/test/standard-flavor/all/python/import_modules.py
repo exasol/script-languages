@@ -97,7 +97,6 @@ class ImportAllModulesTest(udf.TestCase):
                 "boto.pyami.copybot",
                 "boto.requestlog",
                 "boto.gs.resumable_upload_handler",
-                "sagemaker.content_types",
                 "pyarrow.libarrow_python_flight",
                 "pyarrow.libarrow_python",
                 "pyarrow.libarrow_python_parquet_encryption",
@@ -133,7 +132,6 @@ class ImportAllModulesTest(udf.TestCase):
                 "tqdm.dask",
                 "tqdm.contrib.slack",
                 "tqdm.contrib.discord",
-                "sagemaker.serve.validations.parse_registry_accounts",
                 "pyparsing.diagram",
                 "numba.core.rvsdg_frontend",
                 "msrest.universal_http.aiohttp",
@@ -147,14 +145,15 @@ class ImportAllModulesTest(udf.TestCase):
                 "pydantic.mypy", #Used for pydantic mypy plugin, which is not useful in UDFs
                 "pydevd_plugins.extensions",
                 "pyximport.pyxbuild", #Still uses distutils which was removed in Python 3.12, see  https://github.com/cython/cython/blob/master/pyximport/pyxbuild.py
-                "sagemaker.amtviz", # Visualisation not needed in UDF's
-                "sagemaker.aws_batch",
-                "sagemaker.mlflow",
-                "sagemaker.modules.train.container_drivers.distributed_drivers.mpi_driver",
                 "sklearn.externals.array_api_compat",
                 "starlette",
                 "uvicorn",
                 "google_crc32c.cext",
+                "bitarray.test_free_threading", # depends on Py_GIL_DISABLED
+                "redis.asyncio.multidb", # Requires optional circuit-breaker module
+                "redis.multidb",  # Requires optional circuit-breaker module
+                "scipy.special.libsf_error_state", # dynamic module does not define module export function
+                "narwhals.sql", # Requires optional sql module
             }
             excluded_submodules = (
                 "sphinxext",
