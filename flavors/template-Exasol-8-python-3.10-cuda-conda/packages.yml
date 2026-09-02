@@ -13,7 +13,7 @@ build_steps:
       - name: ca-certificates
         version: 20260601~22.04.1
       - name: bzip2
-        version: 1.0.8-5build1
+        version: 1.0.8-*
       - name: libxml2
         version: 2.9.13+dfsg-1ubuntu*
   - name: install_micromamba
