@@ -32,7 +32,7 @@ build_steps:
       - name: curl
         version: 7.81.0-1ubuntu*
       - name: openjdk-11-jdk-headless
-        version: 11.0.32+9-1ubuntu*
+        version: 11.0.32.1+1-1ubuntu1*
       - name: build-essential
         version: 12.9ubuntu*
       - name: libpcre3-dev
