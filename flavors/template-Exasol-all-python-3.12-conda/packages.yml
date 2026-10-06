@@ -29,6 +29,13 @@ build_steps:
     version_mandatory: true
 - name: udfclient_deps
   phases:
+  - name: install_apt_packages
+    apt:
+      packages:
+      - name: libssl-dev
+        version: 3.0.13-0ubuntu3.16
+      - name: libssl3t64
+        version: 3.0.13-0ubuntu3.16
   - name: install_conda_packages
     conda:
       channels:
