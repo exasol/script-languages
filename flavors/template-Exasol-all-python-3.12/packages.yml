@@ -56,9 +56,9 @@ build_steps:
       - name: libprotobuf-dev
         version: 3.21.12-8.2ubuntu*
       - name: libssl-dev
-        version: 3.0.13-0ubuntu3.16
+        version: 3.0.13-0ubuntu*
       - name: libssl3t64
-        version: 3.0.13-0ubuntu3.16
+        version: 3.0.13-0ubuntu*
     variables:
       PROTOBUF_LIBRARY_PREFIX: /usr/lib/
       PROTOBUF_INCLUDE_PREFIX: /usr/include/

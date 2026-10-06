@@ -31,9 +31,9 @@ build_steps:
     apt:
       packages:
       - name: libssl-dev
-        version: 3.0.2-0ubuntu1.30
+        version: 3.0.2-0ubuntu*
       - name: libssl3
-        version: 3.0.2-0ubuntu1.30
+        version: 3.0.2-0ubuntu*
   - name: install_conda_packages
     conda:
       channels:
