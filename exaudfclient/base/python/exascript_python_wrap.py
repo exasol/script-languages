@@ -148,7 +148,7 @@ class exaiter(object):
                 if self.__outcoltypes[k] == DOUBLE: self.__out.setDouble(k, float(v))
                 elif self.__outcoltypes[k] == INT32: self.__out.setInt32(k, int(v))
                 elif self.__outcoltypes[k] == INT64: self.__out.setInt64(k, int(v))
-                elif self.__outcoltypes[k] == NUMERIC: self.__out.setInt64(k, str(v))
+                elif self.__outcoltypes[k] == NUMERIC: self.__out.setNumeric(k, str(v))
                 else:
                     raise RuntimeError(u"E-UDF-CL-SL-PYTHON-1092: emit column '%s' is of type %s but data given have type %s" \
                             % (decodeUTF8(self.__meta.outputColumnName(k)), type_names.get(self.__outcoltypes[k], 'UNKONWN'), str(type(v))))
