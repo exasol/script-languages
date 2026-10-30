@@ -104,7 +104,7 @@ build_steps:
   - name: setup_pip
     tools:
       pip:
-        version: '21.3.1'
+        version: '26.2.2'
         needs_break_system_packages: false
   - name: install_conda_packages
     conda:

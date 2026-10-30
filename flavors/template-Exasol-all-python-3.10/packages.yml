@@ -45,7 +45,7 @@ build_steps:
   - name: install_pip
     tools:
       pip:
-        version: '21.3.1'
+        version: '26.2.2'
         needs_break_system_packages: false
   - name: install_pip_packages
     pip:
