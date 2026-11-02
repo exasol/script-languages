@@ -109,6 +109,40 @@ class ColumnNamesTest(_Python3UdfSetup):
 
 
 class DatatypesTest(_Python3UdfSetup):
+    def test_float_to_decimal(self):
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SCALAR SCRIPT emit_float_to_decimal()
+            EMITS (decimal_value DECIMAL(3,2)) AS
+            def run(ctx):
+                ctx.emit(1.25)
+            /
+        '''))
+        rows = self.query('''
+            SELECT decimal_value = 1.25
+            FROM (
+                SELECT emit_float_to_decimal()
+                FROM DUAL
+            )
+        ''')
+        self.assertRowsEqual([(True,)], rows)
+
+    def test_float_outside_decimal_range(self):
+        self.query(udf.fixindent('''
+            CREATE PYTHON3 SCALAR SCRIPT emit_float_outside_decimal_range()
+            EMITS (decimal_value DECIMAL(3,2)) AS
+            def run(ctx):
+                ctx.emit(10.0)
+            /
+        '''))
+        with self.assertRaisesRegex(Exception, r'numeric value out of range'):
+            self.query('''
+                SELECT *
+                FROM (
+                    SELECT emit_float_outside_decimal_range()
+                    FROM DUAL
+                )
+            ''')
+
     def test_boolean(self):
         self.query('CREATE OR REPLACE TABLE fn2.DT(x BOOLEAN)')
         self.query('insert into fn2.dt values false')

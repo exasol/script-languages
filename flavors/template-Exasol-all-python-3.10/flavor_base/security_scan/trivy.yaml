@@ -1,4 +1,7 @@
 scan:
   skip-files:
     - /usr/bin/trivy
+    # pip v26.2.2: SBOM lists packages affected by CVEs which are not installed or have been updated separately
+    # https://github.com/pypa/pip/issues/14031
+    - "**/pip/_vendor/bom.cdx.json"
 ignore-policy: /trivy.rego
