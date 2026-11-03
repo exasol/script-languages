@@ -28,10 +28,10 @@ build_steps:
         version: ==2.2.3
         extras: []
       - name: numpy
-        version: ==1.26.4
+        version: ==2.5.4
         extras: []
       - name: pyarrow
-        version: ==25.0.0
+        version: ==26.0.1
         extras: []
       install_build_tools_ephemerally: false
   validation_cfg:

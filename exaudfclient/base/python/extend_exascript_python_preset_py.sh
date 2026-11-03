@@ -11,6 +11,7 @@ CURRENT_SYSPATH=$("$PYTHON_PREFIX/bin/$PYTHON_VERSION" -c 'import sys; import si
 echo "PYTHON_CURRENT_SYSPATH=$CURRENT_SYSPATH"
 
 echo "sys.path.extend($CURRENT_SYSPATH)" >> extension
+# shellcheck disable=SC2268
 if [ ! "X$PYTHON_SYSPATH" = "X" ]; then
     echo "PYTHON_SYSPATH=$PYTHON_SYSPATH"
     echo "sys.path.extend($PYTHON_SYSPATH)" >> extension
