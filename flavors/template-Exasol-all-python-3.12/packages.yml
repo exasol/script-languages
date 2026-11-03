@@ -28,7 +28,7 @@ build_steps:
         version: ==2.2.3
         extras: []
       - name: numpy
-        version: ==1.26.4
+        version: ==2.5.4
         extras: []
       - name: pyarrow
         version: ==26.0.1
