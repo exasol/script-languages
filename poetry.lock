@@ -814,36 +814,11 @@ setuptools = ">=80.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-ci-setup"
-version = "4.4.2"
-description = "Manages AWS cloud CI build infrastructure."
-optional = false
-python-versions = "<3.14,>=3.10"
-groups = ["main"]
-markers = "python_version == \"3.11\""
-files = [
-    {file = "exasol_script_languages_container_ci_setup-4.4.2-py3-none-any.whl", hash = "sha256:98056c06efb9abfb8433ce56d75af7b50b562ccadab8c16da647474861deab28"},
-    {file = "exasol_script_languages_container_ci_setup-4.4.2.tar.gz", hash = "sha256:64b3a8843e906a8d298846687d644d67af04578801e5af484f10edc58d51a884"},
-]
-
-[package.dependencies]
-boto3 = ">=1.37.1,<2.0.0"
-botocore = ">=1.37.11,<2.0.0"
-click = ">=8.1.3,<9.0.0"
-exasol-error-reporting = ">=1.0.0,<2.0.0"
-exasol-script-languages-container-ci = ">=5.2.1,<6"
-exasol-script-languages-container-tool = ">=4.1.0,<5.0.0"
-jinja2 = ">=3.1.6,<4.0.0"
-jsonschema = ">=4.22.0,<5.0.0"
-PyGithub = ">=2.3.0,<3.0.0"
-
-[[package]]
-name = "exasol-script-languages-container-ci-setup"
 version = "4.5.0"
 description = "Manages AWS cloud CI build infrastructure."
 optional = false
 python-versions = "<3.14,>=3.11.5"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
 files = [
     {file = "exasol_script_languages_container_ci_setup-4.5.0-py3-none-any.whl", hash = "sha256:ccd3d77504c30c40fbc0dac24173c711b98877af73a45e2cf0f967095b448666"},
     {file = "exasol_script_languages_container_ci_setup-4.5.0.tar.gz", hash = "sha256:179073d1125490b95e8ff972ffed73aff90d1c3cdc42b3fc282b8a43b460b419"},
@@ -862,36 +837,11 @@ PyGithub = ">=2.3.0,<3.0.0"
 
 [[package]]
 name = "exasol-script-languages-container-tool"
-version = "4.4.0"
-description = "Script Languages Container Tool"
-optional = false
-python-versions = "<3.15,>=3.10"
-groups = ["main"]
-markers = "python_version == \"3.11\""
-files = [
-    {file = "exasol_script_languages_container_tool-4.4.0-py3-none-any.whl", hash = "sha256:035140de5cdeb019f65c7d18a1aeac78fba9c4b9d1f2afa29ac64fe4df1893ee"},
-    {file = "exasol_script_languages_container_tool-4.4.0.tar.gz", hash = "sha256:ba4389ce8aafdca552bf599f2978d1034aee9699d46fb78f92cc1f4087cd754f"},
-]
-
-[package.dependencies]
-click = ">=8.2.1,<9"
-exasol-bucketfs = ">=2.1.0,<3"
-exasol-integration-test-docker-environment = ">=6.5.1,<7"
-exasol-script-languages-package-management = ">=1.0.0,<2"
-jsonschema = ">=4.23.0,<5"
-networkx = ">=3.3.0,<4"
-pandas = ">=2.2.3,<3"
-pydantic = ">=2.10.2,<3"
-tabulate = ">=0.9.0,<1"
-
-[[package]]
-name = "exasol-script-languages-container-tool"
 version = "4.5.0"
 description = "Script Languages Container Tool"
 optional = false
 python-versions = "<3.15,>=3.11.5"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
 files = [
     {file = "exasol_script_languages_container_tool-4.5.0-py3-none-any.whl", hash = "sha256:95188916be4a0d6e8cf89fea536370b160be49b8ab1621f50386aecb44eed0f7"},
     {file = "exasol_script_languages_container_tool-4.5.0.tar.gz", hash = "sha256:ae57b081a52501901581ec6f7ee04124f892873d5a6b1fca67ddb06ad947fa54"},
@@ -910,32 +860,11 @@ tabulate = ">=0.9.0,<1"
 
 [[package]]
 name = "exasol-script-languages-package-management"
-version = "1.3.1"
-description = "This project provides a unified way of installing different packages from sources like conda, apt and PyPi"
-optional = false
-python-versions = "<3.15,>=3.10"
-groups = ["main"]
-markers = "python_version == \"3.11\""
-files = [
-    {file = "exasol_script_languages_package_management-1.3.1-py3-none-any.whl", hash = "sha256:f8a38c8f024dfcb229c08d1de34894d0ab04057d4e513803a510a40531baa59a"},
-    {file = "exasol_script_languages_package_management-1.3.1.tar.gz", hash = "sha256:833ed226880474aa629b720acc1cc42ca7cc80b464da44b51fd38424ebfdc68b"},
-]
-
-[package.dependencies]
-click = ">=8.3.2,<9.0.0"
-jinja2 = ">=3.1.6,<4.0.0"
-pydantic = ">=2.13.3,<3.0.0"
-pyyaml = ">=6.0.3,<7.0.0"
-types-pyyaml = ">=6.0.12.20260408,<7.0.0.0"
-
-[[package]]
-name = "exasol-script-languages-package-management"
 version = "2.0.0"
 description = "This project provides a unified way of installing different packages from sources like conda, apt and PyPi"
 optional = false
 python-versions = "<3.15,>=3.11"
 groups = ["main"]
-markers = "python_version >= \"3.12\""
 files = [
     {file = "exasol_script_languages_package_management-2.0.0-py3-none-any.whl", hash = "sha256:657b4d561799bce7e60a87b94b359890e85de46a96ad7b1f7c51d6a4b34b58fa"},
     {file = "exasol_script_languages_package_management-2.0.0.tar.gz", hash = "sha256:ecf67c64a1a4782120646e25616d3b0682ea7a63cbfe3631d6416a9e5048a3fc"},
@@ -3049,5 +2978,5 @@ dev = ["pytest", "setuptools"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.11, <3.14.0"
-content-hash = "734c9d110f1b3cf3b9e97bedc7ad414efb80cccecc9bf5d744c11b02d15cc147"
+python-versions = ">=3.11.5, <3.14.0"
+content-hash = "e1c6e8c3a015e724c8c87a169167592ad54639bebe55c4fccef94bb0498d8c81"
