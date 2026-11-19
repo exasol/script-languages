@@ -13,6 +13,9 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
 
   Check-SLC-Github-Workflows-For-Updates:
@@ -21,9 +24,11 @@ jobs:
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v9
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
           python-version: "3.10"
           poetry-version: "2.3.0"
