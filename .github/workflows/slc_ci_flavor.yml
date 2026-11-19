@@ -18,10 +18,13 @@ on:
       CI4_DOCKERHUB_TOKEN:
           required: true
 
+permissions:
+  contents: read
+
 
 jobs:
   check_for_build:
-    uses: ./.github/workflows/slc_ci_check_for_build.yml
+    uses: $/.github/workflows/slc_ci_check_for_build.yml
     with:
       flavor: ${{ inputs.flavor }}
 
@@ -31,21 +34,27 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Print message
-        run: echo skipping build and test for flavor ${{ inputs.flavor }}
+        run: echo "skipping build and test for flavor $FLAVOR"
+        env:
+          FLAVOR: ${{ inputs.flavor }}
 
   build:
     needs: check_for_build
-    uses: ./.github/workflows/slc_ci_build_slc.yml
+    uses: $/.github/workflows/slc_ci_build_slc.yml
     if: ${{ needs.check_for_build.outputs.result != 'no_build_needed' }}
     with:
       flavor: ${{ inputs.flavor }}
       build-mode: ${{ needs.check_for_build.outputs.result }}
-    secrets: inherit
+    secrets:
+      CI4_DOCKERHUB_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+      CI4_DOCKERHUB_TOKEN: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
 
   test:
     needs: [check_for_build, build]
     if: ${{ needs.check_for_build.outputs.result != 'no_build_needed' }}
-    uses: ./.github/workflows/slc_ci_test_slc.yml
+    uses: $/.github/workflows/slc_ci_test_slc.yml
     with:
       flavor: ${{ inputs.flavor }}
-    secrets: inherit
+    secrets:
+      CI4_DOCKERHUB_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+      CI4_DOCKERHUB_TOKEN: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
